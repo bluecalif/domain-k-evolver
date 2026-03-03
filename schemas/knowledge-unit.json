@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "knowledge-unit.json",
+  "title": "Knowledge Unit (KU)",
+  "description": "정규화된 주장의 원자 단위. 어떤 엔티티의 어떤 필드가 어떤 값이며, 어떤 조건에서 성립하는지를 기록한다.",
+  "type": "object",
+  "required": [
+    "ku_id",
+    "entity_key",
+    "field",
+    "value",
+    "observed_at",
+    "evidence_links",
+    "confidence",
+    "status"
+  ],
+  "properties": {
+    "ku_id": {
+      "type": "string",
+      "pattern": "^KU-[0-9]{4}$",
+      "description": "고유 식별자. 형식: KU-NNNN"
+    },
+    "entity_key": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+:[a-z0-9-]+:[a-z0-9-]+$",
+      "description": "캐노니컬 키. 형식: {domain}:{category}:{slug} (예: japan-travel:transport:jr-pass)"
+    },
+    "field": {
+      "type": "string",
+      "description": "필드명 (예: price, hours, policy, location, duration, eligibility)"
+    },
+    "value": {
+      "description": "필드 값. 문자열, 숫자, 객체 등 자유 형식.",
+      "oneOf": [
+        { "type": "string" },
+        { "type": "number" },
+        { "type": "boolean" },
+        { "type": "object" },
+        { "type": "array" }
+      ]
+    },
+    "conditions": {
+      "type": "object",
+      "description": "(optional) 값이 성립하는 조건. 없으면 무조건 적용.",
+      "properties": {
+        "season": { "type": "string" },
+        "day_of_week": { "type": "string" },
+        "region": { "type": "string" },
+        "language": { "type": "string" },
+        "channel": { "type": "string" },
+        "traveler_type": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "observed_at": {
+      "type": "string",
+      "format": "date",
+      "description": "확인 시점 (ISO 8601 date)"
+    },
+    "validity": {
+      "type": "object",
+      "description": "(optional) 유효기간 정책",
+      "properties": {
+        "ttl_days": {
+          "type": "integer",
+          "description": "유효 기간 (일 단위)"
+        },
+        "expires_at": {
+          "type": "string",
+          "format": "date",
+          "description": "만료 날짜"
+        }
+      }
+    },
+    "evidence_links": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1,
+      "description": "연결된 EU ID 목록 (최소 1개 필수)"
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "description": "신뢰도 (0.0–1.0). 기준: 0.9+=공식출처확인, 0.7-0.89=신뢰출처1개, 0.5-0.69=비공식/단일, <0.5=미확인"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["active", "disputed", "deprecated"],
+      "description": "KU 상태"
+    },
+    "disputes": {
+      "type": "array",
+      "description": "(optional) 충돌 시 대립하는 KU 참조",
+      "items": {
+        "type": "object",
+        "properties": {
+          "conflicting_ku_id": { "type": "string" },
+          "nature": { "type": "string" },
+          "resolution": { "type": "string", "enum": ["pending", "condition_split", "superseded", "coexist"] }
+        }
+      }
+    }
+  },
+  "additionalProperties": false
+}

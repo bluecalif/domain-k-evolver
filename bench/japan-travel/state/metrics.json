@@ -1,0 +1,32 @@
+{
+  "cycle": 0,
+  "phase": "post_integration",
+  "timestamp": "2026-03-02",
+  "counts": {
+    "total_ku": 13,
+    "active_ku": 13,
+    "disputed_ku": 0,
+    "deprecated_ku": 0,
+    "total_eu": 18,
+    "total_gu_open": 21,
+    "total_gu_resolved": 7,
+    "total_gu_deferred": 0
+  },
+  "rates": {
+    "evidence_rate": 1.0,
+    "multi_evidence_rate": 0.538,
+    "gap_resolution_rate": 0.28,
+    "conflict_rate": 0.0,
+    "avg_confidence": 0.888,
+    "staleness_risk": 0
+  },
+  "delta_from_seed": {
+    "ku_added": 6,
+    "ku_updated": 2,
+    "eu_added": 12,
+    "gaps_resolved": 7,
+    "gaps_new": 3,
+    "net_gap_change": -4
+  },
+  "notes": "Cycle 0 Integration 완료. 7개 Gap 해결, 3개 신규 Gap 발견. 다중근거율 0→53.8%로 대폭 개선. 충돌 0건."
+}

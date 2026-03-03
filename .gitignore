@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Claude Code internals
+.claude/hooks/
+.claude/cache/
+.claude/settings.local.json
+
+# Build / Cache
+dist/
+build/
+*.egg
+.cache/

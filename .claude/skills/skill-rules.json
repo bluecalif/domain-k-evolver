@@ -1,0 +1,23 @@
+{
+  "version": "1.0",
+  "skills": {
+    "evolver-framework": {
+      "type": "guardrail",
+      "enforcement": "warn",
+      "priority": "critical",
+      "promptTriggers": {
+        "keywords": ["KU", "EU", "GU", "PU", "불변원칙", "Metrics", "임계치", "evidence_rate", "conflict_rate", "entity_key", "Schema 검증", "knowledge-unit", "gap-unit"],
+        "intentPatterns": ["KU.*생성", "Gap.*계획", "Metrics.*계산", "Schema.*검증", "evidence.*링크", "충돌.*보존"]
+      }
+    },
+    "langgraph-dev": {
+      "type": "domain",
+      "enforcement": "suggest",
+      "priority": "high",
+      "promptTriggers": {
+        "keywords": ["노드", "엣지", "StateGraph", "EvolverState", "seed_node", "plan_node", "collect_node", "integrate_node", "critique_node", "plan_modify_node", "hitl_gate", "LangGraph", "파이프라인"],
+        "intentPatterns": ["노드.*구현", "엣지.*설정", "State.*정의", "graph.*빌드", "파이프라인.*구축", "HITL.*게이트"]
+      }
+    }
+  }
+}

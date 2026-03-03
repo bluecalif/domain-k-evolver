@@ -1,0 +1,132 @@
+# Project Overall Context
+> Last Updated: 2026-03-03 (GU Bootstrap 명세 반영)
+> Status: In Progress
+
+## 1. 핵심 파일
+
+### 설계 문서
+| 파일 | 내용 | 참조 시점 |
+|------|------|-----------|
+| `docs/draft.md` | 원본 설계 — State Machine, 핵심 객체, Inner Loop 6단계, 5대 불변원칙 | 항상 |
+| `docs/design-v2.md` | Cycle 0 검증 반영 정교화 — Schema, Metrics, Critique→Plan 규칙, LangGraph 설계 | 항상 |
+| `docs/gu-bootstrap-spec.md` | GU Bootstrap 명세 — 생성 알고리즘 5단계, 동적 발견 규칙, 우선순위, Scope 제어, 수렴 조건 | Seed/Plan 단계 |
+| `docs/gu-from-scratch.md` | GU Bootstrap 문제 인식 + 해결 방향 (gu-bootstrap-spec의 기반) | 참고용 |
+| `docs/session-compact.md` | 세션 간 진행 상태 추적 | 세션 시작 시 |
+
+### 데이터 정의
+| 파일 | 내용 |
+|------|------|
+| `schemas/knowledge-unit.json` | KU JSON Schema (KU-NNNN, 8 required + 3 optional) |
+| `schemas/evidence-unit.json` | EU JSON Schema (EU-NNNN, 5 required + 3 optional) |
+| `schemas/gap-unit.json` | GU JSON Schema (GU-NNNN, 5 required + 3 optional) |
+| `schemas/patch-unit.json` | PU JSON Schema (PU-NNNN, 6 required + 3 optional) |
+
+### Phase 0B Dev-Docs
+| 파일 | 내용 |
+|------|------|
+| `dev/active/phase0b-cycle1-validation/phase0b-cycle1-validation-plan.md` | Phase 0B 종합 계획 |
+| `dev/active/phase0b-cycle1-validation/phase0b-cycle1-validation-context.md` | Phase 0B 컨텍스트 |
+| `dev/active/phase0b-cycle1-validation/phase0b-cycle1-validation-tasks.md` | Phase 0B 태스크 추적 |
+| `dev/active/phase0b-cycle1-validation/debug-history.md` | Phase 0B 디버깅 이력 |
+
+### 벤치 데이터 (Cycle 0 결과)
+| 파일 | 내용 |
+|------|------|
+| `bench/japan-travel/state/knowledge-units.json` | KU 13개 |
+| `bench/japan-travel/state/gap-map.json` | GU 21 open + 7 resolved |
+| `bench/japan-travel/state/domain-skeleton.json` | 카테고리/필드/관계/키규칙 |
+| `bench/japan-travel/state/policies.json` | 출처신뢰/TTL/교차검증/충돌해결 |
+| `bench/japan-travel/state/metrics.json` | 6개 지표 |
+| `bench/japan-travel/cycle-0/` | 6대 Deliverable 원본 |
+| `bench/japan-travel/cycle-0/revised-plan-c1.md` | Cycle 1 Collection Plan (8 Target Gaps, Source Strategy 강화) |
+
+### 템플릿
+| 파일 | 내용 |
+|------|------|
+| `templates/seed-pack.md` | Seed Pack 템플릿 |
+| `templates/collection-plan.md` | Collection Plan 템플릿 |
+| `templates/evidence-claim-set.md` | Evidence Claim Set 템플릿 |
+| `templates/kb-patch.md` | KB Patch 템플릿 |
+| `templates/critique-report.md` | Critique Report 템플릿 |
+| `templates/revised-plan.md` | Revised Plan 템플릿 |
+
+---
+
+## 2. 데이터 인터페이스
+
+### State (K, G, P, M, D) — JSON 파일 기반
+```
+읽기: bench/{domain}/state/*.json
+쓰기: bench/{domain}/state/*.json (노드 실행 후 업데이트)
+검증: schemas/*.json (JSON Schema Draft 2020-12)
+```
+
+### Cycle Deliverables — MD 파일
+```
+읽기/쓰기: bench/{domain}/cycle-{n}/*.md
+템플릿: templates/*.md
+```
+
+### EvolverState — LangGraph 내부
+```python
+class EvolverState(TypedDict):
+    knowledge_units: list[dict]     # K
+    gap_map: list[dict]             # G
+    policies: dict                   # P
+    metrics: dict                    # M
+    domain_skeleton: dict            # D
+    current_cycle: int
+    current_plan: dict | None
+    current_claims: list[dict] | None
+    current_critique: dict | None
+```
+
+---
+
+## 3. 주요 결정사항
+
+| # | 결정 | 대안 | 선택 근거 | Phase |
+|---|------|------|-----------|-------|
+| D-01 | JSON 파일 기반 State 관리 | SQLite/PostgreSQL | 디버깅 투명성, 스키마 검증 용이, 규모 작음 | 0 |
+| D-02 | JSON Schema Draft 2020-12 | Pydantic only | 언어 무관 검증, 템플릿 자동 생성 가능 | 0 |
+| D-03 | entity_key = `{domain}:{category}:{slug}` | UUID, 자연어 키 | Entity Resolution 가능, 인간 판독 가능 | 0 |
+| D-04 | 6개 Metrics + 건강 임계치 | 사용자 정의 | Cycle 0 실측으로 확정, 실용적 | 0 |
+| D-05 | Critique→Plan 6개 컴파일 규칙 | LLM 자유 변환 | 추적성 보장, 자동화 가능 | 0 |
+| D-06 | LangGraph StateGraph | 자체 구현, CrewAI | 공식 interrupt 지원, State 관리 내장 | 1 |
+| D-07 | Claude (Anthropic) LLM | OpenAI GPT | 프로젝트 일관성, 한국어 성능 | 1 |
+| D-08 | Hook 인코딩: Bash heredoc 작성 | Write 도구 | PS1 BOM 문제 회피 | Prep |
+| D-09 | Cycle 1 수동 실행 추가 (Phase 0B) | 바로 LangGraph 구현 | Conflict-preserving 미검증, design-v2 §12 권장 | 0B |
+| D-10 | GU Bootstrap 알고리즘 공식화 | LLM 자유 생성 | Category×Field 매트릭스 기반 결정론적 생성, Cycle 0 역검증으로 정합성 확인 | 0B 전 |
+
+---
+
+## 4. 컨벤션 체크리스트
+
+### 5대 불변원칙
+- [ ] **Gap-driven**: Plan.target_gaps ⊆ G.open
+- [ ] **Claim→KU 착지성**: count(claims) == count(adds + updates + rejected_with_reason)
+- [ ] **Evidence-first**: all(len(ku.evidence_links) ≥ 1 for active KU)
+- [ ] **Conflict-preserving**: disputed KU 삭제 불가, hold/condition_split/coexist만 허용
+- [ ] **Prescription-compiled**: all(rx.id in revised_plan.traceability)
+
+### Metrics 건강 임계치
+| 지표 | 건강 | 주의 | 위험 |
+|------|------|------|------|
+| 근거율 | ≥ 0.95 | 0.80–0.94 | < 0.80 |
+| 다중근거율 | ≥ 0.50 | 0.30–0.49 | < 0.30 |
+| 충돌률 | ≤ 0.05 | 0.06–0.15 | > 0.15 |
+| 평균 confidence | ≥ 0.85 | 0.70–0.84 | < 0.70 |
+| 신선도 리스크 | 0 | 1–3 | > 3 |
+
+### 인코딩
+- JSON read/write: `encoding='utf-8'`
+- CSV read: `encoding='utf-8-sig'`
+- Python stdout: `PYTHONUTF8=1`
+- PS1 파일: Bash heredoc으로 작성 (BOM 방지)
+
+### 코드 컨벤션
+- entity_key: `{domain}:{category}:{slug}` (lowercase + hyphen)
+- ID 패턴: `KU-NNNN`, `EU-NNNN`, `GU-NNNN`, `PU-NNNN`
+- 노드 함수: `def node_name(state: EvolverState) -> dict` (변경 필드만 반환)
+- 커밋: `[phase-name] Step X.Y: 설명`
+- 브랜치: `feature/[phase-name]`

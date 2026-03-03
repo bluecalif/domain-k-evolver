@@ -1,0 +1,102 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "patch-unit.json",
+  "title": "Patch Unit (PU)",
+  "description": "통합 결과의 차분(diff). KB에 적용 가능한 원자적 변경 단위.",
+  "type": "object",
+  "required": [
+    "pu_id",
+    "cycle",
+    "timestamp",
+    "adds",
+    "updates",
+    "deprecates"
+  ],
+  "properties": {
+    "pu_id": {
+      "type": "string",
+      "pattern": "^PU-[0-9]{4}$",
+      "description": "고유 식별자. 형식: PU-NNNN"
+    },
+    "cycle": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "패치가 생성된 사이클 번호"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date",
+      "description": "패치 생성 시점"
+    },
+    "adds": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "새로 추가되는 KU ID 목록"
+    },
+    "updates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["ku_id", "changed_fields"],
+        "properties": {
+          "ku_id": { "type": "string" },
+          "changed_fields": {
+            "type": "object",
+            "description": "변경된 필드와 새 값의 맵"
+          },
+          "reason": { "type": "string" }
+        }
+      },
+      "description": "수정되는 기존 KU 목록"
+    },
+    "deprecates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["ku_id", "reason"],
+        "properties": {
+          "ku_id": { "type": "string" },
+          "reason": { "type": "string" }
+        }
+      },
+      "description": "폐기되는 KU 목록"
+    },
+    "conflict_decisions": {
+      "type": "array",
+      "description": "(optional) 충돌 처리 결과",
+      "items": {
+        "type": "object",
+        "properties": {
+          "ku_ids": { "type": "array", "items": { "type": "string" } },
+          "decision": { "type": "string", "enum": ["adopt_newest", "condition_split", "hold", "request_more_evidence"] },
+          "rationale": { "type": "string" }
+        }
+      }
+    },
+    "gap_updates": {
+      "type": "array",
+      "description": "(optional) Gap Map 변경사항",
+      "items": {
+        "type": "object",
+        "properties": {
+          "gu_id": { "type": "string" },
+          "new_status": { "type": "string", "enum": ["open", "in_progress", "resolved", "deferred"] },
+          "note": { "type": "string" }
+        }
+      }
+    },
+    "policy_updates": {
+      "type": "array",
+      "description": "(optional) 정책 변경 제안",
+      "items": {
+        "type": "object",
+        "properties": {
+          "target": { "type": "string" },
+          "change": { "type": "string" },
+          "rationale": { "type": "string" }
+        }
+      }
+    }
+  },
+  "additionalProperties": false
+}

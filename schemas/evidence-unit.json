@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "evidence-unit.json",
+  "title": "Evidence Unit (EU)",
+  "description": "근거 단위. KU를 뒷받침하는 출처 정보와 원문 스니펫을 기록한다.",
+  "type": "object",
+  "required": [
+    "eu_id",
+    "source_id",
+    "source_type",
+    "retrieved_at",
+    "snippet"
+  ],
+  "properties": {
+    "eu_id": {
+      "type": "string",
+      "pattern": "^EU-[0-9]{4}$",
+      "description": "고유 식별자. 형식: EU-NNNN"
+    },
+    "source_id": {
+      "type": "string",
+      "description": "출처 URL 또는 문서 식별자"
+    },
+    "source_type": {
+      "type": "string",
+      "enum": ["official", "public", "platform", "personal", "ai_generated"],
+      "description": "출처 유형. official=공식사이트/정부, public=위키/공공데이터, platform=리뷰사이트/블로그, personal=개인경험, ai_generated=AI생성"
+    },
+    "retrieved_at": {
+      "type": "string",
+      "format": "date",
+      "description": "수집 시점 (ISO 8601 date)"
+    },
+    "snippet": {
+      "type": "string",
+      "description": "원문 발췌 또는 핵심 인용"
+    },
+    "location": {
+      "type": "string",
+      "description": "(optional) 출처 내 위치 (페이지, 섹션 등)"
+    },
+    "credibility_prior": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "description": "(optional) 출처 유형 기반 사전 신뢰도. Policy에서 기본값 제공."
+    },
+    "language": {
+      "type": "string",
+      "description": "(optional) 원문 언어 (ISO 639-1)"
+    }
+  },
+  "additionalProperties": false
+}

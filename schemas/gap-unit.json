@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "gap-unit.json",
+  "title": "Gap Unit (GU)",
+  "description": "결손/불확실/충돌/노후화 슬롯. 확장 계획의 입력 단위.",
+  "type": "object",
+  "required": [
+    "gu_id",
+    "gap_type",
+    "target",
+    "expected_utility",
+    "status"
+  ],
+  "properties": {
+    "gu_id": {
+      "type": "string",
+      "pattern": "^GU-[0-9]{4}$",
+      "description": "고유 식별자. 형식: GU-NNNN"
+    },
+    "gap_type": {
+      "type": "string",
+      "enum": ["missing", "uncertain", "conflicting", "stale"],
+      "description": "결손 유형. missing=정보 없음, uncertain=신뢰도 낮음, conflicting=상충, stale=만료/노후"
+    },
+    "target": {
+      "type": "object",
+      "description": "Gap이 가리키는 대상",
+      "required": ["entity_key", "field"],
+      "properties": {
+        "entity_key": {
+          "type": "string",
+          "description": "대상 엔티티 키 (캐노니컬 키 또는 와일드카드 예: japan-travel:transport:*)"
+        },
+        "field": {
+          "type": "string",
+          "description": "대상 필드 (또는 '*' = 엔티티 전체)"
+        }
+      }
+    },
+    "expected_utility": {
+      "type": "string",
+      "enum": ["critical", "high", "medium", "low"],
+      "description": "채웠을 때 기대 가치"
+    },
+    "risk_level": {
+      "type": "string",
+      "enum": ["safety", "financial", "policy", "convenience", "informational"],
+      "description": "(optional) 관련 리스크 유형"
+    },
+    "resolution_criteria": {
+      "type": "string",
+      "description": "(optional) 해결로 인정되는 증거 기준"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["open", "in_progress", "resolved", "deferred"],
+      "description": "Gap 상태"
+    },
+    "resolved_by": {
+      "type": "string",
+      "description": "(optional) 해결한 KU ID"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date",
+      "description": "(optional) 생성 시점"
+    }
+  },
+  "additionalProperties": false
+}
