@@ -1,18 +1,18 @@
 # Phase 0B: Cycle 1 수동 검증 — Tasks
-> Last Updated: 2026-03-03 (GU Bootstrap 명세 반영)
-> Status: Planning
+> Last Updated: 2026-03-03
+> Status: ✅ Complete
 
 ## Summary
 
 | Total | S | M | L | XL | Done |
 |-------|---|---|---|----|----|
-| 5 | 1 | 2 | 2 | 0 | 0/5 |
+| 5 | 1 | 2 | 2 | 0 | 5/5 (100%) |
 
 ---
 
 ## Stage A: 준비
 
-- [ ] **0B.1** Cycle 1 디렉토리 준비 + State 스냅샷 `[S]`
+- [x] **0B.1** Cycle 1 디렉토리 준비 + State 스냅샷 `[S]` → `3a73af9`
   - `bench/japan-travel/cycle-1/` 디렉토리 생성
   - `bench/japan-travel/state-snapshots/cycle-0-snapshot/` 에 현재 State 5종 백업
   - `revised-plan-c1.md` 최종 리뷰 — 8개 Target Gap, Source Strategy, Acceptance Tests 확인
@@ -23,7 +23,7 @@
 
 ## Stage B: 수집 + 통합
 
-- [ ] **0B.2** Collect — 8개 Gap 수집, Evidence Claim Set 작성 `[L]`
+- [x] **0B.2** Collect — 8개 Gap 수집, Evidence Claim Set 작성 `[L]` → `4e26acf`
   - revised-plan-c1.md §6 기반 수집 실행
   - 8개 Target Gap에 대해 WebSearch/WebFetch로 정보 수집
   - 각 Claim에 EU 번들 첨부 (source_id, retrieved_at, snippet, source_type)
@@ -35,7 +35,7 @@
   - 산출물: `bench/japan-travel/cycle-1/evidence-claims-c1.md`
   - Commit: `[phase0b] Step 0B.2: Cycle 1 evidence collection`
 
-- [ ] **0B.3** Integrate — Claims → KB Patch 적용, State 업데이트 `[L]`
+- [x] **0B.3** Integrate — Claims → KB Patch 적용, State 업데이트 `[L]` → `1b7cd37`
   - Evidence Claim Set → KB Patch 변환
   - Entity Resolution: 캐노니컬 키 기반 매칭 (design-v2.md §6)
     - 기존 KU entity_key 완전 일치 → update
@@ -62,7 +62,7 @@
 
 ## Stage C: 비평 + 계획수정
 
-- [ ] **0B.4** Critique — Metrics delta, 5대 불변원칙 전체 검증 `[M]`
+- [x] **0B.4** Critique — Metrics delta, 5대 불변원칙 전체 검증 `[M]` → `b44ce73`
   - Metrics 계산 (design-v2.md §4 공식):
     - 근거율, 다중근거율, Gap 해소율, 충돌률, 평균 confidence, 신선도 리스크, 커버리지
   - Metrics Delta 분석: Cycle 0 종료 → Cycle 1 종료 비교
@@ -85,7 +85,7 @@
   - 산출물: `bench/japan-travel/cycle-1/critique-c1.md`
   - Commit: `[phase0b] Step 0B.4: Cycle 1 critique + invariant validation`
 
-- [ ] **0B.5** Plan Modify — Revised Plan C2 작성, design-v2 피드백 반영 `[M]`
+- [x] **0B.5** Plan Modify — Revised Plan C2 작성, design-v2 피드백 반영 `[M]` → `0452dcc`
   - Critique 처방 → Revised Plan 컴파일 (design-v2.md §5 규칙 적용)
   - 추적성 테이블 작성: 처방 ID → 반영 방법 → 반영 위치
   - Revised Collection Plan C2 작성:
@@ -102,10 +102,10 @@
 
 ## Completion Criteria
 
-- [ ] `bench/japan-travel/cycle-1/` 에 4개 Deliverable 존재
-- [ ] State 파일 5종 Cycle 1 반영 완료
-- [ ] 5대 불변원칙 전체 검증 PASS (특히 Conflict-preserving)
-- [ ] Metrics delta 문서화 (critique-c1.md §1)
-- [ ] revised-plan-c2.md 존재 → Phase 1 입력 준비 완료
-- [ ] RX-01, RX-03, RX-05, RX-06 처방 반영 확인
-- [ ] 동적 GU 발견 규칙 준수 (gu-bootstrap-spec §2/§6-B) — Phase 0B가 첫 실용성 검증
+- [x] `bench/japan-travel/cycle-1/` 에 4개 Deliverable 존재
+- [x] State 파일 5종 Cycle 1 반영 완료
+- [x] 5대 불변원칙 전체 검증 PASS (특히 Conflict-preserving)
+- [x] Metrics delta 문서화 (critique-c1.md §1)
+- [x] revised-plan-c2.md 존재 → Phase 1 입력 준비 완료
+- [x] RX-01, RX-03, RX-05, RX-06 처방 반영 확인
+- [x] 동적 GU 발견 규칙 준수 (gu-bootstrap-spec §2/§6-B) — Phase 0B가 첫 실용성 검증

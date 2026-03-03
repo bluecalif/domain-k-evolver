@@ -1,6 +1,6 @@
 # Phase 0B: Cycle 1 수동 검증 — Context
-> Last Updated: 2026-03-03 (GU Bootstrap 명세 반영)
-> Status: Planning
+> Last Updated: 2026-03-03
+> Status: ✅ Complete
 
 ## 1. 핵심 파일
 
@@ -30,9 +30,9 @@
 ### State 파일 (읽기 + 쓰기)
 | 파일 | 내용 | Cycle 0 종료 수치 |
 |------|------|-------------------|
-| `bench/japan-travel/state/knowledge-units.json` | KU 13개 (active) | Seed 7 + 신규 6 |
-| `bench/japan-travel/state/gap-map.json` | GU 28개 (21 open + 7 resolved) | 초기 25 - 해결 7 + 신규 3 |
-| `bench/japan-travel/state/metrics.json` | Metrics 스냅샷 | 근거율 1.0, 다중근거율 0.538 |
+| `bench/japan-travel/state/knowledge-units.json` | KU 21개 (active 19 + disputed 2) | Cycle 1 완료 |
+| `bench/japan-travel/state/gap-map.json` | GU 31개 (16 open + 15 resolved) | Cycle 1 완료 |
+| `bench/japan-travel/state/metrics.json` | Metrics 스냅샷 | 근거율 1.0, 다중근거율 0.714 |
 | `bench/japan-travel/state/domain-skeleton.json` | 카테고리/필드/관계/키규칙 | 7 카테고리, 4 관계 타입 |
 | `bench/japan-travel/state/policies.json` | 출처신뢰/TTL/교차검증/충돌해결 | financial min_sources: 2 |
 
@@ -130,6 +130,9 @@ bench/japan-travel/state-snapshots/
 | D-0B-05 | Financial KU min_eu ≥ 2 enforcement | 기존 min_eu 1 유지 | RX-01 처방 반영, Cycle 0 KU-0013 교차검증 미준수 | RX-01 |
 | D-0B-06 | 카테고리 분포 보정 적용 | 기존 utility/risk 기준만 | RX-03 처방 반영, 3개 카테고리 미수집 | RX-03 |
 | D-0B-07 | 동적 GU 발견 시 gu-bootstrap-spec §2 규칙 준수 | 자유 GU 생성 | 알고리즘 수준 규약 확립됨, Phase 0B가 첫 실용성 검증 | D-10 |
+| D-0B-08 | SIM 가격 충돌 → condition_split (물리SIM vs eSIM) | hold / coexist | eSIM이 주류 전환 중, 조건 분리가 가장 정확 | RX-05 |
+| D-0B-09 | 면세 최소금액 충돌 → hold (pending) | 즉시 해결 | 복수 출처 "5,000엔 유지" 일관이나 신제도 시행 전 확정 불가 | RX-06 |
+| D-0B-10 | GU-0004 entity_key 불일치(metro-pass vs subway-ticket) → 동일 상품으로 resolved | 별도 GU 유지 | 실질적으로 동일 상품, alias 매핑 규칙 도입 검토 (RX-10) | - |
 
 ---
 
@@ -159,22 +162,22 @@ bench/japan-travel/state-snapshots/
 
 | 처방 ID | 내용 | 반영 위치 | 확인 |
 |---------|------|-----------|------|
-| RX-01 | KU-0013 신칸센 가격 교차확인 (min_eu ≥ 2) | Collect: Source Strategy | [ ] |
-| RX-02 | airport-transfer 엔티티 분리 → deferred (Cycle 3+) | N/A (보류) | [ ] |
-| RX-03 | accommodation/dining/attraction 각 1+ Gap 선정 | Collect: Target Gaps | [ ] |
-| RX-04 | is_a 관계 추가 → deferred (Outer Loop) | N/A (보류) | [ ] |
-| RX-05 | GU-0019 SIM 가격 다중출처 | Collect: Target Gaps + Strategy | [ ] |
-| RX-06 | GU-0026 면세 신제도 우선순위 상향 | Collect: Target Gaps | [ ] |
+| RX-01 | KU-0013 신칸센 가격 교차확인 (min_eu ≥ 2) | Collect: Source Strategy | [x] financial 3개 Gap 모두 독립 2출처 확보 |
+| RX-02 | airport-transfer 엔티티 분리 → deferred (Cycle 3+) | N/A (보류) | [x] 계획대로 보류 |
+| RX-03 | accommodation/dining/attraction 각 1+ Gap 선정 | Collect: Target Gaps | [x] 3개 카테고리 각 1 Gap 해결 |
+| RX-04 | is_a 관계 추가 → deferred (Outer Loop) | N/A (보류) | [x] 계획대로 보류 |
+| RX-05 | GU-0019 SIM 가격 다중출처 | Collect: Target Gaps + Strategy | [x] EU 3개 확보. disputed 발생 |
+| RX-06 | GU-0026 면세 신제도 우선순위 상향 | Collect: Target Gaps | [x] GU-0026 해결. KU-0020 작성 |
 
 ### 동적 GU 발견 규칙 (gu-bootstrap-spec §2 — Phase 0B 적용)
 
 | 체크 | 기준 | 참조 |
 |------|------|------|
-| [ ] 신규 GU 수 ≤ 기존 open GU의 20% | 현재 open 21개 → 상한 4개 (safety 예외) | §2 상한 |
-| [ ] 신규 GU에 resolution_criteria 명시 | 필수 | §6-B |
-| [ ] 각 신규 GU의 트리거 분류 (A/B/C) | 명확히 기록 | §2 트리거 |
-| [ ] 신규 GU의 expected_utility + risk_level 규칙 준수 | §3 매핑 테이블 적용 | §3 |
-| [ ] created_at = Cycle 1 날짜 | 타임스탬프 정확성 | §6-B |
+| [x] 신규 GU 수 ≤ 기존 open GU의 20% | 3개 ≤ 4.2 (21 × 0.2) ✅ | §2 상한 |
+| [x] 신규 GU에 resolution_criteria 명시 | 3개 모두 기재 ✅ | §6-B |
+| [x] 각 신규 GU의 트리거 분류 (A/B/C) | A:2건, B:1건 ✅ | §2 트리거 |
+| [x] 신규 GU의 expected_utility + risk_level 규칙 준수 | 적용 ✅ | §3 |
+| [x] created_at = Cycle 1 날짜 | 2026-03-03 ✅ | §6-B |
 
 ### 인코딩
 - JSON read/write: `encoding='utf-8'`

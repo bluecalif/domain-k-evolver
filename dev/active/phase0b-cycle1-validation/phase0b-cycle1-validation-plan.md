@@ -1,6 +1,6 @@
 # Phase 0B: Cycle 1 수동 검증
-> Last Updated: 2026-03-03 (GU Bootstrap 명세 반영)
-> Status: Planning
+> Last Updated: 2026-03-03
+> Status: ✅ Complete
 
 ## 1. Summary (개요)
 
@@ -37,10 +37,23 @@
 | 평균 confidence | 0.888 | 건강 |
 | 신선도 리스크 | 0 | 건강 |
 
-### 미검증 항목
-- **Conflict-preserving**: Cycle 0에서 충돌 0건 → 원칙 작동 미확인
-- **Financial 교차검증 enforcement**: 정책 존재하지만 KU-0013에서 미준수
-- **카테고리 커버리지**: accommodation, dining, attraction 미수집
+### Cycle 1 완료 상태
+| 항목 | 값 | 비고 |
+|------|-----|------|
+| KU (total) | 21 | active 19 + disputed 2 |
+| EU (total) | 33 | +15 from Cycle 1 |
+| GU (open) | 16 | 8 resolved + 3 new in Cycle 1 |
+| GU (resolved) | 15 | 누적 |
+| 근거율 | 1.0 | 건강 ✅ |
+| 다중근거율 | 0.714 | 건강 ✅ |
+| 충돌률 | 0.095 | 주의 ⚠️ (의도적) |
+| 평균 confidence | 0.876 | 건강 ✅ |
+| 신선도 리스크 | 0 | 건강 ✅ |
+
+### 검증 완료 항목
+- ✅ **Conflict-preserving**: KU-0007(condition_split), KU-0011(hold) — 첫 실전 검증 성공
+- ✅ **Financial 교차검증 enforcement**: financial Gap 3개 모두 독립 2출처 확보
+- ✅ **카테고리 커버리지**: 7개 카테고리 커버 (accommodation, dining, attraction 포함)
 
 ### 입력 자산
 - `bench/japan-travel/cycle-0/revised-plan-c1.md` — 8개 Target Gap, 강화된 Source Strategy
@@ -166,7 +179,7 @@ Phase 0B 완료 시:
 5. Plan Modify에서 추적 가능하게 반영
 
 ### 검증 기준
-- [ ] 최소 1건 disputed KU 존재
-- [ ] disputed KU에 대해 hold/condition_split/coexist 중 하나 적용
-- [ ] Critique에서 Consistency 실패모드 탐지
-- [ ] Plan Modify에서 해당 처방의 추적성 확인
+- [x] 최소 1건 disputed KU 존재 → 2건 (KU-0007, KU-0011)
+- [x] disputed KU에 대해 hold/condition_split/coexist 중 하나 적용 → condition_split + hold
+- [x] Critique에서 Consistency 실패모드 탐지 → critique-c1.md §2
+- [x] Plan Modify에서 해당 처방의 추적성 확인 → revised-plan-c2.md §1 (RX-08, RX-09)
