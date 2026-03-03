@@ -78,15 +78,31 @@
     "entity_key": "japan-travel:connectivity:sim-card",
     "field": "price",
     "value": {
-      "7일_3GB": "약 1500-3000 JPY",
-      "15일_무제한_저속": "약 3000-5000 JPY",
-      "구매처": "공항 자판기, 편의점, 온라인 사전주문"
+      "eSIM_2026": {
+        "저용량_3GB_30일": "$3.50~$9 USD (약 525~1,350 JPY)",
+        "중용량_10-20GB_30일": "$17~$26 USD (약 2,550~3,900 JPY)",
+        "무제한_7일": "$19~$25 USD (약 2,850~3,750 JPY)",
+        "무제한_30일": "$55~$66 USD (약 8,250~9,900 JPY)",
+        "주요_제공사": "Ubigi, Airalo, Saily, Mobal, Sakura Mobile, Holafly"
+      },
+      "물리SIM_기존": {
+        "7일_3GB": "약 1500-3000 JPY",
+        "15일_무제한_저속": "약 3000-5000 JPY",
+        "구매처": "공항 자판기, 편의점, 온라인 사전주문"
+      }
     },
-    "observed_at": "2026-03-02",
+    "observed_at": "2026-03-03",
     "validity": { "ttl_days": 180 },
-    "evidence_links": ["EU-0006"],
-    "confidence": 0.70,
-    "status": "active"
+    "evidence_links": ["EU-0006", "EU-0030", "EU-0031"],
+    "confidence": 0.80,
+    "status": "disputed",
+    "disputes": [
+      {
+        "conflicting_ku_id": "KU-0007_v0",
+        "nature": "eSIM 보급으로 가격 구조 변화. 기존 물리SIM 가격 범위와 eSIM 가격 불일치",
+        "resolution": "condition_split"
+      }
+    ]
   },
   {
     "ku_id": "KU-0008",
@@ -153,15 +169,24 @@
       },
       "신제도_2026_11월": {
         "방식": "환급형 (구매 시 세금 포함 → 출국 시 환급)",
-        "최소금액_제한": "철폐",
-        "봉인포장": "폐지"
+        "최소금액_제한": "5000 JPY (세전) 유지",
+        "봉인포장": "폐지",
+        "소모품_비소모품_구분": "폐지",
+        "구매_상한_50만엔": "폐지 (100만엔 초과 시 상세 등록)"
       }
     },
-    "observed_at": "2026-03-02",
+    "observed_at": "2026-03-03",
     "validity": { "ttl_days": 90, "expires_at": "2026-11-01" },
-    "evidence_links": ["EU-0014", "EU-0015"],
-    "confidence": 0.90,
-    "status": "active"
+    "evidence_links": ["EU-0014", "EU-0015", "EU-0032", "EU-0033"],
+    "confidence": 0.85,
+    "status": "disputed",
+    "disputes": [
+      {
+        "conflicting_ku_id": "KU-0020",
+        "nature": "신제도 최소금액 — 기존 '철폐' 기재 vs 복수 출처(JNTO+japantravel) '5,000엔 유지' 확인",
+        "resolution": "pending"
+      }
+    ]
   },
   {
     "ku_id": "KU-0012",
@@ -200,6 +225,149 @@
     "observed_at": "2026-03-02",
     "validity": { "ttl_days": 180 },
     "evidence_links": ["EU-0018"],
+    "confidence": 0.85,
+    "status": "active"
+  },
+  {
+    "ku_id": "KU-0014",
+    "entity_key": "japan-travel:pass-ticket:jr-pass",
+    "field": "nozomi-alternative",
+    "value": {
+      "도쿄-신오사카": {
+        "Nozomi": {"소요": "2시간 21분", "JR_Pass": false},
+        "Hikari": {"소요": "약 3시간", "JR_Pass": true},
+        "Kodama": {"소요": "약 4시간", "JR_Pass": true}
+      },
+      "도쿄-교토": {
+        "Hikari": {"소요": "약 2시간 40분", "JR_Pass": true}
+      },
+      "Hikari_운행": "약 30분 간격, 06:00~21:30",
+      "요약": "JR Pass 이용 시 Hikari가 최적. Nozomi 대비 약 30-40분 추가 소요."
+    },
+    "observed_at": "2026-03-03",
+    "validity": { "ttl_days": 365 },
+    "evidence_links": ["EU-0019", "EU-0020"],
+    "confidence": 0.85,
+    "status": "active"
+  },
+  {
+    "ku_id": "KU-0015",
+    "entity_key": "japan-travel:transport:tokyo-metro",
+    "field": "how_to_use",
+    "value": "도쿄 메트로 9개 노선 + 토에이 지하철 4개 노선 = 13개 지하철 노선. IC카드(Suica/PASMO) 사용 가능. 관광객용 Tokyo Subway Ticket으로 무제한 이용 가능. 자동 운임 계산. Welcome Suica/PASMO 이용 시 지하철+버스+편의점 결제 가능.",
+    "observed_at": "2026-03-03",
+    "validity": { "ttl_days": 365 },
+    "evidence_links": ["EU-0021", "EU-0023"],
+    "confidence": 0.90,
+    "status": "active"
+  },
+  {
+    "ku_id": "KU-0016",
+    "entity_key": "japan-travel:pass-ticket:tokyo-subway-ticket",
+    "field": "price",
+    "value": {
+      "24시간": 1000,
+      "48시간": 1500,
+      "72시간": 2000,
+      "currency": "JPY",
+      "적용일": "2026-03-14~",
+      "이전_가격": {"24시간": 600, "48시간": 1200, "72시간": 1500},
+      "대상_노선": "도쿄 메트로 전 노선 + 토에이 지하철 전 노선"
+    },
+    "observed_at": "2026-03-03",
+    "validity": { "ttl_days": 180 },
+    "evidence_links": ["EU-0022"],
+    "confidence": 0.80,
+    "status": "active"
+  },
+  {
+    "ku_id": "KU-0017",
+    "entity_key": "japan-travel:accommodation:ryokan",
+    "field": "etiquette",
+    "value": {
+      "입실": "현관에서 신발 벗기. 석식 제공 시 18:00까지 도착 권장.",
+      "유카타": "실내 착용. 왼쪽이 위 (오른쪽 위는 고인용).",
+      "온천": "완전 탈의 필수, 입수 전 세신, 머리카락 물 접촉 금지, 수건 욕조 반입 불가. 남녀 분리 (교대 운영 가능).",
+      "매너": "22시 이후 소음 자제 (종이벽). 팁 불필요, 전달 시 봉투 사용."
+    },
+    "observed_at": "2026-03-03",
+    "validity": { "ttl_days": 730 },
+    "evidence_links": ["EU-0024", "EU-0025"],
+    "confidence": 0.85,
+    "status": "active"
+  },
+  {
+    "ku_id": "KU-0018",
+    "entity_key": "japan-travel:dining:izakaya",
+    "field": "etiquette",
+    "value": {
+      "오토시": "착석 시 자동 제공되는 작은 안주. 테이블 차지 겸용 300~700엔. 거절 불가.",
+      "주문법": "먼저 음료 주문 (맥주 관습). 메뉴 가리키기 OK. 터치패널 영어 전환 가능.",
+      "결제": "출구 레지에서 계산. 팁 불필요."
+    },
+    "observed_at": "2026-03-03",
+    "validity": { "ttl_days": 730 },
+    "evidence_links": ["EU-0026", "EU-0027"],
+    "confidence": 0.85,
+    "status": "active"
+  },
+  {
+    "ku_id": "KU-0019",
+    "entity_key": "japan-travel:attraction:fushimi-inari",
+    "field": "hours",
+    "value": {
+      "경내": "24시간 연중무휴, 입장료 없음",
+      "상점": "09:00~17:00",
+      "추천_시간": "이른 아침(일출) 또는 18시 이후 (혼잡 회피). 야간 등롱 조명."
+    },
+    "observed_at": "2026-03-03",
+    "validity": { "ttl_days": 365 },
+    "evidence_links": ["EU-0028", "EU-0029"],
+    "confidence": 0.95,
+    "status": "active"
+  },
+  {
+    "ku_id": "KU-0020",
+    "entity_key": "japan-travel:regulation:tax-free",
+    "field": "procedure_2026_nov",
+    "value": {
+      "방식": "환급형 — 구매 시 세금 포함 결제 → 출국 시 공항 세관에서 환급",
+      "절차": [
+        "1. 구매 시 여권 제시 (필수)",
+        "2. 매장이 구매기록을 면세판매관리시스템에 등록",
+        "3. 세금 포함 가격으로 결제",
+        "4. 출국 시 공항 세관에서 여권+영수증+물품 확인",
+        "5. 세관 확인 후 환급 승인"
+      ],
+      "변경점": {
+        "소모품_비소모품_구분": "폐지",
+        "봉인포장": "폐지",
+        "구매_상한_50만엔": "폐지 (100만엔 초과 시 상세 등록)",
+        "최소금액": "5,000엔 (세전) 유지"
+      },
+      "환급_방법": "소매점별 상이 — 신용카드 1~2주, 은행이체 2~4주",
+      "유효기간": "구매 후 90일 이내 출국"
+    },
+    "observed_at": "2026-03-03",
+    "validity": { "ttl_days": 90, "expires_at": "2026-11-01" },
+    "evidence_links": ["EU-0032", "EU-0033"],
+    "confidence": 0.90,
+    "status": "active"
+  },
+  {
+    "ku_id": "KU-0021",
+    "entity_key": "japan-travel:payment:credit-card",
+    "field": "acceptance",
+    "value": {
+      "통용_브랜드": "Visa, Mastercard (최광범위), AMEX, JCB, Diners Club, Discover",
+      "사용_가능": "주요 호텔, 백화점, 대형 쇼핑몰, 체인 레스토랑, 편의점, 관광지",
+      "현금_필요": "소규모 음식점 (라멘집, 가족경영), 노점/축제, 신사/사찰, 소도시 택시, 소규모 의원, 코인세탁소, 가챠폰",
+      "교통": "단거리 전철/지하철 요금은 카드 불가 → IC카드(Suica/PASMO) 권장",
+      "추세": "대도시 캐시리스 결제 급속 확대 중이나, 현금 항시 소지 권장"
+    },
+    "observed_at": "2026-03-03",
+    "validity": { "ttl_days": 180 },
+    "evidence_links": ["EU-0034", "EU-0035"],
     "confidence": 0.85,
     "status": "active"
   }

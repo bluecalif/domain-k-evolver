@@ -4,94 +4,90 @@
 > Source: Conversation compaction via /compact-and-go
 
 ## Goal
-GU Bootstrap 명세 공식화 — `docs/gu-from-scratch.md`의 인사이트를 알고리즘 수준 규약으로 구체화하고, 관련 설계 문서/템플릿/dev-docs를 동기화.
+Phase 0B 실행 — Cycle 1 수동 검증. Task 0B.1~0B.5 순차 진행.
 
 ## Completed
-- [x] **gu-bootstrap-spec.md 신규 작성** (`docs/gu-bootstrap-spec.md`)
-  - §0 핵심 명제 (GU = 현재 목적 대비 불충분성)
-  - §1 Bootstrap GU 생성 5단계 알고리즘 (Category×Field 매트릭스 기반)
-  - §2 동적 GU 발견 3가지 트리거 (A: 인접Gap, B: Epistemic, C: 새 엔티티) + 상한(open의 20%)
-  - §3 우선순위 산정 규칙 (risk_level → expected_utility 매핑 테이블)
-  - §4 Scope 제어 규칙 (카테고리당 상한, 총 20~40개, 와일드카드 기준)
-  - §5 수렴 조건 C1~C5 + 판정 로직
-  - §6 검증 체크리스트 (Bootstrap/동적/수렴 3단계)
-  - 부록: Cycle 0 역검증 (25개 실제 GU와 알고리즘 정합성 확인)
-- [x] **design-v2.md 업데이트** (2곳)
-  - §7 Seed 검증기준: "모든 카테고리 GU 존재?" + gu-bootstrap-spec §6-A 참조 링크
-  - §10 seed_node: Bootstrap 알고리즘 §1 참조 + 입출력 명세 보강
-- [x] **seed-pack.md 업데이트** (`templates/seed-pack.md` §5)
-  - Gap Map v0에 생성 방법 참조 링크 + 5항목 빠른 체크리스트 추가
-- [x] **project-overall dev-docs 동기화**
-  - plan: Current State에 gu-bootstrap-spec 추가, 자산 목록 갱신, Phase 0B에 GU 규약 참조
-  - context: 핵심 파일 2건 추가 (gu-bootstrap-spec, gu-from-scratch), D-10 결정사항 추가
-  - tasks: 0B.3/0B.4 설명 보강 + 핵심 검증 포인트에 동적 GU 추가
-- [x] **Phase 0B dev-docs 리모델**
-  - plan: 범위/Stage B/C에 동적 GU 규칙, 규약 문서 의존성 테이블 추가
-  - context: 핵심 파일 3건 추가, D-0B-07 결정, 동적 GU 발견 체크 섹션 신설
-  - tasks: 0B.3에 트리거/상한 상세, 0B.4에 §6-B 체크, Completion Criteria 보강
+- [x] **git init + remote 설정** — `origin` → `https://github.com/bluecalif/domain-k-evolver.git`, `.gitignore` 생성, Initial commit + push to `main`
+- [x] **0B.1: Cycle 1 디렉토리 준비 + State 스냅샷**
+  - `bench/japan-travel/cycle-1/` 생성
+  - `bench/japan-travel/state-snapshots/cycle-0-snapshot/` State 5종 백업
+  - `cycle-1-prep.md`: revised-plan-c1 리뷰, 충돌 시나리오 3건, 동적 GU 대비
+  - Commit: `[phase0b] Step 0B.1`
+- [x] **0B.2: Collect — 8개 Gap 수집**
+  - 14/15 검색 사용 (WebSearch 8 + WebFetch 6)
+  - 24개 Claim, 15개 EU (EU-0019~EU-0035) 수집
+  - financial Gap 모두 독립 2출처 확보
+  - 충돌 2건 감지: SIM 가격(eSIM 가격 하락), 면세 최소금액(철폐 vs 유지)
+  - 산출물: `evidence-claims-c1.md`
+  - Commit: `[phase0b] Step 0B.2`
+- [x] **0B.3: Integrate — 대부분 완료, 커밋 미완**
+  - `kb-patch-c1.md` 작성 완료 (7 add, 2 update, 2 disputed, 3 동적 GU)
+  - `knowledge-units.json` 업데이트 완료: KU-0007(disputed, condition_split), KU-0011(disputed, pending), KU-0014~KU-0021 신규 8개 추가
+  - `gap-map.json` 부분 업데이트: GU-0001,0003,0007,0008,0010,0013,0026 → resolved (7개 완료)
+  - **미완료**: gap-map.json에 신규 GU 3개(GU-0029,0030,0031) 추가 안 됨, GU-0004 → resolved 처리 필요 (KU-0016이 tokyo-subway-ticket:price 해결), metrics.json 갱신 안 됨, 0B.3 커밋 안 됨
 
 ## Current State
 
-GU Bootstrap 명세 공식화 완료. 모든 설계/dev-docs 동기화 완료. Phase 0B 실행 대기.
+Cycle 1 Integrate 작업 중단됨. KB Patch 문서는 완성, State 파일 업데이트 일부 미완.
 
-### Changed Files (이번 세션)
-- `docs/gu-bootstrap-spec.md` — 신규 생성 (핵심 산출물, Bootstrap 알고리즘 + 동적 발견 + 수렴 조건)
-- `docs/design-v2.md` — §7 Seed 검증기준 보강, §10 seed_node 입출력 명세 보강
-- `templates/seed-pack.md` — §5 Gap Map v0 안내 보강 (참조 링크 + 빠른 체크)
-- `dev/active/project-overall/project-overall-plan.md` — Current State + 자산 + Phase 0B GU 규약
-- `dev/active/project-overall/project-overall-context.md` — 핵심 파일 + D-10 결정
-- `dev/active/project-overall/project-overall-tasks.md` — 0B.3/0B.4 설명 + 검증 포인트
-- `dev/active/phase0b-cycle1-validation/phase0b-cycle1-validation-plan.md` — 범위/Stage/의존성
-- `dev/active/phase0b-cycle1-validation/phase0b-cycle1-validation-context.md` — 핵심 파일/결정/체크
-- `dev/active/phase0b-cycle1-validation/phase0b-cycle1-validation-tasks.md` — 0B.3/0B.4 상세 보강
+### Changed Files (이번 세션, 커밋된 것)
+- `.gitignore` — 신규 생성
+- `bench/japan-travel/cycle-1/cycle-1-prep.md` — 0B.1 산출물
+- `bench/japan-travel/state-snapshots/cycle-0-snapshot/*` — State 5종 백업
+- `bench/japan-travel/cycle-1/evidence-claims-c1.md` — 0B.2 산출물
+- `bench/japan-travel/cycle-1/kb-patch-c1.md` — 0B.3 산출물 (커밋 안 됨)
+
+### Changed Files (uncommitted)
+- `bench/japan-travel/cycle-1/kb-patch-c1.md` — 신규, 미커밋
+- `bench/japan-travel/state/knowledge-units.json` — KU-0007/0011 updated + KU-0014~0021 추가
+- `bench/japan-travel/state/gap-map.json` — 7개 GU resolved 처리 (신규 GU 미추가)
 
 ### 프로젝트 구조 (현재)
 ```
 domain-k-evolver/
-├── .claude/
-│   ├── commands/        ← 3개 (compact-and-go, dev-docs, step-update)
-│   ├── hooks/           ← 1개 (post-tool-use-tracker.ps1)
-│   ├── skills/          ← 2개 (evolver-framework, langgraph-dev) + skill-rules.json
-│   └── settings.local.json
-├── bench/japan-travel/  ← Cycle 0 결과물 (state/, cycle-0/)
-├── dev/active/
-│   ├── project-overall/ ← 4개 파일 (plan, context, tasks, debug-history)
-│   └── phase0b-cycle1-validation/ ← 4개 파일 (plan, context, tasks, debug-history)
-├── docs/                ← draft.md, design-v2.md, gu-bootstrap-spec.md, gu-from-scratch.md, cc-onboard.md, session-compact.md
-├── schemas/             ← 4개 JSON Schema (KU, EU, GU, PU)
-├── src/                 ← __init__.py (빈 파일)
-├── templates/           ← 6대 Deliverable MD 템플릿
-└── CLAUDE.md
+├── .claude/          ← commands 3, skills 2, hooks 1
+├── .git/             ← 초기화 완료, remote: origin (github)
+├── bench/japan-travel/
+│   ├── cycle-0/      ← 6개 deliverable
+│   ├── cycle-1/      ← cycle-1-prep.md, evidence-claims-c1.md, kb-patch-c1.md
+│   ├── state/        ← 5종 (KU/GU 일부 업데이트됨)
+│   └── state-snapshots/cycle-0-snapshot/  ← 5종 백업
+├── dev/active/       ← project-overall + phase0b dev-docs
+├── docs/             ← draft, design-v2, gu-bootstrap-spec, gu-from-scratch, cc-onboard, session-compact
+├── schemas/          ← 4종 JSON Schema
+├── src/              ← __init__.py
+└── templates/        ← 6개 MD 템플릿
 ```
 
 ## Remaining / TODO
-- [ ] Step 8b: `/dev-docs Phase 1` 생성 — Phase 1 전용 dev-docs
-- [ ] Step 9: Phase 0B 실행 (Cycle 1 수동 검증) — Task 0B.1~0B.5
-- [ ] Step 10: Phase 1 구현 시작
-- [ ] git init — Phase 0B 시작 전 필요
+- [ ] **0B.3 마무리**: gap-map.json에 GU-0029,0030,0031 추가 + GU-0004→resolved(KU-0016) + GU-0019 상태 메모 + metrics.json 갱신 + 커밋
+- [ ] **0B.4**: Critique — Metrics delta, 5대 불변원칙 검증, 동적 GU 체크, 처방 생성
+- [ ] **0B.5**: Plan Modify — Revised Plan C2 작성, design-v2 피드백
+- [ ] Phase 0B dev-docs 업데이트 (tasks 진행상황 반영)
+- [ ] git push (적절한 시점)
 
 ## Key Decisions
-- D-10: GU Bootstrap 알고리즘 공식화 — Category×Field 매트릭스 기반 결정론적 생성, Cycle 0 역검증으로 정합성 확인
-- D-0B-07: 동적 GU 발견 시 gu-bootstrap-spec §2 규칙 준수 — Phase 0B가 첫 실용성 검증
-- GU Bootstrap 명세는 스키마 변경 없이 기존 gap-unit.json 필드로 충분 (expected_utility, risk_level, created_at)
-- 동적 GU 상한: Cycle당 open GU의 20% (현재 open 21개 → 상한 4개, safety 예외)
-- 수렴 조건: C1~C5 모두 충족 + 최소 5 Cycle 후 판정
+- D-11: SIM 가격 충돌 → `condition_split` (물리SIM vs eSIM). eSIM이 주류로 전환 중이므로 eSIM primary.
+- D-12: 면세 최소금액 충돌 → KU-0011 `disputed` + `hold`. 복수 출처(JNTO, japantravel)가 "5,000엔 유지" 일관 보고. KU-0020에 정확 정보 기록.
+- D-13: 동적 GU 3개 발견 (GU-0029,0030,0031) — 상한 4개 이내. 트리거 A(인접Gap) 2건, B(Epistemic) 1건.
+- D-14: GU-0004(tokyo-metro-pass:price) — KU-0016(tokyo-subway-ticket:price)이 사실상 해결. entity_key 약간 불일치(metro-pass vs subway-ticket)이나 동일 상품.
+- Tokyo Subway Ticket 가격 2026.3.14부터 인상 (600/1200/1500 → 1000/1500/2000 JPY).
 
 ## Context
 다음 세션에서는 답변에 한국어를 사용하세요.
 - 프로젝트 루트: `C:\Users\User\Learning\KBs-2026\domain-k-evolver`
-- git repo 미초기화 상태 — Phase 0B 시작 전에 `git init` 필요
-- Cycle 0 완료 상태: KU 13, EU 18, Gap 21 open / 7 resolved (총 28 GU)
-- revised-plan-c1.md: 8개 Target Gap, 강화된 Source Strategy
-- gu-bootstrap-spec.md: Phase 0B에서 §2 동적 발견 규칙 첫 적용 예정
-- design-v2.md §7/§10 보강됨 (Seed 검증기준 + seed_node 명세)
-- Phase 0B dev-docs에 동적 GU 체크 섹션 추가됨 (context.md 동적 GU 발견 규칙 체크 테이블)
-- 전체 태스크: 34개 (S:6, M:12, L:13, XL:7)
+- git repo 초기화 완료 — `main` 브랜치, remote `origin` 설정됨
+- Cycle 0: KU 13, EU 18, GU 21 open / 7 resolved
+- Cycle 1 통합 후 (예상): KU 21 (active 19 + disputed 2), EU 33, GU open 17 → 14 (7 resolved + 3 new), resolved 14
+- 충돌 KU 2건: KU-0007(SIM condition_split), KU-0011(면세 pending)
+- `kb-patch-c1.md` §4에 동적 GU 3개 상세 기록됨
+- Phase 0B tasks 상세: `dev/active/phase0b-cycle1-validation/phase0b-cycle1-validation-tasks.md`
+- gu-bootstrap-spec §2 동적 발견 규칙 적용 중 (첫 실용성 검증)
 
 ## Next Action
-Step 9: Phase 0B 실행 시작 (Cycle 1 수동 검증)
-- Task 0B.1부터 순차 진행
-- `bench/japan-travel/cycle-1/` 디렉토리 생성 + State 스냅샷
-- 이후 0B.2(Collect) → 0B.3(Integrate) → 0B.4(Critique) → 0B.5(Plan Modify)
-- GU 생성/확장 시 `docs/gu-bootstrap-spec.md` §2 동적 발견 규칙 적용
-- Phase 0B 상세: `dev/active/phase0b-cycle1-validation/phase0b-cycle1-validation-tasks.md` 참조
+0B.3 마무리:
+1. `gap-map.json`에 신규 GU 3개(GU-0029,0030,0031) 추가
+2. GU-0004 → resolved (resolved_by: KU-0016) 처리
+3. `metrics.json` Cycle 1 수치로 갱신
+4. 커밋: `[phase0b] Step 0B.3: Cycle 1 integration + state update`
+5. 이후 0B.4 (Critique) 진행
