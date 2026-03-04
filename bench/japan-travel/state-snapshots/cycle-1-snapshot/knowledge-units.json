@@ -177,17 +177,14 @@
     },
     "observed_at": "2026-03-03",
     "validity": { "ttl_days": 90, "expires_at": "2026-11-01" },
-    "evidence_links": ["EU-0014", "EU-0015", "EU-0032", "EU-0033", "EU-0053", "EU-0054", "EU-0055"],
-    "confidence": 0.90,
-    "status": "active",
+    "evidence_links": ["EU-0014", "EU-0015", "EU-0032", "EU-0033"],
+    "confidence": 0.85,
+    "status": "disputed",
     "disputes": [
       {
         "conflicting_ku_id": "KU-0020",
         "nature": "신제도 최소금액 — 기존 '철폐' 기재 vs 복수 출처(JNTO+japantravel) '5,000엔 유지' 확인",
-        "resolution": "resolved_as_maintain",
-        "resolved_at": "2026-03-04",
-        "resolved_evidence": ["EU-0053", "EU-0054", "EU-0055"],
-        "conclusion": "5,000엔(세전) 최소금액 유지 확인. 4개 독립 출처 일치. 기존 '철폐' 기재는 초기 보도 오류."
+        "resolution": "pending"
       }
     ]
   },
@@ -279,8 +276,8 @@
     },
     "observed_at": "2026-03-03",
     "validity": { "ttl_days": 180 },
-    "evidence_links": ["EU-0022", "EU-0047"],
-    "confidence": 0.90,
+    "evidence_links": ["EU-0022"],
+    "confidence": 0.80,
     "status": "active"
   },
   {
@@ -371,135 +368,6 @@
     "observed_at": "2026-03-03",
     "validity": { "ttl_days": 180 },
     "evidence_links": ["EU-0034", "EU-0035"],
-    "confidence": 0.85,
-    "status": "active"
-  },
-  {
-    "ku_id": "KU-0022",
-    "entity_key": "japan-travel:transport:osaka-metro",
-    "field": "how_to_use",
-    "value": {
-      "노선": "9개 노선, 130개+ 역",
-      "결제": "IC카드(ICOCA/Suica/PASMO) 사용 가능",
-      "1일권_Enjoy_Eco_Card": {"평일": 800, "주말공휴일": 600, "currency": "JPY"},
-      "운행시간": "약 05:30~00:15",
-      "배차간격": {"평일": "2~5분", "주말": "4~8분"},
-      "관광지할인": "Enjoy Eco Card 제시 시 약 30개 관광지 할인"
-    },
-    "observed_at": "2026-03-04",
-    "validity": { "ttl_days": 365 },
-    "evidence_links": ["EU-0036", "EU-0037"],
-    "confidence": 0.85,
-    "status": "active"
-  },
-  {
-    "ku_id": "KU-0023",
-    "entity_key": "japan-travel:attraction:kinkaku-ji",
-    "field": "price",
-    "value": {
-      "입장료": {"성인": 500, "초중학생": 300, "currency": "JPY"},
-      "운영시간": "09:00~17:00 (최종 입장 16:30)",
-      "휴무": "연중무휴",
-      "비고": "입장권이 부적(お札) 형태 — 기념품 겸용"
-    },
-    "observed_at": "2026-03-04",
-    "validity": { "ttl_days": 365 },
-    "evidence_links": ["EU-0038", "EU-0039"],
-    "confidence": 0.85,
-    "status": "active"
-  },
-  {
-    "ku_id": "KU-0024",
-    "entity_key": "japan-travel:transport:rural-bus",
-    "field": "how_to_use",
-    "value": {
-      "탑승방식": "후방 승차 → 전방 하차 (정리권 방식)",
-      "IC카드": "대부분 지역 사용 가능. 일부 지방 예외 있음.",
-      "IC_락_주의": "하차역이 IC 미지원 시 카드 잠금. 주요 역에서 리셋 필요.",
-      "배차간격": "1~2시간 단위 가능. 사전 시간표 확인 필수.",
-      "산간지역": "버스가 유일한 대중교통인 경우 다수",
-      "팁": "현금 소액(동전) 준비 권장. IC 미지원 지역 대비."
-    },
-    "observed_at": "2026-03-04",
-    "validity": { "ttl_days": 365 },
-    "evidence_links": ["EU-0040", "EU-0041", "EU-0042"],
-    "confidence": 0.80,
-    "status": "active"
-  },
-  {
-    "ku_id": "KU-0025",
-    "entity_key": "japan-travel:accommodation:minshuku",
-    "field": "price",
-    "value": {
-      "식사포함": {"범위": "5000~14000 JPY/인/박", "내용": "석식+조식 (가정식)"},
-      "숙박만": {"범위": "3000~5000 JPY/인/박"},
-      "특징": "다다미 방 + 이불, 공용 욕실, 가정 운영",
-      "체험": "농업 체험, 향토 요리 학습 등 가능",
-      "currency": "JPY"
-    },
-    "observed_at": "2026-03-04",
-    "validity": { "ttl_days": 365 },
-    "evidence_links": ["EU-0043", "EU-0044"],
-    "confidence": 0.85,
-    "status": "active"
-  },
-  {
-    "ku_id": "KU-0026",
-    "entity_key": "japan-travel:pass-ticket:icoca",
-    "field": "where_to_buy",
-    "value": {
-      "가격": {"총액": 2000, "보증금": 500, "이용가능": 1500, "currency": "JPY"},
-      "구매처": ["JR West 역 자판기", "간사이 국제공항 (KIX)", "한큐/한신/게이한/난카이/긴테쓰 역", "오사카/교토/고베 지하철역"],
-      "결제": "현금만 가능 (자판기, 신용카드 불가)",
-      "관광객용": "Kansai One Pass — 관광지 할인 특전 포함",
-      "환불": "보증금 ¥500 환불 가능 (수수료 ¥220 공제)"
-    },
-    "observed_at": "2026-03-04",
-    "validity": { "ttl_days": 180 },
-    "evidence_links": ["EU-0045", "EU-0046"],
-    "confidence": 0.90,
-    "status": "active"
-  },
-  {
-    "ku_id": "KU-0027",
-    "entity_key": "japan-travel:accommodation:ryokan",
-    "field": "price",
-    "value": {
-      "예산형": "5000~10000 JPY/인/박",
-      "중급": "15000~25000 JPY/인/박 (조식+석식, 공용온천)",
-      "고급": "30000~70000 JPY/인/박 (전용온천, 가이세키)",
-      "초고급": "100000+ JPY/인/박",
-      "평균대": "15000~30000 JPY/인/박 (식사 포함)",
-      "지역별": {"교토": "¥15,000 이하 가능", "하코네": "약 ¥12,600부터"},
-      "비고": "성수기/비수기 가격 차이 큼. 식사 포함 여부가 가격 좌우.",
-      "currency": "JPY"
-    },
-    "observed_at": "2026-03-04",
-    "validity": { "ttl_days": 180 },
-    "evidence_links": ["EU-0048", "EU-0049"],
-    "confidence": 0.85,
-    "status": "active"
-  },
-  {
-    "ku_id": "KU-0028",
-    "entity_key": "japan-travel:payment:cash",
-    "field": "tips",
-    "value": {
-      "ATM_7Eleven": {
-        "수수료": "주간(07~19시) 무료, 야간 ¥110",
-        "인출한도": "1회 ¥100,000",
-        "설치수": "전국 20,000개+",
-        "운영": "24시간",
-        "카드별": {"Mastercard": "무료", "Visa": "¥110~220"}
-      },
-      "우체국ATM": "외국 카드 사용 가능. 주요 우체국.",
-      "환전": "공항이 가장 유리. 은행, 일부 편의점도 가능.",
-      "현금필요장소": "소규모 음식점, 노점, 지방 버스, 신사/사찰, 코인세탁소",
-      "권장": "항시 1~2만엔 현금 소지"
-    },
-    "observed_at": "2026-03-04",
-    "validity": { "ttl_days": 365 },
-    "evidence_links": ["EU-0050", "EU-0051", "EU-0052"],
     "confidence": 0.85,
     "status": "active"
   }

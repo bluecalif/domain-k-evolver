@@ -8,11 +8,11 @@
 |-------|-------|---|---|---|----|----|
 | Phase 0 | — | — | — | — | — | ✅ Complete |
 | Phase 0B | 5 | 1 | 2 | 2 | 0 | ✅ Complete (5/5) |
-| Phase 0C | 6 | 0 | 3 | 2 | 1 | 0/6 |
+| Phase 0C | 6 | 0 | 3 | 2 | 1 | ✅ Complete (6/6) |
 | Phase 1 | 15 | 2 | 5 | 6 | 2 | 0/15 |
 | Phase 2 | 7 | 1 | 3 | 2 | 1 | 0/7 |
 | Phase 3 | 7 | 0 | 2 | 3 | 2 | 0/7 |
-| **총계** | **40** | **4** | **13** | **13** | **10** | **5/40** |
+| **총계** | **40** | **4** | **13** | **13** | **10** | **11/40** |
 
 ---
 
@@ -35,33 +35,25 @@
 
 ---
 
-## Phase 0C: GU 전략 재검토
+## Phase 0C: GU 전략 재검토 ✅
 
-> **목적**: 축(axis) 기반 커버리지 분석 + Quantum Jump 수동 테스트 + 정책 확정
-> **입력**: Cycle 1 State + `docs/gu-bootstrap-expansion-policy.md` (v0.1) + `revised-plan-c2.md`
-> **전제 근거**: expansion-policy v0.1의 3가지 구조적 한계 진단이 타당하나, 수치 임계치/로직 미정의로 바로 Phase 1 투입 불가
+> **완료**: 2026-03-04 | Axis Coverage Matrix + Jump Mode 실측 검증 + 정책 v1.0 확정
+> **결과**: KU 28 (active 27 + disputed 1), EU 55, GU 21 open / 18 resolved / 39 total
 
 ### Stage A: 축 선언 + Axis Coverage Matrix
 
-- [ ] **0C.1** 축 선언 보완 — japan-travel skeleton에 geography/condition/risk 축 명시 추가, 각 축 anchor 값 정의 `[M]`
-- [ ] **0C.2** Axis Coverage Matrix 첫 계산 — 현재 31 GU를 다축 매트릭스로 분류, 축별 결손 정량화 `[M]`
+- [x] **0C.1** 축 선언 보완 — skeleton axes 4축 추가 (category/geography/condition/risk)
+- [x] **0C.2** Axis Coverage Matrix 첫 계산 — geography deficit 0.200, risk deficit 0.200
 
 ### Stage B: Cycle 2 Jump Mode 수동 테스트
 
-- [ ] **0C.3** Cycle 2 준비 — Jump Mode trigger 판정, explore/exploit budget 배분, State 스냅샷 `[M]`
-- [ ] **0C.4** Cycle 2 수동 실행 — Jump Mode로 Collect → Integrate → Critique → PM, trigger/guardrail 검증 `[XL]`
+- [x] **0C.3** Cycle 2 준비 — T1 발동 → Jump Mode, jump_cap=10, explore 5 + exploit 3
+- [x] **0C.4** Cycle 2 수동 실행 — KU 7추가, GU 3해결 + 6신규, geography deficit 해소 → `c338351`
 
 ### Stage C: 정책 확정 + 문서 통합
 
-- [ ] **0C.5** 정책 확정 — expansion-policy v0.1 → v1.0 승격, 수치 임계치/trigger 조건 확정 `[L]`
-- [ ] **0C.6** 설계 문서 통합 — gu-bootstrap-spec에 Axis Coverage / Jump Mode 흡수, design-v2 업데이트 또는 design-v3 작성 `[L]`
-
-### Phase 0C 핵심 검증 포인트
-- **축 커버리지**: geography/condition/risk 축이 Gap Map에 반영되었는가
-- **Quantum Jump 실전 검증**: trigger 발동 조건, guardrail 작동, 품질 유지 확인
-- **수치 확정**: Base Mode cap, Jump Mode cap, trigger 임계치가 실측 기반 확정
-- **explore/exploit budget**: 단위(GU 개수)와 비율이 명확한가
-- **Phase 1 입력 조건 충족**: 확정된 정책이 LangGraph 자동화에 투입 가능한 수준인가
+- [x] **0C.5** 정책 확정 — expansion-policy v1.0 (trigger 임계치 + explore 비율 확정)
+- [x] **0C.6** 설계 문서 통합 — design-v2 mode_node/entity hierarchy, spec v1.1, Phase 1 입력 체크리스트 11항 ✅
 
 ---
 

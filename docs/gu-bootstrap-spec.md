@@ -1,6 +1,6 @@
 # GU Bootstrap 명세 (Seed GU Generator 규약)
 
-> **버전**: 1.1-draft | **작성일**: 2026-03-04 (Phase 0C 준비 — Axis Coverage, Jump Mode 섹션 추가)
+> **버전**: 1.1 | **작성일**: 2026-03-04 (Phase 0C.5 — Axis Coverage, Jump Mode 임계치 확정)
 > **기반**: `docs/gu-from-scratch.md` 인사이트 → 알고리즘 수준 공식화
 > **관련**: `docs/design-v2.md` §7/§10, `schemas/gap-unit.json`
 
@@ -130,23 +130,28 @@ Bootstrap 이후 Inner Loop 실행 중 새 GU가 발견되는 3가지 트리거.
 - **액션**: 해당 엔티티의 핵심 필드(price, how_to_use 등)에 대해 `missing` GU 배치 생성
 - **부수 효과**: 필요 시 `domain-skeleton.json`에 엔티티 추가 제안 (HITL Gate)
 
-### 동적 GU 생성 상한
+### 동적 GU 생성 상한 (Normal/Jump 이원화)
 
-> **Cycle당 신규 GU < 기존 open GU의 20%**
+Mode에 따라 상한이 달라진다. Mode 판정은 §2.6 Jump Mode Trigger 참조.
 
-| 기존 open GU | 신규 상한 |
-|-------------|----------|
-| 10~20 | 최대 4 |
-| 21~40 | 최대 8 |
-| 41~60 | 최대 12 |
+| Mode | Cap 공식 | 예시 (open=21) |
+|------|----------|---------------|
+| **Normal** | `base_cap = min(max(4, ceil(open * 0.2)), 12)` | 5 |
+| **Jump** | `jump_cap = min(max(10, ceil(open * 0.6)), 30)` | 13 |
 
-**예외**: `risk_level == safety`인 GU는 상한에서 제외 (안전 정보는 항상 추가)
+**Jump Mode 추가 조건**:
+- 신규 GU 중 high/critical ≥ 40% 필수
+- 모든 신규 GU에 `expansion_mode`, `trigger`, `trigger_source` 필드 필수
+
+**공통 예외**: `risk_level == safety`인 GU는 상한에서 제외 (안전 정보는 항상 추가)
+
+> **실측** (Cycle 2 Jump): open=16, jump_cap=10, 실사용=6. high/critical 3/6=50% ≥ 40% ✅
 
 ---
 
-## 2.5 Axis Coverage Matrix (Phase 0C 추가 — 확정 전)
+## 2.5 Axis Coverage Matrix (Phase 0C 추가 — v1.0 확정)
 
-> **상태**: Phase 0C에서 실전 검증 후 확정 예정. 아래는 설계 초안.
+> **상태**: Phase 0C Cycle 2 실측 검증 완료. 확정 임계치는 `gu-bootstrap-expansion-policy.md` v1.0 참조.
 
 ### 목적
 
@@ -186,13 +191,13 @@ coverage[axis][value] = {
 deficit_ratio[axis] = count(values where open + resolved == 0) / count(all anchor values)
 ```
 
-- deficit_ratio > 임계치(TBD) → Quantum Jump Mode trigger 후보
+- deficit_ratio > **0** (required 축) → Quantum Jump Mode trigger T1 발동 (v1.0 확정)
 
 ---
 
-## 2.6 Quantum Jump Mode (Phase 0C 추가 — 확정 전)
+## 2.6 Quantum Jump Mode (Phase 0C 추가 — v1.0 확정)
 
-> **상태**: Phase 0C에서 Cycle 2 수동 테스트 후 수치 확정 예정.
+> **상태**: Phase 0C Cycle 2 실측 검증 완료. 확정 수치는 `gu-bootstrap-expansion-policy.md` v1.0 §5 참조.
 
 ### 개요
 
@@ -207,13 +212,13 @@ deficit_ratio[axis] = count(values where open + resolved == 0) / count(all ancho
 
 ### Jump Mode Trigger (5종)
 
-| # | Trigger | 조건 (임계치 TBD) |
+| # | Trigger | 조건 (v1.0 확정) |
 |---|---------|-------------------|
-| 1 | Axis Under-Coverage | 축 deficit_ratio > X% |
-| 2 | Spillover | Collect/Integrate에서 Gap Map 외 슬롯 참조 N건 이상 |
-| 3 | High-Risk Blindspot | safety/financial/policy 단일출처 KU M건 이상 |
-| 4 | Prescription | Critique RX가 구조 보강 명시 |
-| 5 | Domain Shift | 신규 entity cluster 누적 L건 이상 |
+| 1 | Axis Under-Coverage | required 축 deficit_ratio > 0 |
+| 2 | Spillover | Collect/Integrate에서 Gap Map 외 슬롯 참조 3건 이상 |
+| 3 | High-Risk Blindspot | safety/financial/policy 단일출처+conf<0.85 KU 2건 이상 |
+| 4 | Prescription | Critique RX가 구조 보강 명시 1건 이상 |
+| 5 | Domain Shift | 신규 entity cluster(skeleton 미등록 category 수준) 1건 이상 |
 
 ### Guardrail (4종)
 
@@ -231,7 +236,15 @@ deficit_ratio[axis] = count(values where open + resolved == 0) / count(all ancho
 | explore | 신규 축 영역 GU 생성 | GU 개수 |
 | exploit | 기존 open GU 해결 | GU 개수 |
 
-초기 Cycle(1~2): explore 비중 높임. 수렴 단계: exploit 비중 높임. 구체 비율은 Phase 0C 실측 후 확정.
+**확정 비율** (v1.0):
+
+| Cycle 단계 | Jump Mode | Normal Mode |
+|-----------|-----------|-------------|
+| 초기 (1~3) | explore 60% / exploit 40% | exploit 100% |
+| 중기 (4~6) | explore 50% / exploit 50% | exploit 100% |
+| 수렴 (7+) | explore 40% / exploit 60% | exploit 100% |
+
+홀수 Target 시 exploit에 +1 배분 (Balance Guard 준수).
 
 ---
 
@@ -347,10 +360,20 @@ converged = (cycle >= 5) AND C1 AND C2 AND C3 AND C4 AND C5
 
 ### B. 동적 발견 체크 (각 Cycle 종료 시)
 
-- [ ] 신규 GU 수 <= 기존 open GU의 20% (safety 예외 적용)
+- [ ] 신규 GU 수 <= base_cap (Normal) 또는 jump_cap (Jump) (safety 예외 적용)
 - [ ] 신규 GU에 `resolution_criteria` 명시
 - [ ] 트리거(A/B/C) 중 하나에 명확히 해당
 - [ ] `created_at`이 해당 Cycle 날짜
+
+### B-2. Jump Mode 체크 (Jump Mode Cycle 종료 시)
+
+- [ ] Jump Mode trigger 판정 기록 (어떤 trigger가 발동/미발동)
+- [ ] 신규 GU 중 high/critical ≥ 40%
+- [ ] 신규 GU에 `expansion_mode`, `trigger`, `trigger_source` 필드 기재
+- [ ] explore/exploit 배분이 Balance Guard(60%) 이내
+- [ ] Axis Coverage deficit_ratio가 감소했는가
+- [ ] Guardrail 4종(Quality/Cost/Balance/Convergence) 위반 없음
+- [ ] Convergence Guard: 연속 2 Cycle Jump 시 HITL 발동했는가
 
 ### C. 수렴 판정 체크 (Cycle >= 5 이후)
 

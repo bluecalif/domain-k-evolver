@@ -1,8 +1,8 @@
 # Domain-K-Evolver: 설계 v2
 
-> **기반**: draft.md (원본 설계) + Cycle 0 수동 실행 결과
-> **갱신일**: 2026-03-02
-> **상태**: Cycle 0 검증 완료, LangGraph 자동화 준비
+> **기반**: draft.md (원본 설계) + Cycle 0~2 수동 실행 결과
+> **갱신일**: 2026-03-04 (Phase 0C.6 통합)
+> **상태**: Cycle 0~2 검증 완료, expansion-policy v1.0 확정, LangGraph 자동화 준비
 
 ---
 
@@ -16,6 +16,11 @@
 | Scope Boundary | 없음 | Seed Pack 필수 섹션으로 추가 | Gap Map 폭발 방지 필수 |
 | Entity Resolution | "같은 대상 식별" 서술 | 캐노니컬 키 규칙 + is_a 관계 필요성 | Cycle 0 Integration에서 ic-card/suica 분리 문제 |
 | 엔티티 입도 | 미정의 | 3단계 중첩 시 분리 규칙 | Cycle 0 airport-transfer 구조 문제 |
+| Axis Coverage Matrix | 없음 | 다축 커버리지 정량 추적 + deficit_ratio | Phase 0C geography 편중 93.5% 발견 |
+| Jump Mode | 없음 | 조건부 GU 상한 상향 (5종 trigger + 4종 guardrail) | Phase 0C Cycle 2 실측 검증 |
+| explore/exploit 분리 | 없음 | Jump Mode 시 explore(신규 축)/exploit(기존 GU) budget 분리 | Cycle 2: 60/40 배분으로 geography deficit 해소 |
+| Entity Hierarchy | "is_a 필요성" 서술 | alias/is_a 관계 정의 규칙 확정 | RX-04→RX-10→RX-13 누적 (3 Cycle) |
+| expansion-policy | 없음 | v1.0 확정 (trigger 임계치 + guardrail 수치) | Phase 0C.5 Cycle 1~2 실측 기반 |
 
 ---
 
@@ -27,7 +32,7 @@ State = (K, G, P, M, D)
   G: gap-map.json           — GU[] (schemas/gap-unit.json)
   P: policies.json          — 출처신뢰/TTL/교차검증/충돌해결 규칙
   M: metrics.json           — 정량 지표 + delta
-  D: domain-skeleton.json   — 카테고리/필드/관계/키규칙/Scope
+  D: domain-skeleton.json   — 카테고리/필드/관계/키규칙/Scope/axes/entity_hierarchy
 ```
 
 ### 저장 형식 결정
@@ -122,10 +127,28 @@ Cycle 0에서 실제 변환을 수행하며 도출한 규칙.
 6. 유사 매칭 (레벤슈타인 거리 ≤ 2) → 수동 확인 또는 is_a 관계 검토
 ```
 
-### 분류 계층 (is_a) 처리
-- 현재: Domain Skeleton에 4개 관계만 정의 (covers_route, valid_for, located_in, accepted_at)
-- 필요: `is_a` (분류), `part_of` (구성) 관계 추가
-- 시기: Cycle 3+ Outer Loop에서 검토 (Cycle 0에서 ic-card/suica 사례로 필요성 확인)
+### 분류 계층 (is_a) 및 Entity Hierarchy (Phase 0C 확정)
+
+기존 4개 관계(covers_route, valid_for, located_in, accepted_at)에 추가:
+
+- **`is_a`**: 하위 entity는 상위의 필드를 상속하되 지역 특화 값으로 오버라이드 가능
+  - 예: `kyoto-ryokan` is_a `ryokan` → ryokan의 nationwide 가격 정보를 상속, kyoto 특화 가격으로 오버라이드
+- **`alias`**: 동일 entity의 다른 이름. canonical key로 통일
+  - 예: `metro-pass` alias `subway-ticket` → canonical: `subway-ticket`
+
+`domain-skeleton.json`에 `entity_hierarchy` 섹션으로 정의:
+```json
+{
+  "entity_hierarchy": [
+    {"parent": "ryokan", "child": "kyoto-ryokan", "relation": "is_a"},
+    {"alias": ["metro-pass", "subway-ticket"], "canonical": "subway-ticket"}
+  ]
+}
+```
+
+Integrate 시 entity_key가 alias에 해당하면 canonical로 자동 변환.
+
+> **근거**: RX-04(Cycle 0) → RX-10(Cycle 1) → RX-13(Cycle 2) 3 Cycle 누적 미해결. Phase 0C.5에서 규칙 확정.
 
 ---
 
@@ -162,6 +185,7 @@ Cycle 0에서 실제 변환을 수행하며 도출한 규칙.
 | B: High-risk Claims | Collect 후 | safety/policy/financial Claim | Cycle 0에서 financial 교차검증 미준수 사례 → Gate B 강화 필요 |
 | C: Conflict Adjudication | Integrate 후 | disputed KU 존재 시 | Cycle 0에서 충돌 없어 미발동 |
 | D: Executive Audit | 10 Cycle마다 | 누적 Metrics 분석 | 미도달 |
+| E: Convergence Guard | Jump Mode 2연속 시 | 연속 Jump의 정당성 재판정 | C2→C3: 사전 GU 생성으로 Normal 전환, 미발동 |
 
 ### Cycle 0에서의 교훈
 - Gate B를 Collect 직후가 아니라 **Integration 전**에 배치하는 것이 효율적 (Claim 검토 후 통합)
@@ -179,12 +203,23 @@ Nodes:
                      Bootstrap GU 생성: gu-bootstrap-spec.md §1 알고리즘 적용
                      입력: domain-skeleton.json, seed KUs, policies.json
                      출력: gap-map.json (Bootstrap GU 배열, ≥20개, 전 카테고리 커버)
-  plan_node       → Collection Plan 생성 (State → Plan)
+  mode_node       → Normal/Jump Mode 판정 (Phase 0C 추가)
+                     입력: gap-map (axis_tags), domain-skeleton (axes), metrics (jump_mode history)
+                     로직: 5종 trigger 판정 → Mode 결정 → budget 배분
+                     출력: {mode, cap, explore_budget, exploit_budget, trigger_set}
+  plan_node       → Collection Plan 생성 (State + Mode → Plan)
+                     Jump Mode 시: explore Target 선정 (deficit 축 기반) + exploit Target 선정
+                     Normal Mode 시: exploit Target만 선정
   collect_node    → Evidence 수집 (Plan → Claims) [WebSearch/WebFetch 도구 사용]
   integrate_node  → KB Patch 적용 (Claims + State → Updated State)
+                     동적 GU 생성 시: cap(base_cap/jump_cap) 준수, expansion_mode/trigger 기재
   critique_node   → Critique Report 생성 (State → Critique)
+                     Structural Deficit Analysis 포함: Axis Coverage Matrix 재계산
+                     Jump Mode 검증: high/critical ≥ 40%, deficit 감소 확인
   plan_modify_node → Revised Plan 생성 (Critique → Plan)
+                     처방 추적성 테이블 + 미반영 사유 기록 필수
   hitl_gate_node  → 사람 검토 (조건부 중단)
+                     Gate E 추가: Convergence Guard (연속 2 Cycle Jump 시)
 ```
 
 ### 엣지 정의
@@ -192,21 +227,26 @@ Nodes:
 ```
 Edges:
   START → seed_node                     [최초 1회]
-  seed_node → plan_node
+  seed_node → mode_node
+  mode_node → plan_node                 [mode + budget 결정 후]
   plan_node → hitl_gate_node (Gate A)
   hitl_gate_node → collect_node         [승인 시]
   collect_node → hitl_gate_node (Gate B) [high-risk claim 존재 시]
   hitl_gate_node → integrate_node       [승인 시]
   integrate_node → critique_node
   critique_node → plan_modify_node
-  plan_modify_node → plan_node          [다음 Cycle]
+  plan_modify_node → mode_node          [다음 Cycle → Mode 재판정]
+
+  # Convergence Guard (Phase 0C 추가)
+  mode_node → hitl_gate_node (Gate E)   [연속 2 Cycle Jump 시]
+  hitl_gate_node → plan_node            [HITL 승인 후]
 
   # 종료 조건
-  critique_node → END                   [gap_resolution_rate ≥ target OR max_cycles 도달]
+  critique_node → END                   [수렴 판정: gu-bootstrap-spec §5 조건 충족 OR max_cycles 도달]
 
   # Outer Loop
   critique_node → remodel_node          [remodeling_trigger == true, 매 10 Cycle]
-  remodel_node → plan_node
+  remodel_node → mode_node
 ```
 
 ### State 관리
@@ -217,11 +257,15 @@ class EvolverState(TypedDict):
     gap_map: list[GapUnit]
     policies: Policies
     metrics: Metrics
-    domain_skeleton: DomainSkeleton
+    domain_skeleton: DomainSkeleton  # axes, entity_hierarchy 포함
     current_cycle: int
     current_plan: CollectionPlan | None
     current_claims: list[Claim] | None
     current_critique: CritiqueReport | None
+    # Phase 0C 추가
+    current_mode: ModeDecision | None  # {mode, cap, explore_budget, exploit_budget, trigger_set}
+    axis_coverage: AxisCoverageMatrix | None  # Critique에서 재계산
+    jump_history: list[int]  # Jump Mode 진입 Cycle 번호 기록 (Convergence Guard용)
 ```
 
 ### 도구 바인딩
@@ -246,8 +290,35 @@ class EvolverState(TypedDict):
 
 ---
 
-## 12. 다음 단계
+## 12. 다음 단계 (Phase 0C 완료 기준)
 
-1. **Cycle 1 수동 실행** (선택): Revised Plan C1 기반으로 한 번 더 수동 실행하여 Conflict-preserving 원칙 검증
-2. **LangGraph 구현**: §10의 노드/엣지 설계 기반으로 자동화 파이프라인 구축
-3. **새 도메인 테스트**: japan-travel 외 도메인(예: 부동산, 기술 스택)으로 도메인 불문 작동 검증
+### 완료된 수동 검증
+- [x] Cycle 0: 6단계 Deliverable 검증, 5대 불변원칙 확인
+- [x] Cycle 1 (Phase 0B): Conflict-preserving 검증 (KU-0007 disputed), Prescription-compiled 검증
+- [x] Cycle 2 (Phase 0C): Jump Mode 실측, Axis Coverage Matrix, 5종 trigger/4종 guardrail 검증
+- [x] expansion-policy v1.0 확정 (trigger 임계치 + guardrail 수치)
+
+### Phase 1: LangGraph 자동화
+1. **mode_node 구현**: 5종 trigger 판정 + budget 배분 로직
+2. **plan_node 확장**: explore/exploit Target 자동 선정 (deficit 축 기반)
+3. **integrate_node 확장**: 동적 GU 생성 시 cap 준수 + axis_tags 자동 태깅
+4. **critique_node 확장**: Structural Deficit Analysis 자동 계산 (Axis Coverage Matrix)
+5. **hitl_gate_node 확장**: Gate E (Convergence Guard) 추가
+6. **Entity Hierarchy 구현**: alias 자동 변환, is_a 상속 로직
+
+### Phase 1 입력 조건 체크리스트
+- [x] 4대 객체 JSON Schema (schemas/) — 확정
+- [x] 6단계 Deliverable 계약 (§7) — 확정
+- [x] Metrics 공식 + 건강 임계치 (§4) — 확정
+- [x] Critique→Plan 컴파일 규칙 (§5) — 확정
+- [x] Bootstrap 알고리즘 (gu-bootstrap-spec §1) — 확정
+- [x] 동적 GU Normal/Jump 상한 (gu-bootstrap-spec §2) — 확정
+- [x] Axis Coverage Matrix 계산 로직 (gu-bootstrap-spec §2.5) — 확정
+- [x] Jump Mode trigger/guardrail (expansion-policy v1.0) — 확정
+- [x] explore/exploit 비율 (expansion-policy v1.0 §5.2) — 확정
+- [x] Entity Hierarchy 규칙 (expansion-policy v1.0 §7) — 확정
+- [x] 수렴 조건 (gu-bootstrap-spec §5) — 확정
+- [ ] japan-travel Cycle 3+ 수동 실행 (선택: 추가 검증 필요 시)
+
+### 3. 새 도메인 테스트
+japan-travel 외 도메인(예: 부동산, 기술 스택)으로 도메인 불문 작동 검증

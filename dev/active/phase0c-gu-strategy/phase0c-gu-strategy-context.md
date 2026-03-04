@@ -1,6 +1,6 @@
 # Phase 0C Context — GU 전략 재검토
 > Last Updated: 2026-03-04
-> Status: Not Started
+> Status: ✅ Complete
 
 ## 1. 핵심 파일
 
@@ -95,32 +95,56 @@ trigger_input = {
 
 ---
 
-## 5. 주요 결정사항 (Phase 0C 내)
+## 5. 주요 결정사항 (Phase 0C — 확정)
 
-| # | 결정 예정 사항 | 대안 | 판단 기준 |
-|---|---------------|------|-----------|
-| D-0C.1 | axes를 skeleton에 포함 vs 별도 파일 | 별도 axis-map.json | skeleton 일체가 참조 단순 |
-| D-0C.2 | Jump Mode trigger 임계치 (axis under-coverage) | 0%, 20%, 30% | Cycle 2 실측 기반 |
-| D-0C.3 | explore/exploit 비율 초기값 | 50:50, 60:40, 70:30 | Cycle 2 실측 기반 |
-| D-0C.4 | condition 축 강제 vs 선택 태깅 | 강제 | GU 특성상 일부만 해당 → 선택 유력 |
-| D-0C.5 | design-v2 업데이트 vs design-v3 신규 | — | 변경 범위에 따라 판단 |
+| # | 결정 | 선택 | 근거 |
+|---|------|------|------|
+| D-0C.1 | axes를 skeleton에 포함 vs 별도 파일 | **skeleton 포함** | 참조 단순, axis_meta로 메타 정보 기술 |
+| D-0C.2 | Jump Mode trigger 임계치 (T1) | **deficit_ratio > 0** | C2 실측: 0.200 발동 → geography deficit 해소 |
+| D-0C.3 | explore/exploit 비율 초기값 | **60/40** (초기), 50/50 (중기), 40/60 (수렴) | C2 실측: 62.5% → 60% 상한 확정 |
+| D-0C.4 | condition 축 강제 vs 선택 태깅 | **선택 태깅** (required: false) | GU 특성상 일부만 해당 |
+| D-0C.5 | design-v2 업데이트 vs design-v3 | **design-v2 업데이트** | 변경 범위가 섹션 추가 수준, 전면 재작성 불필요 |
 
 ---
 
-## 6. 컨벤션 체크리스트 (Phase 0C 추가)
+## 6. 컨벤션 체크리스트 (Phase 0C — 전체 통과)
 
 ### Axis Coverage 검증
-- [ ] 모든 선언된 축에 최소 1개 anchor가 정의되어 있다
-- [ ] 각 GU에 적용 가능한 축 태그가 할당되어 있다
-- [ ] deficit_ratio 계산이 정확하다 (값 0인 anchor / 전체 anchor)
+- [x] 모든 선언된 축에 최소 1개 anchor가 정의되어 있다
+- [x] 각 GU에 적용 가능한 축 태그가 할당되어 있다
+- [x] deficit_ratio 계산이 정확하다 (geography 0.200→0.000)
 
 ### Jump Mode 검증
-- [ ] Trigger 판정이 명시적이다 (어떤 trigger가 발동했는지 기록)
-- [ ] jump_cap 이내로 GU가 생성되었다
-- [ ] 신규 GU 중 high/critical ≥ 40%
-- [ ] Guardrail 4종 위반 없음
+- [x] Trigger 판정이 명시적이다 (T1 발동, T2~T5 미발동)
+- [x] jump_cap 이내로 GU가 생성되었다 (6/10)
+- [x] 신규 GU 중 high/critical ≥ 40% (50%)
+- [x] Guardrail 4종 위반 없음
 
 ### explore/exploit 검증
-- [ ] budget 배분이 명시되어 있다 (단위: GU 개수)
-- [ ] explore GU가 실제로 신규 축 영역을 커버한다
-- [ ] exploit GU가 기존 open GU 해결에 기여한다
+- [x] budget 배분이 명시되어 있다 (explore 5, exploit 3)
+- [x] explore GU가 실제로 신규 축 영역을 커버한다 (osaka/kyoto/rural)
+- [x] exploit GU가 기존 open GU 해결에 기여한다 (GU-0006/0014/0030 resolved)
+
+## 7. Phase 0C 산출물 최종 목록
+
+### 신규 파일
+| 파일 | 내용 |
+|------|------|
+| `bench/japan-travel/cycle-2/axis-coverage-matrix.md` | Axis Coverage Matrix 첫 계산 |
+| `bench/japan-travel/cycle-2/cycle-2-prep.md` | Cycle 2 준비 (Jump Mode trigger 판정) |
+| `bench/japan-travel/cycle-2/evidence-claims-c2.md` | Cycle 2 Collect 결과 |
+| `bench/japan-travel/cycle-2/kb-patch-c2.md` | Cycle 2 Integrate 결과 |
+| `bench/japan-travel/cycle-2/critique-c2.md` | Cycle 2 Critique (c338351) |
+| `bench/japan-travel/cycle-2/revised-plan-c3.md` | Cycle 3 계획 (c338351) |
+| `bench/japan-travel/state-snapshots/cycle-1-snapshot/` | Cycle 1 State 스냅샷 (5개 JSON) |
+
+### 수정 파일
+| 파일 | 변경 내용 |
+|------|-----------|
+| `bench/japan-travel/state/domain-skeleton.json` | axes 섹션 추가 |
+| `bench/japan-travel/state/knowledge-units.json` | KU-0022~0028 추가, KU-0011/0016 업데이트 |
+| `bench/japan-travel/state/gap-map.json` | GU-0032~0039 추가, 3건 resolved (c338351) |
+| `bench/japan-travel/state/metrics.json` | Cycle 2 수치 반영 (c338351) |
+| `docs/gu-bootstrap-expansion-policy.md` | v0.1 → v1.0 승격 |
+| `docs/gu-bootstrap-spec.md` | v1.1 확정 |
+| `docs/design-v2.md` | mode_node, entity hierarchy, Phase 1 체크리스트 |

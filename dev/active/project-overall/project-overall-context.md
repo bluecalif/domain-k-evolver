@@ -1,6 +1,6 @@
 # Project Overall Context
-> Last Updated: 2026-03-04 (Phase 0C 삽입 — GU 전략 재검토)
-> Status: In Progress
+> Last Updated: 2026-03-04 (Phase 0C 완료)
+> Status: In Progress — Phase 1 준비
 
 ## 1. 핵심 파일
 
@@ -38,18 +38,19 @@
 | `dev/active/phase0c-gu-strategy/phase0c-gu-strategy-tasks.md` | Phase 0C 태스크 추적 |
 | `dev/active/phase0c-gu-strategy/debug-history.md` | Phase 0C 디버깅 이력 |
 
-### 벤치 데이터 (Cycle 1 결과 — 최신)
+### 벤치 데이터 (Cycle 2 결과 — 최신)
 | 파일 | 내용 |
 |------|------|
-| `bench/japan-travel/state/knowledge-units.json` | KU 21개 (active 19 + disputed 2) |
-| `bench/japan-travel/state/gap-map.json` | GU 16 open + 15 resolved |
-| `bench/japan-travel/state/domain-skeleton.json` | 카테고리/필드/관계/키규칙 |
+| `bench/japan-travel/state/knowledge-units.json` | KU 28개 (active 27 + disputed 1) |
+| `bench/japan-travel/state/gap-map.json` | GU 21 open + 18 resolved (axes 포함) |
+| `bench/japan-travel/state/domain-skeleton.json` | 카테고리/필드/관계/키규칙/axes |
 | `bench/japan-travel/state/policies.json` | 출처신뢰/TTL/교차검증/충돌해결 |
-| `bench/japan-travel/state/metrics.json` | 6개 지표 |
+| `bench/japan-travel/state/metrics.json` | 6개 지표 + jump_mode 실측 |
 | `bench/japan-travel/cycle-0/` | 6대 Deliverable 원본 |
 | `bench/japan-travel/cycle-1/` | 5대 Deliverable (Cycle 1 수동 실행 결과) |
-| `bench/japan-travel/cycle-1/revised-plan-c2.md` | Cycle 2 Collection Plan (처방 RX-07~11 반영) |
+| `bench/japan-travel/cycle-2/` | 6대 Deliverable (Cycle 2 Jump Mode 수동 실행 결과) |
 | `bench/japan-travel/state-snapshots/cycle-0-snapshot/` | Cycle 0 State 스냅샷 |
+| `bench/japan-travel/state-snapshots/cycle-1-snapshot/` | Cycle 1 State 스냅샷 |
 
 ### 템플릿
 | 파일 | 내용 |
@@ -85,11 +86,14 @@ class EvolverState(TypedDict):
     gap_map: list[dict]             # G
     policies: dict                   # P
     metrics: dict                    # M
-    domain_skeleton: dict            # D
+    domain_skeleton: dict            # D (axes, entity_hierarchy 포함)
     current_cycle: int
     current_plan: dict | None
     current_claims: list[dict] | None
     current_critique: dict | None
+    current_mode: dict | None       # {mode, cap, explore_budget, exploit_budget, trigger_set}
+    axis_coverage: dict | None      # Axis Coverage Matrix
+    jump_history: list[int]         # Jump Mode 진입 Cycle 번호
 ```
 
 ---
@@ -116,6 +120,16 @@ class EvolverState(TypedDict):
 | D-16 | Phase 0C 신설 (GU 전략 재검토) | Phase 1 바로 진입 | expansion-policy v0.1의 진단 타당하나 수치 미확정, 실전 테스트 필요 | 0C 전 |
 | D-17 | Axis Coverage Matrix 도입 | category만 관리 | 다축(geography/condition/risk) 커버리지 추적으로 편향 해소 | 0C |
 | D-18 | Quantum Jump Mode 도입 | 고정 20% 상한만 | 구조 결손 시 조건부 확장, guardrail로 통제 | 0C |
+| D-19 | Jump Mode T1(Axis Under-Coverage) 단독 발동 | 복수 trigger 발동 대기 | geography deficit 0.200 단일 발동으로 해소 성공 | 0C |
+| D-20 | explore 60%/exploit 40% 배분 | 50:50, 70:30 | C2 실측 62.5% → 60% 상한 확정 | 0C |
+| D-21 | KU-0011 disputed 해결 (5,000엔 유지) | 철폐 보도 수용 | 4개 독립 출처 일치, 초기 "철폐" 보도는 오류 | 0C |
+| D-22 | 동적 GU 6개 생성 (jump_cap 10 이내) | — | high/critical 50% ≥ 40% 준수 | 0C |
+| D-23 | Critique 5대 불변원칙 전원 PASS | — | Prescription-compiled 부분 준수 (미반영 사유 합리적) | 0C |
+| D-24 | 처방 RX-12~16 도출 | — | risk:informational 해소, entity hierarchy, 홀수 배분 규칙 | 0C |
+| D-25 | Cycle 3 Normal Mode 진입 | Jump 연속 | 사전 GU 생성(GU-0038/0039)으로 T1 해소 → Normal 전환 | 0C |
+| D-26 | T1 임계치 = deficit_ratio > 0 확정 | 20%, 30% | C2 실측: 0.200 발동 → 해소 성공 | 0C |
+| D-27 | explore 비율 단계별 확정 | 단일 비율 | 초기 60%, 중기 50%, 수렴 40% | 0C |
+| D-28 | Entity Hierarchy 규칙 신설 | Phase 1 defer | is_a + alias 관계 정의, Phase 1 schema 반영 예정 | 0C |
 
 ---
 
