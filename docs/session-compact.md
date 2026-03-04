@@ -1,66 +1,56 @@
 # Session Compact
 
 > Generated: 2026-03-04
-> Source: Conversation compaction via /compact-and-go
+> Source: Stage A+B 완료 후 갱신
 
 ## Goal
-Phase 1 (LangGraph Core Pipeline) Stage A 기반 구축 — Task 1.1~1.5 구현.
+Phase 1 (LangGraph Core Pipeline) — Task 1.1~1.16 구현.
 
 ## Completed
-- [x] **1.1 프로젝트 초기화**: `pyproject.toml`, `src/` 디렉토리 구조, `tests/`, `.env.example`
-- [x] **1.2 EvolverState 타입 정의**: `src/state.py` — 14개 타입 (EvolverState + 보조 13개), bench 데이터 호환 검증
-- [x] **1.3 JSON 파일 I/O 유틸리티**: `src/utils/state_io.py` — load_state, save_state, snapshot_state
-- [x] **1.4 Schema 검증 유틸리티**: `src/utils/schema_validator.py` — validate_ku/eu/gu/pu + validate_state
-- [x] **Schema 동기화 수정**: bench 데이터와 스키마 불일치 3건 수정
-  - `schemas/knowledge-unit.json`: disputes.resolution에 `resolved_as_maintain` 추가
-  - `schemas/gap-unit.json`: `trigger`(자유 문자열), `trigger_source`(enum→자유 문자열), `note` 필드 추가
-- [x] **dev-docs 동기화**: project-overall ↔ phase1 dev-docs 간 불일치 6건 수정
-  - phase1-plan: 7개→8개 노드, project-overall: expansion-policy v1.0, Cycle 2 결과, 스냅샷, Gate A~E, skills(5)
-- [x] **session-compact.md 갱신**: Phase 1 진입 기준으로 전면 재작성
+- [x] **Stage A (1.1~1.5)**: 기반 구축 — commit `4c9d793`
+  - 1.1 프로젝트 초기화, 1.2 EvolverState, 1.3 JSON I/O, 1.4 Schema 검증
+  - 1.5 Metrics (6개 공식 + assess_health + axis_coverage + deficit_ratio)
+  - Schema/dev-docs 동기화 수정
+- [x] **Stage B (1.6~1.13)**: 8개 노드 구현
+  - 1.6 `seed_node`: Bootstrap GU 생성 (5단계 알고리즘, 22 tests)
+  - 1.7 `mode_node`: Normal/Jump Mode 판정 (5종 trigger, 18 tests)
+  - 1.8 `plan_node`: Collection Plan 생성 (Target 선정 + LLM/fallback, 9 tests)
+  - 1.9 `collect_node`: WebSearch/WebFetch → Claim+EU (MockSearchTool, 6 tests)
+  - 1.10 `integrate_node`: Entity Resolution + KB Patch + Conflict + 동적 GU (12 tests)
+  - 1.11 `critique_node`: Metrics + 6대 실패모드 + 수렴 판정 (10 tests)
+  - 1.12 `plan_modify_node`: Critique 처방 → Revised Plan + 추적성 (5 tests)
+  - 1.13 `hitl_gate_node`: Gate A~E + approve/reject/modify (12 tests)
 
 ## Current State
 
-**Phase 1 Stage A 진행 중** — 1.1~1.4 완료, 1.5 (Metrics) 다음.
+**Phase 1 Stage B 완료** — Stage C (Graph 빌드) 다음.
 
 ### 테스트 현황
-- 전체 33/33 passed (test_smoke 3 + test_state 9 + test_state_io 7 + test_schema_validator 14)
+- 전체 155/155 passed (Stage A 61 + Stage B 94)
 
-### Changed Files (uncommitted)
-- `pyproject.toml` — 신규 (의존성 + pytest 설정)
-- `.env.example` — 신규 (API key 템플릿)
-- `src/state.py` — 신규 (EvolverState + 보조 타입)
-- `src/utils/state_io.py` — 신규 (JSON I/O)
-- `src/utils/schema_validator.py` — 신규 (Schema 검증)
-- `src/__init__.py`, `src/nodes/__init__.py`, `src/utils/__init__.py`, `src/tools/__init__.py` — 신규 (패키지)
-- `tests/test_smoke.py`, `tests/test_state.py`, `tests/test_state_io.py`, `tests/test_schema_validator.py` — 신규
-- `tests/__init__.py`, `tests/test_nodes/__init__.py` — 신규
-- `schemas/knowledge-unit.json` — 수정 (resolved_as_maintain 추가)
-- `schemas/gap-unit.json` — 수정 (trigger/trigger_source/note 추가)
-- `dev/active/project-overall/project-overall-plan.md` — 수정 (동기화 6건)
-- `dev/active/phase1-langgraph-core/phase1-langgraph-core-plan.md` — 수정 (7→8개 노드)
-- `docs/session-compact.md` — 수정 (이 파일)
+### 파일 구조
+```
+src/nodes/seed.py, mode.py, plan.py, collect.py, integrate.py, critique.py, plan_modify.py, hitl_gate.py
+src/tools/search.py (MockSearchTool)
+src/utils/metrics.py, schema_validator.py, state_io.py
+tests/test_nodes/test_seed.py ~ test_hitl_gate.py (6 files)
+```
 
 ## Remaining / TODO
-- [ ] **1.5 Metrics 계산 유틸리티** — `src/utils/metrics.py`: 6개 공식 + assess_health + axis_coverage + deficit_ratio
-- [ ] **Stage A 완료 후 git commit**
-- [ ] **Stage B**: 1.6 seed_node ~ 1.13 hitl_gate_node (8개 노드)
-- [ ] **Stage C**: 1.14 StateGraph 빌드, 1.15 엣지 라우팅, 1.16 단위 테스트
+- [ ] **Stage C**: 1.14 StateGraph 빌드, 1.15 엣지 라우팅, 1.16 통합 테스트
 
 ## Key Decisions
-- D-P1.1: TypedDict + dict 기반 State (LangGraph 공식 패턴)
-- D-P1.2: 노드 함수 시그니처 `def node(state) -> dict` (변경 필드만 반환)
+- D-P1.1: TypedDict + dict 기반 State
+- D-P1.2: `def node(state) -> dict` (변경 필드만 반환)
 - D-P1.3: Mock LLM으로 테스트 (비용 절감)
-- D-P1.4: JSON 파일 I/O 현행 유지
-- Schema 수정: bench 데이터 현실에 맞춰 스키마 업데이트 (코드가 아닌 스키마 쪽 수정)
+- D-P1.5: LLM 호출 노드(plan/collect/integrate/critique/plan_modify)는 `llm=None`일 때 결정론적 fallback 제공
+- D-P1.6: hitl_gate_node는 `response` 파라미터로 응답 주입 (테스트 시 자동 승인)
 
 ## Context
 다음 세션에서는 답변에 한국어를 사용하세요.
 - 프로젝트 루트: `C:\Users\User\Learning\KBs-2026\domain-k-evolver`
-- Task 1.5 참조: `docs/design-v2.md` §4 (6개 Metrics 공식 + 건강 임계치)
-- Task 1.5 참조: `dev/active/phase1-langgraph-core/phase1-langgraph-core-tasks.md` (완료 조건)
-- Bench 검증 수치: evidence_rate=1.0, multi_evidence_rate=0.821, conflict_rate=0.036, avg_confidence=0.875, staleness_risk=0, gap_resolution_rate=0.486
-- Axis Coverage Matrix 계산도 1.5에 포함 (compute_axis_coverage, compute_deficit_ratios)
+- Stage C 참조: `dev/active/phase1-langgraph-core/phase1-langgraph-core-tasks.md`
 - 모든 의존성 이미 설치됨 (langgraph 1.0.3, jsonschema 4.23.0 등)
 
 ## Next Action
-Task 1.5 (Metrics 계산 유틸리티) 구현 시작 → Stage A 완료 → git commit.
+Stage B git commit → Stage C (1.14~1.16) 구현 시작.
