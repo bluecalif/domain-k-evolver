@@ -1,5 +1,5 @@
 # Project Overall Tasks
-> Last Updated: 2026-03-03 (GU Bootstrap 명세 반영)
+> Last Updated: 2026-03-04 (Phase 0C 삽입 — GU 전략 재검토)
 > Status: In Progress
 
 ## Summary
@@ -7,11 +7,12 @@
 | Phase | Total | S | M | L | XL | Done |
 |-------|-------|---|---|---|----|----|
 | Phase 0 | — | — | — | — | — | ✅ Complete |
-| Phase 0B | 5 | 1 | 2 | 2 | 0 | 0/5 |
+| Phase 0B | 5 | 1 | 2 | 2 | 0 | ✅ Complete (5/5) |
+| Phase 0C | 6 | 0 | 3 | 2 | 1 | 0/6 |
 | Phase 1 | 15 | 2 | 5 | 6 | 2 | 0/15 |
 | Phase 2 | 7 | 1 | 3 | 2 | 1 | 0/7 |
 | Phase 3 | 7 | 0 | 2 | 3 | 2 | 0/7 |
-| **총계** | **34** | **6** | **12** | **13** | **7** | **0/34** |
+| **총계** | **40** | **4** | **13** | **13** | **10** | **5/40** |
 
 ---
 
@@ -21,23 +22,46 @@
 
 ---
 
-## Phase 0B: Cycle 1 수동 검증
+## Phase 0B: Cycle 1 수동 검증 ✅
 
-> **목적**: Conflict-preserving 원칙 검증 + Revised Plan C1 실행 (design-v2.md §12)
-> **입력**: `bench/japan-travel/cycle-0/revised-plan-c1.md` (8 Target Gaps)
+> **완료**: 2026-03-03 | Conflict-preserving 실전 검증 성공
+> **결과**: KU 21 (active 19 + disputed 2), EU 33, GU 16 open / 15 resolved
 
-- [ ] **0B.1** Cycle 1 디렉토리 준비 — `bench/japan-travel/cycle-1/` 생성, State 스냅샷 `[S]`
-- [ ] **0B.2** Collect — revised-plan-c1 기반 8개 Gap 수집, Evidence Claim Set 작성 `[L]`
-- [ ] **0B.3** Integrate — Claims → KB Patch 적용, State 업데이트 (충돌 KU 의도적 포함 시도) + 동적 GU 발견 (gu-bootstrap-spec §2, 상한 4개) `[L]`
-- [ ] **0B.4** Critique — Metrics delta 계산, Cycle 0 vs Cycle 1 비교, Conflict-preserving 검증 + 동적 GU 발견 체크 (§6-B) `[M]`
-- [ ] **0B.5** Plan Modify — Critique 처방 기반 Revised Plan C2 작성, design-v2 피드백 반영 `[M]`
+- [x] **0B.1** Cycle 1 디렉토리 준비 → `3a73af9`
+- [x] **0B.2** Collect — 24 Claims, 15 EU, 충돌 2건 감지 → `4e26acf`
+- [x] **0B.3** Integrate — 7 add, 2 update, 2 disputed, 3 동적 GU → `1b7cd37`
+- [x] **0B.4** Critique — 5대 불변원칙 전체 PASS, 처방 5개(RX-07~11) → `b44ce73`
+- [x] **0B.5** Plan Modify — Revised Plan C2, design-v2 피드백 → `0452dcc`
 
-### Phase 0B 핵심 검증 포인트
-- **Conflict-preserving**: Cycle 0에서 충돌 0건 → Cycle 1에서 의도적으로 충돌 상황 생성/검증
-- **Prescription-compiled**: 모든 RX-NN이 Revised Plan에 추적 가능하게 반영되는지 재확인
-- **Financial 교차검증 강화**: RX-01 반영 — financial KU의 min_eu ≥ 2 enforcement
-- **카테고리 분포 보정**: RX-03 반영 — accommodation, dining, attraction 보충
-- **동적 GU 발견 규칙 실용성 검증**: gu-bootstrap-spec §2 트리거 A/B/C + 상한(open의 20%) 첫 적용
+---
+
+## Phase 0C: GU 전략 재검토
+
+> **목적**: 축(axis) 기반 커버리지 분석 + Quantum Jump 수동 테스트 + 정책 확정
+> **입력**: Cycle 1 State + `docs/gu-bootstrap-expansion-policy.md` (v0.1) + `revised-plan-c2.md`
+> **전제 근거**: expansion-policy v0.1의 3가지 구조적 한계 진단이 타당하나, 수치 임계치/로직 미정의로 바로 Phase 1 투입 불가
+
+### Stage A: 축 선언 + Axis Coverage Matrix
+
+- [ ] **0C.1** 축 선언 보완 — japan-travel skeleton에 geography/condition/risk 축 명시 추가, 각 축 anchor 값 정의 `[M]`
+- [ ] **0C.2** Axis Coverage Matrix 첫 계산 — 현재 31 GU를 다축 매트릭스로 분류, 축별 결손 정량화 `[M]`
+
+### Stage B: Cycle 2 Jump Mode 수동 테스트
+
+- [ ] **0C.3** Cycle 2 준비 — Jump Mode trigger 판정, explore/exploit budget 배분, State 스냅샷 `[M]`
+- [ ] **0C.4** Cycle 2 수동 실행 — Jump Mode로 Collect → Integrate → Critique → PM, trigger/guardrail 검증 `[XL]`
+
+### Stage C: 정책 확정 + 문서 통합
+
+- [ ] **0C.5** 정책 확정 — expansion-policy v0.1 → v1.0 승격, 수치 임계치/trigger 조건 확정 `[L]`
+- [ ] **0C.6** 설계 문서 통합 — gu-bootstrap-spec에 Axis Coverage / Jump Mode 흡수, design-v2 업데이트 또는 design-v3 작성 `[L]`
+
+### Phase 0C 핵심 검증 포인트
+- **축 커버리지**: geography/condition/risk 축이 Gap Map에 반영되었는가
+- **Quantum Jump 실전 검증**: trigger 발동 조건, guardrail 작동, 품질 유지 확인
+- **수치 확정**: Base Mode cap, Jump Mode cap, trigger 임계치가 실측 기반 확정
+- **explore/exploit budget**: 단위(GU 개수)와 비율이 명확한가
+- **Phase 1 입력 조건 충족**: 확정된 정책이 LangGraph 자동화에 투입 가능한 수준인가
 
 ---
 

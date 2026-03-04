@@ -64,6 +64,23 @@
       "type": "string",
       "format": "date",
       "description": "(optional) 생성 시점"
+    },
+    "trigger_source": {
+      "type": "string",
+      "enum": ["bootstrap", "dynamic_a", "dynamic_b", "dynamic_c", "jump_axis", "jump_spillover", "jump_blindspot", "jump_prescription", "jump_domain_shift"],
+      "description": "(optional) GU 생성 트리거. bootstrap=초기 생성, dynamic_a/b/c=동적 발견 트리거, jump_*=Quantum Jump 트리거"
+    },
+    "axis_tags": {
+      "type": "object",
+      "description": "(optional) 다축 태깅. 축 이름 → 값 매핑",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "expansion_mode": {
+      "type": "string",
+      "enum": ["base", "jump"],
+      "description": "(optional) 생성 시 확장 모드. base=기본 상한, jump=Quantum Jump 상한"
     }
   },
   "additionalProperties": false

@@ -1,6 +1,6 @@
 # GU Bootstrap 명세 (Seed GU Generator 규약)
 
-> **버전**: 1.0 | **작성일**: 2026-03-03
+> **버전**: 1.1-draft | **작성일**: 2026-03-04 (Phase 0C 준비 — Axis Coverage, Jump Mode 섹션 추가)
 > **기반**: `docs/gu-from-scratch.md` 인사이트 → 알고리즘 수준 공식화
 > **관련**: `docs/design-v2.md` §7/§10, `schemas/gap-unit.json`
 
@@ -141,6 +141,97 @@ Bootstrap 이후 Inner Loop 실행 중 새 GU가 발견되는 3가지 트리거.
 | 41~60 | 최대 12 |
 
 **예외**: `risk_level == safety`인 GU는 상한에서 제외 (안전 정보는 항상 추가)
+
+---
+
+## 2.5 Axis Coverage Matrix (Phase 0C 추가 — 확정 전)
+
+> **상태**: Phase 0C에서 실전 검증 후 확정 예정. 아래는 설계 초안.
+
+### 목적
+
+category 축만으로는 도메인 지식의 편향을 감지할 수 없다. 다축(geography, condition, risk 등) 커버리지를 정량 추적하여 **구조적 결손**을 조기 식별한다.
+
+### 축 정의
+
+`domain-skeleton.json`에 `axes` 필드로 선언. 각 축은 유한 anchor 값 집합을 가진다.
+
+```json
+{
+  "axes": {
+    "category": ["transport", "accommodation", "..."],
+    "geography": ["tokyo", "osaka", "kyoto", "rural", "nationwide"],
+    "condition": ["peak-season", "off-season", "..."],
+    "risk": ["safety", "financial", "policy", "convenience", "informational"]
+  }
+}
+```
+
+### Matrix 계산
+
+Cycle 종료 시 각 축의 각 값에 대해:
+
+```
+coverage[axis][value] = {
+  open:             count(GU where axis_tags[axis] == value AND status == 'open'),
+  resolved:         count(GU where axis_tags[axis] == value AND status == 'resolved'),
+  critical_open:    count(GU where axis_tags[axis] == value AND expected_utility in ['critical','high'] AND status == 'open'),
+  evidence_density: mean(len(KU.evidence_links) for KU in scope of value)
+}
+```
+
+### deficit_ratio 계산
+
+```
+deficit_ratio[axis] = count(values where open + resolved == 0) / count(all anchor values)
+```
+
+- deficit_ratio > 임계치(TBD) → Quantum Jump Mode trigger 후보
+
+---
+
+## 2.6 Quantum Jump Mode (Phase 0C 추가 — 확정 전)
+
+> **상태**: Phase 0C에서 Cycle 2 수동 테스트 후 수치 확정 예정.
+
+### 개요
+
+구조적 결손이 클 때 고정 상한(20%)만으로는 회복이 느리다. 조건 충족 시 GU 생성 상한을 일시적으로 상향한다.
+
+### Mode 구분
+
+| Mode | Cap 공식 | 적용 조건 |
+|------|----------|-----------|
+| Base | `min(max(4, ceil(open * 0.2)), 12)` | 기본 (trigger 미충족) |
+| Jump | `min(max(10, ceil(open * 0.6)), 30)` | trigger 1개 이상 충족 |
+
+### Jump Mode Trigger (5종)
+
+| # | Trigger | 조건 (임계치 TBD) |
+|---|---------|-------------------|
+| 1 | Axis Under-Coverage | 축 deficit_ratio > X% |
+| 2 | Spillover | Collect/Integrate에서 Gap Map 외 슬롯 참조 N건 이상 |
+| 3 | High-Risk Blindspot | safety/financial/policy 단일출처 KU M건 이상 |
+| 4 | Prescription | Critique RX가 구조 보강 명시 |
+| 5 | Domain Shift | 신규 entity cluster 누적 L건 이상 |
+
+### Guardrail (4종)
+
+| Guard | 규칙 |
+|-------|------|
+| Quality | 신규 GU 100% resolution_criteria 필수, high/critical은 evidence plan 필수 |
+| Cost | Cycle별 search/fetch/LLM budget 상한 유지, 초과 시 low utility 중단 |
+| Balance | 단일 category/axis가 신규 GU의 50% 초과 금지 |
+| Convergence | 연속 2 Cycle Jump 시 HITL 검토 필수 |
+
+### explore / exploit budget
+
+| budget | 용도 | 단위 |
+|--------|------|------|
+| explore | 신규 축 영역 GU 생성 | GU 개수 |
+| exploit | 기존 open GU 해결 | GU 개수 |
+
+초기 Cycle(1~2): explore 비중 높임. 수렴 단계: exploit 비중 높임. 구체 비율은 Phase 0C 실측 후 확정.
 
 ---
 

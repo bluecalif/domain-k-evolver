@@ -72,6 +72,16 @@
 |-------|-----------|------------|--------|--------|
 | {gu_id} | {criteria} | {min} | {req} | {req} |
 
+### Expansion Mode & Budget
+
+| 항목 | 값 |
+|------|----|
+| Expansion Mode | {Base / Jump} |
+| explore budget | {N} GU (신규 축 영역) |
+| exploit budget | {M} GU (기존 open 해결) |
+| jump_cap (Jump 시) | {cap 또는 N/A} |
+| trigger (Jump 시) | {trigger 목록 또는 N/A} |
+
 ### Budget & Stop Rules
 - {규칙들}
 

@@ -63,6 +63,33 @@ Gap해소율 = count(GU where status == 'resolved' in this cycle) / count(GU whe
 
 ---
 
+## 2.5 Structural Deficit Analysis (축 커버리지)
+
+> Axis Coverage Matrix 기반 구조적 결손 분석. Phase 0C에서 도입.
+
+### Axis Coverage Summary
+
+| 축 | deficit_ratio | 결손 값 | 비고 |
+|----|---------------|---------|------|
+| category | {ratio} | {values} | |
+| geography | {ratio} | {values} | |
+| condition | {ratio} | {values} | |
+| risk | {ratio} | {values} | |
+
+### Jump Mode 판정
+
+| Trigger | 충족 여부 | 근거 |
+|---------|-----------|------|
+| Axis Under-Coverage | {yes/no} | {detail} |
+| Spillover | {yes/no} | {detail} |
+| High-Risk Blindspot | {yes/no} | {detail} |
+| Prescription | {yes/no} | {detail} |
+| Domain Shift | {yes/no} | {detail} |
+
+**판정**: {Base Mode / Jump Mode} | **jump_cap**: {N/A 또는 수치}
+
+---
+
 ## 3. Root Cause Hypotheses
 
 | 실패모드 | 가설 | 근거 |

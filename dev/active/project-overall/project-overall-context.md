@@ -1,5 +1,5 @@
 # Project Overall Context
-> Last Updated: 2026-03-03 (GU Bootstrap 명세 반영)
+> Last Updated: 2026-03-04 (Phase 0C 삽입 — GU 전략 재검토)
 > Status: In Progress
 
 ## 1. 핵심 파일
@@ -10,6 +10,7 @@
 | `docs/draft.md` | 원본 설계 — State Machine, 핵심 객체, Inner Loop 6단계, 5대 불변원칙 | 항상 |
 | `docs/design-v2.md` | Cycle 0 검증 반영 정교화 — Schema, Metrics, Critique→Plan 규칙, LangGraph 설계 | 항상 |
 | `docs/gu-bootstrap-spec.md` | GU Bootstrap 명세 — 생성 알고리즘 5단계, 동적 발견 규칙, 우선순위, Scope 제어, 수렴 조건 | Seed/Plan 단계 |
+| `docs/gu-bootstrap-expansion-policy.md` | GU 확장 정책 — Axis Coverage Matrix, Quantum Jump, Guardrail | Phase 0C |
 | `docs/gu-from-scratch.md` | GU Bootstrap 문제 인식 + 해결 방향 (gu-bootstrap-spec의 기반) | 참고용 |
 | `docs/session-compact.md` | 세션 간 진행 상태 추적 | 세션 시작 시 |
 
@@ -21,7 +22,7 @@
 | `schemas/gap-unit.json` | GU JSON Schema (GU-NNNN, 5 required + 3 optional) |
 | `schemas/patch-unit.json` | PU JSON Schema (PU-NNNN, 6 required + 3 optional) |
 
-### Phase 0B Dev-Docs
+### Phase 0B Dev-Docs (✅ Complete)
 | 파일 | 내용 |
 |------|------|
 | `dev/active/phase0b-cycle1-validation/phase0b-cycle1-validation-plan.md` | Phase 0B 종합 계획 |
@@ -29,16 +30,26 @@
 | `dev/active/phase0b-cycle1-validation/phase0b-cycle1-validation-tasks.md` | Phase 0B 태스크 추적 |
 | `dev/active/phase0b-cycle1-validation/debug-history.md` | Phase 0B 디버깅 이력 |
 
-### 벤치 데이터 (Cycle 0 결과)
+### Phase 0C Dev-Docs
 | 파일 | 내용 |
 |------|------|
-| `bench/japan-travel/state/knowledge-units.json` | KU 13개 |
-| `bench/japan-travel/state/gap-map.json` | GU 21 open + 7 resolved |
+| `dev/active/phase0c-gu-strategy/phase0c-gu-strategy-plan.md` | Phase 0C 종합 계획 |
+| `dev/active/phase0c-gu-strategy/phase0c-gu-strategy-context.md` | Phase 0C 컨텍스트 |
+| `dev/active/phase0c-gu-strategy/phase0c-gu-strategy-tasks.md` | Phase 0C 태스크 추적 |
+| `dev/active/phase0c-gu-strategy/debug-history.md` | Phase 0C 디버깅 이력 |
+
+### 벤치 데이터 (Cycle 1 결과 — 최신)
+| 파일 | 내용 |
+|------|------|
+| `bench/japan-travel/state/knowledge-units.json` | KU 21개 (active 19 + disputed 2) |
+| `bench/japan-travel/state/gap-map.json` | GU 16 open + 15 resolved |
 | `bench/japan-travel/state/domain-skeleton.json` | 카테고리/필드/관계/키규칙 |
 | `bench/japan-travel/state/policies.json` | 출처신뢰/TTL/교차검증/충돌해결 |
 | `bench/japan-travel/state/metrics.json` | 6개 지표 |
 | `bench/japan-travel/cycle-0/` | 6대 Deliverable 원본 |
-| `bench/japan-travel/cycle-0/revised-plan-c1.md` | Cycle 1 Collection Plan (8 Target Gaps, Source Strategy 강화) |
+| `bench/japan-travel/cycle-1/` | 5대 Deliverable (Cycle 1 수동 실행 결과) |
+| `bench/japan-travel/cycle-1/revised-plan-c2.md` | Cycle 2 Collection Plan (처방 RX-07~11 반영) |
+| `bench/japan-travel/state-snapshots/cycle-0-snapshot/` | Cycle 0 State 스냅샷 |
 
 ### 템플릿
 | 파일 | 내용 |
@@ -97,6 +108,14 @@ class EvolverState(TypedDict):
 | D-08 | Hook 인코딩: Bash heredoc 작성 | Write 도구 | PS1 BOM 문제 회피 | Prep |
 | D-09 | Cycle 1 수동 실행 추가 (Phase 0B) | 바로 LangGraph 구현 | Conflict-preserving 미검증, design-v2 §12 권장 | 0B |
 | D-10 | GU Bootstrap 알고리즘 공식화 | LLM 자유 생성 | Category×Field 매트릭스 기반 결정론적 생성, Cycle 0 역검증으로 정합성 확인 | 0B 전 |
+| D-11 | SIM 가격 충돌 → condition_split | 단일값 선택 | 물리SIM vs eSIM 조건 분리가 정확 | 0B |
+| D-12 | 면세 최소금액 충돌 → disputed + hold | 삭제 | Conflict-preserving 원칙 준수 | 0B |
+| D-13 | 동적 GU 3개 발견 (GU-0029~0031) | 상한 초과 허용 | 상한(4개) 이내, 트리거 A/B/C 적합 | 0B |
+| D-14 | GU-0004 entity_key 불일치 해결 | 별개 KU 유지 | metro-pass = subway-ticket 동일 상품 확인 | 0B |
+| D-15 | Cycle 1 처방 5개 (RX-07~11) 도출 | — | Critique 분석 결과 | 0B |
+| D-16 | Phase 0C 신설 (GU 전략 재검토) | Phase 1 바로 진입 | expansion-policy v0.1의 진단 타당하나 수치 미확정, 실전 테스트 필요 | 0C 전 |
+| D-17 | Axis Coverage Matrix 도입 | category만 관리 | 다축(geography/condition/risk) 커버리지 추적으로 편향 해소 | 0C |
+| D-18 | Quantum Jump Mode 도입 | 고정 20% 상한만 | 구조 결손 시 조건부 확장, guardrail로 통제 | 0C |
 
 ---
 
