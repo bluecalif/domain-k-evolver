@@ -1,0 +1,179 @@
+"""EvolverState — LangGraph State 타입 정의.
+
+design-v2.md §10 기반. bench/japan-travel/state/ JSON 구조와 1:1 대응.
+"""
+
+from __future__ import annotations
+
+from typing import TypedDict
+
+
+# --- 보조 타입 (JSON dict 구조 명시) ---
+
+
+class KnowledgeUnit(TypedDict, total=False):
+    """Knowledge Unit — 정규화된 주장. schemas/knowledge-unit.json 대응."""
+
+    ku_id: str
+    entity_key: str
+    field: str
+    value: str | dict
+    observed_at: str
+    validity: dict  # {"ttl_days": int}
+    evidence_links: list[str]  # EU ID 목록
+    confidence: float
+    status: str  # "active" | "disputed" | "deprecated"
+    # optional
+    conditions: dict
+    dispute: dict
+    supersedes: str
+
+
+class GapUnit(TypedDict, total=False):
+    """Gap Unit — 결손/불확실/충돌/노후화. schemas/gap-unit.json 대응."""
+
+    gu_id: str
+    gap_type: str  # "missing" | "uncertain" | "conflicting" | "stale"
+    target: dict  # {"entity_key": str, "field": str}
+    expected_utility: str  # "critical" | "high" | "medium" | "low"
+    risk_level: str  # "safety" | "financial" | "policy" | "convenience" | "informational"
+    resolution_criteria: str
+    status: str  # "open" | "resolved" | "deferred"
+    # optional
+    resolved_by: str
+    note: str
+    trigger: str
+    trigger_source: str
+    axis_tags: dict  # {"geography": str, "condition": str, ...}
+    expansion_mode: str  # "normal" | "jump"
+    created_at: str
+
+
+class ScopeBoundary(TypedDict):
+    includes: list[str]
+    excludes: list[str]
+    boundary_rule: str
+
+
+class CategoryDef(TypedDict):
+    slug: str
+    description: str
+
+
+class FieldDef(TypedDict, total=False):
+    name: str
+    type: str
+    categories: list[str]
+    description: str
+
+
+class RelationDef(TypedDict, total=False):
+    name: str
+    source: str | list[str]
+    target: str | list[str]
+    description: str
+
+
+class AxisDef(TypedDict, total=False):
+    name: str
+    description: str
+    anchors: list[str]
+    required: bool
+    note: str
+
+
+class DomainSkeleton(TypedDict, total=False):
+    """Domain Skeleton — 카테고리/필드/관계/키규칙/축."""
+
+    domain: str
+    version: int
+    scope_boundary: ScopeBoundary
+    categories: list[CategoryDef]
+    fields: list[FieldDef]
+    relations: list[RelationDef]
+    axes: list[AxisDef]
+    axis_meta: dict
+    canonical_key_rule: dict
+
+
+class Policies(TypedDict, total=False):
+    """출처신뢰/TTL/교차검증/충돌해결 규칙."""
+
+    credibility_priors: dict[str, float]
+    ttl_defaults: dict[str, int]
+    cross_validation: dict[str, dict]
+    conflict_resolution: dict
+
+
+class MetricRates(TypedDict, total=False):
+    evidence_rate: float
+    multi_evidence_rate: float
+    gap_resolution_rate: float
+    conflict_rate: float
+    avg_confidence: float
+    staleness_risk: int
+
+
+class Metrics(TypedDict, total=False):
+    """Metrics — 6개 지표 + delta."""
+
+    cycle: int
+    phase: str
+    timestamp: str
+    counts: dict
+    rates: MetricRates
+    delta_from_prev_cycle: dict
+    jump_mode: dict
+    notes: str
+
+
+class ModeDecision(TypedDict, total=False):
+    """mode_node 출력 — Normal/Jump 판정 결과."""
+
+    mode: str  # "normal" | "jump"
+    cap: int  # base_cap or jump_cap
+    explore_budget: int
+    exploit_budget: int
+    trigger_set: list[str]  # 발동된 trigger ID 목록
+
+
+class AxisCoverageEntry(TypedDict, total=False):
+    axis: str
+    anchor: str
+    open_count: int
+    resolved_count: int
+    total_count: int
+    coverage: float
+    deficit_ratio: float
+
+
+# --- 메인 State ---
+
+
+class EvolverState(TypedDict, total=False):
+    """LangGraph State — design-v2 §10.
+
+    노드 함수는 `def node(state: EvolverState) -> dict` 시그니처로,
+    변경된 필드만 반환한다.
+    """
+
+    # Core State (K, G, P, M, D)
+    knowledge_units: list[KnowledgeUnit]
+    gap_map: list[GapUnit]
+    policies: Policies
+    metrics: Metrics
+    domain_skeleton: DomainSkeleton
+
+    # Cycle 관리
+    current_cycle: int
+    current_plan: dict | None
+    current_claims: list[dict] | None
+    current_critique: dict | None
+
+    # Mode 관리 (Phase 0C)
+    current_mode: ModeDecision | None
+    axis_coverage: list[AxisCoverageEntry] | None
+    jump_history: list[int]
+
+    # HITL
+    hitl_pending: dict | None

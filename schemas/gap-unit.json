@@ -65,10 +65,17 @@
       "format": "date",
       "description": "(optional) 생성 시점"
     },
+    "trigger": {
+      "type": "string",
+      "description": "(optional) GU 생성 트리거 유형. 형식: 'A:adjacent_gap', 'B:epistemic', 'C:prescription' 등"
+    },
     "trigger_source": {
       "type": "string",
-      "enum": ["bootstrap", "dynamic_a", "dynamic_b", "dynamic_c", "jump_axis", "jump_spillover", "jump_blindspot", "jump_prescription", "jump_domain_shift"],
-      "description": "(optional) GU 생성 트리거. bootstrap=초기 생성, dynamic_a/b/c=동적 발견 트리거, jump_*=Quantum Jump 트리거"
+      "description": "(optional) 트리거 원인 ID (KU ID, RX ID 등)"
+    },
+    "note": {
+      "type": "string",
+      "description": "(optional) 부가 설명"
     },
     "axis_tags": {
       "type": "object",

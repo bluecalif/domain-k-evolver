@@ -1,0 +1,21 @@
+[project]
+name = "domain-k-evolver"
+version = "0.1.0"
+description = "Domain-agnostic self-expanding knowledge Evolver framework"
+requires-python = ">=3.12"
+dependencies = [
+    "langgraph>=1.0",
+    "langchain-core>=1.0",
+    "langchain-anthropic>=0.3",
+    "jsonschema>=4.20",
+    "pydantic>=2.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=9.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
