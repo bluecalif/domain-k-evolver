@@ -1,5 +1,5 @@
 # Project Overall Plan
-> Last Updated: 2026-03-05 (Phase 1 완료)
+> Last Updated: 2026-03-05 (Phase 2 계획 확정)
 > Status: In Progress — Phase 2 대기
 
 ## 1. Summary (개요)
@@ -97,12 +97,14 @@ docs/             — draft.md, design-v2.md, gu-bootstrap-spec.md, gu-bootstrap
 - **Stage C**: Graph 빌드 — StateGraph + 엣지 라우팅 + 단위 테스트 (3/3 ✅)
 - 총 16 tasks 완료 (S:1, M:6, L:7, XL:2)
 
-### Phase 2: Bench Integration & Validation
-- japan-travel 벤치 데이터 연결
-- Cycle 1 자동 실행 + 결과 검증
-- 5대 불변원칙 자동 검증 파이프라인
-- HITL Gate 실전 테스트
-- Metrics 임계치 기반 경고/중단 로직
+### Phase 2: Bench Integration & Real Self-Evolution
+- **목표**: 10+ 사이클 자동 실행, 자기확장 품질 향상 검증, 전체 자동화
+- **기술**: OpenAI GPT (LLM) + Tavily Search (검색) — D-29, D-30
+- **Stage A** (6 tasks): 실행 인프라 — LLM/Search Adapter, Config, Orchestrator, State 전이 수정, Metrics Logger
+- **Stage B** (8 tasks): 코드 수정 + 노드 강화 — seed 일반화, critique 실패모드, integrate LLM 비교, plan/collect 프롬프트
+- **Stage C** (7 tasks): 10+ 사이클 검증 — Realistic Mock, 불변원칙 자동검증, 10-Cycle 테스트(Mock/Real), Trajectory Analyzer
+- **Stage D** (4 tasks): 체크포인트 + 안정성 — Gate D 강화, Plateau Detection, Snapshot Diff, Memory Guard
+- **진행 방식**: Stage별 세션 분리 (A→commit→B→commit→C→commit→D→commit) — D-33
 
 ### Phase 3: Multi-Domain & Robustness
 - 새 도메인 Seed Pack 작성 + Evolver 가동
@@ -122,11 +124,13 @@ docs/             — draft.md, design-v2.md, gu-bootstrap-spec.md, gu-bootstrap
 | Phase 1 | A: 기반 (State, I/O, Schema, Metrics) | S~M | 5 | ✅ Complete |
 | Phase 1 | B: 노드 구현 (8개: seed~hitl_gate) | M~XL | 8 | ✅ Complete |
 | Phase 1 | C: Graph 빌드 + 테스트 | M~L | 3 | ✅ Complete |
-| Phase 2 | A: 벤치 연결 | M | 3 | |
-| Phase 2 | B: 검증 파이프라인 | M~L | 4 | |
+| Phase 2 | A: 실행 인프라 | S~L | 6 | |
+| Phase 2 | B: 코드 수정 + 노드 강화 | S~L | 8 | |
+| Phase 2 | C: 10+ 사이클 검증 | S~XL | 7 | |
+| Phase 2 | D: 체크포인트 + 안정성 | S~M | 4 | |
 | Phase 3 | A: 다중 도메인 | L | 3 | |
 | Phase 3 | B: Outer Loop + 안정성 | L~XL | 4 | |
-| **총계** | | | **41** | |
+| **총계** | | | **58** | |
 
 ---
 
@@ -157,6 +161,7 @@ docs/             — draft.md, design-v2.md, gu-bootstrap-spec.md, gu-bootstrap
 |--------|------|------|
 | langgraph | StateGraph, 엣지 라우팅, interrupt | 핵심 |
 | langchain-core | BaseTool, LLM 인터페이스 | LangGraph 의존 |
-| langchain-anthropic | ChatAnthropic (Claude) | LLM 호출 |
+| langchain-openai | ChatOpenAI (GPT) | LLM 호출 (D-29) |
+| tavily-python | TavilySearchResults | 웹 검색 (D-30) |
 | jsonschema | JSON Schema Draft 2020-12 검증 | Schema 정합성 |
 | pydantic | 타입 정의 (선택) | EvolverState 보강 시 |

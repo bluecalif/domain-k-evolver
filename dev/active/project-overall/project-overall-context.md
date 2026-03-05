@@ -1,5 +1,5 @@
 # Project Overall Context
-> Last Updated: 2026-03-05 (Phase 1 완료)
+> Last Updated: 2026-03-05 (Phase 2 계획 확정)
 > Status: In Progress — Phase 2 대기
 
 ## 1. 핵심 파일
@@ -45,6 +45,14 @@
 | `dev/active/phase1-langgraph-core/phase1-langgraph-core-context.md` | Phase 1 컨텍스트 |
 | `dev/active/phase1-langgraph-core/phase1-langgraph-core-tasks.md` | Phase 1 태스크 추적 (16/16 완료) |
 | `dev/active/phase1-langgraph-core/debug-history.md` | Phase 1 디버깅 이력 (2건) |
+
+### Phase 2 Dev-Docs
+| 파일 | 내용 |
+|------|------|
+| `dev/active/phase2-bench-validation/phase2-bench-validation-plan.md` | Phase 2 종합 계획 |
+| `dev/active/phase2-bench-validation/phase2-bench-validation-context.md` | Phase 2 컨텍스트 |
+| `dev/active/phase2-bench-validation/phase2-bench-validation-tasks.md` | Phase 2 태스크 추적 (0/25) |
+| `dev/active/phase2-bench-validation/debug-history.md` | Phase 2 디버깅 이력 |
 
 ### Phase 1 구현 파일
 | 파일 | 내용 |
@@ -149,6 +157,11 @@ class EvolverState(TypedDict):
 | D-26 | T1 임계치 = deficit_ratio > 0 확정 | 20%, 30% | C2 실측: 0.200 발동 → 해소 성공 | 0C |
 | D-27 | explore 비율 단계별 확정 | 단일 비율 | 초기 60%, 중기 50%, 수렴 40% | 0C |
 | D-28 | Entity Hierarchy 규칙 신설 | Phase 1 defer | is_a + alias 관계 정의, Phase 1 schema 반영 예정 | 0C |
+| D-29 | LLM → OpenAI GPT (langchain-openai) | Claude (Anthropic) | 범용 API 호환성, 비용 효율 | 2 |
+| D-30 | Search → Tavily Search (langchain-community) | SerpAPI, Google | 무료 tier 1000 req/month, LangChain 통합 | 2 |
+| D-31 | Phase 2를 4 Stage 25 tasks로 확대 | 기존 7 tasks | 10+ 사이클 검증 + Orchestrator + Plateau Detection 등 미포함 | 2 |
+| D-32 | Orchestrator가 Graph 외부에서 사이클 관리 | Graph 내부 루프 | 사이클 간 save/snapshot/invariant check 삽입 필요 | 2 |
+| D-33 | Stage별 세션 분리 진행 | 단일 세션 | A→commit→B→commit→C→commit→D→commit, 컨텍스트 관리 | 2 |
 
 ---
 

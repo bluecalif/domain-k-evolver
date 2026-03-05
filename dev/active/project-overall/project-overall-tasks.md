@@ -1,5 +1,5 @@
 # Project Overall Tasks
-> Last Updated: 2026-03-05 (Phase 1 완료)
+> Last Updated: 2026-03-05 (Phase 2 계획 확정)
 > Status: In Progress
 
 ## Summary
@@ -10,9 +10,9 @@
 | Phase 0B | 5 | 1 | 2 | 2 | 0 | ✅ Complete (5/5) |
 | Phase 0C | 6 | 0 | 3 | 2 | 1 | ✅ Complete (6/6) |
 | Phase 1 | 15 | 2 | 5 | 6 | 2 | ✅ Complete (15/15) |
-| Phase 2 | 7 | 1 | 3 | 2 | 1 | 0/7 |
+| Phase 2 | 25 | 5 | 11 | 5 | 4 | 0/25 |
 | Phase 3 | 7 | 0 | 2 | 3 | 2 | 0/7 |
-| **총계** | **40** | **4** | **13** | **13** | **10** | **26/40** |
+| **총계** | **58** | **8** | **23** | **18** | **9** | **26/58** |
 
 ---
 
@@ -88,20 +88,47 @@
 
 ---
 
-## Phase 2: Bench Integration & Validation
+## Phase 2: Bench Integration & Real Self-Evolution
 
-### Stage A: 벤치 연결
+> **목표**: 10+ 사이클 자동 실행, 자기확장 품질 향상 검증, 전체 자동화
+> **기술 스택**: OpenAI GPT (LLM) + Tavily Search (검색)
 
-- [ ] **2.1** japan-travel State 로딩 + Graph 실행 연결 `[M]`
-- [ ] **2.2** Cycle 1 자동 실행 + 결과 저장 `[L]`
-- [ ] **2.3** Cycle 0 vs Cycle 1 결과 비교 검증 `[M]`
+### Stage A: 실행 인프라 (6 tasks)
 
-### Stage B: 검증 파이프라인
+- [ ] **2.1** LLM Adapter — OpenAI GPT 래퍼 (langchain-openai) `[M]`
+- [ ] **2.2** SearchTool Adapter — Tavily Search 래퍼 (langchain-community) `[M]`
+- [ ] **2.3** Config — API 키, 모델명, 온도 등 환경 설정 `[S]`
+- [ ] **2.4** Orchestrator — Graph 외부 사이클 관리 (save/snapshot/invariant check) `[L]`
+- [ ] **2.5** State 전이 수정 — 실제 LLM 응답 파싱 + fallback 제거 `[M]`
+- [ ] **2.6** Metrics Logger — 사이클별 지표 기록 + CSV/JSON 출력 `[S]`
 
-- [ ] **2.4** 5대 불변원칙 자동 검증 모듈 `[L]`
-- [ ] **2.5** Metrics 임계치 기반 경고/중단 로직 `[M]`
-- [ ] **2.6** HITL Gate 실전 테스트 (interrupt 동작 확인) `[S]`
-- [ ] **2.7** 통합 테스트 — 전체 Cycle 자동 실행 + 검증 `[XL]`
+### Stage B: 코드 수정 + 노드 강화 (8 tasks)
+
+- [ ] **2.7** seed 일반화 — CORE_CATEGORIES japan-travel 하드코딩 제거 `[S]`
+- [ ] **2.8** critique 실패모드 5/6 구현 — Structural(5)/Integration(6) `[M]`
+- [ ] **2.9** critique T2/T5 설정 — spillover_count, domain_shift_detected `[M]`
+- [ ] **2.10** C3 수정 — net_gap_changes 전달 (항상 True 버그 수정) `[S]`
+- [ ] **2.11** integrate LLM 비교 — 충돌 감지 str() → LLM 의미 비교 `[M]`
+- [ ] **2.12** plan_modify 실제 효과 — Gap Map 실제 변경 반영 `[L]`
+- [ ] **2.13** collect 프롬프트 — Real Search + LLM 기반 Claim 추출 `[M]`
+- [ ] **2.14** plan 프롬프트 — LLM 기반 Plan 생성 `[S]`
+
+### Stage C: 10+ 사이클 검증 (7 tasks)
+
+- [ ] **2.15** Realistic Mock — LLM 응답 녹화/재생 모드 `[M]`
+- [ ] **2.16** 불변원칙 자동검증 — 5대 불변원칙 매 사이클 체크 `[M]`
+- [ ] **2.17** Metrics guard — 임계치 위반 시 경고/중단 `[S]`
+- [ ] **2.18** 10-Cycle Test Mock — Mock 기반 10사이클 자동 실행 + 검증 `[XL]`
+- [ ] **2.19** 10-Cycle Test Real — Real API 10사이클 실행 `[L]`
+- [ ] **2.20** Trajectory Analyzer — 사이클별 KU/GU/Metrics 추이 시각화 `[M]`
+- [ ] **2.21** Bench Run Script — 원커맨드 벤치 실행 스크립트 `[S]`
+
+### Stage D: 체크포인트 + 안정성 (4 tasks)
+
+- [ ] **2.22** Gate D 강화 — integrate 후 Schema 검증 + 불변원칙 체크 `[M]`
+- [ ] **2.23** Plateau Detection — 수렴 감지 + 자동 종료 `[M]`
+- [ ] **2.24** Snapshot Diff — 사이클 간 State 변화 요약 `[S]`
+- [ ] **2.25** Memory Guard — 토큰/메모리 사용량 모니터링 `[S]`
 
 ---
 
