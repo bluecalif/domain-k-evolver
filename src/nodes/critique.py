@@ -190,8 +190,18 @@ def critique_node(
     # 실패모드 분석
     prescriptions = _analyze_failure_modes(kus, gap_map, skeleton, today)
 
+    # net_gap_change 계산 (open GU 변화)
+    prev_counts = prev_metrics.get("counts", {})
+    prev_open = prev_counts.get("total_gu_open", 0)
+    curr_open = sum(1 for gu in gap_map if gu.get("status") == "open")
+    net_gap_change = curr_open - prev_open
+
+    # 누적 net_gap_changes
+    net_gap_changes = list(state.get("net_gap_changes", []))
+    net_gap_changes.append(net_gap_change)
+
     # 수렴 판정
-    convergence = _check_convergence(kus, gap_map, skeleton, cycle, rates)
+    convergence = _check_convergence(kus, gap_map, skeleton, cycle, rates, net_gap_changes)
 
     # Delta 계산
     prev_rates = prev_metrics.get("rates", {})
@@ -252,4 +262,5 @@ def critique_node(
         "current_critique": critique_report,
         "axis_coverage": axis_coverage_entries,
         "metrics": new_metrics,
+        "net_gap_changes": net_gap_changes,
     }

@@ -1,6 +1,7 @@
 {
   "domain": "japan-travel",
   "version": 0,
+  "core_categories": ["transport", "regulation", "pass-ticket"],
   "scope_boundary": {
     "includes": [
       "일본 국내 교통수단",

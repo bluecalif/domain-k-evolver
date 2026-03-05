@@ -36,8 +36,11 @@ class TestPlanModifyNode:
                     {"rx_id": "RX-0001", "type": "epistemic", "target_ku": "KU-001"},
                 ],
             },
-            "current_plan": {},
-            "gap_map": [],
+            "current_plan": {"target_gaps": []},
+            "gap_map": [
+                {"gu_id": "GU-0001", "status": "open",
+                 "target": {"entity_key": "d:cat:slug", "field": "f"}},
+            ],
         }
         result = plan_modify_node(state)
         trace = result["current_plan"]["traceability"][0]

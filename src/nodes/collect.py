@@ -6,10 +6,14 @@ design-v2 §7 기반.
 
 from __future__ import annotations
 
+import logging
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import date
 from typing import Any
 
 from src.state import EvolverState
+
+logger = logging.getLogger(__name__)
 
 # high-risk 카테고리
 HIGH_RISK_LEVELS = {"safety", "financial", "policy"}
@@ -29,10 +33,7 @@ def _parse_claims_deterministic(
     search_results: list[dict],
     fetched_content: str,
 ) -> list[dict]:
-    """LLM 없이 결정론적 Claim 생성 (fallback / mock).
-
-    실제 파이프라인에서는 LLM이 raw text에서 Claim을 추출.
-    """
+    """LLM 없이 결정론적 Claim 생성 (fallback / mock)."""
     target = gu.get("target", {})
     entity_key = target.get("entity_key", "")
     field = target.get("field", "")
@@ -62,17 +63,68 @@ def _parse_claims_deterministic(
     return claims
 
 
+def _collect_single_gu(
+    gu: dict,
+    gu_queries: list[str],
+    search_tool: Any,
+    llm: Any | None,
+) -> list[dict]:
+    """단일 GU에 대한 수집 + 파싱 (병렬 실행 단위)."""
+    all_results: list[dict] = []
+
+    for query in gu_queries:
+        try:
+            results = search_tool.search(query)
+            all_results.extend(results)
+        except Exception:
+            for _ in range(2):
+                try:
+                    results = search_tool.search(query)
+                    all_results.extend(results)
+                    break
+                except Exception:
+                    continue
+
+    # URL fetch (상위 2개)
+    fetched_content = ""
+    for result in all_results[:2]:
+        url = result.get("url", "")
+        if url:
+            try:
+                content = search_tool.fetch(url)
+                fetched_content += content + "\n"
+            except Exception:
+                pass
+
+    if llm is not None:
+        prompt = _build_parse_prompt(gu, all_results, fetched_content)
+        try:
+            response = llm.invoke(prompt)
+            from src.utils.llm_parse import extract_json
+            claims = extract_json(response.content)
+            if isinstance(claims, dict):
+                claims = [claims]
+        except (ValueError, AttributeError):
+            claims = _parse_claims_deterministic(gu, all_results, fetched_content)
+    else:
+        claims = _parse_claims_deterministic(gu, all_results, fetched_content)
+
+    return claims
+
+
 def collect_node(
     state: EvolverState,
     *,
     search_tool: Any | None = None,
     llm: Any | None = None,
+    max_workers: int = 5,
 ) -> dict:
     """Collection Plan → Claim + EU 배열 생성.
 
     Args:
         search_tool: SearchTool 인터페이스 구현체. None이면 수집 생략.
         llm: LLM 인스턴스. None이면 결정론적 파싱.
+        max_workers: 병렬 수집 스레드 수.
     """
     plan = state.get("current_plan", {})
     gap_map = state.get("gap_map", [])
@@ -86,77 +138,52 @@ def collect_node(
     # GU ID → GU dict 매핑
     gu_by_id = {gu.get("gu_id"): gu for gu in gap_map}
 
-    all_claims: list[dict] = []
-    search_calls_used = 0
-    skipped: list[str] = []
+    if search_tool is None:
+        return {"current_claims": []}
 
-    # 우선순위 순서 (plan에서 이미 정렬됨)
+    # 수집 대상 필터링 (budget 내)
+    tasks: list[tuple[dict, list[str]]] = []
+    search_calls_used = 0
     for gu_id in target_gap_ids:
         gu = gu_by_id.get(gu_id)
         if gu is None:
-            skipped.append(gu_id)
             continue
 
         gu_queries = queries.get(gu_id, [])
+        needed = len(gu_queries)
 
-        # Budget 체크: low utility부터 중단
-        if search_calls_used + len(gu_queries) > budget:
+        if search_calls_used + needed > budget:
             if gu.get("expected_utility") in ("low", "medium"):
-                skipped.append(gu_id)
                 continue
 
-        if search_tool is not None:
-            # 실제 수집
-            all_results: list[dict] = []
-            fetched_content = ""
+        tasks.append((gu, gu_queries))
+        search_calls_used += needed
 
-            for query in gu_queries:
-                if search_calls_used >= budget:
-                    break
+    # 병렬 수집 (search_tool + llm이 있을 때)
+    all_claims: list[dict] = []
+
+    if tasks and (llm is not None or search_tool is not None):
+        workers = min(max_workers, len(tasks))
+        logger.info("collect: %d GU 병렬 수집 (workers=%d)", len(tasks), workers)
+
+        with ThreadPoolExecutor(max_workers=workers) as executor:
+            futures = {
+                executor.submit(_collect_single_gu, gu, gu_queries, search_tool, llm): gu.get("gu_id")
+                for gu, gu_queries in tasks
+            }
+            for future in as_completed(futures):
+                gu_id = futures[future]
                 try:
-                    results = search_tool.search(query)
-                    all_results.extend(results)
-                    search_calls_used += 1
-                except Exception:
-                    # 재시도 로직 (최대 3회)
-                    for _ in range(2):
-                        try:
-                            results = search_tool.search(query)
-                            all_results.extend(results)
-                            search_calls_used += 1
-                            break
-                        except Exception:
-                            continue
-                    else:
-                        skipped.append(gu_id)
-                        continue
-
-            # URL fetch (상위 2개)
-            for result in all_results[:2]:
-                url = result.get("url", "")
-                if url:
-                    try:
-                        content = search_tool.fetch(url)
-                        fetched_content += content + "\n"
-                    except Exception:
-                        pass
-
-            if llm is not None:
-                # LLM 파싱
-                prompt = _build_parse_prompt(gu, all_results, fetched_content)
-                try:
-                    response = llm.invoke(prompt)
-                    import json
-                    claims = json.loads(response.content)
-                except Exception:
-                    claims = _parse_claims_deterministic(gu, all_results, fetched_content)
-            else:
-                claims = _parse_claims_deterministic(gu, all_results, fetched_content)
-        else:
-            # search_tool 없으면 빈 결과
-            claims = []
-
-        all_claims.extend(claims)
+                    claims = future.result()
+                    all_claims.extend(claims)
+                    logger.info("collect: %s → %d claims", gu_id, len(claims))
+                except Exception as e:
+                    logger.warning("collect: %s 실패 — %s", gu_id, e)
+    else:
+        # search_tool 없으면 순차 (결정론적 mock)
+        for gu, gu_queries in tasks:
+            claims = _parse_claims_deterministic(gu, [], "")
+            all_claims.extend(claims)
 
     return {"current_claims": all_claims}
 
@@ -168,17 +195,54 @@ def _build_parse_prompt(
 ) -> str:
     """LLM Claim 파싱 프롬프트."""
     target = gu.get("target", {})
-    return f"""Extract structured claims from the following content.
+    gu_id = gu.get("gu_id", "")
+    entity_key = target.get("entity_key", "")
+    field = target.get("field", "")
 
-Target: {target.get('entity_key')} / {target.get('field')}
-Resolution Criteria: {gu.get('resolution_criteria', '')}
+    # 검색 결과를 구조화된 텍스트로 변환
+    source_lines = []
+    for i, r in enumerate(search_results[:5], 1):
+        source_lines.append(
+            f"  [{i}] {r.get('title', 'N/A')}\n"
+            f"      URL: {r.get('url', '')}\n"
+            f"      Snippet: {r.get('snippet', '')}"
+        )
+    sources_text = "\n".join(source_lines) if source_lines else "  (no results)"
 
-Search Results:
-{search_results[:5]}
+    return f"""You are a knowledge extraction agent. Extract factual claims from web sources.
 
-Fetched Content (truncated):
-{fetched_content[:3000]}
+## Target
+- Entity: {entity_key}
+- Field: {field}
+- Gap ID: {gu_id}
+- Gap Type: {gu.get('gap_type', 'unknown')}
+- Resolution Criteria: {gu.get('resolution_criteria', 'N/A')}
 
-Return a JSON array of claims with fields:
-- claim_id, entity_key, field, value, evidence (eu_id, url, title, observed_at, credibility)
-"""
+## Sources
+{sources_text}
+
+## Fetched Content (truncated)
+{fetched_content[:3000] if fetched_content.strip() else '(no content fetched)'}
+
+## Output Format
+Return a JSON array. Each element MUST have these fields:
+- "claim_id": string (format: "CL-XXXX-NN")
+- "entity_key": "{entity_key}"
+- "field": "{field}"
+- "value": string (the factual claim — be specific with numbers, dates, names)
+- "source_gu_id": "{gu_id}"
+- "evidence": {{
+    "eu_id": string (format: "EU-XXXX-NN"),
+    "url": string,
+    "title": string,
+    "snippet": string (relevant excerpt),
+    "observed_at": string (today's date YYYY-MM-DD),
+    "credibility": number (0.0-1.0, official=0.9, news=0.7, forum=0.5)
+  }}
+- "risk_flag": boolean (true if safety/financial/policy related)
+
+## Rules
+- Extract ONLY claims supported by the sources above.
+- Each claim must cite exactly one source URL.
+- If no factual information is found, return an empty array: []
+- Return ONLY valid JSON, no markdown fences or explanations."""

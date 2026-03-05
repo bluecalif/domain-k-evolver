@@ -149,7 +149,7 @@ def mode_node(state: EvolverState) -> dict:
         target_count = min(8, ceil(open_count * 0.4))
     else:
         cap = min(max(10, ceil(open_count * 0.6)), 30)
-        target_count = min(cap, ceil(open_count * 0.5))
+        target_count = min(10, cap, ceil(open_count * 0.5))
 
     # Convergence Guard: 연속 2 Cycle Jump 감지
     convergence_warning = False

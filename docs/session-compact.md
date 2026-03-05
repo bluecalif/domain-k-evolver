@@ -1,83 +1,61 @@
 # Session Compact
 
 > Generated: 2026-03-05
-> Source: Phase 2 계획 수립 세션 컴팩트
+> Source: Phase 2 Stage A'+B' 완료 세션
 
 ## Goal
-Phase 2 (Bench Integration & Real Self-Evolution) 계획 수립 + project-overall 문서 갱신.
-사용자 요구: 10+ 사이클 자동 실행, 자기확장 품질 향상 검증, 전체 자동화.
+Phase 2 (Bench Integration & Real Self-Evolution) Stage A'+B' 완료.
+Real API 1 Cycle + 3 Cycle 연속 성공, 불변원칙 위반 0회.
 
 ## Completed
-- [x] Phase 1 완료 상태 확인 (191 tests, 13-node StateGraph)
-- [x] src/ 전체 코드 심층 분석 — 8개 노드 + utils + graph.py 한계점 11개 식별
-- [x] bench/japan-travel 데이터 분석 — KU 28, GU 39, EU 55, Cycle 2 완료
-- [x] tests/ 전체 분석 — 191 tests, Mock 기반, 테스트 패턴 파악
-- [x] Phase 2 종합 계획 설계 — 4 Stage, 25 tasks (기존 7 tasks에서 대폭 확대)
-- [x] 사용자 기술 선택 확정: OpenAI GPT + Tavily Search + Stage별 세션 분리
-- [x] Plan 파일 작성 완료: `.claude/plans/twinkly-splashing-snowflake.md`
+- [x] Phase 1 완료 (191 tests, 14-node StateGraph)
+- [x] Phase 2 Stage A 인프라 코드 작성 (config, adapters, orchestrator, metrics_logger)
+- [x] Phase 2 재설계: 25→16 tasks (D-34 Real API First, D-35 Over-engineering 삭제)
+- [x] **Phase 2 Stage A' 완료** (Task 2.1~2.5) — Real API 1 Cycle 성공, KU +6
+- [x] **Phase 2 Stage B' 완료** (Task 2.6~2.11) — 3 Cycle 연속 성공, 254 tests
 
 ## Current State
 
-**Phase 1 완료, Phase 2 미착수.** 계획만 수립된 상태.
+**Phase 2 Stage C' 진행 예정.** 10+ Cycle 자동화.
 
-### 코드 한계점 (Phase 2에서 수정 필요)
-1. Real SearchTool adapter 없음 — MockSearchTool만 존재
-2. Real LLM 통합 미테스트 — llm=None fallback만 사용
-3. critique: Structural(5)/Integration(6) 실패모드 미구현
-4. critique: T2 spillover_count, T5 domain_shift_detected 미설정
-5. critique: C3 net_gap_changes 미전달 → 항상 True
-6. integrate: 충돌 감지가 단순 str() 비교
-7. seed: CORE_CATEGORIES japan-travel 하드코딩
-8. plan_modify: Gap Map 실제 변경 안 함
-9. Multi-cycle orchestrator 없음
+### 코드 현황
+- src/ 27파일, tests/ 23파일, **254 tests** passed
+- Real API: 1 Cycle + 3 Cycle 성공 검증 완료
+- API: LLM 17 calls (84K tokens), Search 42, Fetch 28
 
-### Changed Files
-- `.claude/plans/twinkly-splashing-snowflake.md` — Phase 2 상세 계획
+### 3 Cycle 실행 결과
+| Cycle | KU (active/disputed) | GU (open/resolved) | LLM | Search |
+|-------|---------------------|-------------------|-----|--------|
+| 2 | 27/4 | 29/21 | 4 | 9 |
+| 3 | 27/10 | 35/27 | 7 | 18 |
+| 4 | 28/14 | 30/32 | 6 | 15 |
 
-### 미변경 (갱신 필요)
-- `dev/active/project-overall/project-overall-tasks.md` — Phase 2 섹션 7→25 tasks로 교체 필요
-- `dev/active/project-overall/project-overall-plan.md` — Phase 2 섹션 갱신 필요
-- `dev/active/project-overall/project-overall-context.md` — 신규 결정사항 추가 필요
+### Stage B' 구현 요약
+- **2.6** retry 백오프 + LLMCallCounter + 호출 카운터
+- **2.7** CORE_CATEGORIES → skeleton 동적 추출
+- **2.8** plan_modify 실제 gap_map 수정 + critique C3 net_gap_changes
+- **2.9** invariant_checker.py (I1~I5 자동검증)
+- **2.10** MetricsLogger API calls/tokens 추적
+- **2.11** run_bench.py (N사이클 + 불변원칙 + trajectory)
 
 ## Remaining / TODO
-- [x] **project-overall 3개 파일 갱신** (Phase 2 신규 계획 반영) ✅
-- [x] **Phase 2 dev-docs 생성** (`dev/active/phase2-bench-validation/` 4파일) ✅
-- [x] **session-compact.md 최종 갱신** ✅
-- [ ] **Phase 2 Stage A 착수** (첫 세션)
+- [x] **Phase 2 Stage A' 실행** (Task 2.1~2.5) ✅
+- [x] **Phase 2 Stage B' 실행** (Task 2.6~2.11) ✅
+- [ ] **Phase 2 Stage C' 실행** (Task 2.12~2.16)
 
 ## Key Decisions
-- D-29: LLM → OpenAI GPT (langchain-openai, OPENAI_API_KEY) | Claude 대신 선택
-- D-30: Search → Tavily Search (langchain-community, TAVILY_API_KEY) | 무료 tier 1000 req/month
-- D-31: Phase 2를 4 Stage 25 tasks로 확대 | 기존 7 tasks 불충분 (10+ 사이클 검증 미포함)
-- D-32: Orchestrator가 Graph 외부에서 사이클 관리 | 사이클 간 save/snapshot/invariant check 삽입
-- D-33: Stage별 세션 분리 진행 | A→commit→B→commit→C→commit→D→commit
-
-## Phase 2 구조 요약
-
-### Stage A: 실행 인프라 (6 tasks)
-2.1 LLM Adapter [M], 2.2 SearchTool Adapter [M], 2.3 Config [S], 2.4 Orchestrator [L], 2.5 State 전이 수정 [M], 2.6 Metrics Logger [S]
-
-### Stage B: 코드 수정 + 노드 강화 (8 tasks)
-2.7 seed 일반화 [S], 2.8 critique 실패모드5/6 [M], 2.9 critique T2/T5 [M], 2.10 C3 수정 [S], 2.11 integrate LLM비교 [M], 2.12 plan_modify 실제효과 [L], 2.13 collect 프롬프트 [M], 2.14 plan 프롬프트 [S]
-
-### Stage C: 10+ 사이클 검증 (7 tasks)
-2.15 Realistic Mock [M], 2.16 불변원칙 자동검증 [M], 2.17 Metrics guard [S], 2.18 10-Cycle Test Mock [XL], 2.19 10-Cycle Test Real [L], 2.20 Trajectory Analyzer [M], 2.21 Bench Run Script [S]
-
-### Stage D: 체크포인트 + 안정성 (4 tasks)
-2.22 Gate D 강화 [M], 2.23 Plateau Detection [M], 2.24 Snapshot Diff [S], 2.25 Memory Guard [S]
+- D-36: config fallback gpt-4.1-mini 확정 (gpt-4o-mini 버그 수정)
+- D-37: jump target_count 상한 10 (과다 API 방지)
+- D-38: LLMCallCounter 래퍼 패턴 (token 추적)
 
 ## Context
 다음 세션에서는 답변에 한국어를 사용하세요.
 - 프로젝트 루트: `C:\Users\User\Learning\KBs-2026\domain-k-evolver`
-- 상세 계획: `.claude/plans/twinkly-splashing-snowflake.md`
-- 모든 의존성 설치 완료 (langgraph 1.0.3 등)
-- Phase 1 전체 완료: 191 tests passed
-- `/dev-docs` 스킬로 문서 생성 가능
+- Phase 2 dev-docs: `dev/active/phase2-bench-validation/`
+- 254 tests passed, 3 Cycle 실행 검증 완료
+- 자동 실행 결과: `bench/japan-travel-auto/` (state + trajectory)
 
 ## Next Action
-**Phase 2 Stage A 착수** — 실행 인프라 구축 (Task 2.1~2.6)
-1. `src/adapters/llm_adapter.py` — OpenAI GPT LLM Adapter
-2. `src/adapters/search_adapter.py` — Tavily Search Adapter
-3. `src/config.py` — 환경 설정
-4. `src/orchestrator.py` — 사이클 관리 Orchestrator
-5. State 전이 수정 + Metrics Logger
+**Phase 2 Task 2.12 착수** — Plateau Detection + 자동 종료
+1. 연속 N사이클 KU/GU 변화 0 → plateau 감지
+2. `scripts/run_bench.py`에 plateau 조기 종료 로직 추가

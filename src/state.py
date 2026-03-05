@@ -175,5 +175,8 @@ class EvolverState(TypedDict, total=False):
     axis_coverage: list[AxisCoverageEntry] | None
     jump_history: list[int]
 
+    # Convergence tracking
+    net_gap_changes: list[int]
+
     # HITL
     hitl_pending: dict | None

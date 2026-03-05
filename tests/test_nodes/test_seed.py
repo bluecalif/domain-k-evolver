@@ -80,10 +80,12 @@ class TestPriority:
         assert _determine_expected_utility("financial", "tips", "payment") == "medium"
 
     def test_convenience_core_is_medium(self) -> None:
-        assert _determine_expected_utility("convenience", "how_to_use", "transport") == "medium"
+        core = {"transport", "regulation", "pass-ticket"}
+        assert _determine_expected_utility("convenience", "how_to_use", "transport", core) == "medium"
 
     def test_convenience_non_core_is_low(self) -> None:
-        assert _determine_expected_utility("convenience", "hours", "dining") == "low"
+        core = {"transport", "regulation", "pass-ticket"}
+        assert _determine_expected_utility("convenience", "hours", "dining", core) == "low"
 
     def test_regulation_upgrade(self) -> None:
         # regulation 카테고리: convenience → policy (1단계 상향)

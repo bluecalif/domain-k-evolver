@@ -208,10 +208,10 @@ def plan_node(
         )
         response = llm.invoke(prompt)
         # LLM 응답 파싱 (JSON)
-        import json
+        from src.utils.llm_parse import extract_json
         try:
-            plan = json.loads(response.content)
-        except (json.JSONDecodeError, AttributeError):
+            plan = extract_json(response.content)
+        except (ValueError, AttributeError):
             # fallback
             plan = _build_plan_from_targets(
                 explore_targets, exploit_targets, mode_decision,

@@ -1,50 +1,77 @@
 # Phase 2: Bench Integration & Real Self-Evolution — Plan
-> Last Updated: 2026-03-05
-> Status: Not Started
+> Last Updated: 2026-03-05 (Stage A'+B' 완료)
+> Status: In Progress — Stage C' 진행 예정
 
-## 1. 목표
+## 1. Summary (개요)
 
-- Real LLM (OpenAI GPT) + Real Search (Tavily) 연동
-- japan-travel 벤치에서 10+ 사이클 자동 실행
-- 자기확장 품질 향상(KU 증가, GU 해소, Metrics 개선) 정량 검증
-- 5대 불변원칙 매 사이클 자동 검증
+Real LLM (OpenAI gpt-4.1-mini) + Real Search (Tavily)를 연동하여
+japan-travel 벤치에서 10+ 사이클 자동 실행, 지식 자기확장 품질 검증.
 
-## 2. 선행 조건
+**재설계 원칙**: "먼저 1사이클을 Real API로 돌려보고, 거기서 발견된 문제를 해결하는 순서"
+기존 25-task 4-Stage Mock 위주 설계 → **16-task 3-Stage Real API First 설계**로 변경.
 
-- [x] Phase 1 완료 (191 tests, 14-node StateGraph)
-- [x] bench/japan-travel State 데이터 (Cycle 2 결과: KU 28, GU 39, EU 55)
-- [ ] OPENAI_API_KEY 환경변수 설정
-- [ ] TAVILY_API_KEY 환경변수 설정
+## 2. Current State (현재 상태)
 
-## 3. Stage 구성
+- **Stage A' 완료**: Real API 1 Cycle 성공 (KU +6), 254 tests
+- **Stage B' 완료**: 3 Cycle 연속 성공, 불변원칙 위반 0회
+  - KU 28→42 (active 28, disputed 14)
+  - GU resolved 21→32
+  - LLM 17 calls (84K tokens), Search 42, Fetch 28
+- **Stage C' 진행 예정**: 10+ Cycle 자동화
 
-### Stage A: 실행 인프라 (6 tasks, 2.1~2.6)
-- LLM/Search Adapter, Config, Orchestrator, State 전이 수정, Metrics Logger
-- **Gate**: Orchestrator가 단일 사이클을 Mock LLM으로 완주할 수 있어야 함
+## 3. Target State (목표 상태)
 
-### Stage B: 코드 수정 + 노드 강화 (8 tasks, 2.7~2.14)
-- seed 일반화, critique 실패모드/T2·T5/C3, integrate LLM비교, plan_modify 실제효과, collect/plan 프롬프트
-- **Gate**: 기존 191 tests + 신규 테스트 전체 통과
+- Real API로 10+ 사이클 자동 실행 성공
+- 사이클마다 KU 증가, GU 해소, 5대 불변원칙 위반 0건
+- 비용/토큰 추적 + Plateau 감지 자동 종료
+- 원커맨드 벤치 실행 CLI
 
-### Stage C: 10+ 사이클 검증 (7 tasks, 2.15~2.21)
-- Realistic Mock, 불변원칙 자동검증, Metrics guard, 10-Cycle 테스트(Mock/Real), Trajectory Analyzer, Bench Run Script
-- **Gate**: Mock 10사이클 불변원칙 전체 PASS + Real API 10사이클 실행 성공
+## 4. Implementation Stages
 
-### Stage D: 체크포인트 + 안정성 (4 tasks, 2.22~2.25)
-- Gate D 강화, Plateau Detection, Snapshot Diff, Memory Guard
-- **Gate**: 수렴 감지 시 자동 종료 + 메모리 사용량 모니터링
+### Stage A': Smoke Test → Real 1 Cycle (5 tasks, 2.1~2.5) ✅
+- API 키 검증, LLM 파싱 강화, 프롬프트 정교화, Orchestrator 정합성, **Real 1 Cycle 실행**
+- **Gate**: japan-travel Real API 1사이클 완주 + KU 1개 이상 추가 → **PASSED**
 
-## 4. 진행 방식
+### Stage B': 안정화 + 3 Cycle (6 tasks, 2.6~2.11) ✅
+- 에러 핸들링, seed 일반화, plan_modify 실효성, 불변원칙 자동검증, 비용 로깅, **Real 3 Cycle 실행**
+- **Gate**: 3사이클 연속 에러 없이 완주 + 불변원칙 위반 0건 → **PASSED**
 
-- Stage별 세션 분리: A→commit→B→commit→C→commit→D→commit (D-33)
-- 각 Stage 완료 시 dev-docs 갱신 + git commit
-- Real API 테스트는 Stage C에서 집중 (비용 관리)
+### Stage C': 10+ Cycle 자동화 (5 tasks, 2.12~2.16)
+- Plateau Detection, Metrics Guard, **Real 10 Cycle 실행**, CLI 정비, 결과 분석
+- **Gate**: 10사이클 완주 (또는 plateau 조기 종료) + 결과 분석 리포트
 
-## 5. 위험 요소
+## 5. Task Breakdown
+
+| Stage | Total | S | M | L | Done |
+|-------|-------|---|---|---|----|
+| A': Smoke + 1 Cycle | 5 | 1 | 3 | 1 | 5/5 ✅ |
+| B': 안정화 + 3 Cycle | 6 | 2 | 3 | 1 | 6/6 ✅ |
+| C': 10+ Cycle | 5 | 2 | 2 | 1 | 0/5 |
+| **합계** | **16** | **5** | **8** | **3** | **11/16** |
+
+## 6. Risks & Mitigation
 
 | 리스크 | 완화 |
 |--------|------|
-| API 비용 | Tavily 무료 1000 req/month, GPT 사용량 모니터링 |
-| LLM 응답 파싱 실패 | 구조화 프롬프트 + fallback 파서 |
-| 10사이클 중 State 비대 | Memory Guard (2.25) + Snapshot 크기 모니터링 |
-| Mock/Real 결과 괴리 | Realistic Mock (2.15)으로 녹화/재생 |
+| API 비용 | gpt-4.1-mini ~$0.06/10cycles, Tavily 무료 1000/month |
+| LLM 응답 파싱 실패 | extract_json() + fallback to deterministic |
+| Rate Limit (429) | 지수 백오프 retry (1s→2s→4s) ✅ 구현 |
+| 10사이클 중 State 비대 | Plateau Detection으로 조기 종료 (2.12) |
+
+## 7. Dependencies
+
+### Python 패키지 (설치 완료)
+| 패키지 | 용도 |
+|--------|------|
+| `langchain-openai` | ChatOpenAI (gpt-4.1-mini) |
+| `tavily-python` | Tavily Search API |
+| `python-dotenv` | .env 파일 로드 |
+
+## 8. 비용 추정
+
+| API | 3사이클 실측 | 10사이클 예상 | 비용 |
+|-----|-------------|-------------|------|
+| Tavily Search | 42 calls | ~140 calls | 무료 |
+| Tavily Fetch | 28 calls | ~93 calls | 무료 |
+| OpenAI gpt-4.1-mini | 17 calls, 85K tokens | ~57 calls, ~280K tokens | ~$0.08 |
+| **총 실행 시간** | **~2.5분** | **~8분** | |

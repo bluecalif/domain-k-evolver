@@ -210,8 +210,8 @@ def build_graph(
     )
     graph.add_edge("hitl_d", "plan_modify")
 
-    # plan_modify → cycle_inc → mode (loop)
+    # plan_modify → cycle_inc → END (단일 사이클, 루프는 Orchestrator가 외부 관리)
     graph.add_edge("plan_modify", "cycle_inc")
-    graph.add_edge("cycle_inc", "mode")
+    graph.add_edge("cycle_inc", END)
 
     return graph.compile()

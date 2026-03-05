@@ -19,6 +19,9 @@ Desktop.ini
 .claude/cache/
 .claude/settings.local.json
 
+# Secrets
+.env
+
 # Build / Cache
 dist/
 build/

@@ -1,6 +1,6 @@
 # Project Overall Context
-> Last Updated: 2026-03-05 (Phase 2 계획 확정)
-> Status: In Progress — Phase 2 대기
+> Last Updated: 2026-03-05 (Phase 2 Stage A'+B' 완료)
+> Status: In Progress — Phase 2 Stage C' 진행 예정
 
 ## 1. 핵심 파일
 
@@ -51,7 +51,7 @@
 |------|------|
 | `dev/active/phase2-bench-validation/phase2-bench-validation-plan.md` | Phase 2 종합 계획 |
 | `dev/active/phase2-bench-validation/phase2-bench-validation-context.md` | Phase 2 컨텍스트 |
-| `dev/active/phase2-bench-validation/phase2-bench-validation-tasks.md` | Phase 2 태스크 추적 (0/25) |
+| `dev/active/phase2-bench-validation/phase2-bench-validation-tasks.md` | Phase 2 태스크 추적 (11/16) |
 | `dev/active/phase2-bench-validation/debug-history.md` | Phase 2 디버깅 이력 |
 
 ### Phase 1 구현 파일
@@ -64,6 +64,30 @@
 | `src/tools/search.py` | WebSearch/WebFetch 도구 래퍼 |
 | `tests/test_graph.py` | Graph 통합 테스트 36개 |
 | `tests/test_nodes/*.py` | 노드 단위 테스트 |
+
+### Phase 2 코드 (Stage A'+B' 완료, 254 tests)
+| 파일 | 내용 |
+|------|------|
+| `src/config.py` | 환경 설정 (gpt-4.1-mini 확정) |
+| `src/adapters/llm_adapter.py` | LLMCallCounter 래퍼 + max_retries=3 + MockLLM |
+| `src/adapters/search_adapter.py` | Tavily 래퍼 + retry 백오프 + 호출 카운터 |
+| `src/orchestrator.py` | 사이클 관리 Orchestrator |
+| `src/utils/metrics_logger.py` | 사이클별 Metrics + API calls/tokens 기록 |
+| `src/utils/invariant_checker.py` | 5대 불변원칙 자동검증 (I1~I5) |
+| `src/utils/llm_parse.py` | LLM 응답 JSON 추출 (markdown fence 제거) |
+| `scripts/run_one_cycle.py` | 1사이클 Real API 실행 |
+| `scripts/run_bench.py` | N사이클 CLI 벤치 실행 + 불변원칙 + trajectory |
+| `tests/test_config.py` | Config 단위 테스트 |
+| `tests/test_adapters.py` | Adapter + retry + 카운터 테스트 |
+| `tests/test_invariant_checker.py` | 불변원칙 8 tests |
+| `tests/test_orchestrator.py` | Orchestrator 단위 테스트 |
+| `tests/test_metrics_logger.py` | Metrics Logger 단위 테스트 |
+
+### 벤치 자동 실행 결과
+| 파일 | 내용 |
+|------|------|
+| `bench/japan-travel-auto/state/*.json` | 자동 실행 State (Cycle 4) |
+| `bench/japan-travel-auto/trajectory/` | 3 Cycle trajectory (JSON + CSV) |
 
 ### 벤치 데이터 (Cycle 2 결과 — 최신)
 | 파일 | 내용 |
@@ -161,7 +185,9 @@ class EvolverState(TypedDict):
 | D-30 | Search → Tavily Search (langchain-community) | SerpAPI, Google | 무료 tier 1000 req/month, LangChain 통합 | 2 |
 | D-31 | Phase 2를 4 Stage 25 tasks로 확대 | 기존 7 tasks | 10+ 사이클 검증 + Orchestrator + Plateau Detection 등 미포함 | 2 |
 | D-32 | Orchestrator가 Graph 외부에서 사이클 관리 | Graph 내부 루프 | 사이클 간 save/snapshot/invariant check 삽입 필요 | 2 |
-| D-33 | Stage별 세션 분리 진행 | 단일 세션 | A→commit→B→commit→C→commit→D→commit, 컨텍스트 관리 | 2 |
+| D-33 | Stage별 세션 분리 진행 | 단일 세션 | A→commit→B→commit→C→commit, 컨텍스트 관리 | 2 |
+| D-34 | Real API First 전략 | Mock 위주(Task 19에서야 Real) | 즉시 Real 검증, 문제 조기 발견 | 2 |
+| D-35 | 25→16 tasks 축소 | 기존 25 tasks | Over-engineering 삭제 (녹화/재생, 시각화, Memory Guard 등) | 2 |
 
 ---
 

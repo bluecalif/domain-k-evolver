@@ -13,9 +13,7 @@ from typing import Any
 
 from src.state import EvolverState
 
-# --- 핵심 카테고리 (도메인별 정의, §3) ---
-# japan-travel 기준. 추후 skeleton에서 읽도록 확장 가능.
-CORE_CATEGORIES = {"transport", "regulation", "pass-ticket"}
+# --- 핵심 카테고리: skeleton["core_categories"]에서 동적 로드 ---
 
 # --- risk_level 1단계 상향 대상 카테고리 ---
 RISK_UPGRADE_CATEGORIES = {"regulation"}
@@ -88,8 +86,15 @@ def _determine_risk_level(category: str, field: str) -> str:
     return base_risk
 
 
-def _determine_expected_utility(risk_level: str, field: str, category: str) -> str:
+def _determine_expected_utility(
+    risk_level: str,
+    field: str,
+    category: str,
+    core_categories: set[str] | None = None,
+) -> str:
     """§3 규칙: risk_level → expected_utility."""
+    if core_categories is None:
+        core_categories = set()
     if risk_level == "safety":
         return "critical"
     elif risk_level == "financial" and field in ("price", "policy"):
@@ -98,7 +103,7 @@ def _determine_expected_utility(risk_level: str, field: str, category: str) -> s
         return "medium"
     elif risk_level == "policy":
         return "high"
-    elif risk_level == "convenience" and category in CORE_CATEGORIES:
+    elif risk_level == "convenience" and category in core_categories:
         return "medium"
     elif risk_level == "convenience":
         return "low"
@@ -198,7 +203,13 @@ def _is_excluded(entity_key: str, scope_boundary: dict) -> bool:
 
 
 def seed_node(state: EvolverState) -> dict:
-    """Bootstrap GU 생성 + State 초기화."""
+    """Bootstrap GU 생성 + State 초기화.
+
+    cycle > 1이면 gap_map이 이미 존재하므로 스킵 (no-op).
+    """
+    if state.get("current_cycle", 0) > 1 and state.get("gap_map"):
+        return {}
+
     skeleton = state.get("domain_skeleton", {})
     kus = state.get("knowledge_units", [])
     domain = skeleton.get("domain", "")
@@ -206,6 +217,7 @@ def seed_node(state: EvolverState) -> dict:
     scope_boundary = skeleton.get("scope_boundary", {})
 
     categories = [c["slug"] for c in skeleton.get("categories", [])]
+    core_categories = set(skeleton.get("core_categories", categories))
     n_categories = len(categories)
     per_cat_cap = _get_per_category_cap(n_categories)
 
@@ -225,7 +237,7 @@ def seed_node(state: EvolverState) -> dict:
             continue
 
         risk_level = _determine_risk_level(cat, field)
-        expected_utility = _determine_expected_utility(risk_level, field, cat)
+        expected_utility = _determine_expected_utility(risk_level, field, cat, core_categories)
 
         # 엔티티 확장
         known_entities = entities_by_cat.get(cat, [])
@@ -328,7 +340,7 @@ def seed_node(state: EvolverState) -> dict:
             if cat_fields:
                 field = cat_fields[0]
                 risk_level = _determine_risk_level(cat, field)
-                expected_utility = _determine_expected_utility(risk_level, field, cat)
+                expected_utility = _determine_expected_utility(risk_level, field, cat, core_categories)
                 capped.append({
                     "gap_type": "missing",
                     "target": {"entity_key": f"{domain}:{cat}:*", "field": field},
