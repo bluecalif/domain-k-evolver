@@ -1,6 +1,6 @@
 # Project Overall Context
-> Last Updated: 2026-03-04 (Phase 0C 완료)
-> Status: In Progress — Phase 1 준비
+> Last Updated: 2026-03-05 (Phase 1 완료)
+> Status: In Progress — Phase 2 대기
 
 ## 1. 핵심 파일
 
@@ -37,6 +37,25 @@
 | `dev/active/phase0c-gu-strategy/phase0c-gu-strategy-context.md` | Phase 0C 컨텍스트 |
 | `dev/active/phase0c-gu-strategy/phase0c-gu-strategy-tasks.md` | Phase 0C 태스크 추적 |
 | `dev/active/phase0c-gu-strategy/debug-history.md` | Phase 0C 디버깅 이력 |
+
+### Phase 1 Dev-Docs (✅ Complete)
+| 파일 | 내용 |
+|------|------|
+| `dev/active/phase1-langgraph-core/phase1-langgraph-core-plan.md` | Phase 1 종합 계획 |
+| `dev/active/phase1-langgraph-core/phase1-langgraph-core-context.md` | Phase 1 컨텍스트 |
+| `dev/active/phase1-langgraph-core/phase1-langgraph-core-tasks.md` | Phase 1 태스크 추적 (16/16 완료) |
+| `dev/active/phase1-langgraph-core/debug-history.md` | Phase 1 디버깅 이력 (2건) |
+
+### Phase 1 구현 파일
+| 파일 | 내용 |
+|------|------|
+| `src/state.py` | EvolverState TypedDict + 보조 타입 |
+| `src/graph.py` | StateGraph 빌드 + 엣지 라우팅 (14노드) |
+| `src/nodes/*.py` | 8개 노드 (seed, mode, plan, collect, integrate, critique, plan_modify, hitl_gate) |
+| `src/utils/*.py` | state_io, schema_validator, metrics |
+| `src/tools/search.py` | WebSearch/WebFetch 도구 래퍼 |
+| `tests/test_graph.py` | Graph 통합 테스트 36개 |
+| `tests/test_nodes/*.py` | 노드 단위 테스트 |
 
 ### 벤치 데이터 (Cycle 2 결과 — 최신)
 | 파일 | 내용 |

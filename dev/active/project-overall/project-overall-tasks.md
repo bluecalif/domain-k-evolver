@@ -1,5 +1,5 @@
 # Project Overall Tasks
-> Last Updated: 2026-03-04 (Phase 0C 삽입 — GU 전략 재검토)
+> Last Updated: 2026-03-05 (Phase 1 완료)
 > Status: In Progress
 
 ## Summary
@@ -9,10 +9,10 @@
 | Phase 0 | — | — | — | — | — | ✅ Complete |
 | Phase 0B | 5 | 1 | 2 | 2 | 0 | ✅ Complete (5/5) |
 | Phase 0C | 6 | 0 | 3 | 2 | 1 | ✅ Complete (6/6) |
-| Phase 1 | 15 | 2 | 5 | 6 | 2 | 0/15 |
+| Phase 1 | 15 | 2 | 5 | 6 | 2 | ✅ Complete (15/15) |
 | Phase 2 | 7 | 1 | 3 | 2 | 1 | 0/7 |
 | Phase 3 | 7 | 0 | 2 | 3 | 2 | 0/7 |
-| **총계** | **40** | **4** | **13** | **13** | **10** | **11/40** |
+| **총계** | **40** | **4** | **13** | **13** | **10** | **26/40** |
 
 ---
 
@@ -57,31 +57,34 @@
 
 ---
 
-## Phase 1: LangGraph Core Pipeline
+## Phase 1: LangGraph Core Pipeline ✅
+
+> **완료**: 2026-03-05 | 191 tests passed, Graph 단일 Cycle stream 실행 성공
+> **결과**: src/ 16파일 + tests/ 10파일, 8노드 + 5 HITL Gate + cycle_inc = 14 노드 StateGraph
 
 ### Stage A: 기반 구축 (State, I/O, Schema 검증)
 
-- [ ] **1.1** 프로젝트 초기화 — pyproject.toml, 의존성, 디렉토리 구조 `[S]`
-- [ ] **1.2** EvolverState 타입 정의 — `src/state.py` `[M]`
-- [ ] **1.3** JSON 파일 I/O 유틸리티 — `src/utils/state_io.py` (load/save + encoding) `[M]`
-- [ ] **1.4** Schema 검증 유틸리티 — `src/utils/schema_validator.py` (jsonschema) `[M]`
-- [ ] **1.5** Metrics 계산 유틸리티 — `src/utils/metrics.py` (6개 공식 + 임계치) `[M]`
+- [x] **1.1** 프로젝트 초기화 — pyproject.toml, 의존성, 디렉토리 구조 → `4c9d793`
+- [x] **1.2** EvolverState 타입 정의 — `src/state.py` → `4c9d793`
+- [x] **1.3** JSON 파일 I/O 유틸리티 — `src/utils/state_io.py` → `4c9d793`
+- [x] **1.4** Schema 검증 유틸리티 — `src/utils/schema_validator.py` → `4c9d793`
+- [x] **1.5** Metrics 계산 유틸리티 — `src/utils/metrics.py` → `4c9d793`
 
 ### Stage B: 노드 구현
 
-- [ ] **1.6** seed_node — Seed Pack → State 초기화 `[L]`
-- [ ] **1.7** plan_node — Gap Map → Collection Plan 생성 (LLM) `[L]`
-- [ ] **1.8** collect_node — Plan → Claims 수집 (WebSearch/WebFetch + LLM) `[XL]`
-- [ ] **1.9** integrate_node — Claims → KB Patch 적용 (LLM + I/O) `[XL]`
-- [ ] **1.10** critique_node — State → Critique Report (LLM + Metrics) `[L]`
-- [ ] **1.11** plan_modify_node — Critique → Revised Plan (LLM) `[L]`
-- [ ] **1.12** hitl_gate_node — LangGraph interrupt 기반 HITL `[M]`
+- [x] **1.6** seed_node — Seed Pack → State 초기화 → `0be8221`
+- [x] **1.7** plan_node — Gap Map → Collection Plan 생성 → `0be8221`
+- [x] **1.8** collect_node — Plan → Claims 수집 → `0be8221`
+- [x] **1.9** integrate_node — Claims → KB Patch 적용 → `0be8221`
+- [x] **1.10** critique_node — State → Critique Report → `0be8221`
+- [x] **1.11** plan_modify_node — Critique → Revised Plan → `0be8221`
+- [x] **1.12** hitl_gate_node — LangGraph interrupt 기반 HITL → `0be8221`
 
 ### Stage C: Graph 빌드
 
-- [ ] **1.13** StateGraph 빌드 — `src/graph.py` (노드 등록 + 엣지) `[L]`
-- [ ] **1.14** 엣지 라우팅 로직 — 조건부 엣지 (종료, HITL, Outer Loop) `[L]`
-- [ ] **1.15** 단위 테스트 — 각 노드 + 전체 그래프 `[S]`
+- [x] **1.13** StateGraph 빌드 — `src/graph.py` (13노드 등록 + 엣지)
+- [x] **1.14** 엣지 라우팅 로직 — 조건부 엣지 4개 (mode/collect/integrate/critique)
+- [x] **1.15** 단위 테스트 — 36 tests (빌드 + 라우팅 + stream 통합 + 불변원칙)
 
 ---
 

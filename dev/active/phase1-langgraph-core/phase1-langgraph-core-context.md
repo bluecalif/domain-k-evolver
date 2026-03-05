@@ -1,6 +1,6 @@
 # Phase 1 Context — LangGraph Core Pipeline
-> Last Updated: 2026-03-04
-> Status: Planning
+> Last Updated: 2026-03-05
+> Status: ✅ Complete
 
 ## 1. 핵심 파일
 
@@ -155,3 +155,28 @@ class EvolverState(TypedDict):
 - base_cap: `min(max(4, ceil(open * 0.2)), 12)`
 - explore 비율: 초기 60%, 중기 50%, 수렴 40%
 - Guardrail 4종: Quality, Cost, Balance, Convergence
+
+---
+
+## 5. Stage C 구현 파일
+
+### 신규 파일
+| 파일 | 내용 |
+|------|------|
+| `src/graph.py` | StateGraph 빌드 + 엣지 라우팅 (13노드 등록, 조건부 엣지 4개) |
+| `tests/test_graph.py` | Graph 통합 테스트 36개 (빌드, 라우팅, 헬퍼, stream 통합, 불변원칙) |
+
+### Stage C 결정사항
+
+| # | 결정 | 대안 | 선택 근거 | 시점 |
+|---|------|------|-----------|------|
+| D-C1 | HITL Gate를 gate별 개별 노드로 등록 (`hitl_a`~`hitl_e`) | 단일 hitl 노드 + 조건 분기 | 같은 `hitl_gate_node`를 `_make_hitl_node(gate)` 팩토리로 래핑, 그래프 토폴로지 명확 | Stage C |
+| D-C2 | `cycle_increment_node` 별도 노드 | plan_modify 내부 처리 | plan_modify → cycle_inc → mode 순서 명시적 | Stage C |
+| D-C3 | `build_graph(llm=, search_tool=, hitl_response=)` 팩토리 패턴 | 전역 설정 | 도구 바인딩을 그래프 빌드 시 주입, 테스트 용이 | Stage C |
+| D-C4 | `functools.partial`로 노드에 llm/search_tool 바인딩 | 클로저/클래스 | 기존 노드 시그니처(`state, *, llm=`) 유지하면서 바인딩 | Stage C |
+| D-C5 | 통합 테스트 `graph.stream()` + `_stream_until()` 헬퍼 | `graph.invoke()` | 무한 루프(GraphRecursionError) 방지, 1 Cycle만 검증 | Stage C |
+
+### 테스트 현황 (최종)
+- Stage A+B: 155 passed
+- Stage C: 36 passed
+- **전체: 191 passed, 0 failed**

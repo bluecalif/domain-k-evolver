@@ -1,6 +1,6 @@
 # Phase 1 Plan — LangGraph Core Pipeline
-> Last Updated: 2026-03-04
-> Status: Planning
+> Last Updated: 2026-03-05
+> Status: ✅ Complete
 
 ## 1. Summary (개요)
 
@@ -103,22 +103,22 @@ Phase 1 완료 시:
 
 | # | Task | Stage | Size | 의존 | Status |
 |---|------|-------|------|------|--------|
-| 1.1 | 프로젝트 초기화 | A | S | — | |
-| 1.2 | EvolverState 타입 정의 | A | M | 1.1 | |
-| 1.3 | JSON 파일 I/O 유틸리티 | A | M | 1.1 | |
-| 1.4 | Schema 검증 유틸리티 | A | M | 1.1 | |
-| 1.5 | Metrics 계산 유틸리티 | A | M | 1.1 | |
-| 1.6 | seed_node | B | L | A | |
-| 1.7 | mode_node | B | L | A | |
-| 1.8 | plan_node | B | L | A, 1.7 | |
-| 1.9 | collect_node | B | XL | A | |
-| 1.10 | integrate_node | B | XL | A, 1.4 | |
-| 1.11 | critique_node | B | L | A, 1.5 | |
-| 1.12 | plan_modify_node | B | L | A | |
-| 1.13 | hitl_gate_node | B | M | A | |
-| 1.14 | StateGraph 빌드 | C | L | B | |
-| 1.15 | 엣지 라우팅 로직 | C | L | 1.14 | |
-| 1.16 | 단위 테스트 | C | M | 1.14, 1.15 | |
+| 1.1 | 프로젝트 초기화 | A | S | — | ✅ `4c9d793` |
+| 1.2 | EvolverState 타입 정의 | A | M | 1.1 | ✅ `4c9d793` |
+| 1.3 | JSON 파일 I/O 유틸리티 | A | M | 1.1 | ✅ `4c9d793` |
+| 1.4 | Schema 검증 유틸리티 | A | M | 1.1 | ✅ `4c9d793` |
+| 1.5 | Metrics 계산 유틸리티 | A | M | 1.1 | ✅ `4c9d793` |
+| 1.6 | seed_node | B | L | A | ✅ `0be8221` |
+| 1.7 | mode_node | B | L | A | ✅ `0be8221` |
+| 1.8 | plan_node | B | L | A, 1.7 | ✅ `0be8221` |
+| 1.9 | collect_node | B | XL | A | ✅ `0be8221` |
+| 1.10 | integrate_node | B | XL | A, 1.4 | ✅ `0be8221` |
+| 1.11 | critique_node | B | L | A, 1.5 | ✅ `0be8221` |
+| 1.12 | plan_modify_node | B | L | A | ✅ `0be8221` |
+| 1.13 | hitl_gate_node | B | M | A | ✅ `0be8221` |
+| 1.14 | StateGraph 빌드 | C | L | B | ✅ |
+| 1.15 | 엣지 라우팅 로직 | C | L | 1.14 | ✅ |
+| 1.16 | 단위 테스트 | C | M | 1.14, 1.15 | ✅ |
 
 **Size 분포**: S:1, M:6, L:7, XL:2 (총 16개)
 
