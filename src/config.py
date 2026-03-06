@@ -55,6 +55,7 @@ class OrchestratorConfig:
     snapshot_every: int = 1
     invariant_check: bool = True
     stop_on_convergence: bool = True
+    plateau_window: int = 3
     bench_domain: str = "japan-travel"
     bench_path: str = "bench"
 
@@ -65,6 +66,7 @@ class OrchestratorConfig:
             snapshot_every=int(os.environ.get("EVOLVER_SNAPSHOT_EVERY", "1")),
             invariant_check=os.environ.get("EVOLVER_INVARIANT_CHECK", "true").lower() == "true",
             stop_on_convergence=os.environ.get("EVOLVER_STOP_ON_CONVERGENCE", "true").lower() == "true",
+            plateau_window=int(os.environ.get("EVOLVER_PLATEAU_WINDOW", "3")),
             bench_domain=os.environ.get("EVOLVER_BENCH_DOMAIN", "japan-travel"),
             bench_path=os.environ.get("EVOLVER_BENCH_PATH", "bench"),
         )

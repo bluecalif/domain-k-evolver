@@ -24,7 +24,9 @@ from src.adapters.search_adapter import create_search_tool
 from src.config import EvolverConfig
 from src.graph import build_graph
 from src.utils.invariant_checker import check_invariants
+from src.utils.metrics_guard import check_metrics_guard
 from src.utils.metrics_logger import MetricsLogger
+from src.utils.plateau_detector import PlateauDetector
 from src.utils.state_io import load_state, save_state
 
 logging.basicConfig(
@@ -38,6 +40,8 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Evolver N-Cycle Bench Run")
     parser.add_argument("--cycles", type=int, default=3, help="Number of cycles to run")
     parser.add_argument("--domain", type=str, default=None, help="Override bench domain")
+    parser.add_argument("--dry-run", action="store_true", help="Config 출력만 하고 실행하지 않음")
+    parser.add_argument("--resume", action="store_true", help="이전 auto 결과에서 이어서 실행")
     args = parser.parse_args()
 
     config = EvolverConfig.from_env()
@@ -51,23 +55,35 @@ def main() -> None:
             snapshot_every=config.orchestrator.snapshot_every,
             invariant_check=config.orchestrator.invariant_check,
             stop_on_convergence=config.orchestrator.stop_on_convergence,
+            plateau_window=config.orchestrator.plateau_window,
             bench_domain=args.domain,
             bench_path=config.orchestrator.bench_path,
         )
         from src.config import EvolverConfig as EC
         config = EC(llm=config.llm, search=config.search, orchestrator=orch)
 
-    logger.info("Config: model=%s, search=%s, cycles=%d",
-                config.llm.model, config.search.provider, args.cycles)
+    logger.info("Config: model=%s, search=%s, cycles=%d, plateau_window=%d",
+                config.llm.model, config.search.provider, args.cycles,
+                config.orchestrator.plateau_window)
 
     # State 로드
     domain_path = Path(config.orchestrator.bench_path) / config.orchestrator.bench_domain
-    state = load_state(domain_path)
+    output_path = domain_path.parent / f"{domain_path.name}-auto"
+
+    if args.resume and (output_path / "state").exists():
+        state = load_state(output_path)
+        logger.info("Resume: auto 결과에서 State 로드")
+    else:
+        state = load_state(domain_path)
     start_cycle = state.get("current_cycle", 1)
     logger.info("State 로드: KU=%d, GU=%d, cycle=%d",
                 len(state.get("knowledge_units", [])),
                 len(state.get("gap_map", [])),
                 start_cycle)
+
+    if args.dry_run:
+        logger.info("--dry-run: 실행하지 않고 종료.")
+        return
 
     # LLM + Search 생성
     llm = create_llm(config.llm)
@@ -77,10 +93,10 @@ def main() -> None:
     graph = build_graph(llm=llm, search_tool=search_tool)
     logger.info("Graph 빌드 완료.")
 
-    # Metrics Logger
+    # Metrics Logger + Plateau Detector
     metrics_logger = MetricsLogger()
+    plateau_detector = PlateauDetector(window=config.orchestrator.plateau_window)
     invariant_violations = 0
-    output_path = domain_path.parent / f"{domain_path.name}-auto"
 
     for i in range(args.cycles):
         cycle_num = start_cycle + i
@@ -137,6 +153,18 @@ def main() -> None:
 
         # 매 사이클 State 저장
         save_state(state, output_path)
+
+        # Metrics Guard (warning-only)
+        guard = check_metrics_guard(state)
+        for gw in guard.warnings:
+            logger.warning("Metrics Guard: %s", gw)
+
+        # Plateau 감지
+        plateau_detector.record(cycle_num, state)
+        if plateau_detector.is_plateau():
+            logger.info("Plateau 감지: 최근 %d사이클 KU/GU 변화 없음 — 조기 종료.",
+                        config.orchestrator.plateau_window)
+            break
 
         # 수렴 체크
         critique = state.get("current_critique", {})

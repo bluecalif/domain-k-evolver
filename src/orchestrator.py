@@ -13,7 +13,9 @@ from typing import Any
 from src.config import EvolverConfig, OrchestratorConfig
 from src.graph import build_graph
 from src.state import EvolverState
+from src.utils.metrics_guard import check_metrics_guard
 from src.utils.metrics_logger import MetricsLogger
+from src.utils.plateau_detector import PlateauDetector
 from src.utils.state_io import load_state, save_state, snapshot_state
 
 logger = logging.getLogger(__name__)
@@ -55,6 +57,9 @@ class Orchestrator:
         self._llm = llm
         self._search_tool = search_tool
         self.logger = MetricsLogger()
+        self.plateau_detector = PlateauDetector(
+            window=self.config.orchestrator.plateau_window
+        )
         self.results: list[CycleResult] = []
 
     @property
@@ -96,6 +101,20 @@ class Orchestrator:
 
             # Metrics 기록
             self.logger.log(cycle_num, state)
+
+            # Metrics Guard (warning-only)
+            guard = check_metrics_guard(state)
+            for w in guard.warnings:
+                logger.warning("Metrics Guard: %s", w)
+
+            # Plateau 감지
+            self.plateau_detector.record(cycle_num, state)
+            if self.plateau_detector.is_plateau():
+                logger.info(
+                    "Plateau 감지: 최근 %d사이클 KU/GU 변화 없음. 조기 종료.",
+                    orch_cfg.plateau_window,
+                )
+                break
 
             # 수렴 체크
             if orch_cfg.stop_on_convergence and result.converged:
