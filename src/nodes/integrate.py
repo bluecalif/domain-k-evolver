@@ -6,11 +6,16 @@ design-v2 §6 기반.
 
 from __future__ import annotations
 
+import json
+import logging
 from datetime import date
 from math import ceil
 from typing import Any
 
 from src.state import EvolverState
+from src.utils.llm_parse import extract_json
+
+logger = logging.getLogger(__name__)
 
 HIGH_RISK_LEVELS = {"safety", "financial", "policy"}
 
@@ -32,26 +37,84 @@ def _find_matching_ku(
     return None
 
 
+def _build_conflict_prompt(
+    entity_key: str,
+    field: str,
+    existing_value: str,
+    new_value: str,
+) -> str:
+    """LLM semantic conflict detection 프롬프트 생성."""
+    return f"""You are a knowledge integration expert. Determine if two values for the same knowledge slot are semantically conflicting.
+
+Entity: {entity_key}
+Field: {field}
+Existing value: {existing_value}
+New value: {new_value}
+
+Classify as one of:
+- "conflict": The values genuinely contradict each other (e.g., different prices, incompatible facts)
+- "update": The new value is a more recent or more detailed version of the same information
+- "equivalent": The values mean the same thing expressed differently
+
+Respond in JSON: {{"verdict": "conflict"|"update"|"equivalent", "reason": "brief explanation"}}"""
+
+
 def _detect_conflict(
     existing_ku: dict,
     claim: dict,
+    *,
+    llm: Any | None = None,
 ) -> str | None:
-    """충돌 감지. 반환: 'hold' | 'condition_split' | None."""
-    # 같은 슬롯에 다른 값 → 충돌 가능
+    """충돌 감지. 반환: 'hold' | 'condition_split' | None.
+
+    Args:
+        llm: LLM 인스턴스. None이면 결정론적 문자열 비교 fallback.
+    """
     existing_value = existing_ku.get("value")
     claim_value = claim.get("value")
 
     if existing_value is None or claim_value is None:
         return None
 
-    # 단순 비교 (실제로는 LLM 기반 의미 비교)
-    if str(existing_value) != str(claim_value):
-        # conditions 필드로 분리 가능한지 확인
-        if claim.get("conditions") or existing_ku.get("conditions"):
-            return "condition_split"
-        return "hold"
+    # Rule 1: 동일 값 → 충돌 없음
+    if str(existing_value) == str(claim_value):
+        return None
 
-    return None
+    # Rule 2: conditions 있으면 condition_split
+    if claim.get("conditions") or existing_ku.get("conditions"):
+        return "condition_split"
+
+    # Rule 3: LLM semantic 판정
+    if llm is not None:
+        entity_key = existing_ku.get("entity_key", "")
+        field = existing_ku.get("field", "")
+        prompt = _build_conflict_prompt(
+            entity_key, field, str(existing_value), str(claim_value),
+        )
+        try:
+            response = llm.invoke(prompt)
+            text = response.content if hasattr(response, "content") else str(response)
+            parsed = extract_json(text)
+            verdict = parsed.get("verdict", "conflict")
+            logger.info(
+                "Conflict check [%s/%s]: '%s' vs '%s' → %s (%s)",
+                entity_key, field,
+                str(existing_value)[:50], str(claim_value)[:50],
+                verdict, parsed.get("reason", ""),
+            )
+            if verdict in ("update", "equivalent"):
+                return None  # 충돌 아님 → 업데이트로 처리
+            return "hold"  # 진짜 충돌
+        except Exception:
+            logger.warning(
+                "LLM conflict detection failed for %s/%s, falling back to hold",
+                existing_ku.get("entity_key", ""), existing_ku.get("field", ""),
+                exc_info=True,
+            )
+            return "hold"
+
+    # Fallback (no LLM): 결정론적 — 값이 다르면 hold
+    return "hold"
 
 
 def _generate_dynamic_gus(
@@ -175,8 +238,8 @@ def integrate_node(
         existing_ku = _find_matching_ku(entity_key, field, kus)
 
         if existing_ku is not None:
-            # 충돌 감지
-            conflict = _detect_conflict(existing_ku, claim)
+            # 충돌 감지 (LLM semantic 비교)
+            conflict = _detect_conflict(existing_ku, claim, llm=llm)
 
             if conflict == "hold":
                 # disputed 처리
