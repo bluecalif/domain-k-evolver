@@ -1,6 +1,6 @@
 # Phase 2: Bench Integration & Real Self-Evolution — Tasks
-> Last Updated: 2026-03-05
-> Status: In Progress (11/16)
+> Last Updated: 2026-03-06
+> Status: Complete (16/16)
 
 ## Summary
 
@@ -8,8 +8,8 @@
 |-------|-------|---|---|---|----|
 | A': Smoke + 1 Cycle | 5 | 1 | 3 | 1 | 5/5 ✅ |
 | B': 안정화 + 3 Cycle | 6 | 2 | 3 | 1 | 6/6 ✅ |
-| C': 10+ Cycle | 5 | 2 | 2 | 1 | 0/5 |
-| **합계** | **16** | **5** | **8** | **3** | **11/16** |
+| C': 10+ Cycle | 5 | 2 | 2 | 1 | 5/5 ✅ |
+| **합계** | **16** | **5** | **8** | **3** | **16/16** ✅ |
 
 ---
 
@@ -79,29 +79,34 @@
 
 ---
 
-## Stage C': 10+ Cycle 자동화
+## Stage C': 10+ Cycle 자동화 ✅
 
-> Gate: 10사이클 완주 (또는 plateau 조기 종료) + 결과 분석 리포트
+> Gate: 10사이클 완주 (또는 plateau 조기 종료) + 결과 분석 리포트 → **PASSED**
 
-- [ ] **2.12** Plateau Detection + 자동 종료 `[M]`
-  - 연속 N사이클 KU/GU 변화 0 → plateau
-  - `src/config.py`, `src/orchestrator.py`
+- [x] **2.12** Plateau Detection + 자동 종료 `[M]`
+  - `src/utils/plateau_detector.py` 신규 — 연속 N사이클 KU/GU 변화 0 → plateau
+  - `src/config.py` OrchestratorConfig에 plateau 설정 추가
+  - `src/orchestrator.py`에서 매 사이클 후 plateau 체크
 
-- [ ] **2.13** Metrics Guard `[S]`
-  - conflict_rate > 0.30, evidence_rate < 0.50 → 경고/중단
-  - `src/orchestrator.py`
+- [x] **2.13** Metrics Guard `[S]`
+  - `src/utils/metrics_guard.py` 신규 — conflict_rate > 0.30, evidence_rate < 0.50 → 경고
+  - warning-only 모드 (D-39: halt 시 Cycle 5에서 중단되어 비활성)
+  - `tests/test_metrics_guard.py` — 단위 테스트
 
-- [ ] **2.14** 10 Cycle Real 실행 `[L]` ★
-  - `scripts/run_bench.py --cycles 10`
-  - 최종 KU/GU, 사이클별 CSV, 비용, 불변원칙 로그
+- [x] **2.14** 10 Cycle Real 실행 `[L]` ★
+  - `scripts/run_bench.py --cycles 10` 실행 완료
+  - KU 28→85 (active 31, disputed 54), GU resolved 75
+  - LLM 69 calls (1,002K tokens), Search 177, Fetch 118
 
-- [ ] **2.15** Bench Run CLI 정비 `[S]`
+- [x] **2.15** Bench Run CLI 정비 `[S]`
   - argparse: `--cycles`, `--domain`, `--dry-run`, `--resume`
   - `scripts/run_bench.py`
 
-- [ ] **2.16** 결과 분석 + Snapshot Diff `[M]`
-  - `scripts/analyze_trajectory.py` 신규
-  - 사이클별 추이 + 카테고리 커버리지
+- [x] **2.16** 결과 분석 + Snapshot Diff `[M]`
+  - `scripts/analyze_trajectory.py` 대폭 확장 (212→530행, 6개 신규 분석 섹션)
+  - `docs/phase2-analysis.md` 심층 보고서 생성 (10개 섹션)
+  - CLI: `--report`, `--json` 옵션 추가
+  - 핵심 결론: FP 수정 시 active KU 성장률 11.5x 개선 가능
 
 ---
 

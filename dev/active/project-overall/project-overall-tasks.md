@@ -1,6 +1,6 @@
 # Project Overall Tasks
-> Last Updated: 2026-03-05 (Phase 2 Stage A'+B' 완료)
-> Status: In Progress
+> Last Updated: 2026-03-06 (Phase 2 완료, Phase 3 계획 수립)
+> Status: In Progress — Phase 3
 
 ## Summary
 
@@ -10,9 +10,10 @@
 | Phase 0B | 5 | 1 | 2 | 2 | 0 | ✅ Complete (5/5) |
 | Phase 0C | 6 | 0 | 3 | 2 | 1 | ✅ Complete (6/6) |
 | Phase 1 | 15 | 2 | 5 | 6 | 2 | ✅ Complete (15/15) |
-| Phase 2 | 16 | 5 | 8 | 3 | 0 | 11/16 |
-| Phase 3 | 7 | 0 | 2 | 3 | 2 | 0/7 |
-| **총계** | **49** | **8** | **20** | **16** | **5** | **37/49** |
+| Phase 2 | 16 | 5 | 8 | 3 | 0 | ✅ Complete (16/16) |
+| Phase 3 | TBD | — | — | — | — | 0/TBD |
+| Phase 4 | 7 | 0 | 2 | 3 | 2 | 0/7 |
+| **총계** | **~55** | — | — | — | — | **42+/55** |
 
 ---
 
@@ -115,29 +116,54 @@
 - [x] **2.10** 비용/토큰 로깅 `[M]`
 - [x] **2.11** Real API 3 Cycle 실행 `[L]` ★★
 
-### Stage C': 10+ Cycle 자동화 (5 tasks)
+### Stage C': 10+ Cycle 자동화 (5 tasks) ✅
 
-> Gate: 10사이클 완주 (또는 plateau 조기 종료) + 결과 분석 리포트
+> Gate: 10사이클 완주 + 결과 분석 리포트 → **PASSED**
 
-- [ ] **2.12** Plateau Detection + 자동 종료 `[M]`
-- [ ] **2.13** Metrics Guard `[S]`
-- [ ] **2.14** 10 Cycle Real 실행 `[L]` ★
-- [ ] **2.15** Bench Run CLI 정비 `[S]`
-- [ ] **2.16** 결과 분석 + Snapshot Diff `[M]`
+- [x] **2.12** Plateau Detection + 자동 종료 `[M]`
+- [x] **2.13** Metrics Guard `[S]`
+- [x] **2.14** 10 Cycle Real 실행 `[L]` ★
+- [x] **2.15** Bench Run CLI 정비 `[S]`
+- [x] **2.16** 결과 분석 + Snapshot Diff `[M]`
 
 ---
 
-## Phase 3: Multi-Domain & Robustness
+## Phase 3: Cycle Quality Remodeling (NEW)
+
+> **목표**: disputed KU 병목 해결, active KU 성장률 11.5x 향상
+> **근거**: Phase 2 심층 분석 R1~R6 권고 (docs/phase2-analysis.md)
+
+### Stage A: Semantic Conflict Detection (R1)
+
+- [ ] **3.1** `_detect_conflict()` LLM semantic 비교로 교체
+- [ ] **3.2** 충돌 판정 테스트 + FP rate 측정
+- [ ] **3.3** 10 Cycle 재실행으로 FP 감소 확인
+
+### Stage B: Dispute Resolution (R2~R4)
+
+- [ ] **3.4** dispute resolution mechanism 설계 + 구현
+- [ ] **3.5** disputed→active 전환 경로 (자동/반자동)
+- [ ] **3.6** critique 노드에 dispute resolution workflow 추가
+
+### Stage C: 수렴 개선 + 재검증 (R5~R6)
+
+- [ ] **3.7** 수렴 조건 C6: conflict_rate < 0.15 상한
+- [ ] **3.8** early stopping 개선 (plateau + conflict_rate 복합 조건)
+- [ ] **3.9** 최종 10 Cycle 실행 + Phase 2 대비 개선 효과 보고
+
+---
+
+## Phase 4: Multi-Domain & Robustness (기존 Phase 3 → 번호 이동)
 
 ### Stage A: 다중 도메인
 
-- [ ] **3.1** 새 도메인 Seed Pack 작성 (예: 부동산/기술 스택) `[L]`
-- [ ] **3.2** 새 도메인 Evolver 실행 + 결과 검증 `[L]`
-- [ ] **3.3** 도메인 간 공통/차이 분석 + 프레임워크 일반화 `[M]`
+- [ ] **4.1** 새 도메인 Seed Pack 작성 (예: 부동산/기술 스택) `[L]`
+- [ ] **4.2** 새 도메인 Evolver 실행 + 결과 검증 `[L]`
+- [ ] **4.3** 도메인 간 공통/차이 분석 + 프레임워크 일반화 `[M]`
 
 ### Stage B: Outer Loop + 안정성
 
-- [ ] **3.4** Outer Loop 구현 — Executive Audit + Remodeling 노드 `[XL]`
-- [ ] **3.5** 에러 처리 + 복구 메커니즘 (API 실패, 파싱 오류) `[L]`
-- [ ] **3.6** 토큰/비용 최적화 `[M]`
-- [ ] **3.7** 문서화 + 사용 가이드 `[XL]`
+- [ ] **4.4** Outer Loop 구현 — Executive Audit + Remodeling 노드 `[XL]`
+- [ ] **4.5** 에러 처리 + 복구 메커니즘 (API 실패, 파싱 오류) `[L]`
+- [ ] **4.6** 토큰/비용 최적화 `[M]`
+- [ ] **4.7** 문서화 + 사용 가이드 `[XL]`
