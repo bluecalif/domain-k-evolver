@@ -71,6 +71,13 @@ def _compile_prescription(
             "reason": "카테고리 분포 보정",
         }
 
+    elif rx_type == "dispute_resolved":
+        return {
+            "applied": True,
+            "changes": f"{target_ku} disputed→active 해소 완료",
+            "reason": "dispute resolution에 의해 자동 해소",
+        }
+
     elif rx_type == "integration":
         return {
             "applied": True,

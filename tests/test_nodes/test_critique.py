@@ -121,7 +121,8 @@ class TestCritiqueNode:
         rates = result["metrics"]["rates"]
 
         assert rates["evidence_rate"] == pytest.approx(1.0)
-        assert rates["conflict_rate"] == pytest.approx(0.036, abs=0.002)
+        # Phase 3 dispute resolution: KU-0007 (3 EU vs 1 dispute) 자동 해소 → conflict_rate 0
+        assert rates["conflict_rate"] == pytest.approx(0.0, abs=0.002)
 
     def test_axis_coverage_entries(
         self, kus: list[dict], gap_map: list[dict], skeleton: dict,
@@ -155,3 +156,56 @@ class TestCritiqueNode:
         }
         result = critique_node(state, today=date(2026, 3, 4))
         assert result["current_critique"]["convergence"]["converged"] is False
+
+    def test_dispute_resolution_in_critique(self) -> None:
+        """critique_node에서 disputed KU 자동 해소 (evidence majority)."""
+        kus = [
+            {
+                "ku_id": "KU-001", "entity_key": "d:a:x", "field": "price",
+                "status": "disputed",
+                "evidence_links": ["EU-1", "EU-2", "EU-3"],
+                "confidence": 0.8,
+                "disputes": [{"nature": "conflict", "resolution": "hold"}],
+            },
+        ]
+        state = {
+            "knowledge_units": kus,
+            "gap_map": [],
+            "domain_skeleton": {"categories": []},
+            "current_cycle": 1,
+            "metrics": {"rates": {}},
+        }
+        result = critique_node(state, today=date(2026, 3, 4))
+
+        # KU가 active로 해소됨
+        assert "knowledge_units" in result
+        assert result["knowledge_units"][0]["status"] == "active"
+
+        # dispute_resolved 처방이 생성됨
+        rxs = result["current_critique"]["prescriptions"]
+        assert any(rx["type"] == "dispute_resolved" for rx in rxs)
+
+    def test_no_dispute_resolution_insufficient_evidence(self) -> None:
+        """evidence 부족 시 disputed 유지."""
+        kus = [
+            {
+                "ku_id": "KU-001", "entity_key": "d:a:x", "field": "price",
+                "status": "disputed",
+                "evidence_links": ["EU-1"],
+                "confidence": 0.8,
+                "disputes": [{"nature": "conflict", "resolution": "hold"}],
+            },
+        ]
+        state = {
+            "knowledge_units": kus,
+            "gap_map": [],
+            "domain_skeleton": {"categories": []},
+            "current_cycle": 1,
+            "metrics": {"rates": {}},
+        }
+        result = critique_node(state, today=date(2026, 3, 4))
+
+        # KU는 여전히 disputed
+        assert kus[0]["status"] == "disputed"
+        # knowledge_units가 반환되지 않음 (변경 없으므로)
+        assert "knowledge_units" not in result

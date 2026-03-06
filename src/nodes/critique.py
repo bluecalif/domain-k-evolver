@@ -8,6 +8,7 @@ from __future__ import annotations
 from datetime import date, timedelta
 from typing import Any
 
+from src.nodes.dispute_resolver import resolve_disputes
 from src.state import EvolverState
 from src.utils.metrics import (
     assess_health,
@@ -187,8 +188,24 @@ def critique_node(
     axis_cov = compute_axis_coverage(gap_map, skeleton)
     deficits = compute_deficit_ratios(axis_cov, skeleton)
 
-    # 실패모드 분석
+    # Dispute Resolution (Phase 3 Stage B)
+    dispute_log = resolve_disputes(kus, llm=llm)
+
+    # 실패모드 분석 (dispute resolution 후 — 해소된 KU는 consistency 처방 불필요)
     prescriptions = _analyze_failure_modes(kus, gap_map, skeleton, today)
+
+    # 해소된 dispute에 대한 처방 추가
+    rx_counter = len(prescriptions) + 1
+    for entry in dispute_log:
+        prescriptions.append({
+            "rx_id": f"RX-{rx_counter:04d}",
+            "type": "dispute_resolved",
+            "description": (
+                f"{entry['ku_id']}: disputed→active 해소 ({entry['reason']})"
+            ),
+            "target_ku": entry["ku_id"],
+        })
+        rx_counter += 1
 
     # net_gap_change 계산 (open GU 변화)
     prev_counts = prev_metrics.get("counts", {})
@@ -258,9 +275,15 @@ def critique_node(
                 "deficit_ratio": axis_deficit,
             })
 
-    return {
+    result = {
         "current_critique": critique_report,
         "axis_coverage": axis_coverage_entries,
         "metrics": new_metrics,
         "net_gap_changes": net_gap_changes,
     }
+
+    # dispute resolution으로 KU 상태가 변경되었으면 반환
+    if dispute_log:
+        result["knowledge_units"] = kus
+
+    return result

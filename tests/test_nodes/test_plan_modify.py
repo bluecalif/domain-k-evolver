@@ -87,3 +87,21 @@ class TestPlanModifyNode:
         result = plan_modify_node(state)
         rx_ids = {t["rx_id"] for t in result["current_plan"]["traceability"]}
         assert rx_ids == {"RX-0001", "RX-0002", "RX-0003"}
+
+    def test_dispute_resolved_applied(self) -> None:
+        """dispute_resolved 처방 처리."""
+        state = {
+            "current_critique": {
+                "prescriptions": [
+                    {"rx_id": "RX-0001", "type": "dispute_resolved",
+                     "target_ku": "KU-001",
+                     "description": "KU-001: disputed→active 해소"},
+                ],
+            },
+            "current_plan": {},
+            "gap_map": [],
+        }
+        result = plan_modify_node(state)
+        trace = result["current_plan"]["traceability"][0]
+        assert trace["applied"] is True
+        assert "해소 완료" in trace["changes"]
