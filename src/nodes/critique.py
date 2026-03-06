@@ -98,6 +98,9 @@ def _analyze_failure_modes(
     return prescriptions
 
 
+CONFLICT_RATE_THRESHOLD = 0.15  # D-43: C6 수렴 조건 임계치
+
+
 def _check_convergence(
     kus: list[dict],
     gap_map: list[dict],
@@ -106,7 +109,7 @@ def _check_convergence(
     metrics_rates: dict,
     net_gap_changes: list[int] | None = None,
 ) -> dict:
-    """수렴 조건 판정 (C1~C5)."""
+    """수렴 조건 판정 (C1~C6)."""
     result = {
         "converged": False,
         "conditions": {},
@@ -156,7 +159,11 @@ def _check_convergence(
     c5 = (len(covered) / len(categories) >= 0.80) if categories else True
     result["conditions"]["C5_category_coverage"] = c5
 
-    result["converged"] = c1 and c2 and c3 and c4 and c5
+    # C6: conflict_rate < CONFLICT_RATE_THRESHOLD (D-43)
+    c6 = metrics_rates.get("conflict_rate", 0) < CONFLICT_RATE_THRESHOLD
+    result["conditions"]["C6_conflict_rate"] = c6
+
+    result["converged"] = c1 and c2 and c3 and c4 and c5 and c6
 
     return result
 

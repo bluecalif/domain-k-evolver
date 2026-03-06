@@ -143,15 +143,24 @@
       "EU-0019-01",
       "EU-0019-02",
       "EU-0019-03",
-      "EU-0019-04"
+      "EU-0019-04",
+      "EU-0019-05",
+      "EU-0019-06"
     ],
-    "confidence": 0.8,
-    "status": "disputed",
+    "confidence": 0.703,
+    "status": "active",
     "disputes": [
       {
         "conflicting_ku_id": "KU-0007_v0",
         "nature": "eSIM 보급으로 가격 구조 변화. 기존 물리SIM 가격 범위와 eSIM 가격 불일치",
-        "resolution": "condition_split"
+        "resolution": "resolved",
+        "resolution_reason": "evidence majority (9 evidence vs 2 disputes)"
+      },
+      {
+        "conflicting_claim": "CL-0019-05",
+        "nature": "Conflicting value for price",
+        "resolution": "resolved",
+        "resolution_reason": "evidence majority (9 evidence vs 2 disputes)"
       }
     ]
   },
@@ -747,34 +756,9 @@
   },
   {
     "ku_id": "KU-0029",
-    "entity_key": "japan-travel:pass-ticket:kansai-area-pass",
-    "field": "price",
-    "value": "1 day $19, 2 days $32, 3 days $39, 4 days $47 (JR Kansai Area Pass)",
-    "observed_at": "2024-06-06",
-    "validity": {
-      "ttl_days": 180
-    },
-    "evidence_links": [
-      "EU-GU0035-01",
-      "EU-GU0035-02",
-      "EU-GU0035-03",
-      "EU-GU0035-04"
-    ],
-    "confidence": 0.7,
-    "status": "disputed",
-    "disputes": [
-      {
-        "conflicting_claim": "CL-GU0035-02",
-        "nature": "Conflicting value for price",
-        "resolution": "hold"
-      }
-    ]
-  },
-  {
-    "ku_id": "KU-0030",
     "entity_key": "japan-travel:pass-ticket:osaka-amazing-pass",
     "field": "price",
-    "value": "1-day pass: ¥3,500; 2-day pass: ¥5,000; Sale period: March 25, 2025 – March 31, 2026 (1-day), March 25, 2025 – March 30, 2026 (2-day)",
+    "value": "Osaka Amazing Pass 1-day price: ¥3,500; 2-day price: ¥5,000",
     "observed_at": "2024-06-05",
     "validity": {
       "ttl_days": 180
@@ -782,25 +766,68 @@
     "evidence_links": [
       "EU-GU-0032-01",
       "EU-GU-0032-02",
-      "EU-GU-0032-03",
-      "EU-GU-0032-04",
-      "EU-GU-0032-05"
+      "EU-GU-0032-03"
     ],
     "confidence": 0.9,
-    "status": "disputed",
+    "status": "active",
     "disputes": [
       {
         "conflicting_claim": "CL-GU-0032-02",
         "nature": "Conflicting value for price",
-        "resolution": "hold"
+        "resolution": "resolved",
+        "resolution_reason": "evidence majority (3 evidence vs 1 disputes)"
       }
     ]
   },
   {
+    "ku_id": "KU-0030",
+    "entity_key": "japan-travel:accommodation:kyoto-ryokan",
+    "field": "price",
+    "value": "Kyoto ryokans can be found starting from $70 per night",
+    "observed_at": "2024-06-06",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-GU0037-01",
+      "EU-GU0037-02",
+      "EU-GU0037-03"
+    ],
+    "confidence": 0.85,
+    "status": "active"
+  },
+  {
     "ku_id": "KU-0031",
+    "entity_key": "japan-travel:pass-ticket:kansai-area-pass",
+    "field": "price",
+    "value": "Ordinary Kansai Area Pass prices: 1 day - $22.00, 2 days - $35.00, 3 days - $43.00, 4 days - $52.00",
+    "observed_at": "2024-06-05",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0035-01",
+      "EU-0035-02",
+      "EU-0035-03",
+      "EU-0035-04",
+      "EU-0035-05"
+    ],
+    "confidence": 0.9,
+    "status": "active",
+    "disputes": [
+      {
+        "conflicting_claim": "CL-0035-03",
+        "nature": "Conflicting value for price",
+        "resolution": "resolved",
+        "resolution_reason": "evidence majority (5 evidence vs 1 disputes)"
+      }
+    ]
+  },
+  {
+    "ku_id": "KU-0032",
     "entity_key": "japan-travel:transport:kyoto-bus",
     "field": "how_to_use",
-    "value": "The Subway & Bus 1-Day Pass costs 1100 yen for adults and 550 yen for children aged 6-11, and allows unlimited trips for 1 day on Kyoto City Bus routes (including Sightseeing Limited Express Bus), Kyoto Municipal Subway lines, Kyoto Bus routes (some excluded), Keihan Bus routes (some excluded), and West Japan JR Bus routes (some excluded).",
+    "value": "The Kyoto City Bus & Kyoto Bus One-Day Pass costs 600 yen for adults and 300 yen for children, allowing unlimited travel on Kyoto City Bus and Kyoto Bus routes within the flat fare zone for one day.",
     "observed_at": "2024-06-05",
     "validity": {
       "ttl_days": 180
@@ -809,41 +836,17 @@
       "EU-0033-01",
       "EU-0033-02",
       "EU-0033-03",
-      "EU-0033-04"
+      "EU-0033-04",
+      "EU-0033-05"
     ],
     "confidence": 0.9,
-    "status": "disputed",
+    "status": "active",
     "disputes": [
       {
-        "conflicting_claim": "CL-0033-02",
+        "conflicting_claim": "CL-0033-03",
         "nature": "Conflicting value for how_to_use",
-        "resolution": "hold"
-      }
-    ]
-  },
-  {
-    "ku_id": "KU-0032",
-    "entity_key": "japan-travel:accommodation:kyoto-ryokan",
-    "field": "price",
-    "value": "Price range for ryokans in Kyoto is $260 - $900 per night, including options like large family rooms.",
-    "observed_at": "2024-06-06",
-    "validity": {
-      "ttl_days": 180
-    },
-    "evidence_links": [
-      "EU-GU0037-01",
-      "EU-GU0037-02",
-      "EU-GU0037-03",
-      "EU-GU0037-04",
-      "EU-GU0037-05"
-    ],
-    "confidence": 0.7,
-    "status": "disputed",
-    "disputes": [
-      {
-        "conflicting_claim": "CL-GU0037-02",
-        "nature": "Conflicting value for price",
-        "resolution": "hold"
+        "resolution": "resolved",
+        "resolution_reason": "evidence majority (5 evidence vs 1 disputes)"
       }
     ]
   },
@@ -851,7 +854,7 @@
     "ku_id": "KU-0033",
     "entity_key": "japan-travel:transport:rental-car",
     "field": "how_to_use",
-    "value": "To rent a car in Japan, you must be at least 18 years old and have an International Driving Permit (IDP) obtained in your country of residence before visiting Japan. A driver's license from your home country alone is not sufficient.",
+    "value": "The minimum age for driving in Japan is 18 years, and you need a Japanese driver's license or an International Driving Permit (IDP) based on the 1949 Geneva Convention to rent and drive a car.",
     "observed_at": "2024-06-05",
     "validity": {
       "ttl_days": 180
@@ -862,15 +865,18 @@
       "EU-0034-03",
       "EU-0034-04",
       "EU-0034-05",
-      "EU-0034-06"
+      "EU-0034-06",
+      "EU-0034-07",
+      "EU-0034-08"
     ],
-    "confidence": 0.9,
-    "status": "disputed",
+    "confidence": 0.7,
+    "status": "active",
     "disputes": [
       {
-        "conflicting_claim": "CL-0034-02",
+        "conflicting_claim": "CL-0034-04",
         "nature": "Conflicting value for how_to_use",
-        "resolution": "hold"
+        "resolution": "resolved",
+        "resolution_reason": "evidence majority (8 evidence vs 1 disputes)"
       }
     ]
   },
@@ -878,27 +884,134 @@
     "ku_id": "KU-0034",
     "entity_key": "japan-travel:dining:osaka-street-food",
     "field": "tips",
-    "value": "Collected info for tips from Osaka Food Tips Most Travelers Miss | Hidden Eats Guide",
-    "observed_at": "2026-03-06",
+    "value": "Dotonbori is the best neighborhood for Osaka street food, offering a vibrant atmosphere with countless street food opportunities including takoyaki, okonomiyaki, kushikatsu, ramen, and udon.",
+    "observed_at": "2024-06-05",
     "validity": {
       "ttl_days": 180
     },
     "evidence_links": [
       "EU-0036-01",
-      "EU-0036-02"
+      "EU-0036-02",
+      "EU-0036-03",
+      "EU-0036-04"
     ],
     "confidence": 0.7,
-    "status": "disputed",
+    "status": "active"
+  },
+  {
+    "ku_id": "KU-0035",
+    "entity_key": "japan-travel:pass-ticket:osaka-amazing-pass",
+    "field": "eligibility",
+    "value": "The Osaka Amazing Pass is available as an adult pass only; children do not have a separate pass and must purchase normal admission tickets separately.",
+    "observed_at": "2024-06-05",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-GU0042-01"
+    ],
+    "confidence": 0.5,
+    "status": "active"
+  },
+  {
+    "ku_id": "KU-0036",
+    "entity_key": "japan-travel:pass-ticket:osaka-amazing-pass",
+    "field": "duration",
+    "value": "The Osaka Amazing Pass is available for durations of 1-day or 2-day.",
+    "observed_at": "2024-06-05",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-GU0041-01",
+      "EU-GU0041-02"
+    ],
+    "confidence": 0.85,
+    "status": "active"
+  },
+  {
+    "ku_id": "KU-0037",
+    "entity_key": "japan-travel:pass-ticket:osaka-amazing-pass",
+    "field": "where_to_buy",
+    "value": "You can purchase the Osaka Amazing Pass at various locations in Osaka, including tourist information centers.",
+    "observed_at": "2024-06-06",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-GU0044-01",
+      "EU-GU0044-02",
+      "EU-GU0044-03"
+    ],
+    "confidence": 0.6,
+    "status": "active"
+  },
+  {
+    "ku_id": "KU-0038",
+    "entity_key": "japan-travel:pass-ticket:osaka-amazing-pass",
+    "field": "tips",
+    "value": "You can purchase the Osaka Amazing Pass at WAUG at the guaranteed lowest price, and apply additional discount coupons for maximum savings.",
+    "observed_at": "2024-06-01",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-GU-0043-01",
+      "EU-GU-0043-02",
+      "EU-GU-0043-03",
+      "EU-GU-0043-04"
+    ],
+    "confidence": 0.85,
+    "status": "active"
+  },
+  {
+    "ku_id": "KU-0039",
+    "entity_key": "japan-travel:pass-ticket:osaka-amazing-pass",
+    "field": "policy",
+    "value": "The Osaka Amazing Pass provides unlimited use of Osaka subway, bus network, and private railways plus free entry to around 40 iconic Osaka tourist attractions for a duration of 1-day or 2-day.",
+    "observed_at": "2024-06-05",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0040-01",
+      "EU-0040-02",
+      "EU-0040-03",
+      "EU-0040-04",
+      "EU-0040-05",
+      "EU-0040-06",
+      "EU-0040-07"
+    ],
+    "confidence": 0.9,
+    "status": "active"
+  },
+  {
+    "ku_id": "KU-0040",
+    "entity_key": "japan-travel:accommodation:kyoto-ryokan",
+    "field": "location",
+    "value": "Kyoto Ohara Ryokan Seryo is located in Kyoto, Japan",
+    "observed_at": "2024-06-06",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0045-01",
+      "EU-0045-02",
+      "EU-0045-03"
+    ],
+    "confidence": 0.9,
+    "status": "active",
     "disputes": [
       {
-        "conflicting_claim": "CL-0036-02",
-        "nature": "Conflicting value for tips",
-        "resolution": "hold"
+        "conflicting_claim": "CL-0045-02",
+        "nature": "Conflicting value for location",
+        "resolution": "resolved",
+        "resolution_reason": "evidence majority (3 evidence vs 1 disputes)"
       }
     ]
   },
   {
-    "ku_id": "KU-0035",
+    "ku_id": "KU-0041",
     "entity_key": "japan-travel:pass-ticket:kansai-area-pass",
     "field": "duration",
     "value": "Available for 1, 2, 3 or 4 consecutive days",
@@ -907,177 +1020,17 @@
       "ttl_days": 180
     },
     "evidence_links": [
-      "EU-GU0041-01"
+      "EU-GU0049-01"
     ],
     "confidence": 0.9,
     "status": "active"
-  },
-  {
-    "ku_id": "KU-0036",
-    "entity_key": "japan-travel:pass-ticket:kansai-area-pass",
-    "field": "eligibility",
-    "value": "The Kansai Area Pass is available for tourists and travelers who want unlimited travel within the Kansai region, including major cities such as Osaka, Kyoto, Kobe, and Nara. It can be purchased either before arriving in Japan through accredited travel agencies or once in Japan at major JR West stations, Kansai International Airport, and selected travel agencies.",
-    "observed_at": "2024-06-05",
-    "validity": {
-      "ttl_days": 180
-    },
-    "evidence_links": [
-      "EU-0042-01",
-      "EU-0042-02"
-    ],
-    "confidence": 0.7,
-    "status": "disputed",
-    "disputes": [
-      {
-        "conflicting_claim": "CL-0042-02",
-        "nature": "Conflicting value for eligibility",
-        "resolution": "hold"
-      }
-    ]
-  },
-  {
-    "ku_id": "KU-0037",
-    "entity_key": "japan-travel:pass-ticket:kansai-area-pass",
-    "field": "policy",
-    "value": "The Kansai Area Pass offers unlimited rides in major Kansai areas including Osaka, Kyoto, and Kobe, and is valid on WEST JAPAN JR BUS route buses within the valid area. It covers Limited Express, Express, Special Rapid, Rapid, and Local Services trains in the valid area, including the Kansai-airport Express HARUKA.",
-    "observed_at": "2024-06-05",
-    "validity": {
-      "ttl_days": 180
-    },
-    "evidence_links": [
-      "EU-0040-01",
-      "EU-0040-02",
-      "EU-0040-03"
-    ],
-    "confidence": 0.9,
-    "status": "disputed",
-    "disputes": [
-      {
-        "conflicting_claim": "CL-0040-02",
-        "nature": "Conflicting value for policy",
-        "resolution": "hold"
-      }
-    ]
-  },
-  {
-    "ku_id": "KU-0038",
-    "entity_key": "japan-travel:pass-ticket:osaka-amazing-pass",
-    "field": "duration",
-    "value": "The Osaka Amazing Pass is available for durations of 1-day or 2-day.",
-    "observed_at": "2024-06-06",
-    "validity": {
-      "ttl_days": 180
-    },
-    "evidence_links": [
-      "EU-GU0046-01"
-    ],
-    "confidence": 0.9,
-    "status": "active"
-  },
-  {
-    "ku_id": "KU-0039",
-    "entity_key": "japan-travel:pass-ticket:osaka-amazing-pass",
-    "field": "eligibility",
-    "value": "The Osaka Amazing Pass is available only as a digital QR-code ticket since the physical card version ended in June 2024. It requires a valid credit card used for purchase and an internet-ready smartphone or tablet with a camera for use.",
-    "observed_at": "2024-06-05",
-    "validity": {
-      "ttl_days": 180
-    },
-    "evidence_links": [
-      "EU-GU0047-01",
-      "EU-GU0047-02"
-    ],
-    "confidence": 0.9,
-    "status": "disputed",
-    "disputes": [
-      {
-        "conflicting_claim": "CL-GU0047-02",
-        "nature": "Conflicting value for eligibility",
-        "resolution": "hold"
-      }
-    ]
-  },
-  {
-    "ku_id": "KU-0040",
-    "entity_key": "japan-travel:pass-ticket:kansai-area-pass",
-    "field": "where_to_buy",
-    "value": "The Kansai Wide Area Pass can be purchased at JR West stations, major airports, and overseas.",
-    "observed_at": "2024-06-06",
-    "validity": {
-      "ttl_days": 180
-    },
-    "evidence_links": [
-      "EU-0044-01",
-      "EU-0044-02",
-      "EU-0044-03"
-    ],
-    "confidence": 0.9,
-    "status": "disputed",
-    "disputes": [
-      {
-        "conflicting_claim": "CL-0044-02",
-        "nature": "Conflicting value for where_to_buy",
-        "resolution": "hold"
-      }
-    ]
-  },
-  {
-    "ku_id": "KU-0041",
-    "entity_key": "japan-travel:pass-ticket:kansai-area-pass",
-    "field": "tips",
-    "value": "Collected info for tips from Transit Guide: JR Kansai Area Pass - Japan Travel",
-    "observed_at": "2026-03-06",
-    "validity": {
-      "ttl_days": 180
-    },
-    "evidence_links": [
-      "EU-0043-01",
-      "EU-0043-02"
-    ],
-    "confidence": 0.7,
-    "status": "disputed",
-    "disputes": [
-      {
-        "conflicting_claim": "CL-0043-02",
-        "nature": "Conflicting value for tips",
-        "resolution": "hold"
-      }
-    ]
   },
   {
     "ku_id": "KU-0042",
-    "entity_key": "japan-travel:pass-ticket:osaka-amazing-pass",
-    "field": "policy",
-    "value": "The Osaka Amazing Pass is valid for either 1-day or 2-day durations, allowing unlimited use of Osaka subway, bus network, and private railways, plus free entry to around 40 iconic Osaka tourist attractions.",
-    "observed_at": "2024-06-05",
-    "validity": {
-      "ttl_days": 180
-    },
-    "evidence_links": [
-      "EU-0045-01",
-      "EU-0045-02",
-      "EU-0045-03",
-      "EU-0045-04",
-      "EU-0045-05",
-      "EU-0045-06",
-      "EU-0045-07"
-    ],
-    "confidence": 0.8,
-    "status": "disputed",
-    "disputes": [
-      {
-        "conflicting_claim": "CL-0045-02",
-        "nature": "Conflicting value for policy",
-        "resolution": "hold"
-      }
-    ]
-  },
-  {
-    "ku_id": "KU-0043",
-    "entity_key": "japan-travel:transport:kyoto-bus",
-    "field": "price",
-    "value": "Kyoto city bus fare is planned to be lowered from 230 yen to 200 yen for Kyoto citizens, while noncitizens will pay 350 to 400 yen starting fiscal 2027",
-    "observed_at": "2024-06-05",
+    "entity_key": "japan-travel:pass-ticket:kansai-area-pass",
+    "field": "eligibility",
+    "value": "Collected info for eligibility from Kansai Area Pass | JRailPass",
+    "observed_at": "2026-03-06",
     "validity": {
       "ttl_days": 180
     },
@@ -1086,97 +1039,123 @@
       "EU-0050-02"
     ],
     "confidence": 0.7,
-    "status": "disputed",
+    "status": "active",
     "disputes": [
       {
         "conflicting_claim": "CL-0050-02",
-        "nature": "Conflicting value for price",
-        "resolution": "hold"
+        "nature": "Conflicting value for eligibility",
+        "resolution": "resolved",
+        "resolution_reason": "evidence majority (2 evidence vs 1 disputes)"
       }
     ]
   },
   {
-    "ku_id": "KU-0044",
-    "entity_key": "japan-travel:pass-ticket:osaka-amazing-pass",
-    "field": "where_to_buy",
-    "value": "The Osaka Amazing Pass is available at subway and private railway stations such as Shinsaibashi, Namba (Midosuji, Sennichimae, Yotubashi, Kintetsu, Hanshin and Nankai).",
-    "observed_at": "2024-06-05",
-    "validity": {
-      "ttl_days": 180
-    },
-    "evidence_links": [
-      "EU-0049-01",
-      "EU-0049-02",
-      "EU-0049-03",
-      "EU-0049-04"
-    ],
-    "confidence": 0.5,
-    "status": "disputed",
-    "disputes": [
-      {
-        "conflicting_claim": "CL-0049-02",
-        "nature": "Conflicting value for where_to_buy",
-        "resolution": "hold"
-      }
-    ]
-  },
-  {
-    "ku_id": "KU-0045",
-    "entity_key": "japan-travel:pass-ticket:osaka-amazing-pass",
-    "field": "tips",
-    "value": "The Osaka Amazing Pass offers unlimited rides on public transport and access to 40 attractions, costing 3,300 yen for one day and 5,500 yen for three days as of September 2024.",
-    "observed_at": "2024-06-06",
-    "validity": {
-      "ttl_days": 180
-    },
-    "evidence_links": [
-      "EU-GU0048-01",
-      "EU-GU0048-02",
-      "EU-GU0048-03",
-      "EU-GU0048-04",
-      "EU-GU0048-05",
-      "EU-GU0048-06"
-    ],
-    "confidence": 0.7,
-    "status": "disputed",
-    "disputes": [
-      {
-        "conflicting_claim": "CL-GU0048-02",
-        "nature": "Conflicting value for tips",
-        "resolution": "hold"
-      }
-    ]
-  },
-  {
-    "ku_id": "KU-0046",
-    "entity_key": "japan-travel:transport:kyoto-bus",
-    "field": "duration",
-    "value": "8–9 hours",
+    "ku_id": "KU-0043",
+    "entity_key": "japan-travel:pass-ticket:kansai-area-pass",
+    "field": "policy",
+    "value": "The JR Kansai Area Pass is a rail pass exclusively for foreign visitors to Japan, providing unlimited travel on local JR trains and buses in the Kansai Region around Osaka, Kyoto, Nara, and Kobe, as well as on the Haruka limited express train to/from Kansai Airport.",
     "observed_at": "2024-06-07",
     "validity": {
       "ttl_days": 180
     },
     "evidence_links": [
-      "EU-0051-01",
-      "EU-0051-02",
-      "EU-0051-03",
-      "EU-0051-04"
+      "EU-0048-01",
+      "EU-0048-02",
+      "EU-0048-03",
+      "EU-0048-04",
+      "EU-0048-05",
+      "EU-0048-06"
+    ],
+    "confidence": 0.9,
+    "status": "active"
+  },
+  {
+    "ku_id": "KU-0044",
+    "entity_key": "japan-travel:accommodation:kyoto-ryokan",
+    "field": "tips",
+    "value": "Ryokans in Kyoto are traditionally quiet places, so guests should keep their volume down and use their inside voice to maintain a relaxing atmosphere for everyone.",
+    "observed_at": "2024-06-06",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-GU0047-01",
+      "EU-GU0047-02",
+      "EU-GU0047-03",
+      "EU-GU0047-04",
+      "EU-GU0047-05"
     ],
     "confidence": 0.5,
-    "status": "disputed",
+    "status": "active"
+  },
+  {
+    "ku_id": "KU-0045",
+    "entity_key": "japan-travel:accommodation:kyoto-ryokan",
+    "field": "etiquette",
+    "value": "Guests should arrive at the ryokan by around 18:00 at the latest if staying with dinner, so staff such as the chef and waitress can serve the cuisine at its best. If late, guests should contact the ryokan in advance.",
+    "observed_at": "2024-06-06",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0046-01",
+      "EU-0046-02",
+      "EU-0046-03",
+      "EU-0046-04",
+      "EU-0046-05",
+      "EU-0046-06"
+    ],
+    "confidence": 0.8,
+    "status": "active",
     "disputes": [
       {
-        "conflicting_claim": "CL-0051-02",
-        "nature": "Conflicting value for duration",
-        "resolution": "hold"
+        "conflicting_claim": "CL-0046-02",
+        "nature": "Conflicting value for etiquette",
+        "resolution": "resolved",
+        "resolution_reason": "evidence majority (6 evidence vs 1 disputes)"
       }
     ]
   },
   {
+    "ku_id": "KU-0046",
+    "entity_key": "japan-travel:regulation:luggage-forwarding",
+    "field": "how_to_use",
+    "value": "Takuhaibin allows travelers to ship their main luggage ahead from one city to another, such as from Tokyo to Kyoto, enabling them to travel lighter with only a smaller personal bag.",
+    "observed_at": "2024-06-06",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0022-01",
+      "EU-0022-02",
+      "EU-0022-03"
+    ],
+    "confidence": 0.7,
+    "status": "active"
+  },
+  {
     "ku_id": "KU-0047",
-    "entity_key": "japan-travel:transport:kyoto-bus",
-    "field": "tips",
-    "value": "Avoid the 207 and 206 bus routes in Kyoto if possible because these buses are jam packed with visitors, but there are many other buses that take the same routes.",
+    "entity_key": "japan-travel:transport:airport-transfer",
+    "field": "ic_card_compatibility",
+    "value": "Suica, Pasmo, Icoca and seven more of Japan's most popular IC cards have been compatible with each other since 2013, allowing travel on almost all trains, subways, and buses in most of Japan's largest cities with a single card.",
+    "observed_at": "2024-06-05",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0027-01",
+      "EU-0027-02",
+      "EU-0027-03",
+      "EU-0027-04"
+    ],
+    "confidence": 0.9,
+    "status": "active"
+  },
+  {
+    "ku_id": "KU-0048",
+    "entity_key": "japan-travel:pass-ticket:kansai-area-pass",
+    "field": "where_to_buy",
+    "value": "The JR Kansai Area Pass can be purchased before arriving in Japan through accredited travel agencies outside Japan, where you receive an exchange order or e-ticket, or after arrival at major JR West stations, Kansai International Airport, and selected travel agencies in Japan.",
     "observed_at": "2024-06-05",
     "validity": {
       "ttl_days": 180
@@ -1185,140 +1164,98 @@
       "EU-0052-01",
       "EU-0052-02",
       "EU-0052-03",
-      "EU-0052-04",
-      "EU-0052-05",
-      "EU-0052-06"
-    ],
-    "confidence": 0.5,
-    "status": "disputed",
-    "disputes": [
-      {
-        "conflicting_claim": "CL-0052-02",
-        "nature": "Conflicting value for tips",
-        "resolution": "hold"
-      }
-    ]
-  },
-  {
-    "ku_id": "KU-0048",
-    "entity_key": "japan-travel:transport:airport-transfer",
-    "field": "ic_card_compatibility",
-    "value": "The 10 most popular IC cards in Japan, including Suica, Pasmo, and Icoca, are compatible with each other and can be used on almost all train, subway, and bus lines inside Japanese cities. These IC cards can be purchased once in Japan and used alongside the Japan Rail Pass for seamless travel.",
-    "observed_at": "2024-06-06",
-    "validity": {
-      "ttl_days": 180
-    },
-    "evidence_links": [
-      "EU-0027-01",
-      "EU-0027-02",
-      "EU-0027-03"
+      "EU-0052-04"
     ],
     "confidence": 0.9,
-    "status": "disputed",
+    "status": "active",
     "disputes": [
       {
-        "conflicting_claim": "CL-0027-02",
-        "nature": "Conflicting value for ic_card_compatibility",
-        "resolution": "hold"
+        "conflicting_claim": "CL-0052-04",
+        "nature": "Conflicting value for where_to_buy",
+        "resolution": "resolved",
+        "resolution_reason": "evidence majority (4 evidence vs 1 disputes)"
       }
     ]
   },
   {
     "ku_id": "KU-0049",
-    "entity_key": "japan-travel:transport:bus",
-    "field": "how_to_use",
-    "value": "The Japan Rail Pass covers JR local buses, which can be identified by the JR logo on the bus and bus stops, but it no longer covers JR highway buses.",
-    "observed_at": "2024-06-05",
+    "entity_key": "japan-travel:pass-ticket:kansai-area-pass",
+    "field": "tips",
+    "value": "The JR Kansai Area Pass is ideal for short Kansai stays focused on Osaka, Kyoto, Nara, and Himeji, available for 1 to 4 consecutive days with prices ranging from 2,800 to 7,000 yen.",
+    "observed_at": "2024-06-06",
     "validity": {
       "ttl_days": 180
     },
     "evidence_links": [
-      "EU-0016-01",
-      "EU-0016-02",
-      "EU-0016-03",
-      "EU-0016-04"
+      "EU-0051-01",
+      "EU-0051-02",
+      "EU-0051-03",
+      "EU-0051-04",
+      "EU-0051-05"
     ],
-    "confidence": 0.9,
-    "status": "disputed",
+    "confidence": 0.75,
+    "status": "active",
     "disputes": [
       {
-        "conflicting_claim": "CL-0016-02",
-        "nature": "Conflicting value for how_to_use",
-        "resolution": "hold"
+        "conflicting_claim": "CL-0051-05",
+        "nature": "Conflicting value for tips",
+        "resolution": "resolved",
+        "resolution_reason": "evidence majority (5 evidence vs 1 disputes)"
       }
     ]
   },
   {
     "ku_id": "KU-0050",
-    "entity_key": "japan-travel:pass-ticket:suica",
-    "field": "android_support",
-    "value": "The Mobile Suica app is only available on the Japanese Google Play Store, and if your Android device supports FeliCa and Suica is visible in Google Wallet, you can set up a digital Suica card.",
+    "entity_key": "japan-travel:transport:taxi",
+    "field": "price",
+    "value": "Base fare starts at about 410 yen for the first kilometer, then roughly 82 yen for each additional 237 meters",
     "observed_at": "2024-06-05",
     "validity": {
       "ttl_days": 180
     },
     "evidence_links": [
-      "EU-0028-01",
-      "EU-0028-02",
-      "EU-0028-03"
+      "EU-0020-01",
+      "EU-0020-02",
+      "EU-0020-03",
+      "EU-0020-04",
+      "EU-0020-05"
     ],
-    "confidence": 0.7,
-    "status": "disputed",
-    "disputes": [
-      {
-        "conflicting_claim": "CL-0028-02",
-        "nature": "Conflicting value for android_support",
-        "resolution": "hold"
-      }
-    ]
+    "confidence": 0.725,
+    "status": "active"
   },
   {
     "ku_id": "KU-0051",
     "entity_key": "japan-travel:regulation:luggage-forwarding",
-    "field": "how_to_use",
-    "value": "To use Takkyubin luggage forwarding service in Japan, fill in the shipping form with sender and recipient details, then drop off your luggage at a designated counter such as airports, hotels, or convenience stores.",
+    "field": "price",
+    "value": "Airport luggage forwarding in Japan will typically cost $30+ per bag",
     "observed_at": "2024-06-06",
     "validity": {
       "ttl_days": 180
     },
     "evidence_links": [
-      "EU-0022-01",
-      "EU-0022-02",
-      "EU-0022-03",
-      "EU-0022-04",
-      "EU-0022-05"
+      "EU-0053-01",
+      "EU-0053-02",
+      "EU-0053-03",
+      "EU-0053-04",
+      "EU-0053-05"
     ],
-    "confidence": 0.7,
-    "status": "disputed",
+    "confidence": 0.525,
+    "status": "active",
     "disputes": [
       {
-        "conflicting_claim": "CL-0022-02",
-        "nature": "Conflicting value for how_to_use",
-        "resolution": "hold"
+        "conflicting_claim": "CL-0053-03",
+        "nature": "Conflicting value for price",
+        "resolution": "resolved",
+        "resolution_reason": "evidence majority (5 evidence vs 1 disputes)"
       }
     ]
   },
   {
     "ku_id": "KU-0052",
-    "entity_key": "japan-travel:attraction:universal-studios-japan",
-    "field": "price",
-    "value": "Child (4-11 years old) ¥33,200 including tax; Universal Prime Annual Pass Standard - Adult (12 years old and over) ¥20,000 including tax",
-    "observed_at": "2024-06-06",
-    "validity": {
-      "ttl_days": 180
-    },
-    "evidence_links": [
-      "EU-GU0023-01"
-    ],
-    "confidence": 0.7,
-    "status": "active"
-  },
-  {
-    "ku_id": "KU-0053",
-    "entity_key": "japan-travel:transport:airport-transfer",
-    "field": "tips",
-    "value": "Tokyo is served by two airports: Narita International Airport (NRT) and Haneda Airport (HND). Haneda is closer and more convenient to Tokyo but has fewer international connections.",
-    "observed_at": "2024-06-06",
+    "entity_key": "japan-travel:regulation:luggage-forwarding",
+    "field": "eligibility",
+    "value": "Large/heavy bags over 30 kg are often not accepted for airport delivery luggage forwarding services in Japan.",
+    "observed_at": "2024-06-05",
     "validity": {
       "ttl_days": 180
     },
@@ -1327,25 +1264,48 @@
       "EU-0055-02",
       "EU-0055-03",
       "EU-0055-04",
-      "EU-0055-05",
-      "EU-0055-06"
+      "EU-0055-05"
+    ],
+    "confidence": 0.6,
+    "status": "active"
+  },
+  {
+    "ku_id": "KU-0053",
+    "entity_key": "japan-travel:transport:airport-transfer",
+    "field": "price",
+    "value": "Tokyo: Private One-Way Transfer to/from Haneda Airport(HND) costs $42",
+    "observed_at": "2024-06-05",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0057-01",
+      "EU-0057-02",
+      "EU-0057-03",
+      "EU-0057-04",
+      "EU-0057-05",
+      "EU-0057-06",
+      "EU-0057-07",
+      "EU-0057-08",
+      "EU-0057-09"
     ],
     "confidence": 0.9,
-    "status": "disputed",
+    "status": "active",
     "disputes": [
       {
-        "conflicting_claim": "CL-0055-02",
-        "nature": "Conflicting value for tips",
-        "resolution": "hold"
+        "conflicting_claim": "CL-0057-03",
+        "nature": "Conflicting value for price",
+        "resolution": "resolved",
+        "resolution_reason": "evidence majority (9 evidence vs 1 disputes)"
       }
     ]
   },
   {
     "ku_id": "KU-0054",
-    "entity_key": "japan-travel:transport:airport-transfer",
-    "field": "duration",
-    "value": "Private transfer from Narita Airport to Tokyo city center takes approximately 1.5 hours",
-    "observed_at": "2024-06-06",
+    "entity_key": "japan-travel:regulation:luggage-forwarding",
+    "field": "policy",
+    "value": "Yamato Transport partners with major convenience store chains in Japan, allowing travelers to send their luggage easily from convenience stores nationwide.",
+    "observed_at": "2024-06-05",
     "validity": {
       "ttl_days": 180
     },
@@ -1354,24 +1314,95 @@
       "EU-0054-02",
       "EU-0054-03",
       "EU-0054-04",
-      "EU-0054-05"
+      "EU-0054-05",
+      "EU-0054-06",
+      "EU-0054-07",
+      "EU-0054-08"
     ],
-    "confidence": 0.7,
-    "status": "disputed",
+    "confidence": 0.702,
+    "status": "active"
+  },
+  {
+    "ku_id": "KU-0055",
+    "entity_key": "japan-travel:regulation:luggage-forwarding",
+    "field": "tips",
+    "value": "Yamato will generally not accept luggage 7 days before the delivery date.",
+    "observed_at": "2024-06-05",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0056-01",
+      "EU-0056-02",
+      "EU-0056-03",
+      "EU-0056-04",
+      "EU-0056-05",
+      "EU-0056-06",
+      "EU-0056-07",
+      "EU-0056-08",
+      "EU-0056-09"
+    ],
+    "confidence": 0.503,
+    "status": "active"
+  },
+  {
+    "ku_id": "KU-0056",
+    "entity_key": "japan-travel:transport:taxi",
+    "field": "duration",
+    "value": "Average duration of taxi from Tokyo Narita Airport (NRT) to Tokyo downtown is 1 hour 4 minutes",
+    "observed_at": "2024-06-05",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0060-01",
+      "EU-0060-02",
+      "EU-0060-03"
+    ],
+    "confidence": 0.75,
+    "status": "active",
     "disputes": [
       {
-        "conflicting_claim": "CL-0054-02",
+        "conflicting_claim": "CL-0060-03",
         "nature": "Conflicting value for duration",
-        "resolution": "hold"
+        "resolution": "resolved",
+        "resolution_reason": "evidence majority (3 evidence vs 1 disputes)"
       }
     ]
   },
   {
-    "ku_id": "KU-0055",
+    "ku_id": "KU-0057",
+    "entity_key": "japan-travel:transport:airport-transfer",
+    "field": "duration",
+    "value": "From Haneda Airport to major Tokyo districts (Shinjuku, Shibuya, Ginza), transfer duration is typically 20-40 minutes in off-peak hours by rail or private transfer",
+    "observed_at": "2024-06-05",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0058-01",
+      "EU-0058-02",
+      "EU-0058-03",
+      "EU-0058-04",
+      "EU-0058-05"
+    ],
+    "confidence": 0.7,
+    "status": "active",
+    "disputes": [
+      {
+        "conflicting_claim": "CL-0058-04",
+        "nature": "Conflicting value for duration",
+        "resolution": "resolved",
+        "resolution_reason": "evidence majority (5 evidence vs 1 disputes)"
+      }
+    ]
+  },
+  {
+    "ku_id": "KU-0058",
     "entity_key": "japan-travel:attraction:tokyo-skytree",
     "field": "price",
-    "value": "Advance Ticket Tembo Deck Admission Tickets Weekdays: Adult ¥2,100, Teenager ¥1,400, Child ¥850; Combo Ticket Tembo Deck + Tembo Galleria Weekdays: Adult ¥3,100, Teenager ¥2,150, Child ¥1,300",
-    "observed_at": "2024-06-01",
+    "value": "TOKYO SKYTREE Combo ticket Floor350+450 Weekdays: ¥3,100 (¥1,550) for 18 years old and over, ¥2,350 (¥1,200) for 12 - 17 years old, ¥1,450 (¥750) for 6 - 11 years old; Holidays: ¥3,400 (¥1,700), ¥2,550 (¥1,300), ¥1,550 (¥800) respectively",
+    "observed_at": "2024-06-05",
     "validity": {
       "ttl_days": 180
     },
@@ -1381,93 +1412,303 @@
       "EU-0009-03"
     ],
     "confidence": 0.9,
-    "status": "disputed",
-    "disputes": [
-      {
-        "conflicting_claim": "CL-0009-02",
-        "nature": "Conflicting value for price",
-        "resolution": "hold"
-      }
-    ]
+    "status": "active"
   },
   {
-    "ku_id": "KU-0056",
+    "ku_id": "KU-0059",
     "entity_key": "japan-travel:transport:airport-transfer",
-    "field": "price",
-    "value": "Keisei Skyliner One-Way Ticket from Tokyo Narita Airport costs US$6.25 to US$6.95",
-    "observed_at": "2024-06-04",
+    "field": "tips",
+    "value": "Stations in Japan can get crowded and travelers often have to carry luggage upstairs, which can be stressful; hotels usually offer luggage transfer services.",
+    "observed_at": "2024-06-06",
     "validity": {
       "ttl_days": 180
     },
     "evidence_links": [
-      "EU-0053-01",
-      "EU-0053-02",
-      "EU-0053-03"
+      "EU-0059-01",
+      "EU-0059-02",
+      "EU-0059-03",
+      "EU-0059-04",
+      "EU-0059-05"
     ],
     "confidence": 0.8,
-    "status": "disputed",
-    "disputes": [
-      {
-        "conflicting_claim": "CL-0053-02",
-        "nature": "Conflicting value for price",
-        "resolution": "hold"
-      }
-    ]
+    "status": "active"
   },
   {
-    "ku_id": "KU-0057",
-    "entity_key": "japan-travel:transport:taxi",
+    "ku_id": "KU-0060",
+    "entity_key": "japan-travel:attraction:universal-studios-japan",
     "field": "price",
-    "value": "Flat-rate fares from Haneda Airport to various Tokyo areas range from ¥6,900 (Chiyoda Area) to ¥12,800 (Musashino Area), with late night/early morning surcharges between ¥1,400 and ¥2,400 applied from 22:00 to 5:00",
+    "value": "Universal Studios Japan entry ticket prices vary depending on the day and season; ticket types include 1-Day Studio Pass, 1.5-Day Studio Pass, and 2-Day Studio Pass",
     "observed_at": "2024-06-05",
     "validity": {
       "ttl_days": 180
     },
     "evidence_links": [
-      "EU-GU0020-01",
-      "EU-GU0020-02",
-      "EU-GU0020-03"
+      "EU-GU-0023-01",
+      "EU-GU-0023-02",
+      "EU-GU-0023-03"
     ],
-    "confidence": 0.9,
-    "status": "disputed",
-    "disputes": [
-      {
-        "conflicting_claim": "CL-GU0020-02",
-        "nature": "Conflicting value for price",
-        "resolution": "hold"
-      }
-    ]
+    "confidence": 0.85,
+    "status": "active"
   },
   {
-    "ku_id": "KU-0058",
+    "ku_id": "KU-0061",
+    "entity_key": "japan-travel:pass-ticket:suica",
+    "field": "android_support",
+    "value": "Welcome Suica Mobile is not supported on Android phones; users must use a physical Suica card instead.",
+    "observed_at": "2024-06-05",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0028-01"
+    ],
+    "confidence": 0.5,
+    "status": "active"
+  },
+  {
+    "ku_id": "KU-0062",
+    "entity_key": "japan-travel:transport:bus",
+    "field": "how_to_use",
+    "value": "Local buses in Japan have two boarding systems depending on the region and company: 'front boarding, rear alighting' and 'rear boarding, front alighting'. Passengers pay fares either upon boarding or upon alighting, depending on the route. Payment can be made by cash or IC card, and passengers check the fare displayed when alighting.",
+    "observed_at": "2024-06-06",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0016-01",
+      "EU-0016-02",
+      "EU-0016-03"
+    ],
+    "confidence": 0.9,
+    "status": "active"
+  },
+  {
+    "ku_id": "KU-0063",
     "entity_key": "japan-travel:pass-ticket:tokyo-subway-ticket",
     "field": "where_to_buy",
-    "value": "Tokyo Subway Tickets can be purchased at the following locations in Japan: Haneda Airport (International Terminal 2F Arrival Lobby Visitor Information Center), Narita Airport Terminal 1 (1F Arrival Lobby), Narita Airport Terminal 2 (1F Arrival Lobby Zone A and Zone B), Ueno Station Tourist Information, Ueno-okachimachi Station Tourist Information Center, Ginza Station Tourist Information, Shinjuku Station Tourist Information, Omote-sando Station Tourist Information, Tokyo Station Tourist Information, Ikebukuro Station Pass Office (Yurakucho Line), Iidabashi Station Pass Office, Takadanobaba Station Pass Office, Otemachi Station Pass Office, Ikebukuro Station Tourist Information (Yurakucho Line), Shinjuku Tourist Information, SAGAWA EXPRESS SHINJUKU SERVICE CENTER, H.I.S. Harajuku, WANDER COMPASS SHIBUYA, Ueno Information, Asakusa Culture Tourist Information Center, and Tourist Information Desk Asakusa.",
-    "observed_at": "2024-06-05",
+    "value": "Tokyo Subway Ticket can be purchased inside Japan at major Tokyo Metro or Toei Subway stations either at ticket counters or ticket machines with QR code readers.",
+    "observed_at": "2024-06-06",
     "validity": {
       "ttl_days": 180
     },
     "evidence_links": [
       "EU-0029-01",
       "EU-0029-02",
-      "EU-0029-03"
+      "EU-0029-03",
+      "EU-0029-04"
     ],
     "confidence": 0.9,
-    "status": "disputed",
+    "status": "active"
+  },
+  {
+    "ku_id": "KU-0064",
+    "entity_key": "japan-travel:transport:taxi",
+    "field": "tips",
+    "value": "The GO app is Japan's leading taxi app with the largest fleet of partner vehicles, offers English language support, and cashless payment options, providing a stress-free and seamless way to get around Japan.",
+    "observed_at": "2024-06-05",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0062-01",
+      "EU-0062-02",
+      "EU-0062-03",
+      "EU-0062-04",
+      "EU-0062-05",
+      "EU-0062-06"
+    ],
+    "confidence": 0.875,
+    "status": "active",
     "disputes": [
       {
-        "conflicting_claim": "CL-0029-02",
-        "nature": "Conflicting value for where_to_buy",
-        "resolution": "hold"
+        "conflicting_claim": "CL-0062-05",
+        "nature": "Conflicting value for tips",
+        "resolution": "resolved",
+        "resolution_reason": "evidence majority (6 evidence vs 1 disputes)"
       }
     ]
   },
   {
-    "ku_id": "KU-0059",
+    "ku_id": "KU-0065",
+    "entity_key": "japan-travel:attraction:tokyo-skytree",
+    "field": "hours",
+    "value": "Monday to Sunday: 09:00 AM - 05:00 PM",
+    "observed_at": "2024-06-10",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-GU0063-01",
+      "EU-GU0063-02",
+      "EU-GU0063-03",
+      "EU-GU0063-04",
+      "EU-GU0063-05",
+      "EU-GU0063-06"
+    ],
+    "confidence": 0.7,
+    "status": "active"
+  },
+  {
+    "ku_id": "KU-0066",
+    "entity_key": "japan-travel:transport:taxi",
+    "field": "how_to_use",
+    "value": "To find a taxi in Japan, you can go to designated taxi stands located at major train stations, shopping centers, and tourist attractions, where you stand in line and wait for the next available taxi.",
+    "observed_at": "2024-06-05",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0061-01",
+      "EU-0061-02",
+      "EU-0061-03",
+      "EU-0061-04",
+      "EU-0061-05",
+      "EU-0061-06"
+    ],
+    "confidence": 0.75,
+    "status": "active"
+  },
+  {
+    "ku_id": "KU-0067",
+    "entity_key": "japan-travel:attraction:tokyo-skytree",
+    "field": "location",
+    "value": "Tokyo Skytree is located in Sumida, Tokyo",
+    "observed_at": "2024-06-05",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0064-01",
+      "EU-0064-02"
+    ],
+    "confidence": 0.9,
+    "status": "active"
+  },
+  {
+    "ku_id": "KU-0068",
+    "entity_key": "japan-travel:connectivity:sim-card",
+    "field": "how_to_use",
+    "value": "To use a Japan SIM card, you need to insert the prepaid SIM card into your mobile phone. Some SIM cards require manual APN setup by going to your phone's network settings, toggling options, and entering the connection information provided with the SIM card.",
+    "observed_at": "2024-06-07",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0066-01",
+      "EU-0066-02",
+      "EU-0066-03",
+      "EU-0066-04"
+    ],
+    "confidence": 0.7,
+    "status": "active",
+    "disputes": [
+      {
+        "conflicting_claim": "CL-0066-04",
+        "nature": "Conflicting value for how_to_use",
+        "resolution": "resolved",
+        "resolution_reason": "evidence majority (4 evidence vs 1 disputes)"
+      }
+    ]
+  },
+  {
+    "ku_id": "KU-0069",
+    "entity_key": "japan-travel:attraction:tokyo-skytree",
+    "field": "tips",
+    "value": "On weekends, consider purchasing the 'Fast Sky tree Ticket' which costs 940 ¥ more than the regular ticket and allows skipping the queue up to the 350th floor, but does not include access to the 450th floor.",
+    "observed_at": "2024-06-05",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0065-01",
+      "EU-0065-02",
+      "EU-0065-03",
+      "EU-0065-04",
+      "EU-0065-05"
+    ],
+    "confidence": 0.5,
+    "status": "active",
+    "disputes": [
+      {
+        "conflicting_claim": "CL-0065-04",
+        "nature": "Conflicting value for tips",
+        "resolution": "resolved",
+        "resolution_reason": "evidence majority (5 evidence vs 1 disputes)"
+      }
+    ]
+  },
+  {
+    "ku_id": "KU-0070",
+    "entity_key": "japan-travel:regulation:cultural-manner",
+    "field": "tips",
+    "value": "Travelers in Japan must remove their shoes when entering homes, certain traditional accommodations (ryokans), and some restaurants.",
+    "observed_at": "2024-06-04",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0039-01",
+      "EU-0039-02",
+      "EU-0039-03",
+      "EU-0039-04",
+      "EU-0039-05"
+    ],
+    "confidence": 0.65,
+    "status": "active",
+    "disputes": [
+      {
+        "conflicting_claim": "CL-0039-04",
+        "nature": "Conflicting value for tips",
+        "resolution": "resolved",
+        "resolution_reason": "evidence majority (5 evidence vs 1 disputes)"
+      }
+    ]
+  },
+  {
+    "ku_id": "KU-0071",
+    "entity_key": "japan-travel:connectivity:sim-card",
+    "field": "where_to_buy",
+    "value": "You can buy Japan Travel SIM cards like the IIJmio Japan Travel SIM at BIC Camera shops which are everywhere in Tokyo. BIC Camera shops have the best selection and will install the SIM card for you for ¥2200 if you wish.",
+    "observed_at": "2024-06-06",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0068-01",
+      "EU-0068-02",
+      "EU-0068-03",
+      "EU-0068-04",
+      "EU-0068-05",
+      "EU-0068-06"
+    ],
+    "confidence": 0.688,
+    "status": "active"
+  },
+  {
+    "ku_id": "KU-0072",
+    "entity_key": "japan-travel:connectivity:sim-card",
+    "field": "tips",
+    "value": "Ordering a Japan SIM card online before arriving is the best option for travelers who prefer a stress-free experience.",
+    "observed_at": "2024-06-06",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0067-01",
+      "EU-0067-02",
+      "EU-0067-03",
+      "EU-0067-04",
+      "EU-0067-05"
+    ],
+    "confidence": 0.85,
+    "status": "active"
+  },
+  {
+    "ku_id": "KU-0073",
     "entity_key": "japan-travel:transport:tokyo-metro",
     "field": "tips",
-    "value": "Tokyo Metro operates 9 train lines covering 195 km of track between 180 stations, connecting major tourist destinations across Tokyo.",
-    "observed_at": "2024-06-05",
+    "value": "Tokyo Metro operates 9 train lines covering 195 km of track between 180 stations, providing extensive coverage for tourists and locals.",
+    "observed_at": "2024-06-06",
     "validity": {
       "ttl_days": 180
     },
@@ -1479,112 +1720,15 @@
       "EU-0031-05",
       "EU-0031-06"
     ],
-    "confidence": 0.9,
-    "status": "disputed",
-    "disputes": [
-      {
-        "conflicting_claim": "CL-0031-02",
-        "nature": "Conflicting value for tips",
-        "resolution": "hold"
-      }
-    ]
-  },
-  {
-    "ku_id": "KU-0060",
-    "entity_key": "japan-travel:pass-ticket:suica",
-    "field": "price",
-    "value": "When purchasing a new Suica card, a 500-yen deposit is included in the price.",
-    "observed_at": "2024-06-06",
-    "validity": {
-      "ttl_days": 180
-    },
-    "evidence_links": [
-      "EU-0059-01"
-    ],
-    "confidence": 0.9,
+    "confidence": 0.787,
     "status": "active"
   },
   {
-    "ku_id": "KU-0061",
-    "entity_key": "japan-travel:transport:bus",
-    "field": "duration",
-    "value": "7–9 hours",
-    "observed_at": "2024-06-07",
-    "validity": {
-      "ttl_days": 180
-    },
-    "evidence_links": [
-      "EU-0057-01",
-      "EU-0057-02"
-    ],
-    "confidence": 0.7,
-    "status": "disputed",
-    "disputes": [
-      {
-        "conflicting_claim": "CL-0057-02",
-        "nature": "Conflicting value for duration",
-        "resolution": "hold"
-      }
-    ]
-  },
-  {
-    "ku_id": "KU-0062",
-    "entity_key": "japan-travel:transport:bus",
-    "field": "price",
-    "value": "Nagoya City Bus Regular Ticket Adult fare is 210 yen",
-    "observed_at": "2024-06-07",
-    "validity": {
-      "ttl_days": 180
-    },
-    "evidence_links": [
-      "EU-0056-01",
-      "EU-0056-02",
-      "EU-0056-03",
-      "EU-0056-04",
-      "EU-0056-05"
-    ],
-    "confidence": 0.9,
-    "status": "disputed",
-    "disputes": [
-      {
-        "conflicting_claim": "CL-0056-02",
-        "nature": "Conflicting value for price",
-        "resolution": "hold"
-      }
-    ]
-  },
-  {
-    "ku_id": "KU-0063",
-    "entity_key": "japan-travel:regulation:cultural-manner",
-    "field": "tips",
-    "value": "When traveling in Japan, it is important to remove your shoes when entering homes and certain indoor places.",
-    "observed_at": "2024-06-05",
-    "validity": {
-      "ttl_days": 180
-    },
-    "evidence_links": [
-      "EU-0039-01",
-      "EU-0039-02",
-      "EU-0039-03",
-      "EU-0039-04",
-      "EU-0039-05"
-    ],
-    "confidence": 0.9,
-    "status": "disputed",
-    "disputes": [
-      {
-        "conflicting_claim": "CL-0039-02",
-        "nature": "Conflicting value for tips",
-        "resolution": "hold"
-      }
-    ]
-  },
-  {
-    "ku_id": "KU-0064",
+    "ku_id": "KU-0074",
     "entity_key": "japan-travel:regulation:practical-phrases",
     "field": "tips",
-    "value": "Essential Japanese travel phrases include greetings such as 'konnichiwa' (hello), 'ohayou gozaimasu' (good morning), 'hajimemashite' (nice to meet you), 'sayounara' (goodbye), 'onegaishimasu' (please), and 'arigatou gozaimasu' (thank you), with hiragana, kanji, and romaji provided along with pronunciation audio guides.",
-    "observed_at": "2024-06-06",
+    "value": "Essential Japanese travel phrases include greetings and polite expressions such as 'Please' (onegaishimasu), 'Thank you' (arigatou gozaimasu), and 'Excuse me/Sorry' (sumimasen).",
+    "observed_at": "2024-06-05",
     "validity": {
       "ttl_days": 180
     },
@@ -1592,378 +1736,27 @@
       "EU-0038-01",
       "EU-0038-02",
       "EU-0038-03",
-      "EU-0038-04"
+      "EU-0038-04",
+      "EU-0038-05",
+      "EU-0038-06",
+      "EU-0038-07"
     ],
-    "confidence": 0.7,
-    "status": "disputed",
+    "confidence": 0.619,
+    "status": "active",
     "disputes": [
       {
-        "conflicting_claim": "CL-0038-02",
+        "conflicting_claim": "CL-0038-06",
         "nature": "Conflicting value for tips",
-        "resolution": "hold"
-      }
-    ]
-  },
-  {
-    "ku_id": "KU-0065",
-    "entity_key": "japan-travel:transport:bus",
-    "field": "tips",
-    "value": "Japan's bus network is highly developed and efficient, offering a practical and economical alternative to trains and subways.",
-    "observed_at": "2024-06-06",
-    "validity": {
-      "ttl_days": 180
-    },
-    "evidence_links": [
-      "EU-0058-01",
-      "EU-0058-02",
-      "EU-0058-03",
-      "EU-0058-04",
-      "EU-0058-05",
-      "EU-0058-06",
-      "EU-0058-07",
-      "EU-0058-08",
-      "EU-0058-09",
-      "EU-0058-10",
-      "EU-0058-11"
-    ],
-    "confidence": 0.9,
-    "status": "disputed",
-    "disputes": [
-      {
-        "conflicting_claim": "CL-0058-02",
-        "nature": "Conflicting value for tips",
-        "resolution": "hold"
-      }
-    ]
-  },
-  {
-    "ku_id": "KU-0066",
-    "entity_key": "japan-travel:dining:conveyor-sushi",
-    "field": "how_to_use",
-    "value": "At many kaiten sushi restaurants in Japan, diners can order sushi individually using a tablet or touch panel, and the ordered sushi will be delivered directly to their table via the conveyor belt, accompanied by a chime sound to notify the customer.",
-    "observed_at": "2024-06-05",
-    "validity": {
-      "ttl_days": 180
-    },
-    "evidence_links": [
-      "EU-0011-01",
-      "EU-0011-02"
-    ],
-    "confidence": 0.7,
-    "status": "disputed",
-    "disputes": [
-      {
-        "conflicting_claim": "CL-0011-02",
-        "nature": "Conflicting value for how_to_use",
-        "resolution": "hold"
-      }
-    ]
-  },
-  {
-    "ku_id": "KU-0067",
-    "entity_key": "japan-travel:connectivity:pocket-wifi",
-    "field": "price",
-    "value": "For a 30 day rental, Japan Wireless is the cheapest option at ¥14,555",
-    "observed_at": "2024-06-06",
-    "validity": {
-      "ttl_days": 180
-    },
-    "evidence_links": [
-      "EU-0001-01",
-      "EU-0002-01",
-      "EU-0003-01",
-      "EU-0004-01",
-      "EU-0005-01",
-      "EU-0006-01"
-    ],
-    "confidence": 0.7,
-    "status": "disputed",
-    "disputes": [
-      {
-        "conflicting_claim": "CL-0001-02",
-        "nature": "Conflicting value for price",
-        "resolution": "hold"
-      }
-    ]
-  },
-  {
-    "ku_id": "KU-0068",
-    "entity_key": "japan-travel:accommodation:capsule-hotel",
-    "field": "how_to_use",
-    "value": "To use a capsule hotel, remove your shoes and place them into a locker, then take the key to the check-in counter. At check-in, you are assigned a capsule number and given a key to a locker for your belongings. Most people start with a bath and then change into fresh clothes. Capsules provide a private enclosed bed with basic amenities such as light, alarm clock, TV, radio, power outlets, and free Wi-Fi. Shared facilities include toilets, showers, and often large communal baths.",
-    "observed_at": "2024-06-05",
-    "validity": {
-      "ttl_days": 180
-    },
-    "evidence_links": [
-      "EU-0021-01",
-      "EU-0021-02",
-      "EU-0021-03",
-      "EU-0021-04"
-    ],
-    "confidence": 0.9,
-    "status": "disputed",
-    "disputes": [
-      {
-        "conflicting_claim": "CL-0021-02",
-        "nature": "Conflicting value for how_to_use",
-        "resolution": "hold"
-      }
-    ]
-  },
-  {
-    "ku_id": "KU-0069",
-    "entity_key": "japan-travel:attraction:universal-studios-japan",
-    "field": "hours",
-    "value": "Universal Studios Japan park hours vary per day; for example, on some days the park operates from 8:30 AM to 9:30 PM",
-    "observed_at": "2024-04-27",
-    "validity": {
-      "ttl_days": 180
-    },
-    "evidence_links": [
-      "EU-GU-0063-01",
-      "EU-GU-0063-02",
-      "EU-GU-0063-03"
-    ],
-    "confidence": 0.9,
-    "status": "disputed",
-    "disputes": [
-      {
-        "conflicting_claim": "CL-GU-0063-02",
-        "nature": "Conflicting value for hours",
-        "resolution": "hold"
-      }
-    ]
-  },
-  {
-    "ku_id": "KU-0070",
-    "entity_key": "japan-travel:pass-ticket:suica",
-    "field": "duration",
-    "value": "Each Suica is valid for 180 days from the issuance date",
-    "observed_at": "2024-06-05",
-    "validity": {
-      "ttl_days": 180
-    },
-    "evidence_links": [
-      "EU-0061-01",
-      "EU-0061-02",
-      "EU-0061-03",
-      "EU-0061-04"
-    ],
-    "confidence": 0.9,
-    "status": "disputed",
-    "disputes": [
-      {
-        "conflicting_claim": "CL-0061-02",
-        "nature": "Conflicting value for duration",
-        "resolution": "hold"
-      }
-    ]
-  },
-  {
-    "ku_id": "KU-0071",
-    "entity_key": "japan-travel:pass-ticket:suica",
-    "field": "eligibility",
-    "value": "Welcome Suica cards are available at Haneda and Narita airports and at JR East Travel Service Centers in Tokyo, Shibuya, Shinjuku, Shinagawa, Ikebukuro, and Ueno stations.",
-    "observed_at": "2024-06-06",
-    "validity": {
-      "ttl_days": 180
-    },
-    "evidence_links": [
-      "EU-0062-01",
-      "EU-0062-02",
-      "EU-0062-03",
-      "EU-0062-04",
-      "EU-0062-05"
-    ],
-    "confidence": 0.7,
-    "status": "disputed",
-    "disputes": [
-      {
-        "conflicting_claim": "CL-0062-02",
-        "nature": "Conflicting value for eligibility",
-        "resolution": "hold"
-      }
-    ]
-  },
-  {
-    "ku_id": "KU-0072",
-    "entity_key": "japan-travel:pass-ticket:suica",
-    "field": "policy",
-    "value": "Collected info for policy from Suica Cards: Quick Guide to Tokyo's Smart Travel Cards",
-    "observed_at": "2026-03-06",
-    "validity": {
-      "ttl_days": 180
-    },
-    "evidence_links": [
-      "EU-0060-01",
-      "EU-0060-02"
-    ],
-    "confidence": 0.7,
-    "status": "disputed",
-    "disputes": [
-      {
-        "conflicting_claim": "CL-0060-02",
-        "nature": "Conflicting value for policy",
-        "resolution": "hold"
-      }
-    ]
-  },
-  {
-    "ku_id": "KU-0073",
-    "entity_key": "japan-travel:attraction:universal-studios-japan",
-    "field": "location",
-    "value": "2-1-33 Sakurajima, Konohana-ku, Osaka, 554-0031, Japan",
-    "observed_at": "2024-06-07",
-    "validity": {
-      "ttl_days": 180
-    },
-    "evidence_links": [
-      "EU-0064-01",
-      "EU-0064-02",
-      "EU-0064-03"
-    ],
-    "confidence": 0.9,
-    "status": "disputed",
-    "disputes": [
-      {
-        "conflicting_claim": "CL-0064-02",
-        "nature": "Conflicting value for location",
-        "resolution": "hold"
-      }
-    ]
-  },
-  {
-    "ku_id": "KU-0074",
-    "entity_key": "japan-travel:attraction:tokyo-skytree",
-    "field": "hours",
-    "value": "Tokyo Skytree is open from 10:00 AM to 10:00 PM on weekdays (Monday to Friday) with last admission at 9:00 PM, and from 9:00 AM to 10:00 PM on weekends (Saturday and Sunday) with last admission at 9:00 PM.",
-    "observed_at": "2024-06-06",
-    "validity": {
-      "ttl_days": 180
-    },
-    "evidence_links": [
-      "EU-0066-01",
-      "EU-0066-02",
-      "EU-0066-03"
-    ],
-    "confidence": 0.9,
-    "status": "disputed",
-    "disputes": [
-      {
-        "conflicting_claim": "CL-0066-02",
-        "nature": "Conflicting value for hours",
-        "resolution": "hold"
+        "resolution": "resolved",
+        "resolution_reason": "evidence majority (7 evidence vs 1 disputes)"
       }
     ]
   },
   {
     "ku_id": "KU-0075",
-    "entity_key": "japan-travel:attraction:tokyo-skytree",
-    "field": "location",
-    "value": "Sumida, Tokyo, Japan",
-    "observed_at": "2024-06-06",
-    "validity": {
-      "ttl_days": 180
-    },
-    "evidence_links": [
-      "EU-0067-01",
-      "EU-0067-02",
-      "EU-0067-03"
-    ],
-    "confidence": 0.9,
-    "status": "disputed",
-    "disputes": [
-      {
-        "conflicting_claim": "CL-0067-02",
-        "nature": "Conflicting value for location",
-        "resolution": "hold"
-      }
-    ]
-  },
-  {
-    "ku_id": "KU-0076",
     "entity_key": "japan-travel:attraction:universal-studios-japan",
-    "field": "tips",
-    "value": "Access to Super Nintendo World requires a separate Area Timed Entry Ticket, obtainable via the official USJ app, park kiosks, or included with certain Express Passes.",
-    "observed_at": "2024-06-05",
-    "validity": {
-      "ttl_days": 180
-    },
-    "evidence_links": [
-      "EU-0065-01",
-      "EU-0065-02",
-      "EU-0065-03",
-      "EU-0065-04",
-      "EU-0065-05",
-      "EU-0065-06",
-      "EU-0065-07",
-      "EU-0065-08"
-    ],
-    "confidence": 0.9,
-    "status": "disputed",
-    "disputes": [
-      {
-        "conflicting_claim": "CL-0065-02",
-        "nature": "Conflicting value for tips",
-        "resolution": "hold"
-      }
-    ]
-  },
-  {
-    "ku_id": "KU-0077",
-    "entity_key": "japan-travel:transport:taxi",
-    "field": "duration",
-    "value": "A seven-kilometer taxi ride in Tokyo takes about 25 minutes during the daytime.",
-    "observed_at": "2024-06-06",
-    "validity": {
-      "ttl_days": 180
-    },
-    "evidence_links": [
-      "EU-0069-01",
-      "EU-0069-02",
-      "EU-0069-03",
-      "EU-0069-04"
-    ],
-    "confidence": 0.9,
-    "status": "disputed",
-    "disputes": [
-      {
-        "conflicting_claim": "CL-0069-02",
-        "nature": "Conflicting value for duration",
-        "resolution": "hold"
-      }
-    ]
-  },
-  {
-    "ku_id": "KU-0078",
-    "entity_key": "japan-travel:connectivity:sim-card",
-    "field": "how_to_use",
-    "value": "To use a new SIM card in Japan, you need to have a Wi-Fi connection (such as airport free Wi-Fi) when installing the SIM card. Use airplane mode to turn off and then turn on your phone after inserting the SIM card.",
-    "observed_at": "2024-06-05",
-    "validity": {
-      "ttl_days": 180
-    },
-    "evidence_links": [
-      "EU-0072-01",
-      "EU-0072-02",
-      "EU-0072-03"
-    ],
-    "confidence": 0.5,
-    "status": "disputed",
-    "disputes": [
-      {
-        "conflicting_claim": "CL-0072-02",
-        "nature": "Conflicting value for how_to_use",
-        "resolution": "hold"
-      }
-    ]
-  },
-  {
-    "ku_id": "KU-0079",
-    "entity_key": "japan-travel:transport:taxi",
-    "field": "how_to_use",
-    "value": "In Tokyo, if no taxi is visible on the street, you can download a taxi app such as GO, Uber, or DiDi to hail a taxi. Registration on these apps is generally quick and easy, and enabling GPS on your smartphone is necessary for location tracking.",
+    "field": "location",
+    "value": "2-1-33 Sakurajima, Konohana-ku, Osaka 554-0031, Japan",
     "observed_at": "2024-06-05",
     "validity": {
       "ttl_days": 180
@@ -1974,173 +1767,42 @@
       "EU-0070-03",
       "EU-0070-04"
     ],
-    "confidence": 0.7,
-    "status": "disputed",
-    "disputes": [
-      {
-        "conflicting_claim": "CL-0070-02",
-        "nature": "Conflicting value for how_to_use",
-        "resolution": "hold"
-      }
-    ]
+    "confidence": 0.875,
+    "status": "active"
   },
   {
-    "ku_id": "KU-0080",
-    "entity_key": "japan-travel:attraction:tokyo-skytree",
-    "field": "tips",
-    "value": "Tokyo Skytree offers online ticket sales through their official website and authorized ticketing platforms, allowing visitors to reserve tickets in advance and avoid long queues.",
+    "ku_id": "KU-0076",
+    "entity_key": "japan-travel:attraction:universal-studios-japan",
+    "field": "hours",
+    "value": "Universal Studios Japan operation hours for today are 8:30 AM to 9:30 PM",
     "observed_at": "2024-06-05",
     "validity": {
       "ttl_days": 180
     },
     "evidence_links": [
-      "EU-0068-01",
-      "EU-0068-02",
-      "EU-0068-03",
-      "EU-0068-04",
-      "EU-0068-05",
-      "EU-0068-06",
-      "EU-0068-07"
+      "EU-0069-01",
+      "EU-0069-02",
+      "EU-0069-03"
     ],
-    "confidence": 0.9,
-    "status": "disputed",
-    "disputes": [
-      {
-        "conflicting_claim": "CL-0068-02",
-        "nature": "Conflicting value for tips",
-        "resolution": "hold"
-      }
-    ]
+    "confidence": 0.8,
+    "status": "active"
   },
   {
-    "ku_id": "KU-0081",
-    "entity_key": "japan-travel:connectivity:sim-card",
-    "field": "where_to_buy",
-    "value": "Major convenience stores in Japan, such as Lawson and FamilyMart, sell SIM cards and are open 24/7, making it convenient to purchase a SIM card.",
+    "ku_id": "KU-0077",
+    "entity_key": "japan-travel:attraction:universal-studios-japan",
+    "field": "tips",
+    "value": "Express Passes at Universal Studios Japan frequently sell out before park opening, often an hour or more in advance, so it is recommended to arrive at least one hour before park opening to have a chance to purchase an Express Pass or regular park tickets on busy days such as summer, weekends, or national holidays.",
     "observed_at": "2024-06-06",
     "validity": {
       "ttl_days": 180
     },
     "evidence_links": [
-      "EU-0074-01",
-      "EU-0074-02",
-      "EU-0074-03",
-      "EU-0074-04",
-      "EU-0074-05"
+      "EU-GU-0071-01",
+      "EU-GU-0071-02",
+      "EU-GU-0071-03",
+      "EU-GU-0071-04"
     ],
-    "confidence": 0.9,
-    "status": "disputed",
-    "disputes": [
-      {
-        "conflicting_claim": "CL-0074-02",
-        "nature": "Conflicting value for where_to_buy",
-        "resolution": "hold"
-      }
-    ]
-  },
-  {
-    "ku_id": "KU-0082",
-    "entity_key": "japan-travel:pass-ticket:tokyo-subway-ticket",
-    "field": "policy",
-    "value": "Tokyo Subway Ticket is valid for unlimited travel on all Tokyo Metro and Toei Subway lines for 24 hours, 48 hours, or 72 hours from the travel starting time during the valid period.",
-    "observed_at": "2024-06-07",
-    "validity": {
-      "ttl_days": 180
-    },
-    "evidence_links": [
-      "EU-0075-01",
-      "EU-0075-02",
-      "EU-0075-03"
-    ],
-    "confidence": 0.9,
-    "status": "disputed",
-    "disputes": [
-      {
-        "conflicting_claim": "CL-0075-02",
-        "nature": "Conflicting value for policy",
-        "resolution": "hold"
-      }
-    ]
-  },
-  {
-    "ku_id": "KU-0083",
-    "entity_key": "japan-travel:transport:taxi",
-    "field": "tips",
-    "value": "Use Google Maps or the Uber app to estimate taxi fares in Tokyo before deciding if a taxi is worth it compared to public transport.",
-    "observed_at": "2024-06-06",
-    "validity": {
-      "ttl_days": 180
-    },
-    "evidence_links": [
-      "EU-0071-01",
-      "EU-0071-02",
-      "EU-0071-03",
-      "EU-0071-04",
-      "EU-0071-05",
-      "EU-0071-06",
-      "EU-0071-07",
-      "EU-0071-08",
-      "EU-0071-09"
-    ],
-    "confidence": 0.7,
-    "status": "disputed",
-    "disputes": [
-      {
-        "conflicting_claim": "CL-0071-02",
-        "nature": "Conflicting value for tips",
-        "resolution": "hold"
-      }
-    ]
-  },
-  {
-    "ku_id": "KU-0084",
-    "entity_key": "japan-travel:connectivity:sim-card",
-    "field": "tips",
-    "value": "Airport SIM cards in Japan are generally overpriced compared to purchasing SIM cards at Bic Camera stores in town, which offer better deals.",
-    "observed_at": "2024-06-01",
-    "validity": {
-      "ttl_days": 180
-    },
-    "evidence_links": [
-      "EU-GU0073-01",
-      "EU-GU0073-02",
-      "EU-GU0073-03",
-      "EU-GU0073-04",
-      "EU-GU0073-05",
-      "EU-GU0073-06",
-      "EU-GU0073-07"
-    ],
-    "confidence": 0.5,
-    "status": "disputed",
-    "disputes": [
-      {
-        "conflicting_claim": "CL-GU0073-02",
-        "nature": "Conflicting value for tips",
-        "resolution": "hold"
-      }
-    ]
-  },
-  {
-    "ku_id": "KU-0085",
-    "entity_key": "japan-travel:pass-ticket:suica",
-    "field": "tips",
-    "value": "Collected info for tips from Suica Cards: Quick Guide to Tokyo's Smart Travel Cards",
-    "observed_at": "2026-03-06",
-    "validity": {
-      "ttl_days": 180
-    },
-    "evidence_links": [
-      "EU-0076-01",
-      "EU-0076-02"
-    ],
-    "confidence": 0.7,
-    "status": "disputed",
-    "disputes": [
-      {
-        "conflicting_claim": "CL-0076-02",
-        "nature": "Conflicting value for tips",
-        "resolution": "hold"
-      }
-    ]
+    "confidence": 0.65,
+    "status": "active"
   }
 ]

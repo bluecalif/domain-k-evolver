@@ -80,9 +80,23 @@ class TestConvergence:
              "gap_type": "missing", "target": {"entity_key": "d:b:x"}},
         ]
         skeleton = {"categories": [{"slug": "a"}, {"slug": "b"}]}
-        rates = {"avg_confidence": 0.90}
+        rates = {"avg_confidence": 0.90, "conflict_rate": 0.05}
         result = _check_convergence(kus, gap_map, skeleton, cycle=5, metrics_rates=rates)
         assert result["converged"] is True
+        assert result["conditions"]["C6_conflict_rate"] is True
+
+    def test_not_converged_high_conflict_rate(self) -> None:
+        """C6: conflict_rate > threshold → 수렴 불가."""
+        kus = [{"status": "active", "confidence": 0.9}] * 10
+        gap_map = [
+            {"gu_id": "GU-1", "status": "resolved", "expected_utility": "critical",
+             "gap_type": "missing", "target": {"entity_key": "d:a:x"}},
+        ]
+        skeleton = {"categories": [{"slug": "a"}]}
+        rates = {"avg_confidence": 0.90, "conflict_rate": 0.30}
+        result = _check_convergence(kus, gap_map, skeleton, cycle=5, metrics_rates=rates)
+        assert result["converged"] is False
+        assert result["conditions"]["C6_conflict_rate"] is False
 
 
 class TestCritiqueNode:

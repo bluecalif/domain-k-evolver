@@ -110,9 +110,11 @@ class Orchestrator:
             # Plateau 감지
             self.plateau_detector.record(cycle_num, state)
             if self.plateau_detector.is_plateau():
+                reason = self.plateau_detector.plateau_reason()
                 logger.info(
-                    "Plateau 감지: 최근 %d사이클 KU/GU 변화 없음. 조기 종료.",
+                    "Plateau 감지: 최근 %d사이클 KU/GU 변화 없음 (%s). 조기 종료.",
                     orch_cfg.plateau_window,
+                    reason,
                 )
                 break
 

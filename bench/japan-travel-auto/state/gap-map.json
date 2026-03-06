@@ -150,9 +150,8 @@
     "expected_utility": "low",
     "risk_level": "convenience",
     "resolution_criteria": "이용 방법, 터치패널 주문",
-    "status": "resolved",
-    "created_at": "2026-03-02",
-    "resolved_by": "CL-0011-01"
+    "status": "open",
+    "created_at": "2026-03-02"
   },
   {
     "gu_id": "GU-0012",
@@ -206,9 +205,8 @@
     "expected_utility": "low",
     "risk_level": "convenience",
     "resolution_criteria": "대여 가격, 대여/반납 방법",
-    "status": "resolved",
-    "created_at": "2026-03-02",
-    "resolved_by": "CL-0001-01"
+    "status": "open",
+    "created_at": "2026-03-02"
   },
   {
     "gu_id": "GU-0016",
@@ -262,9 +260,10 @@
     "expected_utility": "medium",
     "risk_level": "financial",
     "resolution_criteria": "2026년 현재 가격 확인",
-    "status": "open",
+    "status": "resolved",
     "note": "KU-0007 updated(condition_split)되었으나 충돌(disputed) 발생으로 완전 해결 미달",
-    "created_at": "2026-03-02"
+    "created_at": "2026-03-02",
+    "resolved_by": "CL-0019-01"
   },
   {
     "gu_id": "GU-0020",
@@ -278,7 +277,7 @@
     "resolution_criteria": "기본요금, 할증 조건, 호출앱",
     "status": "resolved",
     "created_at": "2026-03-02",
-    "resolved_by": "CL-GU0020-01"
+    "resolved_by": "CL-0020-01"
   },
   {
     "gu_id": "GU-0021",
@@ -290,9 +289,8 @@
     "expected_utility": "low",
     "risk_level": "convenience",
     "resolution_criteria": "이용법, 가격대, 예약 방법",
-    "status": "resolved",
-    "created_at": "2026-03-02",
-    "resolved_by": "CL-0021-01"
+    "status": "open",
+    "created_at": "2026-03-02"
   },
   {
     "gu_id": "GU-0022",
@@ -320,7 +318,7 @@
     "resolution_criteria": "입장료, 익스프레스패스 가격",
     "status": "resolved",
     "created_at": "2026-03-02",
-    "resolved_by": "CL-GU0023-01"
+    "resolved_by": "CL-GU-0023-01"
   },
   {
     "gu_id": "GU-0024",
@@ -518,7 +516,7 @@
     },
     "expansion_mode": "jump",
     "created_at": "2026-03-04",
-    "resolved_by": "CL-GU0035-01"
+    "resolved_by": "CL-0035-01"
   },
   {
     "gu_id": "GU-0036",
@@ -603,91 +601,6 @@
   {
     "gap_type": "missing",
     "target": {
-      "entity_key": "japan-travel:pass-ticket:kansai-area-pass",
-      "field": "policy"
-    },
-    "expected_utility": "medium",
-    "risk_level": "convenience",
-    "resolution_criteria": "kansai-area-pass policy 정보 수집",
-    "status": "resolved",
-    "trigger": "A:adjacent_gap",
-    "trigger_source": "CL-GU0035-01",
-    "created_at": "2026-03-06",
-    "gu_id": "GU-0040",
-    "expansion_mode": "jump",
-    "resolved_by": "CL-0040-01"
-  },
-  {
-    "gap_type": "missing",
-    "target": {
-      "entity_key": "japan-travel:pass-ticket:kansai-area-pass",
-      "field": "duration"
-    },
-    "expected_utility": "medium",
-    "risk_level": "convenience",
-    "resolution_criteria": "kansai-area-pass duration 정보 수집",
-    "status": "resolved",
-    "trigger": "A:adjacent_gap",
-    "trigger_source": "CL-GU0035-01",
-    "created_at": "2026-03-06",
-    "gu_id": "GU-0041",
-    "expansion_mode": "jump",
-    "resolved_by": "CL-GU0041-01"
-  },
-  {
-    "gap_type": "missing",
-    "target": {
-      "entity_key": "japan-travel:pass-ticket:kansai-area-pass",
-      "field": "eligibility"
-    },
-    "expected_utility": "medium",
-    "risk_level": "convenience",
-    "resolution_criteria": "kansai-area-pass eligibility 정보 수집",
-    "status": "resolved",
-    "trigger": "A:adjacent_gap",
-    "trigger_source": "CL-GU0035-01",
-    "created_at": "2026-03-06",
-    "gu_id": "GU-0042",
-    "expansion_mode": "jump",
-    "resolved_by": "CL-0042-01"
-  },
-  {
-    "gap_type": "missing",
-    "target": {
-      "entity_key": "japan-travel:pass-ticket:kansai-area-pass",
-      "field": "tips"
-    },
-    "expected_utility": "medium",
-    "risk_level": "convenience",
-    "resolution_criteria": "kansai-area-pass tips 정보 수집",
-    "status": "resolved",
-    "trigger": "A:adjacent_gap",
-    "trigger_source": "CL-GU0035-01",
-    "created_at": "2026-03-06",
-    "gu_id": "GU-0043",
-    "expansion_mode": "jump",
-    "resolved_by": "CL-0043-01"
-  },
-  {
-    "gap_type": "missing",
-    "target": {
-      "entity_key": "japan-travel:pass-ticket:kansai-area-pass",
-      "field": "where_to_buy"
-    },
-    "expected_utility": "medium",
-    "risk_level": "convenience",
-    "resolution_criteria": "kansai-area-pass where_to_buy 정보 수집",
-    "status": "resolved",
-    "trigger": "A:adjacent_gap",
-    "trigger_source": "CL-GU0035-01",
-    "created_at": "2026-03-06",
-    "gu_id": "GU-0044",
-    "expansion_mode": "jump",
-    "resolved_by": "CL-0044-01"
-  },
-  {
-    "gap_type": "missing",
-    "target": {
       "entity_key": "japan-travel:pass-ticket:osaka-amazing-pass",
       "field": "policy"
     },
@@ -698,9 +611,9 @@
     "trigger": "A:adjacent_gap",
     "trigger_source": "CL-GU-0032-01",
     "created_at": "2026-03-06",
-    "gu_id": "GU-0045",
+    "gu_id": "GU-0040",
     "expansion_mode": "jump",
-    "resolved_by": "CL-0045-01"
+    "resolved_by": "CL-0040-01"
   },
   {
     "gap_type": "missing",
@@ -715,9 +628,9 @@
     "trigger": "A:adjacent_gap",
     "trigger_source": "CL-GU-0032-01",
     "created_at": "2026-03-06",
-    "gu_id": "GU-0046",
+    "gu_id": "GU-0041",
     "expansion_mode": "jump",
-    "resolved_by": "CL-GU0046-01"
+    "resolved_by": "CL-GU0041-01"
   },
   {
     "gap_type": "missing",
@@ -732,9 +645,9 @@
     "trigger": "A:adjacent_gap",
     "trigger_source": "CL-GU-0032-01",
     "created_at": "2026-03-06",
-    "gu_id": "GU-0047",
+    "gu_id": "GU-0042",
     "expansion_mode": "jump",
-    "resolved_by": "CL-GU0047-01"
+    "resolved_by": "CL-GU0042-01"
   },
   {
     "gap_type": "missing",
@@ -749,9 +662,9 @@
     "trigger": "A:adjacent_gap",
     "trigger_source": "CL-GU-0032-01",
     "created_at": "2026-03-06",
-    "gu_id": "GU-0048",
+    "gu_id": "GU-0043",
     "expansion_mode": "jump",
-    "resolved_by": "CL-GU0048-01"
+    "resolved_by": "CL-GU-0043-01"
   },
   {
     "gap_type": "missing",
@@ -766,22 +679,107 @@
     "trigger": "A:adjacent_gap",
     "trigger_source": "CL-GU-0032-01",
     "created_at": "2026-03-06",
-    "gu_id": "GU-0049",
+    "gu_id": "GU-0044",
     "expansion_mode": "jump",
-    "resolved_by": "CL-0049-01"
+    "resolved_by": "CL-GU0044-01"
   },
   {
     "gap_type": "missing",
     "target": {
-      "entity_key": "japan-travel:transport:kyoto-bus",
-      "field": "price"
+      "entity_key": "japan-travel:accommodation:kyoto-ryokan",
+      "field": "location"
     },
     "expected_utility": "medium",
     "risk_level": "convenience",
-    "resolution_criteria": "kyoto-bus price 정보 수집",
+    "resolution_criteria": "kyoto-ryokan location 정보 수집",
     "status": "resolved",
     "trigger": "A:adjacent_gap",
-    "trigger_source": "CL-0033-01",
+    "trigger_source": "CL-GU0037-01",
+    "created_at": "2026-03-06",
+    "gu_id": "GU-0045",
+    "expansion_mode": "jump",
+    "resolved_by": "CL-0045-01"
+  },
+  {
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:accommodation:kyoto-ryokan",
+      "field": "etiquette"
+    },
+    "expected_utility": "medium",
+    "risk_level": "convenience",
+    "resolution_criteria": "kyoto-ryokan etiquette 정보 수집",
+    "status": "resolved",
+    "trigger": "A:adjacent_gap",
+    "trigger_source": "CL-GU0037-01",
+    "created_at": "2026-03-06",
+    "gu_id": "GU-0046",
+    "expansion_mode": "jump",
+    "resolved_by": "CL-0046-01"
+  },
+  {
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:accommodation:kyoto-ryokan",
+      "field": "tips"
+    },
+    "expected_utility": "medium",
+    "risk_level": "convenience",
+    "resolution_criteria": "kyoto-ryokan tips 정보 수집",
+    "status": "resolved",
+    "trigger": "A:adjacent_gap",
+    "trigger_source": "CL-GU0037-01",
+    "created_at": "2026-03-06",
+    "gu_id": "GU-0047",
+    "expansion_mode": "jump",
+    "resolved_by": "CL-GU0047-01"
+  },
+  {
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:pass-ticket:kansai-area-pass",
+      "field": "policy"
+    },
+    "expected_utility": "medium",
+    "risk_level": "convenience",
+    "resolution_criteria": "kansai-area-pass policy 정보 수집",
+    "status": "resolved",
+    "trigger": "A:adjacent_gap",
+    "trigger_source": "CL-0035-01",
+    "created_at": "2026-03-06",
+    "gu_id": "GU-0048",
+    "expansion_mode": "jump",
+    "resolved_by": "CL-0048-01"
+  },
+  {
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:pass-ticket:kansai-area-pass",
+      "field": "duration"
+    },
+    "expected_utility": "medium",
+    "risk_level": "convenience",
+    "resolution_criteria": "kansai-area-pass duration 정보 수집",
+    "status": "resolved",
+    "trigger": "A:adjacent_gap",
+    "trigger_source": "CL-0035-01",
+    "created_at": "2026-03-06",
+    "gu_id": "GU-0049",
+    "expansion_mode": "jump",
+    "resolved_by": "CL-GU0049-01"
+  },
+  {
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:pass-ticket:kansai-area-pass",
+      "field": "eligibility"
+    },
+    "expected_utility": "medium",
+    "risk_level": "convenience",
+    "resolution_criteria": "kansai-area-pass eligibility 정보 수집",
+    "status": "resolved",
+    "trigger": "A:adjacent_gap",
+    "trigger_source": "CL-0035-01",
     "created_at": "2026-03-06",
     "gu_id": "GU-0050",
     "expansion_mode": "jump",
@@ -790,15 +788,15 @@
   {
     "gap_type": "missing",
     "target": {
-      "entity_key": "japan-travel:transport:kyoto-bus",
-      "field": "duration"
+      "entity_key": "japan-travel:pass-ticket:kansai-area-pass",
+      "field": "tips"
     },
     "expected_utility": "medium",
     "risk_level": "convenience",
-    "resolution_criteria": "kyoto-bus duration 정보 수집",
+    "resolution_criteria": "kansai-area-pass tips 정보 수집",
     "status": "resolved",
     "trigger": "A:adjacent_gap",
-    "trigger_source": "CL-0033-01",
+    "trigger_source": "CL-0035-01",
     "created_at": "2026-03-06",
     "gu_id": "GU-0051",
     "expansion_mode": "jump",
@@ -807,19 +805,87 @@
   {
     "gap_type": "missing",
     "target": {
-      "entity_key": "japan-travel:transport:kyoto-bus",
-      "field": "tips"
+      "entity_key": "japan-travel:pass-ticket:kansai-area-pass",
+      "field": "where_to_buy"
     },
     "expected_utility": "medium",
     "risk_level": "convenience",
-    "resolution_criteria": "kyoto-bus tips 정보 수집",
+    "resolution_criteria": "kansai-area-pass where_to_buy 정보 수집",
     "status": "resolved",
     "trigger": "A:adjacent_gap",
-    "trigger_source": "CL-0033-01",
+    "trigger_source": "CL-0035-01",
     "created_at": "2026-03-06",
     "gu_id": "GU-0052",
     "expansion_mode": "jump",
     "resolved_by": "CL-0052-01"
+  },
+  {
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:regulation:luggage-forwarding",
+      "field": "price"
+    },
+    "expected_utility": "medium",
+    "risk_level": "convenience",
+    "resolution_criteria": "luggage-forwarding price 정보 수집",
+    "status": "resolved",
+    "trigger": "A:adjacent_gap",
+    "trigger_source": "CL-0022-01",
+    "created_at": "2026-03-06",
+    "gu_id": "GU-0053",
+    "expansion_mode": "jump",
+    "resolved_by": "CL-0053-01"
+  },
+  {
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:regulation:luggage-forwarding",
+      "field": "policy"
+    },
+    "expected_utility": "medium",
+    "risk_level": "convenience",
+    "resolution_criteria": "luggage-forwarding policy 정보 수집",
+    "status": "resolved",
+    "trigger": "A:adjacent_gap",
+    "trigger_source": "CL-0022-01",
+    "created_at": "2026-03-06",
+    "gu_id": "GU-0054",
+    "expansion_mode": "jump",
+    "resolved_by": "CL-0054-01"
+  },
+  {
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:regulation:luggage-forwarding",
+      "field": "eligibility"
+    },
+    "expected_utility": "medium",
+    "risk_level": "convenience",
+    "resolution_criteria": "luggage-forwarding eligibility 정보 수집",
+    "status": "resolved",
+    "trigger": "A:adjacent_gap",
+    "trigger_source": "CL-0022-01",
+    "created_at": "2026-03-06",
+    "gu_id": "GU-0055",
+    "expansion_mode": "jump",
+    "resolved_by": "CL-0055-01"
+  },
+  {
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:regulation:luggage-forwarding",
+      "field": "tips"
+    },
+    "expected_utility": "medium",
+    "risk_level": "convenience",
+    "resolution_criteria": "luggage-forwarding tips 정보 수집",
+    "status": "resolved",
+    "trigger": "A:adjacent_gap",
+    "trigger_source": "CL-0022-01",
+    "created_at": "2026-03-06",
+    "gu_id": "GU-0056",
+    "expansion_mode": "jump",
+    "resolved_by": "CL-0056-01"
   },
   {
     "gap_type": "missing",
@@ -834,9 +900,9 @@
     "trigger": "A:adjacent_gap",
     "trigger_source": "CL-0027-01",
     "created_at": "2026-03-06",
-    "gu_id": "GU-0053",
+    "gu_id": "GU-0057",
     "expansion_mode": "jump",
-    "resolved_by": "CL-0053-01"
+    "resolved_by": "CL-0057-01"
   },
   {
     "gap_type": "missing",
@@ -851,9 +917,9 @@
     "trigger": "A:adjacent_gap",
     "trigger_source": "CL-0027-01",
     "created_at": "2026-03-06",
-    "gu_id": "GU-0054",
+    "gu_id": "GU-0058",
     "expansion_mode": "jump",
-    "resolved_by": "CL-0054-01"
+    "resolved_by": "CL-0058-01"
   },
   {
     "gap_type": "missing",
@@ -868,74 +934,6 @@
     "trigger": "A:adjacent_gap",
     "trigger_source": "CL-0027-01",
     "created_at": "2026-03-06",
-    "gu_id": "GU-0055",
-    "expansion_mode": "jump",
-    "resolved_by": "CL-0055-01"
-  },
-  {
-    "gap_type": "missing",
-    "target": {
-      "entity_key": "japan-travel:transport:bus",
-      "field": "price"
-    },
-    "expected_utility": "medium",
-    "risk_level": "convenience",
-    "resolution_criteria": "bus price 정보 수집",
-    "status": "resolved",
-    "trigger": "A:adjacent_gap",
-    "trigger_source": "CL-0016-01",
-    "created_at": "2026-03-06",
-    "gu_id": "GU-0056",
-    "expansion_mode": "jump",
-    "resolved_by": "CL-0056-01"
-  },
-  {
-    "gap_type": "missing",
-    "target": {
-      "entity_key": "japan-travel:transport:bus",
-      "field": "duration"
-    },
-    "expected_utility": "medium",
-    "risk_level": "convenience",
-    "resolution_criteria": "bus duration 정보 수집",
-    "status": "resolved",
-    "trigger": "A:adjacent_gap",
-    "trigger_source": "CL-0016-01",
-    "created_at": "2026-03-06",
-    "gu_id": "GU-0057",
-    "expansion_mode": "jump",
-    "resolved_by": "CL-0057-01"
-  },
-  {
-    "gap_type": "missing",
-    "target": {
-      "entity_key": "japan-travel:transport:bus",
-      "field": "tips"
-    },
-    "expected_utility": "medium",
-    "risk_level": "convenience",
-    "resolution_criteria": "bus tips 정보 수집",
-    "status": "resolved",
-    "trigger": "A:adjacent_gap",
-    "trigger_source": "CL-0016-01",
-    "created_at": "2026-03-06",
-    "gu_id": "GU-0058",
-    "expansion_mode": "jump",
-    "resolved_by": "CL-0058-01"
-  },
-  {
-    "gap_type": "missing",
-    "target": {
-      "entity_key": "japan-travel:pass-ticket:suica",
-      "field": "price"
-    },
-    "expected_utility": "medium",
-    "risk_level": "convenience",
-    "resolution_criteria": "suica price 정보 수집",
-    "status": "resolved",
-    "trigger": "A:adjacent_gap",
-    "trigger_source": "CL-0028-01",
-    "created_at": "2026-03-06",
     "gu_id": "GU-0059",
     "expansion_mode": "jump",
     "resolved_by": "CL-0059-01"
@@ -943,15 +941,15 @@
   {
     "gap_type": "missing",
     "target": {
-      "entity_key": "japan-travel:pass-ticket:suica",
-      "field": "policy"
+      "entity_key": "japan-travel:transport:taxi",
+      "field": "duration"
     },
     "expected_utility": "medium",
     "risk_level": "convenience",
-    "resolution_criteria": "suica policy 정보 수집",
+    "resolution_criteria": "taxi duration 정보 수집",
     "status": "resolved",
     "trigger": "A:adjacent_gap",
-    "trigger_source": "CL-0028-01",
+    "trigger_source": "CL-0020-01",
     "created_at": "2026-03-06",
     "gu_id": "GU-0060",
     "expansion_mode": "jump",
@@ -960,15 +958,15 @@
   {
     "gap_type": "missing",
     "target": {
-      "entity_key": "japan-travel:pass-ticket:suica",
-      "field": "duration"
+      "entity_key": "japan-travel:transport:taxi",
+      "field": "how_to_use"
     },
     "expected_utility": "medium",
     "risk_level": "convenience",
-    "resolution_criteria": "suica duration 정보 수집",
+    "resolution_criteria": "taxi how_to_use 정보 수집",
     "status": "resolved",
     "trigger": "A:adjacent_gap",
-    "trigger_source": "CL-0028-01",
+    "trigger_source": "CL-0020-01",
     "created_at": "2026-03-06",
     "gu_id": "GU-0061",
     "expansion_mode": "jump",
@@ -977,70 +975,19 @@
   {
     "gap_type": "missing",
     "target": {
-      "entity_key": "japan-travel:pass-ticket:suica",
-      "field": "eligibility"
-    },
-    "expected_utility": "medium",
-    "risk_level": "convenience",
-    "resolution_criteria": "suica eligibility 정보 수집",
-    "status": "resolved",
-    "trigger": "A:adjacent_gap",
-    "trigger_source": "CL-0028-01",
-    "created_at": "2026-03-06",
-    "gu_id": "GU-0062",
-    "expansion_mode": "jump",
-    "resolved_by": "CL-0062-01"
-  },
-  {
-    "gap_type": "missing",
-    "target": {
-      "entity_key": "japan-travel:attraction:universal-studios-japan",
-      "field": "hours"
-    },
-    "expected_utility": "medium",
-    "risk_level": "convenience",
-    "resolution_criteria": "universal-studios-japan hours 정보 수집",
-    "status": "resolved",
-    "trigger": "A:adjacent_gap",
-    "trigger_source": "CL-GU0023-01",
-    "created_at": "2026-03-06",
-    "gu_id": "GU-0063",
-    "expansion_mode": "jump",
-    "resolved_by": "CL-GU-0063-01"
-  },
-  {
-    "gap_type": "missing",
-    "target": {
-      "entity_key": "japan-travel:attraction:universal-studios-japan",
-      "field": "location"
-    },
-    "expected_utility": "medium",
-    "risk_level": "convenience",
-    "resolution_criteria": "universal-studios-japan location 정보 수집",
-    "status": "resolved",
-    "trigger": "A:adjacent_gap",
-    "trigger_source": "CL-GU0023-01",
-    "created_at": "2026-03-06",
-    "gu_id": "GU-0064",
-    "expansion_mode": "jump",
-    "resolved_by": "CL-0064-01"
-  },
-  {
-    "gap_type": "missing",
-    "target": {
-      "entity_key": "japan-travel:attraction:universal-studios-japan",
+      "entity_key": "japan-travel:transport:taxi",
       "field": "tips"
     },
     "expected_utility": "medium",
     "risk_level": "convenience",
-    "resolution_criteria": "universal-studios-japan tips 정보 수집",
+    "resolution_criteria": "taxi tips 정보 수집",
     "status": "resolved",
     "trigger": "A:adjacent_gap",
-    "trigger_source": "CL-GU0023-01",
+    "trigger_source": "CL-0020-01",
     "created_at": "2026-03-06",
-    "gu_id": "GU-0065",
+    "gu_id": "GU-0062",
     "expansion_mode": "jump",
-    "resolved_by": "CL-0065-01"
+    "resolved_by": "CL-0062-01"
   },
   {
     "gap_type": "missing",
@@ -1055,9 +1002,9 @@
     "trigger": "A:adjacent_gap",
     "trigger_source": "CL-0009-01",
     "created_at": "2026-03-06",
-    "gu_id": "GU-0066",
+    "gu_id": "GU-0063",
     "expansion_mode": "jump",
-    "resolved_by": "CL-0066-01"
+    "resolved_by": "CL-GU0063-01"
   },
   {
     "gap_type": "missing",
@@ -1072,9 +1019,9 @@
     "trigger": "A:adjacent_gap",
     "trigger_source": "CL-0009-01",
     "created_at": "2026-03-06",
-    "gu_id": "GU-0067",
+    "gu_id": "GU-0064",
     "expansion_mode": "jump",
-    "resolved_by": "CL-0067-01"
+    "resolved_by": "CL-0064-01"
   },
   {
     "gap_type": "missing",
@@ -1089,60 +1036,9 @@
     "trigger": "A:adjacent_gap",
     "trigger_source": "CL-0009-01",
     "created_at": "2026-03-06",
-    "gu_id": "GU-0068",
+    "gu_id": "GU-0065",
     "expansion_mode": "jump",
-    "resolved_by": "CL-0068-01"
-  },
-  {
-    "gap_type": "missing",
-    "target": {
-      "entity_key": "japan-travel:transport:taxi",
-      "field": "duration"
-    },
-    "expected_utility": "medium",
-    "risk_level": "convenience",
-    "resolution_criteria": "taxi duration 정보 수집",
-    "status": "resolved",
-    "trigger": "A:adjacent_gap",
-    "trigger_source": "CL-GU0020-01",
-    "created_at": "2026-03-06",
-    "gu_id": "GU-0069",
-    "expansion_mode": "jump",
-    "resolved_by": "CL-0069-01"
-  },
-  {
-    "gap_type": "missing",
-    "target": {
-      "entity_key": "japan-travel:transport:taxi",
-      "field": "how_to_use"
-    },
-    "expected_utility": "medium",
-    "risk_level": "convenience",
-    "resolution_criteria": "taxi how_to_use 정보 수집",
-    "status": "resolved",
-    "trigger": "A:adjacent_gap",
-    "trigger_source": "CL-GU0020-01",
-    "created_at": "2026-03-06",
-    "gu_id": "GU-0070",
-    "expansion_mode": "jump",
-    "resolved_by": "CL-0070-01"
-  },
-  {
-    "gap_type": "missing",
-    "target": {
-      "entity_key": "japan-travel:transport:taxi",
-      "field": "tips"
-    },
-    "expected_utility": "medium",
-    "risk_level": "convenience",
-    "resolution_criteria": "taxi tips 정보 수집",
-    "status": "resolved",
-    "trigger": "A:adjacent_gap",
-    "trigger_source": "CL-GU0020-01",
-    "created_at": "2026-03-06",
-    "gu_id": "GU-0071",
-    "expansion_mode": "jump",
-    "resolved_by": "CL-0071-01"
+    "resolved_by": "CL-0065-01"
   },
   {
     "gap_type": "missing",
@@ -1157,9 +1053,9 @@
     "trigger": "A:adjacent_gap",
     "trigger_source": "CL-0019-01",
     "created_at": "2026-03-06",
-    "gu_id": "GU-0072",
+    "gu_id": "GU-0066",
     "expansion_mode": "jump",
-    "resolved_by": "CL-0072-01"
+    "resolved_by": "CL-0066-01"
   },
   {
     "gap_type": "missing",
@@ -1174,9 +1070,9 @@
     "trigger": "A:adjacent_gap",
     "trigger_source": "CL-0019-01",
     "created_at": "2026-03-06",
-    "gu_id": "GU-0073",
+    "gu_id": "GU-0067",
     "expansion_mode": "jump",
-    "resolved_by": "CL-GU0073-01"
+    "resolved_by": "CL-0067-01"
   },
   {
     "gap_type": "missing",
@@ -1191,43 +1087,92 @@
     "trigger": "A:adjacent_gap",
     "trigger_source": "CL-0019-01",
     "created_at": "2026-03-06",
-    "gu_id": "GU-0074",
+    "gu_id": "GU-0068",
     "expansion_mode": "jump",
-    "resolved_by": "CL-0074-01"
+    "resolved_by": "CL-0068-01"
   },
   {
     "gap_type": "missing",
     "target": {
-      "entity_key": "japan-travel:pass-ticket:tokyo-subway-ticket",
-      "field": "policy"
+      "entity_key": "japan-travel:attraction:universal-studios-japan",
+      "field": "hours"
     },
     "expected_utility": "medium",
     "risk_level": "convenience",
-    "resolution_criteria": "tokyo-subway-ticket policy 정보 수집",
+    "resolution_criteria": "universal-studios-japan hours 정보 수집",
     "status": "resolved",
     "trigger": "A:adjacent_gap",
-    "trigger_source": "CL-0029-01",
+    "trigger_source": "CL-GU-0023-01",
     "created_at": "2026-03-06",
-    "gu_id": "GU-0075",
+    "gu_id": "GU-0069",
     "expansion_mode": "jump",
-    "resolved_by": "CL-0075-01"
+    "resolved_by": "CL-0069-01"
+  },
+  {
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:attraction:universal-studios-japan",
+      "field": "location"
+    },
+    "expected_utility": "medium",
+    "risk_level": "convenience",
+    "resolution_criteria": "universal-studios-japan location 정보 수집",
+    "status": "resolved",
+    "trigger": "A:adjacent_gap",
+    "trigger_source": "CL-GU-0023-01",
+    "created_at": "2026-03-06",
+    "gu_id": "GU-0070",
+    "expansion_mode": "jump",
+    "resolved_by": "CL-0070-01"
+  },
+  {
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:attraction:universal-studios-japan",
+      "field": "tips"
+    },
+    "expected_utility": "medium",
+    "risk_level": "convenience",
+    "resolution_criteria": "universal-studios-japan tips 정보 수집",
+    "status": "resolved",
+    "trigger": "A:adjacent_gap",
+    "trigger_source": "CL-GU-0023-01",
+    "created_at": "2026-03-06",
+    "gu_id": "GU-0071",
+    "expansion_mode": "jump",
+    "resolved_by": "CL-GU-0071-01"
   },
   {
     "gap_type": "missing",
     "target": {
       "entity_key": "japan-travel:pass-ticket:suica",
-      "field": "tips"
+      "field": "price"
     },
     "expected_utility": "medium",
     "risk_level": "convenience",
-    "resolution_criteria": "suica tips 정보 수집",
-    "status": "resolved",
+    "resolution_criteria": "suica price 정보 수집",
+    "status": "open",
     "trigger": "A:adjacent_gap",
-    "trigger_source": "CL-0059-01",
+    "trigger_source": "CL-0028-01",
     "created_at": "2026-03-06",
-    "gu_id": "GU-0076",
-    "expansion_mode": "jump",
-    "resolved_by": "CL-0076-01"
+    "gu_id": "GU-0072",
+    "expansion_mode": "jump"
+  },
+  {
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:pass-ticket:suica",
+      "field": "policy"
+    },
+    "expected_utility": "medium",
+    "risk_level": "convenience",
+    "resolution_criteria": "suica policy 정보 수집",
+    "status": "open",
+    "trigger": "A:adjacent_gap",
+    "trigger_source": "CL-0028-01",
+    "created_at": "2026-03-06",
+    "gu_id": "GU-0073",
+    "expansion_mode": "jump"
   },
   {
     "gap_type": "missing",
@@ -1242,7 +1187,7 @@
     "trigger": "A:adjacent_gap",
     "trigger_source": "CL-0039-01",
     "created_at": "2026-03-06",
-    "gu_id": "GU-0077",
+    "gu_id": "GU-0074",
     "expansion_mode": "jump"
   },
   {
@@ -1258,7 +1203,7 @@
     "trigger": "A:adjacent_gap",
     "trigger_source": "CL-0039-01",
     "created_at": "2026-03-06",
-    "gu_id": "GU-0078",
+    "gu_id": "GU-0075",
     "expansion_mode": "jump"
   },
   {
@@ -1274,7 +1219,39 @@
     "trigger": "A:adjacent_gap",
     "trigger_source": "CL-0039-01",
     "created_at": "2026-03-06",
-    "gu_id": "GU-0079",
+    "gu_id": "GU-0076",
+    "expansion_mode": "jump"
+  },
+  {
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:transport:tokyo-metro",
+      "field": "price"
+    },
+    "expected_utility": "medium",
+    "risk_level": "convenience",
+    "resolution_criteria": "tokyo-metro price 정보 수집",
+    "status": "open",
+    "trigger": "A:adjacent_gap",
+    "trigger_source": "CL-0031-01",
+    "created_at": "2026-03-06",
+    "gu_id": "GU-0077",
+    "expansion_mode": "jump"
+  },
+  {
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:transport:tokyo-metro",
+      "field": "duration"
+    },
+    "expected_utility": "medium",
+    "risk_level": "convenience",
+    "resolution_criteria": "tokyo-metro duration 정보 수집",
+    "status": "open",
+    "trigger": "A:adjacent_gap",
+    "trigger_source": "CL-0031-01",
+    "created_at": "2026-03-06",
+    "gu_id": "GU-0078",
     "expansion_mode": "jump"
   },
   {
@@ -1290,7 +1267,7 @@
     "trigger": "A:adjacent_gap",
     "trigger_source": "CL-0038-01",
     "created_at": "2026-03-06",
-    "gu_id": "GU-0080",
+    "gu_id": "GU-0079",
     "expansion_mode": "jump"
   },
   {
@@ -1306,7 +1283,7 @@
     "trigger": "A:adjacent_gap",
     "trigger_source": "CL-0038-01",
     "created_at": "2026-03-06",
-    "gu_id": "GU-0081",
+    "gu_id": "GU-0080",
     "expansion_mode": "jump"
   },
   {
@@ -1322,199 +1299,7 @@
     "trigger": "A:adjacent_gap",
     "trigger_source": "CL-0038-01",
     "created_at": "2026-03-06",
-    "gu_id": "GU-0082",
-    "expansion_mode": "jump"
-  },
-  {
-    "gap_type": "missing",
-    "target": {
-      "entity_key": "japan-travel:dining:conveyor-sushi",
-      "field": "price"
-    },
-    "expected_utility": "medium",
-    "risk_level": "convenience",
-    "resolution_criteria": "conveyor-sushi price 정보 수집",
-    "status": "open",
-    "trigger": "A:adjacent_gap",
-    "trigger_source": "CL-0011-01",
-    "created_at": "2026-03-06",
-    "gu_id": "GU-0083",
-    "expansion_mode": "jump"
-  },
-  {
-    "gap_type": "missing",
-    "target": {
-      "entity_key": "japan-travel:dining:conveyor-sushi",
-      "field": "hours"
-    },
-    "expected_utility": "medium",
-    "risk_level": "convenience",
-    "resolution_criteria": "conveyor-sushi hours 정보 수집",
-    "status": "open",
-    "trigger": "A:adjacent_gap",
-    "trigger_source": "CL-0011-01",
-    "created_at": "2026-03-06",
-    "gu_id": "GU-0084",
-    "expansion_mode": "jump"
-  },
-  {
-    "gap_type": "missing",
-    "target": {
-      "entity_key": "japan-travel:dining:conveyor-sushi",
-      "field": "location"
-    },
-    "expected_utility": "medium",
-    "risk_level": "convenience",
-    "resolution_criteria": "conveyor-sushi location 정보 수집",
-    "status": "open",
-    "trigger": "A:adjacent_gap",
-    "trigger_source": "CL-0011-01",
-    "created_at": "2026-03-06",
-    "gu_id": "GU-0085",
-    "expansion_mode": "jump"
-  },
-  {
-    "gap_type": "missing",
-    "target": {
-      "entity_key": "japan-travel:dining:conveyor-sushi",
-      "field": "etiquette"
-    },
-    "expected_utility": "medium",
-    "risk_level": "convenience",
-    "resolution_criteria": "conveyor-sushi etiquette 정보 수집",
-    "status": "open",
-    "trigger": "A:adjacent_gap",
-    "trigger_source": "CL-0011-01",
-    "created_at": "2026-03-06",
-    "gu_id": "GU-0086",
-    "expansion_mode": "jump"
-  },
-  {
-    "gap_type": "missing",
-    "target": {
-      "entity_key": "japan-travel:dining:conveyor-sushi",
-      "field": "tips"
-    },
-    "expected_utility": "medium",
-    "risk_level": "convenience",
-    "resolution_criteria": "conveyor-sushi tips 정보 수집",
-    "status": "open",
-    "trigger": "A:adjacent_gap",
-    "trigger_source": "CL-0011-01",
-    "created_at": "2026-03-06",
-    "gu_id": "GU-0087",
-    "expansion_mode": "jump"
-  },
-  {
-    "gap_type": "missing",
-    "target": {
-      "entity_key": "japan-travel:connectivity:pocket-wifi",
-      "field": "how_to_use"
-    },
-    "expected_utility": "medium",
-    "risk_level": "convenience",
-    "resolution_criteria": "pocket-wifi how_to_use 정보 수집",
-    "status": "open",
-    "trigger": "A:adjacent_gap",
-    "trigger_source": "CL-0001-01",
-    "created_at": "2026-03-06",
-    "gu_id": "GU-0088",
-    "expansion_mode": "jump"
-  },
-  {
-    "gap_type": "missing",
-    "target": {
-      "entity_key": "japan-travel:connectivity:pocket-wifi",
-      "field": "tips"
-    },
-    "expected_utility": "medium",
-    "risk_level": "convenience",
-    "resolution_criteria": "pocket-wifi tips 정보 수집",
-    "status": "open",
-    "trigger": "A:adjacent_gap",
-    "trigger_source": "CL-0001-01",
-    "created_at": "2026-03-06",
-    "gu_id": "GU-0089",
-    "expansion_mode": "jump"
-  },
-  {
-    "gap_type": "missing",
-    "target": {
-      "entity_key": "japan-travel:connectivity:pocket-wifi",
-      "field": "where_to_buy"
-    },
-    "expected_utility": "medium",
-    "risk_level": "convenience",
-    "resolution_criteria": "pocket-wifi where_to_buy 정보 수집",
-    "status": "open",
-    "trigger": "A:adjacent_gap",
-    "trigger_source": "CL-0001-01",
-    "created_at": "2026-03-06",
-    "gu_id": "GU-0090",
-    "expansion_mode": "jump"
-  },
-  {
-    "gap_type": "missing",
-    "target": {
-      "entity_key": "japan-travel:accommodation:capsule-hotel",
-      "field": "price"
-    },
-    "expected_utility": "medium",
-    "risk_level": "convenience",
-    "resolution_criteria": "capsule-hotel price 정보 수집",
-    "status": "open",
-    "trigger": "A:adjacent_gap",
-    "trigger_source": "CL-0021-01",
-    "created_at": "2026-03-06",
-    "gu_id": "GU-0091",
-    "expansion_mode": "jump"
-  },
-  {
-    "gap_type": "missing",
-    "target": {
-      "entity_key": "japan-travel:pass-ticket:tokyo-subway-ticket",
-      "field": "duration"
-    },
-    "expected_utility": "medium",
-    "risk_level": "convenience",
-    "resolution_criteria": "tokyo-subway-ticket duration 정보 수집",
-    "status": "open",
-    "trigger": "A:adjacent_gap",
-    "trigger_source": "CL-0075-01",
-    "created_at": "2026-03-06",
-    "gu_id": "GU-0092",
-    "expansion_mode": "jump"
-  },
-  {
-    "gap_type": "missing",
-    "target": {
-      "entity_key": "japan-travel:pass-ticket:tokyo-subway-ticket",
-      "field": "eligibility"
-    },
-    "expected_utility": "medium",
-    "risk_level": "convenience",
-    "resolution_criteria": "tokyo-subway-ticket eligibility 정보 수집",
-    "status": "open",
-    "trigger": "A:adjacent_gap",
-    "trigger_source": "CL-0075-01",
-    "created_at": "2026-03-06",
-    "gu_id": "GU-0093",
-    "expansion_mode": "jump"
-  },
-  {
-    "gap_type": "missing",
-    "target": {
-      "entity_key": "japan-travel:pass-ticket:tokyo-subway-ticket",
-      "field": "tips"
-    },
-    "expected_utility": "medium",
-    "risk_level": "convenience",
-    "resolution_criteria": "tokyo-subway-ticket tips 정보 수집",
-    "status": "open",
-    "trigger": "A:adjacent_gap",
-    "trigger_source": "CL-0075-01",
-    "created_at": "2026-03-06",
-    "gu_id": "GU-0094",
+    "gu_id": "GU-0081",
     "expansion_mode": "jump"
   }
 ]
