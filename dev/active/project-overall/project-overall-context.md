@@ -1,6 +1,6 @@
 # Project Overall Context
-> Last Updated: 2026-03-05 (Phase 2 Stage A'+B' 완료)
-> Status: In Progress — Phase 2 Stage C' 진행 예정
+> Last Updated: 2026-03-06 (Phase 3 완료)
+> Status: In Progress — Phase 4 대기
 
 ## 1. 핵심 파일
 
@@ -83,11 +83,26 @@
 | `tests/test_orchestrator.py` | Orchestrator 단위 테스트 |
 | `tests/test_metrics_logger.py` | Metrics Logger 단위 테스트 |
 
+### Phase 3 코드 (완료, 301 tests)
+| 파일 | 내용 |
+|------|------|
+| `src/nodes/dispute_resolver.py` | Dispute Resolution 모듈 (D-42) |
+| `src/nodes/integrate.py` | hybrid conflict detection (D-41) |
+| `src/nodes/critique.py` | dispute resolution 통합 + C6 수렴조건 (D-43) |
+| `src/nodes/plan_modify.py` | dispute_resolved 처방 타입 |
+| `src/utils/plateau_detector.py` | conflict_rate 복합 조건 확장 |
+| `tests/test_nodes/test_dispute_resolver.py` | Dispute resolver 15 tests |
+| `tests/test_nodes/test_critique.py` | critique 확장 테스트 |
+| `tests/test_plateau_detector.py` | plateau 복합 조건 테스트 |
+
 ### 벤치 자동 실행 결과
 | 파일 | 내용 |
 |------|------|
-| `bench/japan-travel-auto/state/*.json` | 자동 실행 State (Cycle 4) |
-| `bench/japan-travel-auto/trajectory/` | 3 Cycle trajectory (JSON + CSV) |
+| `bench/japan-travel-auto/state/*.json` | Phase 3 최종 10 Cycle State |
+| `bench/japan-travel-auto/trajectory/` | Phase 3 10 Cycle trajectory (JSON + CSV) |
+| `bench/japan-travel-auto-phase2-baseline/` | Phase 2 10 Cycle 원본 백업 |
+| `docs/phase2-analysis.md` | Phase 2 심층 분석 보고서 |
+| `docs/phase3-analysis.md` | Phase 3 심층 분석 보고서 |
 
 ### 벤치 데이터 (Cycle 2 결과 — 최신)
 | 파일 | 내용 |
@@ -188,6 +203,14 @@ class EvolverState(TypedDict):
 | D-33 | Stage별 세션 분리 진행 | 단일 세션 | A→commit→B→commit→C→commit, 컨텍스트 관리 | 2 |
 | D-34 | Real API First 전략 | Mock 위주(Task 19에서야 Real) | 즉시 Real 검증, 문제 조기 발견 | 2 |
 | D-35 | 25→16 tasks 축소 | 기존 25 tasks | Over-engineering 삭제 (녹화/재생, 시각화, Memory Guard 등) | 2 |
+| D-36 | config fallback gpt-4.1-mini 확정 | gpt-4o | 비용 효율, 충분한 성능 | 2 |
+| D-37 | jump target_count 상한 10 | 무제한 | API 비용 통제 | 2 |
+| D-38 | LLMCallCounter 래퍼 패턴 | 직접 호출 | 호출 횟수/토큰 추적 필요 | 2 |
+| D-39 | Metrics Guard warning-only | halt 모드 | halt 시 Cycle 5에서 조기 중단 | 2 |
+| D-40 | Phase 3 = Cycle Quality Remodeling | Multi-Domain 바로 | Phase 2 분석 결과 FP가 유일 병목 | 3 |
+| D-41 | hybrid conflict detection (rule + LLM) | pure LLM | 동일값 skip, 값차이 LLM semantic | 3 |
+| D-42 | Evidence-weighted resolution | 다수결/최신우선 | evidence ≥ 2×disputes → 자동 resolve, 미달 시 LLM 중재 | 3 |
+| D-43 | C6 conflict_rate threshold = 0.15 | 0.20 | 수렴 조건에 충돌률 상한 추가 | 3 |
 
 ---
 

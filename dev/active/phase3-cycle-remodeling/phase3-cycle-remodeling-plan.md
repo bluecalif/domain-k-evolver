@@ -1,6 +1,6 @@
 # Phase 3: Cycle Quality Remodeling — Plan
 > Created: 2026-03-06
-> Status: Planning
+> Status: Complete (9/9 tasks, 301 tests)
 
 ## 1. 목적
 
@@ -68,8 +68,17 @@ Cycle 품질을 근본적으로 개선한다.
 | dispute resolution 전략 선택 불확실 | Medium | 복수 전략 비교 실험 |
 | 기존 테스트 호환성 | Low | Mock LLM 기반 테스트 유지 |
 
-## 6. 기술 결정 필요
+## 6. 기술 결정 (확정)
 
-- D-41: conflict detection 방식 — pure LLM vs hybrid (rule + LLM)
-- D-42: dispute resolution 전략 — 다수결 vs 최신우선 vs 출처신뢰도
-- D-43: conflict_rate 상한 C6의 정확한 임계치 (0.15 vs 0.20)
+- D-41: hybrid conflict detection (rule + LLM) — 동일값 skip, 값차이 LLM semantic ✅
+- D-42: Evidence-weighted resolution — evidence ≥ 2×disputes → 자동, LLM 중재 fallback ✅
+- D-43: C6 conflict_rate threshold = 0.15 ✅
+
+## 7. 최종 결과
+
+| 지표 | Phase 2 (baseline) | Phase 3 결과 | 목표 달성 |
+|------|-------------------|-------------|-----------|
+| Active KU 성장률 | 0.3/cycle | 4.3/cycle | ≥ 3.0 ✅ |
+| Disputed FP rate | 100% | 0% | < 30% ✅ |
+| conflict_rate | 0.635 | 0.000 | < 0.15 ✅ |
+| Health Grade | D | B | ≥ B ✅ |
