@@ -108,6 +108,7 @@ def _check_convergence(
     cycle: int,
     metrics_rates: dict,
     net_gap_changes: list[int] | None = None,
+    audit_history: list[dict] | None = None,
 ) -> dict:
     """수렴 조건 판정 (C1~C6)."""
     result = {
@@ -163,7 +164,18 @@ def _check_convergence(
     c6 = metrics_rates.get("conflict_rate", 0) < CONFLICT_RATE_THRESHOLD
     result["conditions"]["C6_conflict_rate"] = c6
 
-    result["converged"] = c1 and c2 and c3 and c4 and c5 and c6
+    # C7: Audit 건강도 — critical findings 없어야 수렴 허용 (Task 4.9)
+    c7 = True
+    if audit_history:
+        latest_audit = audit_history[-1]
+        critical_findings = [
+            f for f in latest_audit.get("findings", [])
+            if f.get("severity") == "critical"
+        ]
+        c7 = len(critical_findings) == 0
+    result["conditions"]["C7_audit_health"] = c7
+
+    result["converged"] = c1 and c2 and c3 and c4 and c5 and c6 and c7
 
     return result
 
@@ -224,8 +236,12 @@ def critique_node(
     net_gap_changes = list(state.get("net_gap_changes", []))
     net_gap_changes.append(net_gap_change)
 
-    # 수렴 판정
-    convergence = _check_convergence(kus, gap_map, skeleton, cycle, rates, net_gap_changes)
+    # 수렴 판정 — audit_history 전달 (Task 4.9: C7 건강도 조건)
+    audit_history = state.get("audit_history") or []
+    convergence = _check_convergence(
+        kus, gap_map, skeleton, cycle, rates, net_gap_changes,
+        audit_history=audit_history,
+    )
 
     # Delta 계산
     prev_rates = prev_metrics.get("rates", {})

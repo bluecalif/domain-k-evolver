@@ -90,12 +90,55 @@ def _get_cycle_stage(cycle: int) -> str:
         return "converging"
 
 
+def _compute_audit_bias(audit_history: list[dict]) -> float:
+    """최신 Audit findings 기반 explore/exploit bias 계산.
+
+    Returns:
+        bias: -0.15 ~ +0.15 범위.
+              양수 = explore 증가, 음수 = exploit 증가.
+    """
+    if not audit_history:
+        return 0.0
+
+    latest = audit_history[-1]
+    findings = latest.get("findings", [])
+    if not findings:
+        return 0.0
+
+    coverage_gaps = sum(
+        1 for f in findings if f.get("category") == "coverage_gap"
+    )
+    yield_declines = sum(
+        1 for f in findings if f.get("category") == "yield_decline"
+    )
+
+    # coverage_gap → explore 증가 (+0.05 per finding, max +0.15)
+    # yield_decline → exploit 증가 (-0.10 per finding, max -0.15)
+    bias = min(coverage_gaps * 0.05, 0.15) - min(yield_declines * 0.10, 0.15)
+    return round(bias, 2)
+
+
+def _compute_trigger_t6_audit(audit_history: list[dict]) -> bool:
+    """T6: Audit Axis Imbalance — 최신 Audit에 axis_imbalance finding 존재."""
+    if not audit_history:
+        return False
+    latest = audit_history[-1]
+    return any(
+        f.get("category") == "axis_imbalance"
+        for f in latest.get("findings", [])
+    )
+
+
 def _compute_budget(
     target_count: int,
     mode: str,
     cycle_stage: str,
+    audit_bias: float = 0.0,
 ) -> tuple[int, int]:
     """explore/exploit budget 배분.
+
+    Args:
+        audit_bias: Audit 기반 bias (-0.15 ~ +0.15). 양수=explore↑.
 
     Returns:
         (explore_budget, exploit_budget)
@@ -109,7 +152,10 @@ def _compute_budget(
         "mid": (0.5, 0.5),
         "converging": (0.4, 0.6),
     }
-    explore_ratio, exploit_ratio = ratios.get(cycle_stage, (0.5, 0.5))
+    explore_ratio, _ = ratios.get(cycle_stage, (0.5, 0.5))
+
+    # Audit bias 적용 (guardrail: explore_ratio 0.2 ~ 0.8)
+    explore_ratio = max(0.2, min(0.8, explore_ratio + audit_bias))
 
     explore = int(target_count * explore_ratio)
     exploit = target_count - explore  # 홀수 시 exploit에 +1
@@ -124,10 +170,11 @@ def mode_node(state: EvolverState) -> dict:
     kus = state.get("knowledge_units", [])
     cycle = state.get("current_cycle", 1)
     jump_history = list(state.get("jump_history", []))
+    audit_history = state.get("audit_history") or []
 
     open_count = sum(1 for gu in gap_map if gu.get("status") == "open")
 
-    # 5종 trigger 판정
+    # 5종 trigger 판정 + T6 Audit 동적 trigger (Task 4.8)
     triggers: list[str] = []
     if _compute_trigger_t1(gap_map, skeleton):
         triggers.append("T1:axis_under_coverage")
@@ -139,6 +186,8 @@ def mode_node(state: EvolverState) -> dict:
         triggers.append("T4:prescription")
     if _compute_trigger_t5(state):
         triggers.append("T5:domain_shift")
+    if _compute_trigger_t6_audit(audit_history):
+        triggers.append("T6:audit_axis_imbalance")
 
     # Mode 결정
     mode = "jump" if triggers else "normal"
@@ -164,9 +213,12 @@ def mode_node(state: EvolverState) -> dict:
     if mode == "jump":
         jump_history.append(cycle)
 
-    # Budget 배분
+    # Budget 배분 — Audit 기반 bias 적용 (Task 4.7)
     cycle_stage = _get_cycle_stage(cycle)
-    explore_budget, exploit_budget = _compute_budget(target_count, mode, cycle_stage)
+    audit_bias = _compute_audit_bias(audit_history)
+    explore_budget, exploit_budget = _compute_budget(
+        target_count, mode, cycle_stage, audit_bias=audit_bias,
+    )
 
     mode_decision: dict[str, Any] = {
         "mode": mode,
@@ -175,6 +227,9 @@ def mode_node(state: EvolverState) -> dict:
         "exploit_budget": exploit_budget,
         "trigger_set": triggers,
     }
+
+    if audit_bias != 0.0:
+        mode_decision["audit_bias"] = audit_bias
 
     if convergence_warning:
         mode_decision["convergence_warning"] = True
