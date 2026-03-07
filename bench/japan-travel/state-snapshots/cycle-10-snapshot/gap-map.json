@@ -1273,13 +1273,12 @@
     "expected_utility": "medium",
     "risk_level": "convenience",
     "resolution_criteria": "tokyo-metro price 정보 수집",
-    "status": "resolved",
+    "status": "open",
     "trigger": "A:adjacent_gap",
     "trigger_source": "CL-0031-01",
     "created_at": "2026-03-07",
     "gu_id": "GU-0079",
-    "expansion_mode": "jump",
-    "resolved_by": "CL-0079-01"
+    "expansion_mode": "jump"
   },
   {
     "gap_type": "missing",
@@ -1290,13 +1289,12 @@
     "expected_utility": "medium",
     "risk_level": "convenience",
     "resolution_criteria": "tokyo-metro duration 정보 수집",
-    "status": "resolved",
+    "status": "open",
     "trigger": "A:adjacent_gap",
     "trigger_source": "CL-0031-01",
     "created_at": "2026-03-07",
     "gu_id": "GU-0080",
-    "expansion_mode": "jump",
-    "resolved_by": "CL-0080-01"
+    "expansion_mode": "jump"
   },
   {
     "gap_type": "missing",
@@ -1323,13 +1321,12 @@
     "expected_utility": "medium",
     "risk_level": "convenience",
     "resolution_criteria": "practical-phrases policy 정보 수집",
-    "status": "resolved",
+    "status": "open",
     "trigger": "A:adjacent_gap",
     "trigger_source": "CL-0038-01",
     "created_at": "2026-03-07",
     "gu_id": "GU-0082",
-    "expansion_mode": "jump",
-    "resolved_by": "CL-0082-01"
+    "expansion_mode": "jump"
   },
   {
     "gap_type": "missing",

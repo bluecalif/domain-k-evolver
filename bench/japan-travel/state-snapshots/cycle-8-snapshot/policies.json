@@ -8,7 +8,7 @@
   "ttl_defaults": {
     "price": 180,
     "policy": 135,
-    "regulation": 135,
+    "regulation": 90,
     "hours": 90,
     "how_to_use": 365,
     "location": 730,
@@ -48,7 +48,7 @@
     "condition_divergence": "condition_split",
     "unresolvable": "hold_and_collect_more"
   },
-  "version": 2,
+  "version": 1,
   "change_history": [
     {
       "version": 1,
@@ -57,14 +57,6 @@
         "PP-001"
       ],
       "timestamp": "2026-03-07T03:36:00.965697+00:00"
-    },
-    {
-      "version": 2,
-      "cycle": 10,
-      "patches_applied": [
-        "PP-001"
-      ],
-      "timestamp": "2026-03-07T03:44:53.029571+00:00"
     }
   ]
 }

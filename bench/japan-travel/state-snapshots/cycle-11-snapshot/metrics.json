@@ -1,5 +1,5 @@
 {
-  "cycle": 14,
+  "cycle": 12,
   "phase": "post_critique",
   "timestamp": "2026-03-07",
   "counts": {
@@ -13,18 +13,18 @@
   },
   "rates": {
     "evidence_rate": 1.0,
-    "multi_evidence_rate": 0.9111111111111111,
+    "multi_evidence_rate": 0.9101123595505618,
     "gap_resolution_rate": 0.84375,
-    "conflict_rate": 0.0,
-    "avg_confidence": 0.800911111111111,
-    "staleness_risk": 59
+    "conflict_rate": 0.011111111111111112,
+    "avg_confidence": 0.8037303370786516,
+    "staleness_risk": 58
   },
   "delta_from_prev_cycle": {
     "evidence_rate": 0.0,
-    "multi_evidence_rate": 0.0,
-    "gap_resolution_rate": 0.0,
-    "conflict_rate": 0.0,
-    "avg_confidence": 0.0,
-    "staleness_risk": 0
+    "multi_evidence_rate": 0.0065,
+    "gap_resolution_rate": 0.0312,
+    "conflict_rate": -0.0349,
+    "avg_confidence": -0.0051,
+    "staleness_risk": 5
   }
 }

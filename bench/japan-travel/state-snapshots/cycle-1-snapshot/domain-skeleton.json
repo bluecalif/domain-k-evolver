@@ -1,6 +1,11 @@
 {
   "domain": "japan-travel",
   "version": 0,
+  "core_categories": [
+    "transport",
+    "regulation",
+    "pass-ticket"
+  ],
   "scope_boundary": {
     "includes": [
       "일본 국내 교통수단",
@@ -22,60 +27,226 @@
     "boundary_rule": "일본 도착 후~출국까지 여행자 실용 정보. 2024년 이후 유효 정보만."
   },
   "categories": [
-    {"slug": "transport", "description": "교통수단/노선/서비스"},
-    {"slug": "accommodation", "description": "숙박 유형/서비스"},
-    {"slug": "attraction", "description": "관광지/명소"},
-    {"slug": "dining", "description": "식당/음식 유형/에티켓"},
-    {"slug": "regulation", "description": "입국/비자/세관/법규"},
-    {"slug": "pass-ticket", "description": "교통패스/관광패스 상품"},
-    {"slug": "connectivity", "description": "통신/인터넷"},
-    {"slug": "payment", "description": "결제수단"}
+    {
+      "slug": "transport",
+      "description": "교통수단/노선/서비스"
+    },
+    {
+      "slug": "accommodation",
+      "description": "숙박 유형/서비스"
+    },
+    {
+      "slug": "attraction",
+      "description": "관광지/명소"
+    },
+    {
+      "slug": "dining",
+      "description": "식당/음식 유형/에티켓"
+    },
+    {
+      "slug": "regulation",
+      "description": "입국/비자/세관/법규"
+    },
+    {
+      "slug": "pass-ticket",
+      "description": "교통패스/관광패스 상품"
+    },
+    {
+      "slug": "connectivity",
+      "description": "통신/인터넷"
+    },
+    {
+      "slug": "payment",
+      "description": "결제수단"
+    }
   ],
   "fields": [
-    {"name": "price", "type": "object", "categories": ["*"], "description": "가격 정보"},
-    {"name": "hours", "type": "string", "categories": ["attraction", "dining"], "description": "운영시간"},
-    {"name": "policy", "type": "string", "categories": ["regulation", "pass-ticket"], "description": "규정/조건"},
-    {"name": "location", "type": "object", "categories": ["attraction", "dining", "accommodation"], "description": "위치"},
-    {"name": "duration", "type": "string", "categories": ["transport", "pass-ticket"], "description": "소요/유효기간"},
-    {"name": "eligibility", "type": "string", "categories": ["pass-ticket", "regulation"], "description": "이용 자격"},
-    {"name": "how_to_use", "type": "string", "categories": ["transport", "payment", "connectivity"], "description": "이용 방법"},
-    {"name": "etiquette", "type": "string", "categories": ["dining", "accommodation"], "description": "에티켓/매너"},
-    {"name": "tips", "type": "string", "categories": ["*"], "description": "실용 팁"},
-    {"name": "acceptance", "type": "string", "categories": ["payment"], "description": "사용 가능 범위"},
-    {"name": "where_to_buy", "type": "string", "categories": ["pass-ticket", "connectivity"], "description": "구매처/방법"}
+    {
+      "name": "price",
+      "type": "object",
+      "categories": [
+        "*"
+      ],
+      "description": "가격 정보"
+    },
+    {
+      "name": "hours",
+      "type": "string",
+      "categories": [
+        "attraction",
+        "dining"
+      ],
+      "description": "운영시간"
+    },
+    {
+      "name": "policy",
+      "type": "string",
+      "categories": [
+        "regulation",
+        "pass-ticket"
+      ],
+      "description": "규정/조건"
+    },
+    {
+      "name": "location",
+      "type": "object",
+      "categories": [
+        "attraction",
+        "dining",
+        "accommodation"
+      ],
+      "description": "위치"
+    },
+    {
+      "name": "duration",
+      "type": "string",
+      "categories": [
+        "transport",
+        "pass-ticket"
+      ],
+      "description": "소요/유효기간"
+    },
+    {
+      "name": "eligibility",
+      "type": "string",
+      "categories": [
+        "pass-ticket",
+        "regulation"
+      ],
+      "description": "이용 자격"
+    },
+    {
+      "name": "how_to_use",
+      "type": "string",
+      "categories": [
+        "transport",
+        "payment",
+        "connectivity"
+      ],
+      "description": "이용 방법"
+    },
+    {
+      "name": "etiquette",
+      "type": "string",
+      "categories": [
+        "dining",
+        "accommodation"
+      ],
+      "description": "에티켓/매너"
+    },
+    {
+      "name": "tips",
+      "type": "string",
+      "categories": [
+        "*"
+      ],
+      "description": "실용 팁"
+    },
+    {
+      "name": "acceptance",
+      "type": "string",
+      "categories": [
+        "payment"
+      ],
+      "description": "사용 가능 범위"
+    },
+    {
+      "name": "where_to_buy",
+      "type": "string",
+      "categories": [
+        "pass-ticket",
+        "connectivity"
+      ],
+      "description": "구매처/방법"
+    }
   ],
   "relations": [
-    {"name": "covers_route", "source": "transport", "target": "transport", "description": "노선 커버 구간"},
-    {"name": "valid_for", "source": "pass-ticket", "target": "transport", "description": "패스 이용 가능 교통"},
-    {"name": "located_in", "source": ["attraction", "dining"], "target": "region", "description": "위치 관계"},
-    {"name": "accepted_at", "source": "payment", "target": ["transport", "dining", "attraction"], "description": "결제수단 사용처"}
+    {
+      "name": "covers_route",
+      "source": "transport",
+      "target": "transport",
+      "description": "노선 커버 구간"
+    },
+    {
+      "name": "valid_for",
+      "source": "pass-ticket",
+      "target": "transport",
+      "description": "패스 이용 가능 교통"
+    },
+    {
+      "name": "located_in",
+      "source": [
+        "attraction",
+        "dining"
+      ],
+      "target": "region",
+      "description": "위치 관계"
+    },
+    {
+      "name": "accepted_at",
+      "source": "payment",
+      "target": [
+        "transport",
+        "dining",
+        "attraction"
+      ],
+      "description": "결제수단 사용처"
+    }
   ],
   "axes": [
     {
       "name": "category",
       "description": "정보 카테고리 (기존 categories와 동일)",
-      "anchors": ["transport", "accommodation", "attraction", "dining", "regulation", "pass-ticket", "connectivity", "payment"],
+      "anchors": [
+        "transport",
+        "accommodation",
+        "attraction",
+        "dining",
+        "regulation",
+        "pass-ticket",
+        "connectivity",
+        "payment"
+      ],
       "required": true,
       "note": "entity_key에서 자동 추출"
     },
     {
       "name": "geography",
       "description": "지역성 — 정보가 적용되는 지리적 범위",
-      "anchors": ["tokyo", "osaka", "kyoto", "rural", "nationwide"],
+      "anchors": [
+        "tokyo",
+        "osaka",
+        "kyoto",
+        "rural",
+        "nationwide"
+      ],
       "required": true,
       "note": "entity_key 또는 KU 내용에서 추론. 지역 무관 시 nationwide"
     },
     {
       "name": "condition",
       "description": "조건/시즌/채널 — 정보가 유효한 특정 조건",
-      "anchors": ["peak-season", "off-season", "weekday", "weekend", "online", "in-person"],
+      "anchors": [
+        "peak-season",
+        "off-season",
+        "weekday",
+        "weekend",
+        "online",
+        "in-person"
+      ],
       "required": false,
       "note": "해당되는 경우만 태깅. 조건 무관 시 생략"
     },
     {
       "name": "risk",
       "description": "리스크 유형 — GU가 다루는 리스크 분류",
-      "anchors": ["safety", "financial", "policy", "convenience", "informational"],
+      "anchors": [
+        "safety",
+        "financial",
+        "policy",
+        "convenience",
+        "informational"
+      ],
       "required": true,
       "note": "기존 GU risk_level 필드와 동일 체계"
     }

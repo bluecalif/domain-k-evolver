@@ -5,8 +5,12 @@
     "field": "eligibility",
     "value": "일본 국외 거주 외국인 여권 소지자. 'Temporary Visitor' 체류자격으로 입국한 자만 구매 가능. 일본 국적자 또는 일본 거주 외국인은 구매 불가.",
     "observed_at": "2026-03-02",
-    "validity": { "ttl_days": 90 },
-    "evidence_links": ["EU-0001"],
+    "validity": {
+      "ttl_days": 90
+    },
+    "evidence_links": [
+      "EU-0001"
+    ],
     "confidence": 0.95,
     "status": "active"
   },
@@ -15,16 +19,33 @@
     "entity_key": "japan-travel:pass-ticket:jr-pass",
     "field": "price",
     "value": {
-      "7일권": { "ordinary": 50000, "green": 70000 },
-      "14일권": { "ordinary": 80000, "green": 110000 },
-      "21일권": { "ordinary": 100000, "green": 140000 },
+      "7일권": {
+        "ordinary": 50000,
+        "green": 70000
+      },
+      "14일권": {
+        "ordinary": 80000,
+        "green": 110000
+      },
+      "21일권": {
+        "ordinary": 100000,
+        "green": 140000
+      },
       "currency": "JPY",
       "비고": "2023년 10월 인상 후 유지. 2025-2026 추가 인상 없음."
     },
-    "conditions": { "channel": "일본 국내 구매 기준", "traveler_type": "temporary-visitor" },
+    "conditions": {
+      "channel": "일본 국내 구매 기준",
+      "traveler_type": "temporary-visitor"
+    },
     "observed_at": "2026-03-02",
-    "validity": { "ttl_days": 180 },
-    "evidence_links": ["EU-0001", "EU-0011"],
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0001",
+      "EU-0011"
+    ],
     "confidence": 0.95,
     "status": "active"
   },
@@ -33,11 +54,17 @@
     "entity_key": "japan-travel:regulation:tourist-visa",
     "field": "policy",
     "value": "한국 국적자는 90일 이내 관광 목적 무비자 입국 가능. 여권 잔여 유효기간 제한 없음 (체류 기간 이상 권장). Visit Japan Web 사전 등록 권장.",
-    "conditions": { "traveler_type": "korean-citizen" },
+    "conditions": {
+      "traveler_type": "korean-citizen"
+    },
     "observed_at": "2026-03-02",
-    "validity": { "ttl_days": 90 },
-    "evidence_links": ["EU-0002"],
-    "confidence": 0.90,
+    "validity": {
+      "ttl_days": 90
+    },
+    "evidence_links": [
+      "EU-0002"
+    ],
+    "confidence": 0.9,
     "status": "active"
   },
   {
@@ -46,8 +73,14 @@
     "field": "how_to_use",
     "value": "Suica/PASMO 등 IC카드로 전철, 버스, 편의점 결제 가능. 물리 카드 재고 부족은 2025.3월 공식 해소. Welcome Suica(관광객용, 28일 유효) 주요 역에서 판매 재개. 모바일 Suica(Apple/Google) 및 Welcome Suica Mobile(iPhone, 180일 유효) 이용 가능.",
     "observed_at": "2026-03-02",
-    "validity": { "ttl_days": 365 },
-    "evidence_links": ["EU-0003", "EU-0016", "EU-0017"],
+    "validity": {
+      "ttl_days": 365
+    },
+    "evidence_links": [
+      "EU-0003",
+      "EU-0016",
+      "EU-0017"
+    ],
     "confidence": 0.85,
     "status": "active"
   },
@@ -57,9 +90,13 @@
     "field": "how_to_use",
     "value": "지정석(Reserved)과 자유석(Non-reserved) 구분. JR Pass 소지 시 지정석 무료 예약 가능 (Nozomi/Mizuho 제외). 자유석은 선착순 탑승.",
     "observed_at": "2026-03-02",
-    "validity": { "ttl_days": 365 },
-    "evidence_links": ["EU-0004"],
-    "confidence": 0.90,
+    "validity": {
+      "ttl_days": 365
+    },
+    "evidence_links": [
+      "EU-0004"
+    ],
+    "confidence": 0.9,
     "status": "active"
   },
   {
@@ -68,8 +105,12 @@
     "field": "policy",
     "value": "면세 범위: 주류 3병(760ml 이하), 담배 200개비(거주자)/400개비(비거주자), 향수 2oz, 기타 품목 20만엔 이하. 초과 시 신고 및 관세 부과.",
     "observed_at": "2026-03-02",
-    "validity": { "ttl_days": 90 },
-    "evidence_links": ["EU-0005"],
+    "validity": {
+      "ttl_days": 90
+    },
+    "evidence_links": [
+      "EU-0005"
+    ],
     "confidence": 0.85,
     "status": "active"
   },
@@ -92,15 +133,22 @@
       }
     },
     "observed_at": "2026-03-03",
-    "validity": { "ttl_days": 180 },
-    "evidence_links": ["EU-0006", "EU-0030", "EU-0031"],
-    "confidence": 0.80,
-    "status": "disputed",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0006",
+      "EU-0030",
+      "EU-0031"
+    ],
+    "confidence": 0.8,
+    "status": "active",
     "disputes": [
       {
         "conflicting_ku_id": "KU-0007_v0",
         "nature": "eSIM 보급으로 가격 구조 변화. 기존 물리SIM 가격 범위와 eSIM 가격 불일치",
-        "resolution": "condition_split"
+        "resolution": "resolved",
+        "resolution_reason": "evidence majority (3 evidence vs 1 disputes)"
       }
     ]
   },
@@ -118,8 +166,13 @@
       "비고": "구급차 무료, 치료비는 별도. 119/110은 일본어 우선이나 통역 연결 가능."
     },
     "observed_at": "2026-03-02",
-    "validity": { "ttl_days": 365 },
-    "evidence_links": ["EU-0007", "EU-0008"],
+    "validity": {
+      "ttl_days": 365
+    },
+    "evidence_links": [
+      "EU-0007",
+      "EU-0008"
+    ],
     "confidence": 0.95,
     "status": "active"
   },
@@ -129,19 +182,43 @@
     "field": "how_to_use",
     "value": {
       "나리타": {
-        "Narita_Express": { "소요": "60분→도쿄역", "가격": "3070 JPY", "JR_Pass": true },
-        "Skyliner": { "소요": "36분→닛포리", "가격": "약 2520 JPY" },
-        "리무진버스": { "소요": "75-90분", "가격": "약 1500-3200 JPY" }
+        "Narita_Express": {
+          "소요": "60분→도쿄역",
+          "가격": "3070 JPY",
+          "JR_Pass": true
+        },
+        "Skyliner": {
+          "소요": "36분→닛포리",
+          "가격": "약 2520 JPY"
+        },
+        "리무진버스": {
+          "소요": "75-90분",
+          "가격": "약 1500-3200 JPY"
+        }
       },
       "하네다": {
-        "모노레일": { "소요": "20분→하마마츠초", "가격": "약 500-600 JPY" },
-        "게이큐선": { "소요": "15분→시나가와", "가격": "약 300 JPY" },
-        "리무진버스": { "소요": "약 45분", "가격": "약 1000-1500 JPY" }
+        "모노레일": {
+          "소요": "20분→하마마츠초",
+          "가격": "약 500-600 JPY"
+        },
+        "게이큐선": {
+          "소요": "15분→시나가와",
+          "가격": "약 300 JPY"
+        },
+        "리무진버스": {
+          "소요": "약 45분",
+          "가격": "약 1000-1500 JPY"
+        }
       }
     },
     "observed_at": "2026-03-02",
-    "validity": { "ttl_days": 180 },
-    "evidence_links": ["EU-0009", "EU-0010"],
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0009",
+      "EU-0010"
+    ],
     "confidence": 0.85,
     "status": "active"
   },
@@ -151,9 +228,14 @@
     "field": "how_to_use",
     "value": "Visit Japan Web은 웹 기반 서비스(앱 불필요). 여권 정보, 입국심사(하선카드), 세관신고, 면세쇼핑 3개 항목 사전 등록. 등록 후 QR코드 발급 → 공항 도착 시 제시. 2026년 현재 필수는 아니나 강력 권장 (심사 시간 대폭 단축). 스크린샷 불가, 라이브 접속 필요.",
     "observed_at": "2026-03-02",
-    "validity": { "ttl_days": 90 },
-    "evidence_links": ["EU-0012", "EU-0013"],
-    "confidence": 0.90,
+    "validity": {
+      "ttl_days": 90
+    },
+    "evidence_links": [
+      "EU-0012",
+      "EU-0013"
+    ],
+    "confidence": 0.9,
     "status": "active"
   },
   {
@@ -176,15 +258,33 @@
       }
     },
     "observed_at": "2026-03-03",
-    "validity": { "ttl_days": 90, "expires_at": "2026-11-01" },
-    "evidence_links": ["EU-0014", "EU-0015", "EU-0032", "EU-0033"],
-    "confidence": 0.85,
-    "status": "disputed",
+    "validity": {
+      "ttl_days": 90,
+      "expires_at": "2026-11-01"
+    },
+    "evidence_links": [
+      "EU-0014",
+      "EU-0015",
+      "EU-0032",
+      "EU-0033",
+      "EU-0053",
+      "EU-0054",
+      "EU-0055"
+    ],
+    "confidence": 0.9,
+    "status": "active",
     "disputes": [
       {
         "conflicting_ku_id": "KU-0020",
         "nature": "신제도 최소금액 — 기존 '철폐' 기재 vs 복수 출처(JNTO+japantravel) '5,000엔 유지' 확인",
-        "resolution": "pending"
+        "resolution": "resolved_as_maintain",
+        "resolved_at": "2026-03-04",
+        "resolved_evidence": [
+          "EU-0053",
+          "EU-0054",
+          "EU-0055"
+        ],
+        "conclusion": "5,000엔(세전) 최소금액 유지 확인. 4개 독립 출처 일치. 기존 '철폐' 기재는 초기 보도 오류."
       }
     ]
   },
@@ -206,8 +306,13 @@
       "대안": "PASMO Passport (사철 역), ICOCA (관서 지역)"
     },
     "observed_at": "2026-03-02",
-    "validity": { "ttl_days": 180 },
-    "evidence_links": ["EU-0016", "EU-0017"],
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0016",
+      "EU-0017"
+    ],
     "confidence": 0.85,
     "status": "active"
   },
@@ -216,15 +321,26 @@
     "entity_key": "japan-travel:transport:shinkansen",
     "field": "price",
     "value": {
-      "도쿄-교토": { "자유석": 13320, "지정석_Hikari": 14570, "Platt_Kodama": 10700 },
-      "도쿄-신오사카": { "지정석": 14720, "Platt_Kodama": 11110 },
+      "도쿄-교토": {
+        "자유석": 13320,
+        "지정석_Hikari": 14570,
+        "Platt_Kodama": 10700
+      },
+      "도쿄-신오사카": {
+        "지정석": 14720,
+        "Platt_Kodama": 11110
+      },
       "currency": "JPY",
       "구성": "기본운임 + 특급요금",
       "Nozomi추가": "210-1060 JPY"
     },
     "observed_at": "2026-03-02",
-    "validity": { "ttl_days": 180 },
-    "evidence_links": ["EU-0018"],
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0018"
+    ],
     "confidence": 0.85,
     "status": "active"
   },
@@ -234,19 +350,36 @@
     "field": "nozomi-alternative",
     "value": {
       "도쿄-신오사카": {
-        "Nozomi": {"소요": "2시간 21분", "JR_Pass": false},
-        "Hikari": {"소요": "약 3시간", "JR_Pass": true},
-        "Kodama": {"소요": "약 4시간", "JR_Pass": true}
+        "Nozomi": {
+          "소요": "2시간 21분",
+          "JR_Pass": false
+        },
+        "Hikari": {
+          "소요": "약 3시간",
+          "JR_Pass": true
+        },
+        "Kodama": {
+          "소요": "약 4시간",
+          "JR_Pass": true
+        }
       },
       "도쿄-교토": {
-        "Hikari": {"소요": "약 2시간 40분", "JR_Pass": true}
+        "Hikari": {
+          "소요": "약 2시간 40분",
+          "JR_Pass": true
+        }
       },
       "Hikari_운행": "약 30분 간격, 06:00~21:30",
       "요약": "JR Pass 이용 시 Hikari가 최적. Nozomi 대비 약 30-40분 추가 소요."
     },
     "observed_at": "2026-03-03",
-    "validity": { "ttl_days": 365 },
-    "evidence_links": ["EU-0019", "EU-0020"],
+    "validity": {
+      "ttl_days": 365
+    },
+    "evidence_links": [
+      "EU-0019",
+      "EU-0020"
+    ],
     "confidence": 0.85,
     "status": "active"
   },
@@ -256,9 +389,14 @@
     "field": "how_to_use",
     "value": "도쿄 메트로 9개 노선 + 토에이 지하철 4개 노선 = 13개 지하철 노선. IC카드(Suica/PASMO) 사용 가능. 관광객용 Tokyo Subway Ticket으로 무제한 이용 가능. 자동 운임 계산. Welcome Suica/PASMO 이용 시 지하철+버스+편의점 결제 가능.",
     "observed_at": "2026-03-03",
-    "validity": { "ttl_days": 365 },
-    "evidence_links": ["EU-0021", "EU-0023"],
-    "confidence": 0.90,
+    "validity": {
+      "ttl_days": 365
+    },
+    "evidence_links": [
+      "EU-0021",
+      "EU-0023"
+    ],
+    "confidence": 0.9,
     "status": "active"
   },
   {
@@ -271,13 +409,22 @@
       "72시간": 2000,
       "currency": "JPY",
       "적용일": "2026-03-14~",
-      "이전_가격": {"24시간": 600, "48시간": 1200, "72시간": 1500},
+      "이전_가격": {
+        "24시간": 600,
+        "48시간": 1200,
+        "72시간": 1500
+      },
       "대상_노선": "도쿄 메트로 전 노선 + 토에이 지하철 전 노선"
     },
     "observed_at": "2026-03-03",
-    "validity": { "ttl_days": 180 },
-    "evidence_links": ["EU-0022"],
-    "confidence": 0.80,
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0022",
+      "EU-0047"
+    ],
+    "confidence": 0.9,
     "status": "active"
   },
   {
@@ -291,8 +438,13 @@
       "매너": "22시 이후 소음 자제 (종이벽). 팁 불필요, 전달 시 봉투 사용."
     },
     "observed_at": "2026-03-03",
-    "validity": { "ttl_days": 730 },
-    "evidence_links": ["EU-0024", "EU-0025"],
+    "validity": {
+      "ttl_days": 730
+    },
+    "evidence_links": [
+      "EU-0024",
+      "EU-0025"
+    ],
     "confidence": 0.85,
     "status": "active"
   },
@@ -306,8 +458,13 @@
       "결제": "출구 레지에서 계산. 팁 불필요."
     },
     "observed_at": "2026-03-03",
-    "validity": { "ttl_days": 730 },
-    "evidence_links": ["EU-0026", "EU-0027"],
+    "validity": {
+      "ttl_days": 730
+    },
+    "evidence_links": [
+      "EU-0026",
+      "EU-0027"
+    ],
     "confidence": 0.85,
     "status": "active"
   },
@@ -321,8 +478,13 @@
       "추천_시간": "이른 아침(일출) 또는 18시 이후 (혼잡 회피). 야간 등롱 조명."
     },
     "observed_at": "2026-03-03",
-    "validity": { "ttl_days": 365 },
-    "evidence_links": ["EU-0028", "EU-0029"],
+    "validity": {
+      "ttl_days": 365
+    },
+    "evidence_links": [
+      "EU-0028",
+      "EU-0029"
+    ],
     "confidence": 0.95,
     "status": "active"
   },
@@ -349,9 +511,15 @@
       "유효기간": "구매 후 90일 이내 출국"
     },
     "observed_at": "2026-03-03",
-    "validity": { "ttl_days": 90, "expires_at": "2026-11-01" },
-    "evidence_links": ["EU-0032", "EU-0033"],
-    "confidence": 0.90,
+    "validity": {
+      "ttl_days": 90,
+      "expires_at": "2026-11-01"
+    },
+    "evidence_links": [
+      "EU-0032",
+      "EU-0033"
+    ],
+    "confidence": 0.9,
     "status": "active"
   },
   {
@@ -366,9 +534,349 @@
       "추세": "대도시 캐시리스 결제 급속 확대 중이나, 현금 항시 소지 권장"
     },
     "observed_at": "2026-03-03",
-    "validity": { "ttl_days": 180 },
-    "evidence_links": ["EU-0034", "EU-0035"],
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0034",
+      "EU-0035"
+    ],
     "confidence": 0.85,
+    "status": "active"
+  },
+  {
+    "ku_id": "KU-0022",
+    "entity_key": "japan-travel:transport:osaka-metro",
+    "field": "how_to_use",
+    "value": {
+      "노선": "9개 노선, 130개+ 역",
+      "결제": "IC카드(ICOCA/Suica/PASMO) 사용 가능",
+      "1일권_Enjoy_Eco_Card": {
+        "평일": 800,
+        "주말공휴일": 600,
+        "currency": "JPY"
+      },
+      "운행시간": "약 05:30~00:15",
+      "배차간격": {
+        "평일": "2~5분",
+        "주말": "4~8분"
+      },
+      "관광지할인": "Enjoy Eco Card 제시 시 약 30개 관광지 할인"
+    },
+    "observed_at": "2026-03-04",
+    "validity": {
+      "ttl_days": 365
+    },
+    "evidence_links": [
+      "EU-0036",
+      "EU-0037"
+    ],
+    "confidence": 0.85,
+    "status": "active"
+  },
+  {
+    "ku_id": "KU-0023",
+    "entity_key": "japan-travel:attraction:kinkaku-ji",
+    "field": "price",
+    "value": {
+      "입장료": {
+        "성인": 500,
+        "초중학생": 300,
+        "currency": "JPY"
+      },
+      "운영시간": "09:00~17:00 (최종 입장 16:30)",
+      "휴무": "연중무휴",
+      "비고": "입장권이 부적(お札) 형태 — 기념품 겸용"
+    },
+    "observed_at": "2026-03-04",
+    "validity": {
+      "ttl_days": 365
+    },
+    "evidence_links": [
+      "EU-0038",
+      "EU-0039"
+    ],
+    "confidence": 0.85,
+    "status": "active"
+  },
+  {
+    "ku_id": "KU-0024",
+    "entity_key": "japan-travel:transport:rural-bus",
+    "field": "how_to_use",
+    "value": {
+      "탑승방식": "후방 승차 → 전방 하차 (정리권 방식)",
+      "IC카드": "대부분 지역 사용 가능. 일부 지방 예외 있음.",
+      "IC_락_주의": "하차역이 IC 미지원 시 카드 잠금. 주요 역에서 리셋 필요.",
+      "배차간격": "1~2시간 단위 가능. 사전 시간표 확인 필수.",
+      "산간지역": "버스가 유일한 대중교통인 경우 다수",
+      "팁": "현금 소액(동전) 준비 권장. IC 미지원 지역 대비."
+    },
+    "observed_at": "2026-03-04",
+    "validity": {
+      "ttl_days": 365
+    },
+    "evidence_links": [
+      "EU-0040",
+      "EU-0041",
+      "EU-0042"
+    ],
+    "confidence": 0.8,
+    "status": "active"
+  },
+  {
+    "ku_id": "KU-0025",
+    "entity_key": "japan-travel:accommodation:minshuku",
+    "field": "price",
+    "value": {
+      "식사포함": {
+        "범위": "5000~14000 JPY/인/박",
+        "내용": "석식+조식 (가정식)"
+      },
+      "숙박만": {
+        "범위": "3000~5000 JPY/인/박"
+      },
+      "특징": "다다미 방 + 이불, 공용 욕실, 가정 운영",
+      "체험": "농업 체험, 향토 요리 학습 등 가능",
+      "currency": "JPY"
+    },
+    "observed_at": "2026-03-04",
+    "validity": {
+      "ttl_days": 365
+    },
+    "evidence_links": [
+      "EU-0043",
+      "EU-0044"
+    ],
+    "confidence": 0.85,
+    "status": "active"
+  },
+  {
+    "ku_id": "KU-0026",
+    "entity_key": "japan-travel:pass-ticket:icoca",
+    "field": "where_to_buy",
+    "value": {
+      "가격": {
+        "총액": 2000,
+        "보증금": 500,
+        "이용가능": 1500,
+        "currency": "JPY"
+      },
+      "구매처": [
+        "JR West 역 자판기",
+        "간사이 국제공항 (KIX)",
+        "한큐/한신/게이한/난카이/긴테쓰 역",
+        "오사카/교토/고베 지하철역"
+      ],
+      "결제": "현금만 가능 (자판기, 신용카드 불가)",
+      "관광객용": "Kansai One Pass — 관광지 할인 특전 포함",
+      "환불": "보증금 ¥500 환불 가능 (수수료 ¥220 공제)"
+    },
+    "observed_at": "2026-03-04",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0045",
+      "EU-0046"
+    ],
+    "confidence": 0.9,
+    "status": "active"
+  },
+  {
+    "ku_id": "KU-0027",
+    "entity_key": "japan-travel:accommodation:ryokan",
+    "field": "price",
+    "value": {
+      "예산형": "5000~10000 JPY/인/박",
+      "중급": "15000~25000 JPY/인/박 (조식+석식, 공용온천)",
+      "고급": "30000~70000 JPY/인/박 (전용온천, 가이세키)",
+      "초고급": "100000+ JPY/인/박",
+      "평균대": "15000~30000 JPY/인/박 (식사 포함)",
+      "지역별": {
+        "교토": "¥15,000 이하 가능",
+        "하코네": "약 ¥12,600부터"
+      },
+      "비고": "성수기/비수기 가격 차이 큼. 식사 포함 여부가 가격 좌우.",
+      "currency": "JPY"
+    },
+    "observed_at": "2026-03-04",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0048",
+      "EU-0049"
+    ],
+    "confidence": 0.85,
+    "status": "active"
+  },
+  {
+    "ku_id": "KU-0028",
+    "entity_key": "japan-travel:payment:cash",
+    "field": "tips",
+    "value": {
+      "ATM_7Eleven": {
+        "수수료": "주간(07~19시) 무료, 야간 ¥110",
+        "인출한도": "1회 ¥100,000",
+        "설치수": "전국 20,000개+",
+        "운영": "24시간",
+        "카드별": {
+          "Mastercard": "무료",
+          "Visa": "¥110~220"
+        }
+      },
+      "우체국ATM": "외국 카드 사용 가능. 주요 우체국.",
+      "환전": "공항이 가장 유리. 은행, 일부 편의점도 가능.",
+      "현금필요장소": "소규모 음식점, 노점, 지방 버스, 신사/사찰, 코인세탁소",
+      "권장": "항시 1~2만엔 현금 소지"
+    },
+    "observed_at": "2026-03-04",
+    "validity": {
+      "ttl_days": 365
+    },
+    "evidence_links": [
+      "EU-0050",
+      "EU-0051",
+      "EU-0052"
+    ],
+    "confidence": 0.85,
+    "status": "active"
+  },
+  {
+    "ku_id": "KU-0029",
+    "entity_key": "japan-travel:pass-ticket:osaka-amazing-pass",
+    "field": "price",
+    "value": "Osaka Amazing Pass 1-day pass costs 2,500 yen; 2-day pass costs 3,300 yen",
+    "observed_at": "2024-06-05",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-GU0032-01",
+      "EU-GU0032-02",
+      "EU-GU0032-03",
+      "EU-GU0032-04"
+    ],
+    "confidence": 0.85,
+    "status": "active",
+    "disputes": [
+      {
+        "conflicting_claim": "CL-GU0032-03",
+        "nature": "Conflicting value for price",
+        "resolution": "resolved",
+        "resolution_reason": "evidence majority (4 evidence vs 1 disputes)"
+      }
+    ]
+  },
+  {
+    "ku_id": "KU-0030",
+    "entity_key": "japan-travel:pass-ticket:kansai-area-pass",
+    "field": "price",
+    "value": "Ordinary Kansai Area Pass prices: 1 day - $22.00, 2 days - $35.00, 3 days - $43.00, 4 days - $52.00",
+    "observed_at": "2024-06-05",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0035-01",
+      "EU-0035-02",
+      "EU-0035-03",
+      "EU-0035-04"
+    ],
+    "confidence": 0.9,
+    "status": "active",
+    "disputes": [
+      {
+        "conflicting_claim": "CL-0035-04",
+        "nature": "Conflicting value for price",
+        "resolution": "resolved",
+        "resolution_reason": "evidence majority (4 evidence vs 1 disputes)"
+      }
+    ]
+  },
+  {
+    "ku_id": "KU-0031",
+    "entity_key": "japan-travel:transport:kyoto-bus",
+    "field": "how_to_use",
+    "value": "To use Kyoto City Bus, get on through the rear door and exit from the front. For flat fare routes, adults pay 230 yen and children under 12 pay 120 yen. Insert fare into the coin slot before exiting or insert a bus pass into the green card slot. For non-flat fare routes, take a number from the machine when boarding, check the fare on the display screen, pay the fare with your number slip before exiting, and exit from the front.",
+    "observed_at": "2024-06-06",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-GU-0033-01",
+      "EU-GU-0033-02",
+      "EU-GU-0033-03"
+    ],
+    "confidence": 0.9,
+    "status": "active",
+    "disputes": [
+      {
+        "conflicting_claim": "CL-GU-0033-03",
+        "nature": "Conflicting value for how_to_use",
+        "resolution": "resolved",
+        "resolution_reason": "evidence majority (3 evidence vs 1 disputes)"
+      }
+    ]
+  },
+  {
+    "ku_id": "KU-0032",
+    "entity_key": "japan-travel:dining:osaka-street-food",
+    "field": "tips",
+    "value": "Collected info for tips from Best Osaka Street Food According to Locals: 5 Hidden Spots",
+    "observed_at": "2026-03-07",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0036-01",
+      "EU-0036-02"
+    ],
+    "confidence": 0.7,
+    "status": "active"
+  },
+  {
+    "ku_id": "KU-0033",
+    "entity_key": "japan-travel:transport:rental-car",
+    "field": "how_to_use",
+    "value": "To rent a car in Japan, you must be at least 18 years old and have an International Driver's Permit (IDP) issued in your country of residence; a domestic driver's license alone is not sufficient.",
+    "observed_at": "2024-06-05",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0034-01",
+      "EU-0034-02",
+      "EU-0034-03",
+      "EU-0034-04",
+      "EU-0034-05"
+    ],
+    "confidence": 0.9,
+    "status": "active",
+    "disputes": [
+      {
+        "conflicting_claim": "CL-0034-02",
+        "nature": "Conflicting value for how_to_use",
+        "resolution": "resolved",
+        "resolution_reason": "evidence majority (5 evidence vs 1 disputes)"
+      }
+    ]
+  },
+  {
+    "ku_id": "KU-0034",
+    "entity_key": "japan-travel:accommodation:kyoto-ryokan",
+    "field": "price",
+    "value": "Kyoto ryokans start from $70 per night",
+    "observed_at": "2024-06-06",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-GU0037-01",
+      "EU-GU0037-02",
+      "EU-GU0037-03"
+    ],
+    "confidence": 0.9,
     "status": "active"
   }
 ]

@@ -1,7 +1,7 @@
 # Session Compact
 
-> Generated: 2026-03-07 (Phase 4 Stage B 완료, Stage C 진행 예정)
-> Source: Conversation compaction via /compact-and-go
+> Generated: 2026-03-07 (Phase 4 전체 완료, Gate FAIL — suspended)
+> Source: Phase 4 Stage C + Stage D 구현 + 벤치마크 실행
 
 ## Goal
 Phase 4 (Self-Governing Evolver) 구현 — 단일 도메인에서 자기 진화 Evolver 완성도 보장 후 Multi-Domain 전환.
@@ -11,73 +11,75 @@ Phase 4 (Self-Governing Evolver) 구현 — 단일 도메인에서 자기 진화
 - [x] Phase 번호 체계 갱신: Phase 4 = Self-Governing, Phase X = Multi-Domain (잠정)
 - [x] Phase 4 dev-docs 생성 (plan, tasks, context, debug-history)
 - [x] project-overall 동기화 (plan + context, D-44~D-47 추가)
-- [x] **Stage A 완료 (3/3 tasks, commit `cebd47e`)**:
-  - Task 4.1: `src/nodes/audit.py` — Executive Audit (run_audit + 4개 분석함수)
-  - Task 4.2: 다축 교차 커버리지 진단 (Shannon entropy, blind_spot_ratio)
-  - Task 4.3: KU yield/cost 분석 + 품질 추세 분석
-  - `src/state.py` — AuditFinding, PolicyPatch, AuditReport 타입
-  - `src/config.py` — audit_interval 설정 (기본 5, 0=비활성)
-  - `src/orchestrator.py` — _maybe_run_audit() + audit_reports + audit_history
-  - `tests/test_nodes/test_audit.py` — 23개 테스트
-  - `tests/test_orchestrator.py` — 3개 audit 통합 테스트 추가
-  - 전체 327 tests passed (301→327, +26)
-- [x] **Stage B 완료 (3/3 tasks, commit `816fb2d`)**:
-  - Task 4.4: `src/utils/policy_manager.py` — apply_patches, rollback, version/change_history (25 tests)
-  - Task 4.5: Orchestrator에 audit→policy 자동적용 + 1cycle 후 롤백 (3 tests)
-  - Task 4.6: Source Credibility 학습 — compute_credibility_stats, learn_credibility (12 tests)
-  - `src/nodes/integrate.py` — KU에 source_type 전파
-  - `src/nodes/audit.py` — credibility 학습 연동
-  - `schemas/policy.json` — Policy JSON Schema
-  - 전체 367 tests passed (327→367, +40)
+- [x] **Stage A 완료 (3/3 tasks, commit `cebd47e`)**: Executive Audit
+- [x] **Stage B 완료 (3/3 tasks, commit `816fb2d`)**: Policy Evolution
+- [x] **Stage C 완료 (3/3 tasks, commit `31ef46d`)**:
+  - Task 4.7: `_compute_audit_bias()` — Audit findings 기반 explore/exploit bias (±0.15)
+  - Task 4.8: `_compute_trigger_t6_audit()` — T6:audit_axis_imbalance 동적 trigger
+  - Task 4.9: C7 수렴 조건 — critical audit findings 시 수렴 유보
+  - `tests/test_nodes/test_stage_c.py` — 27개 테스트
+  - 전체 394 tests passed (367->394, +27)
+- [x] **Stage D 완료 (2/2 tasks, commit `62915de`)**:
+  - Task 4.11: `src/utils/readiness_gate.py` — VP1/VP2/VP3 평가 + evaluate_readiness()
+  - Task 4.10: `scripts/run_readiness.py` — 벤치마크 + Gate 평가
+  - `tests/test_readiness_gate.py` — 26개 테스트
+  - 전체 420 tests passed (394->420, +26)
+- [x] **Readiness Gate 벤치마크 실행 (13 Cycles)**:
+  - japan-travel 도메인, 13 cycles (plateau 조기 종료)
+  - 결과: Active KU 27->90, Disputed 0, conflict_rate 0.000
+  - Audit 2회 (Cycle 5, 10), Policy 수정 2회
+  - **Gate: FAIL** (VP1 3/5, VP2 2/6, VP3 6/6)
 
 ## Current State
 
-**Phase 4 Stage B Complete, Stage C 대기** — 367 tests, 6/11 tasks.
+**Phase 4 Suspended — Gate FAIL, Phase 5 보완 논의 필요** — 420 tests, 11/11 tasks.
 
-### Changed Files (Stage B — commit `816fb2d`)
-- `src/utils/policy_manager.py` — **신규** apply_patches, rollback, should_rollback, compute_credibility_stats, learn_credibility
-- `tests/test_policy_manager.py` — **신규** 37개 테스트
-- `src/orchestrator.py` — policy apply/rollback 통합, 실행 순서 재배치 (metrics log → rollback → audit → save)
-- `src/nodes/audit.py` — credibility 학습 연동 (compute_credibility_stats + learn_credibility)
-- `src/nodes/integrate.py` — KU 생성 시 evidence.source_type → KU.source_type 전파
-- `tests/test_orchestrator.py` — 3개 policy apply/rollback 통합 테스트 추가
-- `schemas/policy.json` — Policy JSON Schema (version, change_history 포함)
+### Gate 결과 요약
+| Viewpoint | Score | 판정 | 핵심 실패 원인 |
+|-----------|-------|------|----------------|
+| VP1 Variability | 3/5 | FAIL | blind_spot=0.85 (axis_tags 미전파), field_gini=0.518 |
+| VP2 Completeness | 2/6 | FAIL | gap_res=0.844, min_ku=3, staleness=59 |
+| VP3 Self-Governance | 6/6 | PASS | audit=2, policy=2, closed_loop=1 |
 
-### Git 상태
-- main 브랜치, local ahead of origin by 10 commits
-- 미커밋: `docs/session-compact.md` (이 파일)
+### 실패 원인 계층
+- Level 1 (Phase 4 거버넌스): 해결 완료
+- Level 2 (Inner Loop 품질): axis_tags 전파, stale KU 갱신, 카테고리 균형 GU 생성 미해결
+- Level 3 (도메인 특성): price/tips 필드 편중, 후반부 confidence 하락
 
 ## Remaining / TODO
-- [ ] **Stage C: Strategic Self-Tuning (4.7~4.9)** — 다음 진행
-  - 4.7: Explore/Exploit 비율 자동 조정
-  - 4.8: Jump Trigger 동적 관리
-  - 4.9: Convergence 조건 고도화
-- [ ] Stage D: Evolver Readiness Gate (4.10~4.11)
-- [ ] Phase X: Multi-Domain (Gate 통과 후)
+- [x] Stage C: Strategic Self-Tuning (4.7~4.9) — 완료
+- [x] Stage D: Evolver Readiness Gate (4.10~4.11) — 완료 (FAIL)
+- [ ] **Phase 5 보완 Phase 설계 + 구현** (D-47에 따라)
+  - Stale KU 자동 갱신 (staleness 59 -> <= 2)
+  - axis_tags 전파 (blind_spot 0.85 -> <= 0.40)
+  - 소수 카테고리 균형 GU 생성 (min_ku 3 -> >= 5)
+  - Confidence 유지/개선 (avg_confidence 0.80 -> >= 0.82)
+- [ ] Gate 재실행 (Phase 5 완료 후)
+- [ ] Phase X: Multi-Domain (Gate 통과 후, = Phase 6)
 
 ## Key Decisions
 - D-44: Phase 4 = Self-Governing Evolver (단일 도메인 자기 진화 우선)
 - D-45: Multi-Domain = Phase X (잠정, Readiness Gate 후 번호 확정)
 - D-46: 3-Viewpoint Readiness Gate 필수 (Variability + Completeness + Self-Governance)
 - D-47: Gate FAIL 시 Phase N+1 삽입
-- D-48: Orchestrator 실행 순서 = metrics log → rollback check → audit → save (rollback이 metrics 이후여야 판정 가능)
-- D-49: Credibility 학습 — bad_ratio > 30% → prior 하향, < 10% + 고신뢰 → 상향, [0.10, 0.99] 범위
+- D-48: Orchestrator 실행 순서 = metrics log -> rollback check -> audit -> save
+- D-49: Credibility 학습 — bad_ratio > 30% -> prior 하향, < 10% + 고신뢰 -> 상향
+- D-50: T6 동적 trigger — Audit axis_imbalance -> Jump Mode 발동
+- D-51: C7 수렴 조건 — critical audit findings 시 수렴 유보
+- D-52: Readiness Gate 판정 규칙 — 관점별 80%+ 기준 + critical FAIL 없음 -> PASS
 
 ## Context
 다음 세션에서는 답변에 한국어를 사용하세요.
 - 프로젝트 루트: `C:\Users\User\Learning\KBs-2026\domain-k-evolver`
-- Phase 4 dev-docs: `dev/active/phase4-self-governing/` (아직 미생성 — 이전 세션에서 생성 시도했으나 경로 불일치 가능)
+- Phase 4 dev-docs: `dev/active/phase4-self-governing/`
 - project-overall: `dev/active/project-overall/`
-- 367 tests passed
-- Stage C 구현 방향:
-  - 4.7 Explore/Exploit: Audit findings (coverage_gap 많으면 explore↑, yield_decline이면 exploit↑) 기반 mode_node에 bias 파라미터 주입
-  - 4.8 Jump Trigger: Audit의 axis_imbalance → 해당 축에 jump trigger 동적 추가/제거
-  - 4.9 Convergence: 현재 C6 (conflict_rate < 0.15) + plateau 기반 → Audit 건강도 반영 (critical findings 있으면 수렴 유보)
-- 핵심 파일:
-  - `src/nodes/mode.py` — mode_node (Normal/Jump 판정)
-  - `src/utils/plateau_detector.py` — plateau 감지
-  - `src/nodes/critique.py` — convergence 판정
-  - `src/config.py` — OrchestratorConfig
+- 420 tests passed
+- 상세 보고서: `docs/phase4-readiness-report.md`
+- Gate 데이터: `bench/japan-travel-readiness/readiness-report.json`
+- 핵심 논의 사항:
+  - Gate 기준 자체의 적절성 (blind_spot 0.40, staleness <= 2 등)
+  - 보완 Phase scope와 우선순위
+  - Phase 5 vs Gate 기준 완화 중 어느 쪽이 적절한지
 
 ## Next Action
-**Phase 4 Stage C 시작** — Task 4.7 Explore/Exploit 비율 자동 조정 구현 → Task 4.8 Jump Trigger 동적 관리 → Task 4.9 Convergence 고도화 → 테스트 → 커밋
+**Phase 5 보완 Phase 논의** — Gate 실패 원인 분석 + 보완 범위 확정 + Phase 5 설계

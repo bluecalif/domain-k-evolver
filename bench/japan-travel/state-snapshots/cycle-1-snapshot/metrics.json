@@ -1,32 +1,30 @@
 {
-  "cycle": 1,
-  "phase": "post_integration",
-  "timestamp": "2026-03-03",
+  "cycle": 2,
+  "phase": "post_critique",
+  "timestamp": "2026-03-07",
   "counts": {
-    "total_ku": 21,
-    "active_ku": 19,
-    "disputed_ku": 2,
+    "total_ku": 34,
+    "active_ku": 34,
+    "disputed_ku": 0,
     "deprecated_ku": 0,
-    "total_eu": 33,
-    "total_gu_open": 16,
-    "total_gu_resolved": 15,
+    "total_gu_open": 28,
+    "total_gu_resolved": 24,
     "total_gu_deferred": 0
   },
   "rates": {
     "evidence_rate": 1.0,
-    "multi_evidence_rate": 0.714,
-    "gap_resolution_rate": 0.484,
-    "conflict_rate": 0.095,
-    "avg_confidence": 0.876,
-    "staleness_risk": 0
+    "multi_evidence_rate": 0.8275862068965517,
+    "gap_resolution_rate": 0.46153846153846156,
+    "conflict_rate": 0.14705882352941177,
+    "avg_confidence": 0.8724137931034484,
+    "staleness_risk": 1
   },
   "delta_from_prev_cycle": {
-    "ku_added": 8,
-    "ku_updated": 2,
-    "eu_added": 15,
-    "gaps_resolved": 8,
-    "gaps_new": 3,
-    "net_gap_change": -5
-  },
-  "notes": "Cycle 1 Integration 완료. 8개 Gap 해결(GU-0001,0003,0004,0007,0008,0010,0013,0026), 동적 GU 3개 신규 발견(GU-0029~0031). 충돌 2건(KU-0007 condition_split, KU-0011 pending). 다중근거율 53.8%→71.4% 개선."
+    "evidence_rate": 0.0,
+    "multi_evidence_rate": 0.0066,
+    "gap_resolution_rate": -0.0245,
+    "conflict_rate": 0.1111,
+    "avg_confidence": -0.0026,
+    "staleness_risk": 1
+  }
 }

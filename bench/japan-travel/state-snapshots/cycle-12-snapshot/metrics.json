@@ -1,5 +1,5 @@
 {
-  "cycle": 14,
+  "cycle": 13,
   "phase": "post_critique",
   "timestamp": "2026-03-07",
   "counts": {
@@ -21,10 +21,10 @@
   },
   "delta_from_prev_cycle": {
     "evidence_rate": 0.0,
-    "multi_evidence_rate": 0.0,
+    "multi_evidence_rate": 0.001,
     "gap_resolution_rate": 0.0,
-    "conflict_rate": 0.0,
-    "avg_confidence": 0.0,
-    "staleness_risk": 0
+    "conflict_rate": -0.0111,
+    "avg_confidence": -0.0028,
+    "staleness_risk": 1
   }
 }
