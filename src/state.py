@@ -105,6 +105,36 @@ class Policies(TypedDict, total=False):
     conflict_resolution: dict
 
 
+class AuditFinding(TypedDict, total=False):
+    """Audit 진단 결과 항목."""
+
+    finding_id: str
+    category: str  # "coverage_gap" | "yield_decline" | "axis_imbalance" | "quality_issue"
+    severity: str  # "critical" | "warning" | "info"
+    description: str
+    evidence: dict  # 수치 근거
+
+
+class PolicyPatch(TypedDict, total=False):
+    """Policy 수정 제안."""
+
+    patch_id: str
+    target_field: str  # e.g. "ttl_defaults.price", "credibility_priors.personal"
+    current_value: float | int | str
+    proposed_value: float | int | str
+    reason: str
+
+
+class AuditReport(TypedDict, total=False):
+    """Executive Audit 결과."""
+
+    audit_cycle: int  # audit가 실행된 시점의 cycle
+    window: list[int]  # 분석 대상 cycle 범위 [start, end]
+    findings: list[AuditFinding]
+    recommendations: list[str]
+    policy_patches: list[PolicyPatch]
+
+
 class MetricRates(TypedDict, total=False):
     evidence_rate: float
     multi_evidence_rate: float
@@ -177,6 +207,9 @@ class EvolverState(TypedDict, total=False):
 
     # Convergence tracking
     net_gap_changes: list[int]
+
+    # Audit (Phase 4)
+    audit_history: list[dict] | None  # AuditReport 이력
 
     # HITL
     hitl_pending: dict | None

@@ -1,56 +1,57 @@
 # Session Compact
 
-> Generated: 2026-03-06 22:40
-> Source: Phase 3 완료 처리
+> Generated: 2026-03-07
+> Source: Phase 4 계획 수립
 
 ## Goal
-Phase 3 (Cycle Quality Remodeling) 전체 완료.
+Phase 4 (Self-Governing Evolver) 계획 수립 완료. Stage A~D + Readiness Gate 설계.
 
 ## Completed
-- [x] Phase 3 Stage A: Semantic Conflict Detection (Task 3.1~3.3) → `6e27a65`
-- [x] Phase 3 Stage B: Dispute Resolution (Task 3.4~3.6) → `c45b089`
-- [x] Phase 3 Stage C: 수렴 개선 + 10 Cycle 검증 (Task 3.7~3.9) → `9a3c5f2`
-- [x] Phase 3 dev-docs 완료 반영 → `f687a1d`
-- [x] Phase 3 심층 분석 보고서 + Phase 2 baseline 보존 → `7dcb0bc`
-- [x] project-overall 동기화
+- [x] Phase 3 현황 4차원 진단 (Expansion, Variability, Self-Tuning, Audit)
+- [x] Phase 번호 체계 갱신: Phase 4 = Self-Governing, Phase X = Multi-Domain (잠정)
+- [x] Phase 4 dev-docs 생성 (plan, tasks, context, debug-history)
+- [x] project-overall 동기화 (plan + context)
 
 ## Current State
 
-**Phase 3 Complete** — 301 tests, 9/9 tasks.
+**Phase 4 Planning Complete** — 11 tasks, 4 Stages (A~D).
 
-### Phase 3 최종 결과 (Phase 2 대비)
+### Phase 4 구성
+| Stage | 내용 | Tasks |
+|-------|------|-------|
+| A: Outer Loop Audit | Executive Audit, 다축 교차 커버리지, KU Yield/Cost | 4.1~4.3 |
+| B: Policy Evolution | Policy 스키마/버전, Audit→Policy 자동 수정, Credibility 학습 | 4.4~4.6 |
+| C: Strategic Self-Tuning | Threshold 적응, Explore/Exploit 학습, Cost-Aware Budget | 4.7~4.9 |
+| D: Readiness Gate | 15 Cycle 벤치 + 3-Viewpoint 판정 | 4.10~4.11 |
 
-| 지표 | Phase 2 | Phase 3 | 변화 |
-|------|---------|---------|------|
-| Active KU | 31 | 77 | +148% |
-| Disputed KU | 54 | 0 | -100% |
-| conflict_rate | 0.635 | 0.000 | -100% |
-| Active 성장률 | 0.3/cycle | 4.3/cycle | 14.3x |
-| Health Grade | D | B | +2등급 |
-| Tests | 278 | 301 | +23 |
+### 3-Viewpoint Readiness Gate
+- VP1: Expansion with Variability (Shannon entropy, blind_spot, entity discovery)
+- VP2: Completeness of Domain Knowledge (gap_resolution ≥ 0.85, min KU/cat ≥ 5)
+- VP3: Self-Governance (audit ≥ 2, policy change ≥ 1, closed loop ≥ 1)
+- 3/3 PASS → Phase X = Phase 5 | FAIL → Phase 5 보완 삽입
 
 ### Git 상태
 - main 브랜치, local ahead of origin by 7 commits
 
 ## Remaining / TODO
-- [ ] Phase 4: Multi-Domain & Robustness (7 tasks)
-  - Stage A: 다중 도메인 (4.1~4.3)
-  - Stage B: Outer Loop + 안정성 (4.4~4.7)
+- [ ] Phase 4 Stage A: Outer Loop Audit (4.1~4.3)
+- [ ] Phase 4 Stage B: Policy Evolution (4.4~4.6)
+- [ ] Phase 4 Stage C: Strategic Self-Tuning (4.7~4.9)
+- [ ] Phase 4 Stage D: Evolver Readiness Gate (4.10~4.11)
+- [ ] Phase X: Multi-Domain & Robustness (Gate 통과 후)
 
 ## Key Decisions
-- D-40: Phase 3 = Cycle Quality Remodeling
-- D-41: hybrid conflict detection (rule + LLM)
-- D-42: Evidence-weighted resolution
-- D-43: C6 conflict_rate threshold = 0.15
+- D-44: Phase 4 = Self-Governing Evolver (단일 도메인 자기 진화 우선)
+- D-45: Multi-Domain = Phase X (잠정, Gate 통과 후 번호 확정)
+- D-46: 3-Viewpoint Readiness Gate 필수
+- D-47: Gate FAIL 시 Phase N+1 삽입
 
 ## Context
 다음 세션에서는 답변에 한국어를 사용하세요.
 - 프로젝트 루트: `C:\Users\User\Learning\KBs-2026\domain-k-evolver`
-- Phase 3 dev-docs: `dev/active/phase3-cycle-remodeling/`
-- Phase 3 보고서: `docs/phase3-analysis.md`
-- Phase 2 보고서: `docs/phase2-analysis.md`
+- Phase 4 dev-docs: `dev/active/phase4-self-governing/`
 - project-overall: `dev/active/project-overall/`
-- 301 tests passed
+- 301 tests passed (Phase 3 기준)
 
 ## Next Action
-**Phase 4 진행 여부 결정** — Multi-Domain & Robustness
+**Phase 4 Stage A 착수** — Task 4.1 Executive Audit 프레임워크 구현

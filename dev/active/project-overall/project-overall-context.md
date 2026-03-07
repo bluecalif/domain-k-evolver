@@ -1,6 +1,6 @@
 # Project Overall Context
-> Last Updated: 2026-03-06 (Phase 3 완료)
-> Status: In Progress — Phase 4 대기
+> Last Updated: 2026-03-07 (Phase 4 계획 수립)
+> Status: In Progress — Phase 4 진행 대기
 
 ## 1. 핵심 파일
 
@@ -103,6 +103,14 @@
 | `bench/japan-travel-auto-phase2-baseline/` | Phase 2 10 Cycle 원본 백업 |
 | `docs/phase2-analysis.md` | Phase 2 심층 분석 보고서 |
 | `docs/phase3-analysis.md` | Phase 3 심층 분석 보고서 |
+
+### Phase 4 Dev-Docs
+| 파일 | 내용 |
+|------|------|
+| `dev/active/phase4-self-governing/phase4-self-governing-plan.md` | Phase 4 종합 계획 (4 Stage, 11 tasks, Readiness Gate) |
+| `dev/active/phase4-self-governing/phase4-self-governing-context.md` | Phase 4 컨텍스트 (갭 분석, 변경 대상) |
+| `dev/active/phase4-self-governing/phase4-self-governing-tasks.md` | Phase 4 태스크 추적 (0/11) |
+| `dev/active/phase4-self-governing/debug-history.md` | Phase 4 디버깅 이력 |
 
 ### 벤치 데이터 (Cycle 2 결과 — 최신)
 | 파일 | 내용 |
@@ -211,6 +219,10 @@ class EvolverState(TypedDict):
 | D-41 | hybrid conflict detection (rule + LLM) | pure LLM | 동일값 skip, 값차이 LLM semantic | 3 |
 | D-42 | Evidence-weighted resolution | 다수결/최신우선 | evidence ≥ 2×disputes → 자동 resolve, 미달 시 LLM 중재 | 3 |
 | D-43 | C6 conflict_rate threshold = 0.15 | 0.20 | 수렴 조건에 충돌률 상한 추가 | 3 |
+| D-44 | Phase 4 = Self-Governing Evolver | Multi-Domain 바로 | 단일 도메인 자기 진화 보장이 multi-domain 전제 | 4 |
+| D-45 | Multi-Domain = Phase X (잠정) | Phase 5 확정 | Readiness Gate 통과 후 번호 확정 | 4 |
+| D-46 | 3-Viewpoint Readiness Gate 필수 | 없음 | Variability + Completeness + Self-Governance | 4 |
+| D-47 | Gate FAIL 시 Phase N+1 삽입 | 무시하고 진행 | 보완 Phase 후 Gate 재실행 | 4 |
 
 ---
 

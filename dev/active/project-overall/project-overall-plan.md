@@ -1,6 +1,6 @@
 # Project Overall Plan
-> Last Updated: 2026-03-06 (Phase 3 완료)
-> Status: In Progress — Phase 4 대기
+> Last Updated: 2026-03-07 (Phase 4 계획 수립)
+> Status: In Progress — Phase 4 진행 대기
 
 ## 1. Summary (개요)
 
@@ -79,7 +79,9 @@ src/utils/metrics_logger.py — 사이클별 Metrics 기록
 - HITL Gate A~E 작동 (LangGraph interrupt)
 - japan-travel 벤치에서 Cycle 1+ 자동 실행 성공
 - 5대 불변원칙 자동 검증 통과
-- 새 도메인에서 Seed Pack만으로 Evolver 가동 가능
+- **Outer Loop 자동 Audit + Policy 자동 재설계** (Phase 4)
+- **Evolver Readiness Gate 3/3 PASS** (Phase 4 Stage D)
+- 새 도메인에서 Seed Pack만으로 Evolver 가동 가능 (Phase X)
 
 ---
 
@@ -136,11 +138,25 @@ src/utils/metrics_logger.py — 사이클별 Metrics 기록
 - **Stage C** (3 tasks, 3.7~3.9): 수렴 개선 + 10 Cycle 검증 — C6 conflict_rate (D-43) ✅
 - **결과**: Active 31→77 (+148%), Disputed 54→0, conflict_rate 0→0, Health D→B
 
-### Phase 4: Multi-Domain & Robustness (기존 Phase 3 → 번호 이동)
+### Phase 4: Self-Governing Evolver — 계획 수립
+- **목적**: 단일 도메인에서 자기 진화 Evolver 완성도 보장
+- **Stage A** (3 tasks, 4.1~4.3): Outer Loop Audit — Executive Audit, 다축 교차 커버리지, KU Yield/Cost
+- **Stage B** (3 tasks, 4.4~4.6): Policy Evolution — Policy 스키마/버전, Audit→Policy 자동 수정, Credibility 학습
+- **Stage C** (3 tasks, 4.7~4.9): Strategic Self-Tuning — Threshold 적응, Explore/Exploit 학습, Cost-Aware Budget
+- **Stage D** (2 tasks, 4.10~4.11): **Evolver Readiness Gate (필수 체크포인트)**
+  - VP1: Expansion with Variability (다양성 있는 확장)
+  - VP2: Completeness of Domain Knowledge (도메인 지식 완전성)
+  - VP3: Self-Governance on System Evolution (시스템 진화 자기 통치)
+  - 3/3 PASS → Phase X = Phase 5 확정
+  - FAIL → Phase 5 보완 삽입, Phase X = Phase 6
+- **상세**: `dev/active/phase4-self-governing/` 참조
+- **기술 결정**: D-44 ~ D-47
+
+### Phase X: Multi-Domain & Robustness (잠정 — Readiness Gate 통과 후 번호 확정)
 - 새 도메인 Seed Pack 작성 + Evolver 가동
-- Outer Loop (Executive Audit + Remodeling) 구현
 - 에러 처리 + 복구 메커니즘
 - 성능 최적화 (토큰/API 비용)
+- **진입 조건**: Phase 4 Stage D Gate 3/3 PASS
 
 ---
 
@@ -160,9 +176,12 @@ src/utils/metrics_logger.py — 사이클별 Metrics 기록
 | Phase 3 | A: Semantic Conflict Detection | M~L | 3 | ✅ Complete |
 | Phase 3 | B: Dispute Resolution | M~L | 3 | ✅ Complete |
 | Phase 3 | C: 수렴 개선 + 재검증 | S~L | 3 | ✅ Complete |
-| Phase 4 | A: 다중 도메인 | L | 3 | |
-| Phase 4 | B: Outer Loop + 안정성 | L~XL | 4 | |
-| **총계** | | | **~55** | |
+| Phase 4 | A: Outer Loop Audit | M~L | 3 | |
+| Phase 4 | B: Policy Evolution | M~L | 3 | |
+| Phase 4 | C: Strategic Self-Tuning | M~L | 3 | |
+| Phase 4 | D: Evolver Readiness Gate | M~L | 2 | |
+| Phase X | Multi-Domain & Robustness | L~XL | TBD | 잠정 |
+| **총계** | | | **~62** | |
 
 ---
 

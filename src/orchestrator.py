@@ -12,6 +12,7 @@ from typing import Any
 
 from src.config import EvolverConfig, OrchestratorConfig
 from src.graph import build_graph
+from src.nodes.audit import run_audit
 from src.state import EvolverState
 from src.utils.metrics_guard import check_metrics_guard
 from src.utils.metrics_logger import MetricsLogger
@@ -61,6 +62,7 @@ class Orchestrator:
             window=self.config.orchestrator.plateau_window
         )
         self.results: list[CycleResult] = []
+        self.audit_reports: list[dict] = []
 
     @property
     def _domain_path(self) -> Path:
@@ -106,6 +108,9 @@ class Orchestrator:
             guard = check_metrics_guard(state)
             for w in guard.warnings:
                 logger.warning("Metrics Guard: %s", w)
+
+            # Executive Audit (Phase 4)
+            self._maybe_run_audit(state, cycle_num, orch_cfg)
 
             # Plateau 감지
             self.plateau_detector.record(cycle_num, state)
@@ -155,6 +160,44 @@ class Orchestrator:
                 state=state,
                 error=str(e),
             )
+
+    def _maybe_run_audit(
+        self,
+        state: EvolverState,
+        cycle_num: int,
+        cfg: OrchestratorConfig,
+    ) -> None:
+        """audit_interval 주기에 해당하면 Executive Audit 실행."""
+        if cfg.audit_interval <= 0:
+            return
+        if cycle_num % cfg.audit_interval != 0:
+            return
+
+        # 이전 audit 이후 window 계산
+        prev_audit_cycle = (
+            self.audit_reports[-1]["audit_cycle"] if self.audit_reports else 0
+        )
+        window_start = prev_audit_cycle + 1
+
+        report = run_audit(
+            state,
+            self.logger.entries,
+            audit_cycle=cycle_num,
+            window_start=window_start,
+        )
+        self.audit_reports.append(report)
+
+        # State에 audit_history 누적
+        audit_history = list(state.get("audit_history") or [])
+        audit_history.append(report)
+        state["audit_history"] = audit_history
+
+        logger.info(
+            "Executive Audit cycle=%d: findings=%d, patches=%d",
+            cycle_num,
+            len(report.get("findings", [])),
+            len(report.get("policy_patches", [])),
+        )
 
     def _post_cycle(
         self,

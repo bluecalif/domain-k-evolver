@@ -40,12 +40,13 @@ def _make_minimal_state(cycle: int = 0) -> dict:
             "domain": "test",
             "version": "1.0",
             "scope_boundary": "test scope",
-            "categories": [{"name": "cat", "fields": ["price", "hours"]}],
+            "categories": [{"slug": "cat", "description": "test category"}],
             "fields": [
                 {"name": "price", "type": "string"},
                 {"name": "hours", "type": "string"},
             ],
             "relations": [],
+            "axes": [],
             "canonical_key_rule": "{domain}:{category}:{slug}",
         },
         "metrics": {
@@ -246,6 +247,79 @@ class TestOrchestrator:
 
         assert (out_dir / "trajectory.json").exists()
         assert (out_dir / "trajectory.csv").exists()
+
+    def test_audit_runs_at_interval(self, tmp_path):
+        """audit_interval 주기에 audit 실행."""
+        bench_base = _setup_bench(tmp_path)
+        cfg = EvolverConfig(
+            orchestrator=OrchestratorConfig(
+                max_cycles=10,
+                audit_interval=5,
+                plateau_window=100,  # plateau 비활성화
+                bench_path=str(bench_base / "bench"),
+                bench_domain="test-domain",
+            ),
+        )
+        orch = Orchestrator(cfg)
+        state = _make_minimal_state()
+
+        def mock_run(s, c):
+            return CycleResult(cycle=c, state=s)
+
+        orch._run_single_cycle = mock_run
+        orch.run(initial_state=state)
+
+        # cycle 5, 10에서 audit 실행 → 2회
+        assert len(orch.audit_reports) == 2
+        assert orch.audit_reports[0]["audit_cycle"] == 5
+        assert orch.audit_reports[1]["audit_cycle"] == 10
+
+    def test_audit_disabled_when_interval_zero(self, tmp_path):
+        """audit_interval=0이면 audit 비활성."""
+        bench_base = _setup_bench(tmp_path)
+        cfg = EvolverConfig(
+            orchestrator=OrchestratorConfig(
+                max_cycles=5,
+                audit_interval=0,
+                bench_path=str(bench_base / "bench"),
+                bench_domain="test-domain",
+            ),
+        )
+        orch = Orchestrator(cfg)
+        state = _make_minimal_state()
+
+        def mock_run(s, c):
+            return CycleResult(cycle=c, state=s)
+
+        orch._run_single_cycle = mock_run
+        orch.run(initial_state=state)
+        assert len(orch.audit_reports) == 0
+
+    def test_audit_history_in_state(self, tmp_path):
+        """audit 실행 후 state.audit_history에 누적."""
+        bench_base = _setup_bench(tmp_path)
+        cfg = EvolverConfig(
+            orchestrator=OrchestratorConfig(
+                max_cycles=5,
+                audit_interval=5,
+                plateau_window=100,  # plateau 비활성화
+                bench_path=str(bench_base / "bench"),
+                bench_domain="test-domain",
+            ),
+        )
+        orch = Orchestrator(cfg)
+        state = _make_minimal_state()
+
+        def mock_run(s, c):
+            return CycleResult(cycle=c, state=s)
+
+        orch._run_single_cycle = mock_run
+        results = orch.run(initial_state=state)
+
+        final_state = results[-1].state
+        audit_history = final_state.get("audit_history", [])
+        assert len(audit_history) == 1
+        assert audit_history[0]["audit_cycle"] == 5
 
     def test_snapshot_creation(self, tmp_path):
         """스냅샷 생성 확인."""

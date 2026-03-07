@@ -56,6 +56,7 @@ class OrchestratorConfig:
     invariant_check: bool = True
     stop_on_convergence: bool = True
     plateau_window: int = 3
+    audit_interval: int = 5  # N cycle마다 Executive Audit 실행 (0=비활성)
     bench_domain: str = "japan-travel"
     bench_path: str = "bench"
 
@@ -67,6 +68,7 @@ class OrchestratorConfig:
             invariant_check=os.environ.get("EVOLVER_INVARIANT_CHECK", "true").lower() == "true",
             stop_on_convergence=os.environ.get("EVOLVER_STOP_ON_CONVERGENCE", "true").lower() == "true",
             plateau_window=int(os.environ.get("EVOLVER_PLATEAU_WINDOW", "3")),
+            audit_interval=int(os.environ.get("EVOLVER_AUDIT_INTERVAL", "5")),
             bench_domain=os.environ.get("EVOLVER_BENCH_DOMAIN", "japan-travel"),
             bench_path=os.environ.get("EVOLVER_BENCH_PATH", "bench"),
         )
