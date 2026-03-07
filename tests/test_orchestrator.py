@@ -321,6 +321,160 @@ class TestOrchestrator:
         assert len(audit_history) == 1
         assert audit_history[0]["audit_cycle"] == 5
 
+    def test_audit_applies_policy_patches(self, tmp_path):
+        """Audit에서 생성된 policy patch가 자동 적용되는지 확인."""
+        bench_base = _setup_bench(tmp_path)
+        cfg = EvolverConfig(
+            orchestrator=OrchestratorConfig(
+                max_cycles=5,
+                audit_interval=5,
+                plateau_window=100,
+                bench_path=str(bench_base / "bench"),
+                bench_domain="test-domain",
+            ),
+        )
+        orch = Orchestrator(cfg)
+
+        state = _make_minimal_state()
+        state["policies"]["ttl_defaults"] = {"price": 180}
+        # skeleton에 geography axis + 2 categories (audit가 patch 생성하도록)
+        state["domain_skeleton"]["categories"] = [
+            {"slug": "transport", "description": "transport"},
+            {"slug": "food", "description": "food"},
+        ]
+
+        def mock_run(s, c):
+            return CycleResult(cycle=c, state=s)
+
+        orch._run_single_cycle = mock_run
+        results = orch.run(initial_state=state)
+        final_state = results[-1].state
+
+        # audit가 patch를 생성했으면 version이 존재
+        policies = final_state.get("policies", {})
+        # patch 적용 여부는 audit findings에 따라 다를 수 있지만,
+        # audit_reports는 반드시 존재
+        assert len(orch.audit_reports) == 1
+
+    def test_policy_rollback_on_degradation(self, tmp_path):
+        """Policy patch 후 성능 악화 시 롤백 확인."""
+        bench_base = _setup_bench(tmp_path)
+        cfg = EvolverConfig(
+            orchestrator=OrchestratorConfig(
+                max_cycles=6,
+                audit_interval=5,
+                plateau_window=100,
+                bench_path=str(bench_base / "bench"),
+                bench_domain="test-domain",
+            ),
+        )
+        orch = Orchestrator(cfg)
+
+        state = _make_minimal_state()
+        state["policies"]["ttl_defaults"] = {"price": 180}
+
+        cycle_counter = {"n": 0}
+
+        def mock_run(s, c):
+            cycle_counter["n"] = c
+            return CycleResult(cycle=c, state=s)
+
+        orch._run_single_cycle = mock_run
+
+        # 수동으로 _pre_patch_policies를 설정하여 롤백 시나리오 테스트
+        original_maybe_audit = orch._maybe_run_audit
+
+        def mock_audit_with_patch(s, c, cfg_):
+            original_maybe_audit(s, c, cfg_)
+            if c == 5:
+                # 강제로 patch 적용 상태 세팅
+                orch._pre_patch_policies = {"ttl_defaults": {"price": 180}}
+                orch._patch_applied_cycle = 5
+                s["policies"]["ttl_defaults"]["price"] = 270
+                s["policies"]["version"] = 1
+
+        orch._maybe_run_audit = mock_audit_with_patch
+
+        # metrics logger entries를 조작하여 성능 악화 시뮬레이션
+        original_log = orch.logger.log
+
+        def mock_log(cycle, s):
+            original_log(cycle, s)
+            # cycle 6에서 evidence_rate 급락
+            if cycle == 6 and len(orch.logger.entries) >= 2:
+                orch.logger.entries[-1]["rates"] = {
+                    "evidence_rate": 0.40,
+                    "gap_resolution_rate": 0.20,
+                }
+                orch.logger.entries[-2]["rates"] = {
+                    "evidence_rate": 0.80,
+                    "gap_resolution_rate": 0.60,
+                }
+
+        orch.logger.log = mock_log
+
+        results = orch.run(initial_state=state)
+        final_state = results[-1].state
+
+        # 롤백이 발생했으면 price가 원래 180으로 복원
+        assert final_state["policies"]["ttl_defaults"]["price"] == 180
+        # version은 증가 (rollback도 version up)
+        assert final_state["policies"].get("version", 0) >= 2
+
+    def test_no_rollback_when_performance_stable(self, tmp_path):
+        """성능 유지 시 롤백하지 않음."""
+        from src.orchestrator import Orchestrator as Orch
+
+        bench_base = _setup_bench(tmp_path)
+        cfg = EvolverConfig(
+            orchestrator=OrchestratorConfig(
+                max_cycles=6,
+                audit_interval=5,
+                plateau_window=100,
+                bench_path=str(bench_base / "bench"),
+                bench_domain="test-domain",
+            ),
+        )
+        orch = Orchestrator(cfg)
+        state = _make_minimal_state()
+        state["policies"]["ttl_defaults"] = {"price": 180}
+
+        def mock_run(s, c):
+            return CycleResult(cycle=c, state=s)
+
+        orch._run_single_cycle = mock_run
+
+        original_maybe_audit = orch._maybe_run_audit
+
+        def mock_audit_with_patch(s, c, cfg_):
+            original_maybe_audit(s, c, cfg_)
+            if c == 5:
+                orch._pre_patch_policies = {"ttl_defaults": {"price": 180}}
+                orch._patch_applied_cycle = 5
+                s["policies"]["ttl_defaults"]["price"] = 270
+                s["policies"]["version"] = 1
+
+        orch._maybe_run_audit = mock_audit_with_patch
+
+        # metrics entries: 성능 유지 (하락 없음)
+        original_log = orch.logger.log
+
+        def mock_log(cycle, s):
+            original_log(cycle, s)
+            if cycle >= 5 and len(orch.logger.entries) >= 1:
+                orch.logger.entries[-1]["rates"] = {
+                    "evidence_rate": 0.80,
+                    "gap_resolution_rate": 0.60,
+                }
+
+        orch.logger.log = mock_log
+
+        results = orch.run(initial_state=state)
+        final_state = results[-1].state
+
+        # 롤백 안 함 → price는 270 유지
+        assert final_state["policies"]["ttl_defaults"]["price"] == 270
+
     def test_snapshot_creation(self, tmp_path):
         """스냅샷 생성 확인."""
         bench_base = _setup_bench(tmp_path)

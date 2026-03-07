@@ -276,6 +276,8 @@ def integrate_node(
                     "confidence": evidence.get("credibility", 0.7),
                     "status": "active",
                 }
+                if evidence.get("source_type"):
+                    new_ku["source_type"] = evidence["source_type"]
                 kus.append(new_ku)
                 adds.append(new_ku)
                 claim["integration_result"] = "condition_split"
@@ -308,6 +310,8 @@ def integrate_node(
                 "confidence": evidence.get("credibility", 0.7),
                 "status": "active",
             }
+            if evidence.get("source_type"):
+                new_ku["source_type"] = evidence["source_type"]
             kus.append(new_ku)
             adds.append(new_ku)
             claim["integration_result"] = "added"

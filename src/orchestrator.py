@@ -17,6 +17,7 @@ from src.state import EvolverState
 from src.utils.metrics_guard import check_metrics_guard
 from src.utils.metrics_logger import MetricsLogger
 from src.utils.plateau_detector import PlateauDetector
+from src.utils.policy_manager import apply_patches, rollback, should_rollback
 from src.utils.state_io import load_state, save_state, snapshot_state
 
 logger = logging.getLogger(__name__)
@@ -63,6 +64,8 @@ class Orchestrator:
         )
         self.results: list[CycleResult] = []
         self.audit_reports: list[dict] = []
+        self._pre_patch_policies: dict | None = None  # 롤백용 백업
+        self._patch_applied_cycle: int = 0  # patch 적용 cycle
 
     @property
     def _domain_path(self) -> Path:
@@ -98,10 +101,7 @@ class Orchestrator:
 
             state = result.state
 
-            # 사이클 후 처리
-            self._post_cycle(state, cycle_num, orch_cfg)
-
-            # Metrics 기록
+            # Metrics 기록 (rollback 판정에 필요)
             self.logger.log(cycle_num, state)
 
             # Metrics Guard (warning-only)
@@ -109,8 +109,14 @@ class Orchestrator:
             for w in guard.warnings:
                 logger.warning("Metrics Guard: %s", w)
 
-            # Executive Audit (Phase 4)
+            # Policy 롤백 체크 (patch 적용 1 cycle 후, metrics 기록 후)
+            self._maybe_rollback_policy(state, cycle_num)
+
+            # Executive Audit (Phase 4) — patch 적용 포함
             self._maybe_run_audit(state, cycle_num, orch_cfg)
+
+            # 사이클 후 처리: save, snapshot
+            self._post_cycle(state, cycle_num, orch_cfg)
 
             # Plateau 감지
             self.plateau_detector.record(cycle_num, state)
@@ -167,7 +173,7 @@ class Orchestrator:
         cycle_num: int,
         cfg: OrchestratorConfig,
     ) -> None:
-        """audit_interval 주기에 해당하면 Executive Audit 실행."""
+        """audit_interval 주기에 해당하면 Executive Audit 실행 + Policy Patch 적용."""
         if cfg.audit_interval <= 0:
             return
         if cycle_num % cfg.audit_interval != 0:
@@ -192,12 +198,63 @@ class Orchestrator:
         audit_history.append(report)
         state["audit_history"] = audit_history
 
+        # Policy Patch 적용 (Task 4.5)
+        patches = report.get("policy_patches", [])
+        if patches:
+            self._pre_patch_policies = state.get("policies", {})
+            new_policies, applied = apply_patches(
+                self._pre_patch_policies, patches, cycle=cycle_num,
+            )
+            if applied:
+                state["policies"] = new_policies
+                self._patch_applied_cycle = cycle_num
+                logger.info(
+                    "Policy patches 적용: %d개 (cycle=%d, v%d)",
+                    len(applied),
+                    cycle_num,
+                    new_policies.get("version", 0),
+                )
+
         logger.info(
             "Executive Audit cycle=%d: findings=%d, patches=%d",
             cycle_num,
             len(report.get("findings", [])),
-            len(report.get("policy_patches", [])),
+            len(patches),
         )
+
+    def _maybe_rollback_policy(self, state: EvolverState, cycle_num: int) -> None:
+        """Patch 적용 후 1 cycle 뒤 성능 악화 시 Policy 롤백."""
+        if self._pre_patch_policies is None:
+            return
+        if cycle_num != self._patch_applied_cycle + 1:
+            return
+
+        # 현재 cycle과 patch 적용 전 cycle의 metrics.rates 비교
+        entries = self.logger.entries
+        if len(entries) < 2:
+            self._pre_patch_policies = None
+            return
+
+        current_rates = entries[-1].get("rates", {})
+        previous_rates = entries[-2].get("rates", {})
+
+        if should_rollback(current_rates, previous_rates):
+            rolled = rollback(
+                state.get("policies", {}),
+                self._pre_patch_policies,
+                cycle=cycle_num,
+                reason="performance_degradation",
+            )
+            state["policies"] = rolled
+            logger.warning(
+                "Policy 롤백 실행: cycle=%d → v%d",
+                cycle_num,
+                rolled.get("version", 0),
+            )
+        else:
+            logger.info("Policy patch 성능 유지 확인 (cycle=%d)", cycle_num)
+
+        self._pre_patch_policies = None
 
     def _post_cycle(
         self,

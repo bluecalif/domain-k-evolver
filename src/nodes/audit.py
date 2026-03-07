@@ -15,6 +15,8 @@ import logging
 import math
 from typing import Any
 
+from src.utils.policy_manager import compute_credibility_stats, learn_credibility
+
 logger = logging.getLogger(__name__)
 
 
@@ -374,6 +376,16 @@ def run_audit(
 
     # Policy patch 생성
     policy_patches = _generate_policy_patches(findings, policies)
+
+    # Credibility 학습 (Task 4.6)
+    cred_stats = compute_credibility_stats(kus)
+    cred_patches = learn_credibility(
+        cred_stats, policies.get("credibility_priors", {}),
+    )
+    # 3개 한도 내에서 credibility patch 추가
+    remaining_slots = 3 - len(policy_patches)
+    if remaining_slots > 0 and cred_patches:
+        policy_patches.extend(cred_patches[:remaining_slots])
 
     report = {
         "audit_cycle": cycle,

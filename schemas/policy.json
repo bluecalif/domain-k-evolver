@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "policy.json",
+  "title": "Evolver Policy",
+  "description": "출처신뢰/TTL/교차검증/충돌해결 정책 + 버전 관리",
+  "type": "object",
+  "required": ["credibility_priors", "ttl_defaults", "cross_validation", "conflict_resolution"],
+  "properties": {
+    "version": {
+      "type": "integer",
+      "description": "정책 버전 번호 (수정 시 증가)",
+      "minimum": 1
+    },
+    "credibility_priors": {
+      "type": "object",
+      "description": "출처 유형별 사전 신뢰도",
+      "additionalProperties": {
+        "type": "number",
+        "minimum": 0.0,
+        "maximum": 1.0
+      }
+    },
+    "ttl_defaults": {
+      "type": "object",
+      "description": "필드별 TTL (일 단위)",
+      "additionalProperties": {
+        "type": "integer",
+        "minimum": 1
+      }
+    },
+    "cross_validation": {
+      "type": "object",
+      "description": "위험 수준별 교차검증 규칙",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "min_independent_sources": {"type": "integer", "minimum": 1},
+          "min_sources": {"type": "integer", "minimum": 1},
+          "min_credibility": {"type": "number", "minimum": 0.0, "maximum": 1.0}
+        }
+      }
+    },
+    "conflict_resolution": {
+      "type": "object",
+      "description": "충돌 해결 규칙",
+      "properties": {
+        "source_priority": {"type": "array", "items": {"type": "string"}},
+        "same_type_rule": {"type": "string"},
+        "condition_divergence": {"type": "string"},
+        "unresolvable": {"type": "string"}
+      }
+    },
+    "change_history": {
+      "type": "array",
+      "description": "정책 변경 이력",
+      "items": {
+        "type": "object",
+        "properties": {
+          "version": {"type": "integer"},
+          "cycle": {"type": "integer"},
+          "patches_applied": {"type": "array"},
+          "timestamp": {"type": "string"}
+        }
+      }
+    }
+  }
+}
