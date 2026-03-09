@@ -117,16 +117,59 @@ def _detect_conflict(
     return "hold"
 
 
+def _infer_geography(entity_key: str, skeleton: dict) -> str:
+    """entity_key 패턴 매칭으로 geography 추론.
+
+    skeleton.axes[geography].anchors에서 매칭되는 anchor 반환.
+    매칭 없으면 'nationwide'.
+    """
+    geo_axis = None
+    for axis in skeleton.get("axes", []):
+        if axis.get("name") == "geography":
+            geo_axis = axis
+            break
+    if not geo_axis:
+        return "nationwide"
+
+    anchors = geo_axis.get("anchors", [])
+    key_lower = entity_key.lower()
+    for anchor in anchors:
+        if anchor == "nationwide":
+            continue
+        if anchor in key_lower:
+            return anchor
+    return "nationwide"
+
+
+def _find_source_gu(gu_id: str, gap_map: list[dict]) -> dict | None:
+    """source_gu_id로 GU 조회."""
+    if not gu_id:
+        return None
+    for gu in gap_map:
+        if gu.get("gu_id") == gu_id:
+            return gu
+    return None
+
+
+def _copy_axis_tags(source_gu: dict | None) -> dict:
+    """source GU의 axis_tags 복사. 없으면 빈 dict."""
+    if source_gu and source_gu.get("axis_tags"):
+        return dict(source_gu["axis_tags"])
+    return {}
+
+
 def _generate_dynamic_gus(
     claim: dict,
     gap_map: list[dict],
     skeleton: dict,
     mode: str,
     open_count: int,
+    kus: list[dict] | None = None,
 ) -> list[dict]:
     """동적 GU 발견 (Trigger A: 인접 Gap).
 
     Claim의 entity_key/field가 기존 Gap Map에 없는 슬롯 참조 시 missing GU 생성.
+    과다 필드(count > mean×1.5) GU 생성 억제 (D-56).
     """
     entity_key = claim.get("entity_key", "")
     field = claim.get("field", "")
@@ -152,12 +195,32 @@ def _generate_dynamic_gus(
         if "*" in f.get("categories", []) or category in f.get("categories", [])
     ]
 
+    # Field 다양성 억제: 과다 필드 제외 (D-56)
+    suppressed_fields: set[str] = set()
+    if kus:
+        field_counts: dict[str, int] = {}
+        for ku in kus:
+            if ku.get("status") != "active":
+                continue
+            f = ku.get("field", "")
+            field_counts[f] = field_counts.get(f, 0) + 1
+        if field_counts:
+            mean_count = sum(field_counts.values()) / len(field_counts)
+            threshold = mean_count * 1.5
+            suppressed_fields = {f for f, c in field_counts.items() if c > threshold}
+
+    # 부모 claim entity_key에서 geography 추론
+    geo = _infer_geography(entity_key, skeleton)
+    gu_axis_tags = {"geography": geo} if geo else {}
+
     for adj_field in applicable_fields:
         if adj_field == field:
             continue
+        if adj_field in suppressed_fields:
+            continue
         slot = (entity_key, adj_field)
         if slot not in existing_slots:
-            new_gus.append({
+            gu = {
                 "gap_type": "missing",
                 "target": {"entity_key": entity_key, "field": adj_field},
                 "expected_utility": "medium",
@@ -167,7 +230,10 @@ def _generate_dynamic_gus(
                 "trigger": "A:adjacent_gap",
                 "trigger_source": claim.get("claim_id", ""),
                 "created_at": date.today().isoformat(),
-            })
+            }
+            if gu_axis_tags:
+                gu["axis_tags"] = dict(gu_axis_tags)
+            new_gus.append(gu)
 
     return new_gus
 
@@ -234,67 +300,123 @@ def integrate_node(
         evidence = claim.get("evidence", {})
         source_gu_id = claim.get("source_gu_id", "")
 
+        # Source GU에서 axis_tags 조회 + geography 추론
+        source_gu = _find_source_gu(source_gu_id, gap_map)
+        axis_tags = _copy_axis_tags(source_gu)
+        if not axis_tags.get("geography"):
+            geo = _infer_geography(entity_key, skeleton)
+            if geo:
+                axis_tags["geography"] = geo
+
         # Entity Resolution
         existing_ku = _find_matching_ku(entity_key, field, kus)
 
         if existing_ku is not None:
-            # 충돌 감지 (LLM semantic 비교)
-            conflict = _detect_conflict(existing_ku, claim, llm=llm)
-
-            if conflict == "hold":
-                # disputed 처리
-                if existing_ku.get("status") != "disputed":
-                    existing_ku["status"] = "disputed"
-                    if "disputes" not in existing_ku:
-                        existing_ku["disputes"] = []
-                    existing_ku["disputes"].append({
-                        "conflicting_claim": claim.get("claim_id", ""),
-                        "nature": f"Conflicting value for {field}",
-                        "resolution": "hold",
-                    })
-
-                # EU 추가
+            # Stale refresh: 기존 KU 갱신 (충돌 감지 스킵)
+            if source_gu and source_gu.get("gap_type") == "stale":
+                # D-62: stale refresh는 항상 today — evidence의 old date 사용 금지
+                existing_ku["observed_at"] = date.today().isoformat()
                 eu_id = evidence.get("eu_id", "")
                 if eu_id and eu_id not in existing_ku.get("evidence_links", []):
                     existing_ku.setdefault("evidence_links", []).append(eu_id)
-
-                updates.append(existing_ku)
-                claim["integration_result"] = "conflict_hold"
-
-            elif conflict == "condition_split":
-                # 조건 분리: 새 KU 생성
-                max_ku_id += 1
-                new_ku = {
-                    "ku_id": f"KU-{max_ku_id:04d}",
-                    "entity_key": entity_key,
-                    "field": field,
-                    "value": value,
-                    "conditions": claim.get("conditions", {}),
-                    "observed_at": evidence.get("observed_at", date.today().isoformat()),
-                    "validity": {"ttl_days": 180},
-                    "evidence_links": [evidence.get("eu_id", "")] if evidence.get("eu_id") else [],
-                    "confidence": evidence.get("credibility", 0.7),
-                    "status": "active",
-                }
-                if evidence.get("source_type"):
-                    new_ku["source_type"] = evidence["source_type"]
-                kus.append(new_ku)
-                adds.append(new_ku)
-                claim["integration_result"] = "condition_split"
-
-            else:
-                # 충돌 없음: 기존 KU 업데이트 (EU 추가, confidence 갱신)
-                eu_id = evidence.get("eu_id", "")
-                if eu_id and eu_id not in existing_ku.get("evidence_links", []):
-                    existing_ku.setdefault("evidence_links", []).append(eu_id)
-
-                # confidence 갱신 (새 값과 평균)
                 new_conf = evidence.get("credibility", 0.7)
                 old_conf = existing_ku.get("confidence", 0.7)
-                existing_ku["confidence"] = round((old_conf + new_conf) / 2, 3)
-
+                # D-63: 최신 evidence 우선 가중 평균 (old 0.3 : new 0.7)
+                existing_ku["confidence"] = round(
+                    old_conf * 0.3 + new_conf * 0.7, 3,
+                )
+                # TTL 리셋
+                policies = state.get("policies", {})
+                ttl_defaults = policies.get("ttl_defaults", {})
+                category = entity_key.split(":")[1] if len(entity_key.split(":")) >= 3 else ""
+                default_ttl = ttl_defaults.get(category, ttl_defaults.get("default", 180))
+                existing_ku.setdefault("validity", {})["ttl_days"] = default_ttl
+                if axis_tags:
+                    existing_ku["axis_tags"] = axis_tags
                 updates.append(existing_ku)
-                claim["integration_result"] = "updated"
+                claim["integration_result"] = "refreshed"
+
+            else:
+                # 충돌 감지 (LLM semantic 비교)
+                conflict = _detect_conflict(existing_ku, claim, llm=llm)
+
+                if conflict == "hold":
+                    # disputed 처리
+                    if existing_ku.get("status") != "disputed":
+                        existing_ku["status"] = "disputed"
+                        if "disputes" not in existing_ku:
+                            existing_ku["disputes"] = []
+                        existing_ku["disputes"].append({
+                            "conflicting_claim": claim.get("claim_id", ""),
+                            "nature": f"Conflicting value for {field}",
+                            "resolution": "hold",
+                        })
+
+                    # EU 추가
+                    eu_id = evidence.get("eu_id", "")
+                    if eu_id and eu_id not in existing_ku.get("evidence_links", []):
+                        existing_ku.setdefault("evidence_links", []).append(eu_id)
+
+                    updates.append(existing_ku)
+                    claim["integration_result"] = "conflict_hold"
+
+                elif conflict == "condition_split":
+                    # 조건 분리: 새 KU 생성
+                    max_ku_id += 1
+                    new_ku = {
+                        "ku_id": f"KU-{max_ku_id:04d}",
+                        "entity_key": entity_key,
+                        "field": field,
+                        "value": value,
+                        "conditions": claim.get("conditions", {}),
+                        "observed_at": date.today().isoformat(),
+                        "validity": {"ttl_days": 180},
+                        "evidence_links": [evidence.get("eu_id", "")] if evidence.get("eu_id") else [],
+                        "confidence": evidence.get("credibility", 0.7),
+                        "status": "active",
+                    }
+                    if axis_tags:
+                        new_ku["axis_tags"] = axis_tags
+                    if evidence.get("source_type"):
+                        new_ku["source_type"] = evidence["source_type"]
+                    kus.append(new_ku)
+                    adds.append(new_ku)
+                    claim["integration_result"] = "condition_split"
+
+                else:
+                    # 충돌 없음: 기존 KU 업데이트 (EU 추가, confidence 갱신)
+                    eu_id = evidence.get("eu_id", "")
+                    if eu_id and eu_id not in existing_ku.get("evidence_links", []):
+                        existing_ku.setdefault("evidence_links", []).append(eu_id)
+
+                    # D-69: evidence-count 가중 평균 (old*N + new)/(N+1)
+                    new_conf = evidence.get("credibility", 0.7)
+                    old_conf = existing_ku.get("confidence", 0.7)
+                    n_evidence = max(len(existing_ku.get("evidence_links", [])), 1)
+                    existing_ku["confidence"] = round(
+                        (old_conf * n_evidence + new_conf) / (n_evidence + 1), 3
+                    )
+
+                    # D-70: multi-evidence confidence boost (삼각측량)
+                    n_links = len(existing_ku.get("evidence_links", []))
+                    if n_links >= 4:
+                        boost = 0.07
+                    elif n_links >= 3:
+                        boost = 0.05
+                    elif n_links >= 2:
+                        boost = 0.03
+                    else:
+                        boost = 0.0
+                    if boost > 0:
+                        existing_ku["confidence"] = round(
+                            min(existing_ku["confidence"] + boost, 0.95), 3
+                        )
+
+                    # D-68: 일반 업데이트 시에도 observed_at 갱신 (stale refresh와 일관성)
+                    existing_ku["observed_at"] = date.today().isoformat()
+
+                    updates.append(existing_ku)
+                    claim["integration_result"] = "updated"
 
         else:
             # 신규 KU 생성
@@ -304,12 +426,14 @@ def integrate_node(
                 "entity_key": entity_key,
                 "field": field,
                 "value": value,
-                "observed_at": evidence.get("observed_at", date.today().isoformat()),
+                "observed_at": date.today().isoformat(),
                 "validity": {"ttl_days": 180},
                 "evidence_links": [evidence.get("eu_id", "")] if evidence.get("eu_id") else [],
                 "confidence": evidence.get("credibility", 0.7),
                 "status": "active",
             }
+            if axis_tags:
+                new_ku["axis_tags"] = axis_tags
             if evidence.get("source_type"):
                 new_ku["source_type"] = evidence["source_type"]
             kus.append(new_ku)
@@ -317,7 +441,7 @@ def integrate_node(
             claim["integration_result"] = "added"
 
         # GU 상태 업데이트 (resolved)
-        if source_gu_id and claim.get("integration_result") in ("added", "updated", "condition_split"):
+        if source_gu_id and claim.get("integration_result") in ("added", "updated", "condition_split", "refreshed"):
             for gu in gap_map:
                 if gu.get("gu_id") == source_gu_id and gu.get("status") == "open":
                     gu["status"] = "resolved"
@@ -326,7 +450,7 @@ def integrate_node(
 
         # 동적 GU 발견 (Trigger A)
         if len(new_dynamic_gus) < dynamic_cap:
-            discovered = _generate_dynamic_gus(claim, gap_map + new_dynamic_gus, skeleton, mode, open_count)
+            discovered = _generate_dynamic_gus(claim, gap_map + new_dynamic_gus, skeleton, mode, open_count, kus=kus)
             remaining = dynamic_cap - len(new_dynamic_gus)
             for dgu in discovered[:remaining]:
                 max_gu_id += 1

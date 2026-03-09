@@ -10,7 +10,6 @@ import pytest
 
 from src.utils.readiness_gate import (
     _gini_coefficient,
-    _shannon_entropy,
     evaluate_readiness,
     evaluate_vp1,
     evaluate_vp2,
@@ -134,26 +133,8 @@ def _healthy_state(categories: list[str] | None = None) -> dict:
 
 
 # ---------------------------------------------------------------------------
-# Shannon Entropy / Gini
+# Gini Coefficient
 # ---------------------------------------------------------------------------
-
-class TestShannonEntropy:
-    def test_uniform(self) -> None:
-        h, h_max = _shannon_entropy({"a": 10, "b": 10, "c": 10})
-        assert abs(h - h_max) < 0.001
-
-    def test_skewed(self) -> None:
-        h, h_max = _shannon_entropy({"a": 100, "b": 1})
-        assert h < h_max
-
-    def test_single(self) -> None:
-        h, h_max = _shannon_entropy({"a": 10})
-        assert h == 0.0 and h_max == 0.0
-
-    def test_empty(self) -> None:
-        h, h_max = _shannon_entropy({})
-        assert h == 0.0
-
 
 class TestGiniCoefficient:
     def test_perfect_equality(self) -> None:
@@ -177,9 +158,9 @@ class TestVP1:
         trajectory = _make_trajectory(15, mode="jump")
         result = evaluate_vp1(state, trajectory, late_cycle_start=11)
         assert result["viewpoint"] == "VP1_expansion_variability"
-        assert result["criteria"]["R1_entropy"]["passed"] is True
+        assert result["criteria"]["R1_category_gini"]["passed"] is True
 
-    def test_skewed_entropy_fails(self) -> None:
+    def test_skewed_gini_fails(self) -> None:
         cats = ["transport", "accommodation", "food", "activity"]
         kus = _make_kus({"transport": 50, "accommodation": 1, "food": 1, "activity": 1})
         state = {
@@ -188,7 +169,7 @@ class TestVP1:
             "domain_skeleton": _make_skeleton(cats),
         }
         result = evaluate_vp1(state, _make_trajectory(15))
-        assert result["criteria"]["R1_entropy"]["passed"] is False
+        assert result["criteria"]["R1_category_gini"]["passed"] is False
         # R1 is critical → VP1 fails
         assert result["passed"] is False
 
@@ -198,6 +179,39 @@ class TestVP1:
         trajectory = [{"cycle": i, "ku_active": 30, "mode": "normal"} for i in range(1, 16)]
         result = evaluate_vp1(state, trajectory, late_cycle_start=11)
         assert result["criteria"]["R3_late_discovery"]["passed"] is False
+
+    def test_blind_spot_from_ku_axis_tags(self) -> None:
+        """KU axis_tags.geography 기반 blind_spot 계산."""
+        cats = ["transport", "dining"]
+        geo_anchors = ["tokyo", "osaka"]
+        kus = []
+        ku_id = 1
+        # transport: tokyo, osaka 모두 커버
+        for geo in ["tokyo", "osaka"]:
+            kus.append({
+                "ku_id": f"KU-{ku_id:04d}", "entity_key": f"test:{cats[0]}:e-{ku_id}",
+                "field": "price", "status": "active", "axis_tags": {"geography": geo},
+                "evidence_links": ["EU-1"], "confidence": 0.9,
+            })
+            ku_id += 1
+        # dining: tokyo만 커버 → osaka blind spot
+        kus.append({
+            "ku_id": f"KU-{ku_id:04d}", "entity_key": f"test:{cats[1]}:e-{ku_id}",
+            "field": "price", "status": "active", "axis_tags": {"geography": "tokyo"},
+            "evidence_links": ["EU-1"], "confidence": 0.9,
+        })
+        state = {
+            "knowledge_units": kus,
+            "gap_map": [],
+            "domain_skeleton": {
+                "categories": [{"slug": c} for c in cats],
+                "axes": [{"name": "geography", "anchors": geo_anchors}],
+            },
+        }
+        result = evaluate_vp1(state, _make_trajectory(15))
+        # 4 cells, 1 blind (dining×osaka) → ratio=0.25
+        assert result["criteria"]["R2_blind_spot"]["value"] == 0.25
+        assert result["criteria"]["R2_blind_spot"]["passed"] is True
 
 
 # ---------------------------------------------------------------------------
@@ -277,7 +291,7 @@ class TestVP3:
 
     def test_no_closed_loop(self) -> None:
         state = _healthy_state()
-        # Make findings increase (no improvement)
+        # Make findings increase in all categories (no improvement anywhere)
         state["audit_history"] = [
             {"audit_cycle": 5, "findings": [{"category": "coverage_gap"}],
              "policy_patches": [{"patch_id": "PP-001"}]},
@@ -287,6 +301,33 @@ class TestVP3:
         ]
         result = evaluate_vp3(state, _make_trajectory(15))
         assert result["criteria"]["R6_closed_loop"]["passed"] is False
+
+    def test_closed_loop_category_improvement(self) -> None:
+        """D-66: 전체 건수 동일해도 특정 category 감소 시 closed loop 인정."""
+        state = _healthy_state()
+        state["audit_history"] = [
+            {
+                "audit_cycle": 5,
+                "findings": [
+                    {"category": "coverage_gap", "severity": "warning"},
+                    {"category": "yield_decline", "severity": "warning"},
+                ],
+                "policy_patches": [{"patch_id": "PP-001"}],
+            },
+            {
+                "audit_cycle": 10,
+                # 전체 2건 유지, 하지만 coverage_gap 1→0 (category 감소!)
+                "findings": [
+                    {"category": "yield_decline", "severity": "warning"},
+                    {"category": "yield_decline", "severity": "info"},
+                ],
+                "policy_patches": [],
+            },
+        ]
+        result = evaluate_vp3(state, _make_trajectory(15))
+        # D-66: coverage_gap이 1→0으로 감소 → closed loop 인정
+        assert result["criteria"]["R6_closed_loop"]["passed"] is True
+        assert result["criteria"]["R6_closed_loop"]["value"] >= 1
 
     def test_rollback_with_policy_change(self) -> None:
         state = _healthy_state()

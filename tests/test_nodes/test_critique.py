@@ -8,7 +8,14 @@ from pathlib import Path
 
 import pytest
 
-from src.nodes.critique import _analyze_failure_modes, _check_convergence, critique_node
+from src.nodes.critique import (
+    _analyze_failure_modes,
+    _check_convergence,
+    _compute_refresh_cap,
+    _generate_balance_gus,
+    _generate_refresh_gus,
+    critique_node,
+)
 
 BENCH = Path("bench/japan-travel/state")
 
@@ -61,8 +68,8 @@ class TestFailureModes:
         self, kus: list[dict], gap_map: list[dict], skeleton: dict,
     ) -> None:
         rxs = _analyze_failure_modes(kus, gap_map, skeleton, today=date(2026, 3, 4))
-        # bench에 disputed KU 1개 (KU-0007) → consistency 처방
-        assert any(rx["type"] == "consistency" for rx in rxs)
+        # Phase 3 이후 disputed=0, staleness=59 → epistemic 처방만 존재
+        assert any(rx["type"] == "epistemic" for rx in rxs)
 
 
 class TestConvergence:
@@ -223,3 +230,240 @@ class TestCritiqueNode:
         assert kus[0]["status"] == "disputed"
         # knowledge_units가 반환되지 않음 (변경 없으므로)
         assert "knowledge_units" not in result
+
+
+# ---------------------------------------------------------------------------
+# Task 5.5: Stale KU → Refresh GU
+# ---------------------------------------------------------------------------
+
+class TestGenerateRefreshGus:
+    def test_stale_ku_generates_refresh_gu(self) -> None:
+        kus = [
+            {
+                "ku_id": "KU-001", "entity_key": "d:transport:bus",
+                "field": "price", "status": "active",
+                "observed_at": "2025-01-01", "validity": {"ttl_days": 180},
+                "evidence_links": ["EU-1"], "confidence": 0.8,
+            },
+        ]
+        gus = _generate_refresh_gus(kus, [], max_gu_id=0, today=date(2026, 3, 7))
+        assert len(gus) == 1
+        assert gus[0]["gap_type"] == "stale"
+        assert gus[0]["trigger"] == "D:stale_refresh"
+        assert gus[0]["trigger_source"] == "KU-001"
+        assert gus[0]["target"]["entity_key"] == "d:transport:bus"
+        assert gus[0]["target"]["field"] == "price"
+
+    def test_non_expired_ku_skipped(self) -> None:
+        kus = [
+            {
+                "ku_id": "KU-001", "entity_key": "d:a:x",
+                "field": "price", "status": "active",
+                "observed_at": "2026-03-01", "validity": {"ttl_days": 180},
+                "evidence_links": ["EU-1"], "confidence": 0.8,
+            },
+        ]
+        gus = _generate_refresh_gus(kus, [], max_gu_id=0, today=date(2026, 3, 7))
+        assert len(gus) == 0
+
+    def test_duplicate_prevention(self) -> None:
+        """동일 entity_key+field에 open refresh GU 있으면 스킵."""
+        kus = [
+            {
+                "ku_id": "KU-001", "entity_key": "d:a:x",
+                "field": "price", "status": "active",
+                "observed_at": "2025-01-01", "validity": {"ttl_days": 180},
+                "evidence_links": ["EU-1"], "confidence": 0.8,
+            },
+        ]
+        existing_gap_map = [
+            {
+                "gu_id": "GU-0001", "gap_type": "stale", "status": "open",
+                "target": {"entity_key": "d:a:x", "field": "price"},
+            },
+        ]
+        gus = _generate_refresh_gus(kus, existing_gap_map, max_gu_id=1, today=date(2026, 3, 7))
+        assert len(gus) == 0
+
+    def test_cap_limit(self) -> None:
+        """cycle당 상한 10개."""
+        kus = [
+            {
+                "ku_id": f"KU-{i:04d}", "entity_key": f"d:a:x{i}",
+                "field": "price", "status": "active",
+                "observed_at": "2025-01-01", "validity": {"ttl_days": 180},
+                "evidence_links": ["EU-1"], "confidence": 0.8,
+            }
+            for i in range(15)
+        ]
+        gus = _generate_refresh_gus(kus, [], max_gu_id=0, today=date(2026, 3, 7))
+        assert len(gus) == 10
+
+    def test_axis_tags_inherited(self) -> None:
+        """KU의 axis_tags가 refresh GU에 복사."""
+        kus = [
+            {
+                "ku_id": "KU-001", "entity_key": "d:transport:bus",
+                "field": "price", "status": "active",
+                "observed_at": "2025-01-01", "validity": {"ttl_days": 180},
+                "evidence_links": ["EU-1"], "confidence": 0.8,
+                "axis_tags": {"geography": "tokyo"},
+            },
+        ]
+        gus = _generate_refresh_gus(kus, [], max_gu_id=0, today=date(2026, 3, 7))
+        assert gus[0]["axis_tags"] == {"geography": "tokyo"}
+
+    def test_critique_node_adds_refresh_gus(self) -> None:
+        """critique_node에서 stale KU → gap_map에 refresh GU 추가."""
+        kus = [
+            {
+                "ku_id": "KU-001", "entity_key": "d:transport:bus",
+                "field": "price", "status": "active",
+                "observed_at": "2025-01-01", "validity": {"ttl_days": 180},
+                "evidence_links": ["EU-1", "EU-2"], "confidence": 0.9,
+            },
+        ]
+        state = {
+            "knowledge_units": kus,
+            "gap_map": [
+                {"gu_id": "GU-0001", "status": "resolved", "gap_type": "missing",
+                 "expected_utility": "high",
+                 "target": {"entity_key": "d:transport:bus", "field": "price"}},
+            ],
+            "domain_skeleton": {"categories": [{"slug": "transport"}]},
+            "current_cycle": 1,
+            "metrics": {"rates": {}},
+        }
+        result = critique_node(state, today=date(2026, 3, 7))
+        assert "gap_map" in result
+        refresh = [gu for gu in result["gap_map"] if gu.get("gap_type") == "stale"]
+        assert len(refresh) == 1
+        assert refresh[0]["trigger"] == "D:stale_refresh"
+
+
+# ---------------------------------------------------------------------------
+# Task 5.7: Category 균형 GU 생성
+# ---------------------------------------------------------------------------
+
+class TestGenerateBalanceGus:
+    _SKELETON = {
+        "domain": "test",
+        "categories": [
+            {"slug": "transport"},
+            {"slug": "dining"},
+            {"slug": "payment"},
+        ],
+        "fields": [
+            {"name": "price", "categories": ["*"]},
+            {"name": "hours", "categories": ["dining"]},
+            {"name": "how_to_use", "categories": ["transport", "payment"]},
+        ],
+    }
+
+    def test_generates_gus_for_underrepresented_category(self) -> None:
+        kus = [
+            {"ku_id": f"KU-{i}", "entity_key": f"test:transport:e{i}",
+             "field": "price", "status": "active"}
+            for i in range(8)
+        ] + [
+            {"ku_id": "KU-20", "entity_key": "test:dining:e20",
+             "field": "price", "status": "active"},
+        ]
+        # transport=8 (ok), dining=1 (need 4), payment=0 (need 5)
+        gus = _generate_balance_gus(kus, [], self._SKELETON, max_gu_id=0)
+        assert len(gus) > 0
+        triggers = {gu["trigger"] for gu in gus}
+        assert triggers == {"E:category_balance"}
+        # dining GUs (applicable fields: hours, price → min(4, 2)=2)
+        dining_gus = [gu for gu in gus if "dining" in gu["target"]["entity_key"]]
+        assert len(dining_gus) == 2
+        # payment GUs (applicable fields: how_to_use, price → min(5, 2)=2)
+        payment_gus = [gu for gu in gus if "payment" in gu["target"]["entity_key"]]
+        assert len(payment_gus) == 2
+
+    def test_no_gus_when_all_sufficient(self) -> None:
+        kus = []
+        for cat in ["transport", "dining", "payment"]:
+            for i in range(6):
+                kus.append({
+                    "ku_id": f"KU-{cat}-{i}", "entity_key": f"test:{cat}:e{i}",
+                    "field": "price", "status": "active",
+                })
+        gus = _generate_balance_gus(kus, [], self._SKELETON, max_gu_id=0)
+        assert len(gus) == 0
+
+    def test_category_specific_fields_prioritized(self) -> None:
+        kus = [
+            {"ku_id": "KU-1", "entity_key": "test:dining:e1",
+             "field": "price", "status": "active"},
+        ]
+        gus = _generate_balance_gus(kus, [], self._SKELETON, max_gu_id=0)
+        dining_gus = [gu for gu in gus if "dining" in gu["target"]["entity_key"]]
+        # dining-specific 필드 (hours)가 먼저 나와야 함
+        fields = [gu["target"]["field"] for gu in dining_gus]
+        assert fields[0] == "hours"  # category-specific first
+
+    def test_expansion_mode_jump(self) -> None:
+        kus = []
+        gus = _generate_balance_gus(kus, [], self._SKELETON, max_gu_id=0)
+        for gu in gus:
+            assert gu["expansion_mode"] == "jump"
+
+    def test_critique_node_adds_balance_gus(self) -> None:
+        kus = [
+            {"ku_id": f"KU-{i}", "entity_key": f"test:transport:e{i}",
+             "field": "price", "status": "active",
+             "evidence_links": ["EU-1", "EU-2"], "confidence": 0.9,
+             "observed_at": "2026-03-01", "validity": {"ttl_days": 180}}
+            for i in range(8)
+        ]
+        state = {
+            "knowledge_units": kus,
+            "gap_map": [],
+            "domain_skeleton": self._SKELETON,
+            "current_cycle": 1,
+            "metrics": {"rates": {}},
+        }
+        result = critique_node(state, today=date(2026, 3, 7))
+        assert "gap_map" in result
+        balance = [gu for gu in result["gap_map"] if gu.get("trigger") == "E:category_balance"]
+        assert len(balance) > 0
+
+
+# ---------------------------------------------------------------------------
+# Stage E: Fix C — Adaptive REFRESH_GU_CAP (D-64)
+# ---------------------------------------------------------------------------
+
+class TestAdaptiveRefreshCap:
+    def test_default_cap_under_20(self) -> None:
+        """stale <= 20 → 기본값 10."""
+        assert _compute_refresh_cap(5) == 10
+        assert _compute_refresh_cap(15) == 10
+        assert _compute_refresh_cap(20) == 10
+
+    def test_medium_staleness(self) -> None:
+        """20 < stale <= 50 → min(20, max(10, stale//2))."""
+        assert _compute_refresh_cap(30) == 15  # 30//2 = 15
+        assert _compute_refresh_cap(40) == 20  # 40//2 = 20
+        assert _compute_refresh_cap(50) == 20  # cap at 20
+
+    def test_high_staleness(self) -> None:
+        """stale > 50 → min(25, max(10, stale//3))."""
+        assert _compute_refresh_cap(60) == 20  # 60//3 = 20
+        assert _compute_refresh_cap(93) == 25  # 93//3 = 31 → capped at 25
+        assert _compute_refresh_cap(150) == 25  # 150//3 = 50 → capped at 25
+
+    def test_adaptive_cap_in_generate_refresh_gus(self) -> None:
+        """실제 _generate_refresh_gus에서 adaptive cap 적용 확인."""
+        # 60개 stale KU → cap = min(25, max(10, 60//3)) = 20
+        kus = [
+            {
+                "ku_id": f"KU-{i:04d}", "entity_key": f"d:a:x{i}",
+                "field": "price", "status": "active",
+                "observed_at": "2025-01-01", "validity": {"ttl_days": 180},
+                "evidence_links": ["EU-1"], "confidence": 0.8,
+            }
+            for i in range(60)
+        ]
+        gus = _generate_refresh_gus(kus, [], max_gu_id=0, today=date(2026, 3, 7))
+        assert len(gus) == 20  # adaptive: 60//3 = 20

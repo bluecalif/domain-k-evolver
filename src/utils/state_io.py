@@ -43,6 +43,9 @@ def load_state(domain_path: str | Path) -> EvolverState:
         EvolverState dict.
     """
     state_dir = Path(domain_path) / "state"
+    # snapshot 디렉토리는 state/ 하위 없이 직접 JSON 포함
+    if not state_dir.exists():
+        state_dir = Path(domain_path)
     data: dict = {}
 
     for filename, field in _FILE_MAP.items():

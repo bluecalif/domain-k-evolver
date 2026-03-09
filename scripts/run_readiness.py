@@ -41,15 +41,15 @@ def _run_benchmark(cycles: int, resume: bool) -> tuple[dict, list[dict]]:
     config = EvolverConfig.from_env()
     config.validate_api_keys()
 
-    # 15 cycle 설정
+    # 15 cycle 설정 — Gate 평가 위해 plateau/convergence 비활성화
     orch_cfg = OrchestratorConfig(
         max_cycles=cycles,
         snapshot_every=config.orchestrator.snapshot_every,
         invariant_check=config.orchestrator.invariant_check,
-        stop_on_convergence=False,  # Gate 평가 위해 강제 실행
-        plateau_window=config.orchestrator.plateau_window,
+        stop_on_convergence=False,
+        plateau_window=0,  # plateau 감지 비활성화
         audit_interval=5,
-        bench_domain=config.orchestrator.bench_domain,
+        bench_domain=f"{config.orchestrator.bench_domain}-readiness",
         bench_path=config.orchestrator.bench_path,
     )
     config = EvolverConfig(
@@ -61,16 +61,25 @@ def _run_benchmark(cycles: int, resume: bool) -> tuple[dict, list[dict]]:
 
     orchestrator = Orchestrator(config, llm=llm, search_tool=search_tool)
 
-    # Resume 지원
+    # Seed state(cycle-0-snapshot)에서 시작 — Phase 5 코드 효과 측정
     from src.utils.state_io import load_state
-    domain_path = Path(orch_cfg.bench_path) / orch_cfg.bench_domain
-    output_path = domain_path.parent / f"{domain_path.name}-readiness"
+    output_path = Path(orch_cfg.bench_path) / orch_cfg.bench_domain  # japan-travel-readiness
+    # 원본 bench domain에서 seed 로드
+    orig_domain = orch_cfg.bench_domain.removesuffix("-readiness")
+    orig_path = Path(orch_cfg.bench_path) / orig_domain
+    seed_path = orig_path / "state-snapshots" / "cycle-0-snapshot"
 
     if resume and (output_path / "state").exists():
         initial_state = load_state(output_path)
         logger.info("Resume: readiness 결과에서 State 로드")
+    elif seed_path.exists():
+        initial_state = load_state(seed_path)
+        initial_state["current_cycle"] = 0
+        logger.info("Seed state 로드: %s (KU=%d, GU=%d)",
+                     seed_path, len(initial_state.get("knowledge_units", [])),
+                     len(initial_state.get("gap_map", [])))
     else:
-        initial_state = load_state(domain_path)
+        initial_state = load_state(orig_path)
 
     results = orchestrator.run(initial_state)
     final_state = results[-1].state if results else initial_state
@@ -92,7 +101,10 @@ def _load_existing_results() -> tuple[dict, list[dict]]:
 
     config = EvolverConfig.from_env()
     domain_path = Path(config.orchestrator.bench_path) / config.orchestrator.bench_domain
-    output_path = domain_path.parent / f"{domain_path.name}-readiness"
+    if domain_path.name.endswith("-readiness"):
+        output_path = domain_path
+    else:
+        output_path = domain_path.parent / f"{domain_path.name}-readiness"
 
     state = load_state(output_path)
     traj_path = output_path / "trajectory" / "trajectory.json"
@@ -150,7 +162,10 @@ def main() -> None:
     from src.config import EvolverConfig
     config = EvolverConfig.from_env()
     domain_path = Path(config.orchestrator.bench_path) / config.orchestrator.bench_domain
-    output_path = domain_path.parent / f"{domain_path.name}-readiness"
+    if domain_path.name.endswith("-readiness"):
+        output_path = domain_path
+    else:
+        output_path = domain_path.parent / f"{domain_path.name}-readiness"
     output_path.mkdir(parents=True, exist_ok=True)
 
     report_path = output_path / "readiness-report.json"

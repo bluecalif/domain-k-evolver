@@ -97,7 +97,7 @@
         "properties": {
           "conflicting_ku_id": { "type": "string" },
           "nature": { "type": "string" },
-          "resolution": { "type": "string", "enum": ["pending", "condition_split", "superseded", "coexist", "resolved_as_maintain"] }
+          "resolution": { "type": "string", "enum": ["pending", "condition_split", "superseded", "coexist", "resolved_as_maintain", "resolved"] }
         }
       }
     }

@@ -11,6 +11,7 @@ from src.nodes.mode import (
     _compute_budget,
     _compute_trigger_t1,
     _compute_trigger_t3,
+    _compute_trigger_t7_staleness,
     _get_cycle_stage,
     mode_node,
 )
@@ -216,7 +217,7 @@ class TestModeNode:
             assert 2 in result["jump_history"]
 
     def test_cap_bounds(self) -> None:
-        """cap 범위: normal 4~12, jump 10~30."""
+        """cap 하한: normal ≥4, jump ≥10."""
         # Normal with few open
         state = {
             "gap_map": [
@@ -234,4 +235,43 @@ class TestModeNode:
         }
         result = mode_node(state)
         cap = result["current_mode"]["cap"]
-        assert 4 <= cap <= 12
+        assert cap >= 4
+
+
+# ---------------------------------------------------------------------------
+# Stage E: Fix D — T7 Staleness Trigger (D-65)
+# ---------------------------------------------------------------------------
+
+class TestTriggerT7:
+    def test_staleness_over_20_triggers(self) -> None:
+        assert _compute_trigger_t7_staleness({"rates": {"staleness_risk": 25}}) is True
+
+    def test_staleness_under_20_no_trigger(self) -> None:
+        assert _compute_trigger_t7_staleness({"rates": {"staleness_risk": 10}}) is False
+
+    def test_staleness_exactly_20_no_trigger(self) -> None:
+        assert _compute_trigger_t7_staleness({"rates": {"staleness_risk": 20}}) is False
+
+    def test_empty_metrics_no_trigger(self) -> None:
+        assert _compute_trigger_t7_staleness({}) is False
+
+    def test_t7_in_mode_node(self) -> None:
+        """staleness_risk > 20 → T7 trigger → Jump Mode."""
+        state = {
+            "gap_map": [
+                {"status": "open", "target": {"entity_key": "d:a:x"}, "risk_level": "convenience"},
+            ] * 5,
+            "domain_skeleton": {
+                "axes": [{"name": "category", "anchors": ["a"], "required": True}],
+                "categories": [{"slug": "a"}],
+            },
+            "knowledge_units": [
+                {"status": "active", "evidence_links": ["EU-1", "EU-2"], "confidence": 0.95},
+            ],
+            "current_cycle": 1,
+            "jump_history": [],
+            "metrics": {"rates": {"staleness_risk": 50}},
+        }
+        result = mode_node(state)
+        assert "T7:staleness_risk" in result["current_mode"]["trigger_set"]
+        assert result["current_mode"]["mode"] == "jump"

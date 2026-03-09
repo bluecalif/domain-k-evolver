@@ -98,6 +98,177 @@ def _analyze_failure_modes(
     return prescriptions
 
 
+REFRESH_GU_CAP_DEFAULT = 10  # D-55: cycle당 refresh GU 기본 상한
+MIN_KU_PER_CAT = 5   # D-56: 카테고리당 최소 KU 수
+
+
+def _compute_refresh_cap(stale_count: int) -> int:
+    """D-64: Adaptive REFRESH_GU_CAP — staleness 비례 스케일링.
+
+    - stale > 50 → min(25, stale // 3)
+    - stale > 20 → min(20, stale // 2)
+    - else → REFRESH_GU_CAP_DEFAULT (10)
+    """
+    if stale_count > 50:
+        return min(25, max(REFRESH_GU_CAP_DEFAULT, stale_count // 3))
+    if stale_count > 20:
+        return min(20, max(REFRESH_GU_CAP_DEFAULT, stale_count // 2))
+    return REFRESH_GU_CAP_DEFAULT
+
+
+def _generate_refresh_gus(
+    kus: list[dict],
+    gap_map: list[dict],
+    max_gu_id: int,
+    today: date | None = None,
+) -> list[dict]:
+    """TTL 만료 KU → stale refresh GU 자동생성.
+
+    - 중복 방지: 동일 entity_key+field에 open refresh GU 있으면 스킵
+    - cycle당 상한: Adaptive cap (D-64, staleness 비례)
+    """
+    if today is None:
+        today = date.today()
+
+    # 기존 open refresh GU 슬롯
+    existing_refresh_slots = {
+        (gu.get("target", {}).get("entity_key"), gu.get("target", {}).get("field"))
+        for gu in gap_map
+        if gu.get("gap_type") == "stale" and gu.get("status") == "open"
+    }
+
+    # TTL 만료 KU 수집
+    stale_candidates: list[tuple[int, dict]] = []
+    for ku in kus:
+        if ku.get("status") != "active":
+            continue
+        observed = ku.get("observed_at")
+        validity = ku.get("validity", {})
+        ttl = validity.get("ttl_days")
+        if observed and ttl is not None:
+            obs_date = date.fromisoformat(observed)
+            expire_date = obs_date + timedelta(days=ttl)
+            if expire_date < today:
+                days_over = (today - expire_date).days
+                slot = (ku.get("entity_key"), ku.get("field"))
+                if slot not in existing_refresh_slots:
+                    stale_candidates.append((days_over, ku))
+
+    # D-64: Adaptive cap 계산
+    refresh_cap = _compute_refresh_cap(len(stale_candidates))
+
+    # 우선순위: TTL 초과 일수 내림차순, 상한 적용
+    stale_candidates.sort(key=lambda x: x[0], reverse=True)
+    stale_candidates = stale_candidates[:refresh_cap]
+
+    new_gus: list[dict] = []
+    for _, ku in stale_candidates:
+        max_gu_id += 1
+        new_gus.append({
+            "gu_id": f"GU-{max_gu_id:04d}",
+            "gap_type": "stale",
+            "target": {
+                "entity_key": ku.get("entity_key", ""),
+                "field": ku.get("field", ""),
+            },
+            "expected_utility": "high",
+            "risk_level": ku.get("risk_level", "convenience"),
+            "resolution_criteria": f"{ku.get('ku_id')} TTL 만료, 최신 정보 갱신",
+            "status": "open",
+            "trigger": "D:stale_refresh",
+            "trigger_source": ku.get("ku_id", ""),
+            "axis_tags": dict(ku.get("axis_tags", {})) if ku.get("axis_tags") else {},
+            "created_at": today.isoformat(),
+        })
+
+    return new_gus
+
+
+def _generate_balance_gus(
+    kus: list[dict],
+    gap_map: list[dict],
+    skeleton: dict,
+    max_gu_id: int,
+    today: date | None = None,
+) -> list[dict]:
+    """min_ku < MIN_KU_PER_CAT인 카테고리 → 균형 GU 생성.
+
+    category-specific 필드 우선, expansion_mode="jump".
+    """
+    if today is None:
+        today = date.today()
+
+    categories = [c["slug"] for c in skeleton.get("categories", [])]
+    if not categories:
+        return []
+
+    # 카테고리별 active KU 수
+    cat_counts: dict[str, int] = {c: 0 for c in categories}
+    for ku in kus:
+        if ku.get("status") != "active":
+            continue
+        parts = ku.get("entity_key", "").split(":")
+        cat = parts[1] if len(parts) >= 3 else ""
+        if cat in cat_counts:
+            cat_counts[cat] += 1
+
+    # 기존 open GU 슬롯
+    existing_open_slots = {
+        (gu.get("target", {}).get("entity_key"), gu.get("target", {}).get("field"))
+        for gu in gap_map
+        if gu.get("status") == "open"
+    }
+
+    fields = skeleton.get("fields", [])
+    new_gus: list[dict] = []
+
+    for cat, count in cat_counts.items():
+        if count >= MIN_KU_PER_CAT:
+            continue
+        needed = MIN_KU_PER_CAT - count
+        # category-specific 필드 우선
+        applicable = [
+            f["name"] for f in fields
+            if cat in f.get("categories", [])
+        ] + [
+            f["name"] for f in fields
+            if "*" in f.get("categories", [])
+        ]
+        # 중복 제거, 순서 유지
+        seen: set[str] = set()
+        unique_fields: list[str] = []
+        for fn in applicable:
+            if fn not in seen:
+                seen.add(fn)
+                unique_fields.append(fn)
+
+        generated = 0
+        for fn in unique_fields:
+            if generated >= needed:
+                break
+            entity_key = f"{skeleton.get('domain', 'unknown')}:{cat}:balance-{generated}"
+            slot = (entity_key, fn)
+            if slot in existing_open_slots:
+                continue
+            max_gu_id += 1
+            new_gus.append({
+                "gu_id": f"GU-{max_gu_id:04d}",
+                "gap_type": "missing",
+                "target": {"entity_key": entity_key, "field": fn},
+                "expected_utility": "high",
+                "risk_level": "informational",
+                "resolution_criteria": f"{cat} 카테고리 균형 보충: {fn}",
+                "status": "open",
+                "trigger": "E:category_balance",
+                "trigger_source": f"cat:{cat}",
+                "expansion_mode": "jump",
+                "created_at": today.isoformat(),
+            })
+            generated += 1
+
+    return new_gus
+
+
 CONFLICT_RATE_THRESHOLD = 0.15  # D-43: C6 수렴 조건 임계치
 
 
@@ -226,6 +397,36 @@ def critique_node(
         })
         rx_counter += 1
 
+    # Category 균형 GU 생성 (Task 5.7)
+    max_gu_id = 0
+    for gu in gap_map:
+        gu_id_str = gu.get("gu_id", "")
+        if gu_id_str.startswith("GU-"):
+            try:
+                num = int(gu_id_str.replace("GU-", ""))
+                max_gu_id = max(max_gu_id, num)
+            except ValueError:
+                pass
+    balance_gus = _generate_balance_gus(kus, gap_map, skeleton, max_gu_id, today)
+    if balance_gus:
+        gap_map = list(gap_map)
+        gap_map.extend(balance_gus)
+        # max_gu_id 업데이트
+        for gu in balance_gus:
+            gu_id_str = gu.get("gu_id", "")
+            if gu_id_str.startswith("GU-"):
+                try:
+                    num = int(gu_id_str.replace("GU-", ""))
+                    max_gu_id = max(max_gu_id, num)
+                except ValueError:
+                    pass
+
+    # Stale KU → Refresh GU 자동생성 (Task 5.5)
+    refresh_gus = _generate_refresh_gus(kus, gap_map, max_gu_id, today)
+    if refresh_gus:
+        gap_map = list(gap_map)  # 원본 변경 방지
+        gap_map.extend(refresh_gus)
+
     # net_gap_change 계산 (open GU 변화)
     prev_counts = prev_metrics.get("counts", {})
     prev_open = prev_counts.get("total_gu_open", 0)
@@ -304,6 +505,10 @@ def critique_node(
         "metrics": new_metrics,
         "net_gap_changes": net_gap_changes,
     }
+
+    # balance/refresh GU가 추가되었으면 gap_map 반환
+    if refresh_gus or balance_gus:
+        result["gap_map"] = gap_map
 
     # dispute resolution으로 KU 상태가 변경되었으면 반환
     if dispute_log:

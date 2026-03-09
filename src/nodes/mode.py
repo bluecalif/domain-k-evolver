@@ -129,6 +129,12 @@ def _compute_trigger_t6_audit(audit_history: list[dict]) -> bool:
     )
 
 
+def _compute_trigger_t7_staleness(metrics: dict) -> bool:
+    """T7: Staleness Trigger — staleness_risk > 20 → Jump Mode (D-65)."""
+    rates = metrics.get("rates", {})
+    return rates.get("staleness_risk", 0) > 20
+
+
 def _compute_budget(
     target_count: int,
     mode: str,
@@ -174,7 +180,8 @@ def mode_node(state: EvolverState) -> dict:
 
     open_count = sum(1 for gu in gap_map if gu.get("status") == "open")
 
-    # 5종 trigger 판정 + T6 Audit 동적 trigger (Task 4.8)
+    # 7종 trigger 판정 (T1~T6 + T7 Staleness, D-65)
+    metrics = state.get("metrics", {})
     triggers: list[str] = []
     if _compute_trigger_t1(gap_map, skeleton):
         triggers.append("T1:axis_under_coverage")
@@ -188,17 +195,19 @@ def mode_node(state: EvolverState) -> dict:
         triggers.append("T5:domain_shift")
     if _compute_trigger_t6_audit(audit_history):
         triggers.append("T6:audit_axis_imbalance")
+    if _compute_trigger_t7_staleness(metrics):
+        triggers.append("T7:staleness_risk")
 
     # Mode 결정
     mode = "jump" if triggers else "normal"
 
     # Cap 계산
     if mode == "normal":
-        cap = min(max(4, ceil(open_count * 0.2)), 12)
-        target_count = min(8, ceil(open_count * 0.4))
+        cap = max(4, ceil(open_count * 0.2))
+        target_count = max(4, ceil(open_count * 0.4))
     else:
-        cap = min(max(10, ceil(open_count * 0.6)), 30)
-        target_count = min(10, cap, ceil(open_count * 0.5))
+        cap = max(10, ceil(open_count * 0.6))
+        target_count = max(10, ceil(open_count * 0.5))
 
     # Convergence Guard: 연속 2 Cycle Jump 감지
     convergence_warning = False

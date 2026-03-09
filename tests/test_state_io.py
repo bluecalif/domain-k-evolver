@@ -11,9 +11,9 @@ BENCH = Path("bench/japan-travel")
 def test_load_bench_state():
     """bench/japan-travel → EvolverState 로드."""
     state = load_state(BENCH)
-    assert state["current_cycle"] == 2
-    assert len(state["knowledge_units"]) == 28
-    assert len(state["gap_map"]) == 39
+    assert state["current_cycle"] == 14
+    assert len(state["knowledge_units"]) == 90
+    assert len(state["gap_map"]) == 96
     assert state["domain_skeleton"]["domain"] == "japan-travel"
     assert state["metrics"]["rates"]["evidence_rate"] == 1.0
     assert "credibility_priors" in state["policies"]
@@ -53,7 +53,7 @@ def test_save_utf8(tmp_path):
     # 한글이 escape 없이 저장되어야 함
     assert "\\u" not in raw
     data = json.loads(raw)
-    assert len(data) == 28
+    assert len(data) == 90
 
 
 def test_snapshot(tmp_path):

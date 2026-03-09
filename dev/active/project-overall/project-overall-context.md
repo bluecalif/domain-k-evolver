@@ -1,6 +1,6 @@
 # Project Overall Context
-> Last Updated: 2026-03-07 (Phase 4 계획 수립)
-> Status: In Progress — Phase 4 진행 대기
+> Last Updated: 2026-03-08 (Phase 5 Stage D)
+> Status: In Progress — Phase 5 Stage D (GU Resolve Rate 개선)
 
 ## 1. 핵심 파일
 
@@ -104,13 +104,31 @@
 | `docs/phase2-analysis.md` | Phase 2 심층 분석 보고서 |
 | `docs/phase3-analysis.md` | Phase 3 심층 분석 보고서 |
 
-### Phase 4 Dev-Docs
+### Phase 4 Dev-Docs (✅ Complete — Gate FAIL)
 | 파일 | 내용 |
 |------|------|
 | `dev/active/phase4-self-governing/phase4-self-governing-plan.md` | Phase 4 종합 계획 (4 Stage, 11 tasks, Readiness Gate) |
 | `dev/active/phase4-self-governing/phase4-self-governing-context.md` | Phase 4 컨텍스트 (갭 분석, 변경 대상) |
-| `dev/active/phase4-self-governing/phase4-self-governing-tasks.md` | Phase 4 태스크 추적 (0/11) |
+| `dev/active/phase4-self-governing/phase4-self-governing-tasks.md` | Phase 4 태스크 추적 (11/11 완료) |
 | `dev/active/phase4-self-governing/debug-history.md` | Phase 4 디버깅 이력 |
+
+### Phase 5 Dev-Docs
+| 파일 | 내용 |
+|------|------|
+| `dev/active/phase5-inner-loop-quality/phase5-inner-loop-quality-plan.md` | Phase 5 종합 계획 (4 Stage + 선행/검증, 13 tasks) |
+| `dev/active/phase5-inner-loop-quality/phase5-inner-loop-quality-context.md` | Phase 5 컨텍스트 (axis_tags 흐름, 결정사항) |
+| `dev/active/phase5-inner-loop-quality/phase5-inner-loop-quality-tasks.md` | Phase 5 태스크 추적 (10/13) |
+| `dev/active/phase5-inner-loop-quality/debug-history.md` | Phase 5 디버깅 이력 |
+
+### Phase 4 코드 (완료, 420 tests)
+| 파일 | 내용 |
+|------|------|
+| `src/nodes/audit.py` | Executive Audit — run_audit() + 4개 분석 함수 |
+| `src/utils/policy_manager.py` | Policy 자동 수정/롤백/credibility 학습 |
+| `src/utils/readiness_gate.py` | 3-Viewpoint Readiness Gate (VP1/VP2/VP3) |
+| `scripts/run_readiness.py` | Readiness 벤치마크 + Gate 판정 |
+| `bench/japan-travel-readiness/` | Phase 4 Gate 벤치마크 결과 |
+| `docs/phase4-readiness-report.md` | Gate FAIL 상세 보고서 |
 
 ### 벤치 데이터 (Cycle 2 결과 — 최신)
 | 파일 | 내용 |
@@ -223,6 +241,20 @@ class EvolverState(TypedDict):
 | D-45 | Multi-Domain = Phase X (잠정) | Phase 5 확정 | Readiness Gate 통과 후 번호 확정 | 4 |
 | D-46 | 3-Viewpoint Readiness Gate 필수 | 없음 | Variability + Completeness + Self-Governance | 4 |
 | D-47 | Gate FAIL 시 Phase N+1 삽입 | 무시하고 진행 | 보완 Phase 후 Gate 재실행 | 4 |
+| D-48 | Orchestrator 순서 = metrics log → rollback → audit → save | — | 순서 보장 필요 | 4 |
+| D-49 | Credibility 학습 — bad_ratio >30% → prior↓ | — | 출처 품질 자동 학습 | 4 |
+| D-50 | T6 동적 trigger — Audit axis_imbalance → Jump Mode | — | Audit→Mode 연동 | 4 |
+| D-51 | C7 수렴 조건 — critical audit findings 시 수렴 유보 | — | 미해결 문제 시 조기 수렴 방지 | 4 |
+| D-52 | Readiness Gate — 관점별 80%+ + critical FAIL 없음 → PASS | — | 3-Viewpoint 판정 규칙 | 4 |
+| D-53 | VP1-R1 Shannon Entropy → Gini Coefficient | threshold 상향 | Shannon은 분포 균등성 미측정 (8.7x 차이도 PASS) | 5 |
+| D-54 | Geography 추론 = 규칙 기반 (entity_key 패턴) | LLM 추론 | 비용 없이 충분한 정확도 | 5 |
+| D-55 | Refresh GU cycle당 상한 (최대 10개) | 무제한 | 59개 동시 생성 방지 | 5 |
+| D-56 | Field 다양성 = count > mean×1.5 억제 | Gini 기반 | 단순 규칙으로 `*` 필드 편중 해소 | 5 |
+| D-57 | Readiness Gate seed state(cycle-0) fresh start | resume | Phase 5 코드 효과 독립 측정 | 5 |
+| D-58 | Orchestrator plateau_window=0 비활성화 | 유지 | Gate 벤치 시 plateau 간섭 방지 | 5 |
+| D-59 | run_readiness.py japan-travel-readiness 분리 저장 | 덮어쓰기 | 원본 bench 데이터 보호 | 5 |
+| D-60 | target_count/cap 하드캡 제거 — 비례 스케일 | 캡 유지+GU 제한 | GU 생성>>해결 불균형 해소, dynamic_gu_cap은 유지 | 5 |
+| D-61 | bench/ 더블 서픽스 버그 수정 + 아티팩트 정리 | — | run_readiness.py `-readiness` 이중 적용 → `japan-travel-readiness-readiness` 생성 | 5 |
 
 ---
 

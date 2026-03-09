@@ -1,6 +1,6 @@
 # Project Overall Tasks
-> Last Updated: 2026-03-06 (Phase 3 완료)
-> Status: In Progress — Phase 4 대기
+> Last Updated: 2026-03-08 (Phase 5 Stage D)
+> Status: In Progress — Phase 5 Stage D (GU Resolve Rate 개선)
 
 ## Summary
 
@@ -12,8 +12,9 @@
 | Phase 1 | 15 | 2 | 5 | 6 | 2 | ✅ Complete (15/15) |
 | Phase 2 | 16 | 5 | 8 | 3 | 0 | ✅ Complete (16/16) |
 | Phase 3 | 9 | 1 | 5 | 3 | 0 | ✅ Complete (9/9) |
-| Phase 4 | 7 | 0 | 2 | 3 | 2 | 0/7 |
-| **총계** | **58** | — | — | — | — | **51/58** |
+| Phase 4 | 11 | 0 | 7 | 4 | 0 | ✅ Complete (11/11, Gate FAIL) |
+| Phase 5 | 13 | 3 | 7 | 3 | 0 | 10/13 |
+| **총계** | **75** | — | — | — | — | **72/75** |
 
 ---
 
@@ -154,17 +155,69 @@
 
 ---
 
-## Phase 4: Multi-Domain & Robustness (기존 Phase 3 → 번호 이동)
+## Phase 4: Self-Governing Evolver ✅
 
-### Stage A: 다중 도메인
+> **완료**: 2026-03-07 | 420 tests passed, 11/11 tasks, Gate FAIL (VP1/VP2)
+> **보고서**: `docs/phase4-readiness-report.md`
 
-- [ ] **4.1** 새 도메인 Seed Pack 작성 (예: 부동산/기술 스택) `[L]`
-- [ ] **4.2** 새 도메인 Evolver 실행 + 결과 검증 `[L]`
-- [ ] **4.3** 도메인 간 공통/차이 분석 + 프레임워크 일반화 `[M]`
+### Stage A: Outer Loop Audit ✅
 
-### Stage B: Outer Loop + 안정성
+- [x] **4.1** Executive Audit 프레임워크 구현 `[L]` — `cebd47e`
+- [x] **4.2** 다축 교차 커버리지 진단 `[M]` — `cebd47e`
+- [x] **4.3** KU Yield/Cost 효율 분석 `[M]` — `cebd47e`
 
-- [ ] **4.4** Outer Loop 구현 — Executive Audit + Remodeling 노드 `[XL]`
-- [ ] **4.5** 에러 처리 + 복구 메커니즘 (API 실패, 파싱 오류) `[L]`
-- [ ] **4.6** 토큰/비용 최적화 `[M]`
-- [ ] **4.7** 문서화 + 사용 가이드 `[XL]`
+### Stage B: Policy Evolution ✅
+
+- [x] **4.4** Policy 스키마 + 버전 관리 `[M]` — `816fb2d`
+- [x] **4.5** Audit → Policy 자동 수정 경로 `[L]` — `816fb2d`
+- [x] **4.6** Source Credibility 학습 `[M]` — `816fb2d`
+
+### Stage C: Strategic Self-Tuning ✅
+
+- [x] **4.7** Explore/Exploit 비율 자동 조정 `[L]` — `31ef46d`
+- [x] **4.8** Jump Trigger 동적 관리 `[M]` — `31ef46d`
+- [x] **4.9** Convergence 조건 고도화 `[M]` — `31ef46d`
+
+### Stage D: Evolver Readiness Gate ✅ (FAIL)
+
+- [x] **4.10** Readiness 벤치마크 실행 `[L]` — `62915de`
+- [x] **4.11** 3-Viewpoint Readiness 판정 `[M]` — `62915de`
+
+---
+
+## Phase 5: Inner Loop Quality
+
+> **목표**: Phase 4 Gate FAIL의 Inner Loop 품질 문제 해결 → Gate 재실행 PASS
+> **상세**: `dev/active/phase5-inner-loop-quality/`
+> **테스트**: 437 tests passed
+
+### 선행: Gate 메트릭 수정 ✅
+
+- [x] **5.0** VP1-R1 Shannon Entropy → Gini Coefficient 교체 `[S]`
+
+### Stage A: Geography Axis-Tags 전파 ✅
+
+- [x] **5.1** Integrate: GU→KU axis_tags 전파 `[M]`
+- [x] **5.2** Integrate: KU 내용 기반 geography 추론 `[M]`
+- [x] **5.3** Integrate/Plan: 동적 GU 생성 시 geography 부여 `[M]`
+- [x] **5.4** Readiness Gate: blind_spot KU 기반 개선 `[S]`
+
+### Stage B: Staleness 자동갱신 ✅
+
+- [x] **5.5** Critique: Stale KU → Refresh GU 자동생성 `[L]` (D-55)
+- [x] **5.6** Integrate: Refresh 통합 시 KU 갱신 `[M]`
+
+### Stage C: Category 균형 + Field 다양성 ✅
+
+- [x] **5.7** Critique: 소수 카테고리 균형 GU 생성 `[M]` (D-56)
+- [x] **5.8** Integrate: Field 다양성 억제 `[M]`
+
+### Stage D: GU Resolve Rate 개선 + bench 정리
+
+- [ ] **5.10a** bench/ 정리 — 더블 서픽스 버그 수정 + 아티팩트 삭제 `[S]` (D-61)
+- [ ] **5.10b** Mode: target_count/cap 하드캡 제거 — 비례 스케일 `[M]` (D-60)
+
+### 검증: Gate 재실행
+
+- [x] **5.9** Gate 재실행 #1 `[L]` — **FAIL** (VP1 3/5, VP2 2/6, VP3 5/6)
+- [ ] **5.11** Gate 재실행 #2 `[L]` — 5 cycle 검증 → 15 cycle 풀

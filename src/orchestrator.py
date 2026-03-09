@@ -59,9 +59,8 @@ class Orchestrator:
         self._llm = llm
         self._search_tool = search_tool
         self.logger = MetricsLogger()
-        self.plateau_detector = PlateauDetector(
-            window=self.config.orchestrator.plateau_window
-        )
+        pw = self.config.orchestrator.plateau_window
+        self.plateau_detector = PlateauDetector(window=max(pw, 2)) if pw > 0 else None
         self.results: list[CycleResult] = []
         self.audit_reports: list[dict] = []
         self._pre_patch_policies: dict | None = None  # 롤백용 백업
@@ -118,16 +117,17 @@ class Orchestrator:
             # 사이클 후 처리: save, snapshot
             self._post_cycle(state, cycle_num, orch_cfg)
 
-            # Plateau 감지
-            self.plateau_detector.record(cycle_num, state)
-            if self.plateau_detector.is_plateau():
-                reason = self.plateau_detector.plateau_reason()
-                logger.info(
-                    "Plateau 감지: 최근 %d사이클 KU/GU 변화 없음 (%s). 조기 종료.",
-                    orch_cfg.plateau_window,
-                    reason,
-                )
-                break
+            # Plateau 감지 (plateau_window=0이면 비활성)
+            if self.plateau_detector is not None:
+                self.plateau_detector.record(cycle_num, state)
+                if self.plateau_detector.is_plateau():
+                    reason = self.plateau_detector.plateau_reason()
+                    logger.info(
+                        "Plateau 감지: 최근 %d사이클 KU/GU 변화 없음 (%s). 조기 종료.",
+                        orch_cfg.plateau_window,
+                        reason,
+                    )
+                    break
 
             # 수렴 체크
             if orch_cfg.stop_on_convergence and result.converged:

@@ -152,6 +152,6 @@ def test_full_state_from_bench():
         "jump_history": [],
         "hitl_pending": None,
     }
-    assert state["current_cycle"] == 2
-    assert len(state["knowledge_units"]) == 28
-    assert len(state["gap_map"]) == 39
+    assert state["current_cycle"] == 14
+    assert len(state["knowledge_units"]) == 90
+    assert len(state["gap_map"]) == 96

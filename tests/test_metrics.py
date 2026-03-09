@@ -76,9 +76,9 @@ class TestEvidenceRate:
 
 class TestMultiEvidenceRate:
     def test_bench_value(self, kus: list[dict]) -> None:
-        # bench: 0.821 (= ~22/27 active KU with >= 2 evidence)
+        # bench: 0.911 (= 82/90 active KU with >= 2 evidence)
         result = multi_evidence_rate(kus)
-        assert result == pytest.approx(0.821, abs=0.01)
+        assert result == pytest.approx(0.911, abs=0.01)
 
     def test_empty(self) -> None:
         assert multi_evidence_rate([]) == 0.0
@@ -86,12 +86,9 @@ class TestMultiEvidenceRate:
 
 class TestGapResolutionRate:
     def test_bench_value(self, gap_map: list[dict]) -> None:
-        # bench: 0.486 — 18 resolved / (18 + 21 open) = 18/39 ≈ 0.462
-        # 실제 bench rates.gap_resolution_rate = 0.486이므로
-        # cycle_start_open = 37 (39 - 2 deferred or different basis)
-        # 18/37 = 0.486
-        result = gap_resolution_rate(gap_map, cycle_start_open=37)
-        assert result == pytest.approx(0.486, abs=0.002)
+        # bench: 0.844 — 81 resolved / (81 + 15 open) = 81/96
+        result = gap_resolution_rate(gap_map)
+        assert result == pytest.approx(0.844, abs=0.002)
 
     def test_fallback_without_cycle_start(self, gap_map: list[dict]) -> None:
         # 근사치: resolved / (open + resolved)
@@ -104,9 +101,9 @@ class TestGapResolutionRate:
 
 class TestConflictRate:
     def test_bench_value(self, kus: list[dict]) -> None:
-        # bench: 0.036 = 1/28
+        # bench: 0.000 (Phase 3 dispute resolution 이후 충돌 0)
         result = conflict_rate(kus)
-        assert result == pytest.approx(0.036, abs=0.002)
+        assert result == pytest.approx(0.000, abs=0.002)
 
     def test_no_disputes(self) -> None:
         kus = [{"status": "active"}, {"status": "active"}]
@@ -115,9 +112,9 @@ class TestConflictRate:
 
 class TestAvgConfidence:
     def test_bench_value(self, kus: list[dict]) -> None:
-        # bench: 0.875
+        # bench: 0.801 (Phase 3~4 이후 90 active KU)
         result = avg_confidence(kus)
-        assert result == pytest.approx(0.875, abs=0.01)
+        assert result == pytest.approx(0.801, abs=0.01)
 
     def test_empty(self) -> None:
         assert avg_confidence([]) == 0.0
@@ -125,9 +122,9 @@ class TestAvgConfidence:
 
 class TestStalenessRisk:
     def test_bench_value(self, kus: list[dict]) -> None:
-        # bench: 0 (2026-03-04 기준, 모든 KU가 TTL 내)
+        # bench: 59 (2026-03-04 기준, 2024년 KU 59개가 TTL 180일 초과)
         result = staleness_risk(kus, today=date(2026, 3, 4))
-        assert result == 0
+        assert result == 59
 
     def test_expired_ku(self) -> None:
         kus = [{
@@ -155,9 +152,10 @@ class TestComputeMetrics:
         self, kus: list[dict], gap_map: list[dict], bench_metrics: dict,
     ) -> None:
         state = {"knowledge_units": kus, "gap_map": gap_map}
-        result = compute_metrics(state, cycle_start_open=37, today=date(2026, 3, 4))
+        result = compute_metrics(state, today=date(2026, 3, 4))
 
-        expected = bench_metrics["rates"]
+        # bench metrics.json은 flat 구조 (rates 키 없음)
+        expected = bench_metrics.get("rates", bench_metrics)
         assert result["evidence_rate"] == pytest.approx(expected["evidence_rate"])
         assert result["conflict_rate"] == pytest.approx(expected["conflict_rate"], abs=0.002)
         assert result["avg_confidence"] == pytest.approx(expected["avg_confidence"], abs=0.01)
@@ -181,14 +179,15 @@ class TestComputeMetrics:
 
 class TestAssessHealth:
     def test_bench_health(self, bench_metrics: dict) -> None:
-        rates = bench_metrics["rates"]
+        # bench metrics.json은 flat 구조 (rates 키 없음)
+        rates = bench_metrics.get("rates", bench_metrics)
         result = assess_health(rates)
 
         assert result["evidence_rate"] == "healthy"       # 1.0 >= 0.95
-        assert result["multi_evidence_rate"] == "healthy"  # 0.821 >= 0.50
-        assert result["conflict_rate"] == "healthy"        # 0.036 <= 0.05
-        assert result["avg_confidence"] == "healthy"        # 0.875 >= 0.85
-        assert result["staleness_risk"] == "healthy"       # 0
+        assert result["multi_evidence_rate"] == "healthy"  # 0.911 >= 0.50
+        assert result["conflict_rate"] == "healthy"        # 0.0 <= 0.05
+        assert result["avg_confidence"] == "caution"       # 0.801 < 0.85
+        assert result["staleness_risk"] == "danger"        # 59 > 5
 
     def test_danger_values(self) -> None:
         metrics = {

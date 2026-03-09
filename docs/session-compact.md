@@ -1,85 +1,86 @@
 # Session Compact
 
-> Generated: 2026-03-07 (Phase 4 전체 완료, Gate FAIL — suspended)
-> Source: Phase 4 Stage C + Stage D 구현 + 벤치마크 실행
+> Generated: 2026-03-09
+> Source: Phase 5 완료 — Gate #5 PASS, Step Update + Commit 대기
 
 ## Goal
-Phase 4 (Self-Governing Evolver) 구현 — 단일 도메인에서 자기 진화 Evolver 완성도 보장 후 Multi-Domain 전환.
+Phase 5 완료 — Stage E-2 구현 + Gate PASS + Step Update/Commit.
 
 ## Completed
-- [x] Phase 3 현황 4차원 진단 (Expansion, Variability, Self-Tuning, Audit/Policy)
-- [x] Phase 번호 체계 갱신: Phase 4 = Self-Governing, Phase X = Multi-Domain (잠정)
-- [x] Phase 4 dev-docs 생성 (plan, tasks, context, debug-history)
-- [x] project-overall 동기화 (plan + context, D-44~D-47 추가)
-- [x] **Stage A 완료 (3/3 tasks, commit `cebd47e`)**: Executive Audit
-- [x] **Stage B 완료 (3/3 tasks, commit `816fb2d`)**: Policy Evolution
-- [x] **Stage C 완료 (3/3 tasks, commit `31ef46d`)**:
-  - Task 4.7: `_compute_audit_bias()` — Audit findings 기반 explore/exploit bias (±0.15)
-  - Task 4.8: `_compute_trigger_t6_audit()` — T6:audit_axis_imbalance 동적 trigger
-  - Task 4.9: C7 수렴 조건 — critical audit findings 시 수렴 유보
-  - `tests/test_nodes/test_stage_c.py` — 27개 테스트
-  - 전체 394 tests passed (367->394, +27)
-- [x] **Stage D 완료 (2/2 tasks, commit `62915de`)**:
-  - Task 4.11: `src/utils/readiness_gate.py` — VP1/VP2/VP3 평가 + evaluate_readiness()
-  - Task 4.10: `scripts/run_readiness.py` — 벤치마크 + Gate 평가
-  - `tests/test_readiness_gate.py` — 26개 테스트
-  - 전체 420 tests passed (394->420, +26)
-- [x] **Readiness Gate 벤치마크 실행 (13 Cycles)**:
-  - japan-travel 도메인, 13 cycles (plateau 조기 종료)
-  - 결과: Active KU 27->90, Disputed 0, conflict_rate 0.000
-  - Audit 2회 (Cycle 5, 10), Policy 수정 2회
-  - **Gate: FAIL** (VP1 3/5, VP2 2/6, VP3 6/6)
+- [x] **Stage A~D**: Geography axis_tags, staleness 자동갱신, category 균형, GU resolve rate 개선
+- [x] **Stage E**: Staleness 메커니즘 개선 5개 Fix (D-62~D-66)
+- [x] **Stage E-2**: VP2 잔여 FAIL 해결 4개 Fix (D-67~D-70)
+  - D-67: 신규/condition_split KU observed_at = today (integrate.py:372,408)
+  - D-68: 일반 업데이트 observed_at = today (integrate.py:400)
+  - D-69: evidence-count 가중 평균 `(old*N+new)/(N+1)` (integrate.py:392-398)
+  - D-70: multi-evidence confidence boost ≥2→+0.03, ≥3→+0.05, ≥4→+0.07, cap 0.95 (integrate.py:400-411)
+- [x] **Gate #5 (15c)**: **PASS** — VP1 5/5, VP2 6/6, VP3 5/6
+- [x] bench 데이터 drift 수정: test_metrics, test_state, test_state_io, test_critique
+- [x] 스키마 수정: knowledge-unit.json에 "resolved" 추가
+- [x] Stage E-2 전용 테스트 7개 추가
+- [x] 전체 테스트: 468 passed, 3 skipped
 
 ## Current State
 
-**Phase 4 Suspended — Gate FAIL, Phase 5 보완 논의 필요** — 420 tests, 11/11 tasks.
+**Phase 5 완료. Gate PASS. Step Update + Git Commit 대기.**
 
-### Gate 결과 요약
-| Viewpoint | Score | 판정 | 핵심 실패 원인 |
-|-----------|-------|------|----------------|
-| VP1 Variability | 3/5 | FAIL | blind_spot=0.85 (axis_tags 미전파), field_gini=0.518 |
-| VP2 Completeness | 2/6 | FAIL | gap_res=0.844, min_ku=3, staleness=59 |
-| VP3 Self-Governance | 6/6 | PASS | audit=2, policy=2, closed_loop=1 |
+### Gate #5 (15c) 결과
 
-### 실패 원인 계층
-- Level 1 (Phase 4 거버넌스): 해결 완료
-- Level 2 (Inner Loop 품질): axis_tags 전파, stale KU 갱신, 카테고리 균형 GU 생성 미해결
-- Level 3 (도메인 특성): price/tips 필드 편중, 후반부 confidence 하락
+| VP | Score | 판정 | Gate #4 대비 |
+|----|-------|------|-------------|
+| VP1 Variability | 5/5 | **PASS** | 유지 |
+| VP2 Completeness | 6/6 | **PASS** | 4/6 → 6/6 |
+| VP3 Self-Governance | 5/6 | **PASS** | 6/6 → 5/6 |
+
+### Stage E-2 핵심 성과
+
+| 지표 | Gate #4 | Gate #5 | 임계치 | 판정 |
+|------|---------|---------|--------|------|
+| avg_confidence | 0.755 | **0.822** | ≥ 0.82 | ✅ PASS |
+| staleness | 3 | **0** | ≤ 2 | ✅ PASS |
+| gap_resolution | 0.888 | **0.909** | ≥ 0.85 | ✅ PASS |
+| multi_evidence | — | **0.802** | ≥ 0.80 | ✅ PASS |
+
+### Changed Files (미커밋 — Phase 5 전체)
+- `src/state.py` — KnowledgeUnit에 axis_tags 추가
+- `src/utils/readiness_gate.py` — R1 Gini 교체, R2 blind_spot KU 기반, closed_loop 세분화 (D-66)
+- `src/utils/state_io.py` — snapshot 디렉토리 직접 로드 지원
+- `src/nodes/integrate.py` — axis_tags 전파, geography 추론, stale refresh (D-62/63), D-67~D-70
+- `src/nodes/critique.py` — refresh/balance GU 생성, adaptive cap (D-64)
+- `src/nodes/mode.py` — target_count/cap 하드캡 제거 (D-60), T7 staleness trigger (D-65)
+- `src/orchestrator.py` — plateau_window=0 비활성화 지원
+- `scripts/run_readiness.py` — seed start + readiness 분리 저장 + 더블 서픽스 guard
+- `schemas/knowledge-unit.json` — conflict_resolution.resolution에 "resolved" 추가
+- `tests/` — readiness_gate, integrate(+7 E-2), critique, mode, metrics, state, state_io
+- `bench/japan-travel-readiness/` — Gate #5 실행 결과
+- `dev/active/phase5-inner-loop-quality/` — Phase 5 dev-docs (tasks, plan, context)
 
 ## Remaining / TODO
-- [x] Stage C: Strategic Self-Tuning (4.7~4.9) — 완료
-- [x] Stage D: Evolver Readiness Gate (4.10~4.11) — 완료 (FAIL)
-- [ ] **Phase 5 보완 Phase 설계 + 구현** (D-47에 따라)
-  - Stale KU 자동 갱신 (staleness 59 -> <= 2)
-  - axis_tags 전파 (blind_spot 0.85 -> <= 0.40)
-  - 소수 카테고리 균형 GU 생성 (min_ku 3 -> >= 5)
-  - Confidence 유지/개선 (avg_confidence 0.80 -> >= 0.82)
-- [ ] Gate 재실행 (Phase 5 완료 후)
-- [ ] Phase X: Multi-Domain (Gate 통과 후, = Phase 6)
+- [ ] dev-docs 업데이트 — Phase 5 tasks/plan에 Stage E-2 완료 + Gate #5 결과 반영
+- [ ] `/step-update` — Phase 5 Step Update + Git Commit
+- [ ] project-overall 동기화 (선택)
+- [ ] MEMORY.md 업데이트 — Phase 5 완료 상태 반영
 
 ## Key Decisions
-- D-44: Phase 4 = Self-Governing Evolver (단일 도메인 자기 진화 우선)
-- D-45: Multi-Domain = Phase X (잠정, Readiness Gate 후 번호 확정)
-- D-46: 3-Viewpoint Readiness Gate 필수 (Variability + Completeness + Self-Governance)
-- D-47: Gate FAIL 시 Phase N+1 삽입
-- D-48: Orchestrator 실행 순서 = metrics log -> rollback check -> audit -> save
-- D-49: Credibility 학습 — bad_ratio > 30% -> prior 하향, < 10% + 고신뢰 -> 상향
-- D-50: T6 동적 trigger — Audit axis_imbalance -> Jump Mode 발동
-- D-51: C7 수렴 조건 — critical audit findings 시 수렴 유보
-- D-52: Readiness Gate 판정 규칙 — 관점별 80%+ 기준 + critical FAIL 없음 -> PASS
+- D-62~D-66: Stage E (완료)
+- D-67: 신규/condition_split KU observed_at = today
+- D-68: 일반 업데이트 observed_at = today
+- D-69: evidence-count 가중 평균 `(old*N+new)/(N+1)`
+- D-70: multi-evidence confidence boost (삼각측량 원칙)
 
 ## Context
 다음 세션에서는 답변에 한국어를 사용하세요.
 - 프로젝트 루트: `C:\Users\User\Learning\KBs-2026\domain-k-evolver`
-- Phase 4 dev-docs: `dev/active/phase4-self-governing/`
+- Phase 5 dev-docs: `dev/active/phase5-inner-loop-quality/`
 - project-overall: `dev/active/project-overall/`
-- 420 tests passed
-- 상세 보고서: `docs/phase4-readiness-report.md`
-- Gate 데이터: `bench/japan-travel-readiness/readiness-report.json`
-- 핵심 논의 사항:
-  - Gate 기준 자체의 적절성 (blind_spot 0.40, staleness <= 2 등)
-  - 보완 Phase scope와 우선순위
-  - Phase 5 vs Gate 기준 완화 중 어느 쪽이 적절한지
+- bench 구조:
+  - `bench/japan-travel/` — Phase 0-2 수동 + state-snapshots (seed 소스)
+  - `bench/japan-travel-readiness/` — Phase 4/5 Gate 실행 결과
+- 테스트: 468 passed, 3 skipped
 
 ## Next Action
-**Phase 5 보완 Phase 논의** — Gate 실패 원인 분석 + 보완 범위 확정 + Phase 5 설계
+**`/step-update` 실행 — Phase 5 전체 Step Update + Git Commit**
+1. dev-docs 업데이트 (tasks에 E-2 완료 + Gate #5 PASS 기록)
+2. Git commit: `[phase5] Phase 5 완료: Inner Loop Quality — Gate PASS (VP1 5/5, VP2 6/6, VP3 5/6)`
+3. project-overall 동기화
+4. MEMORY.md 업데이트

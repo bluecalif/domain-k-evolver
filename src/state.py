@@ -27,6 +27,7 @@ class KnowledgeUnit(TypedDict, total=False):
     conditions: dict
     dispute: dict
     supersedes: str
+    axis_tags: dict  # {"geography": str, ...}
 
 
 class GapUnit(TypedDict, total=False):

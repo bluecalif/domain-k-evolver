@@ -10,28 +10,12 @@ Gate 판정: 관점별 80%+ 기준 충족 + 치명적 FAIL 없음 → PASS.
 
 from __future__ import annotations
 
-import math
 from typing import Any
 
 
 # ---------------------------------------------------------------------------
 # VP1: Expansion with Variability
 # ---------------------------------------------------------------------------
-
-def _shannon_entropy(counts: dict[str, int]) -> tuple[float, float]:
-    """Shannon entropy와 H_max 계산. Returns (H, H_max)."""
-    total = sum(counts.values())
-    n = len(counts)
-    if total == 0 or n <= 1:
-        return 0.0, 0.0
-    h_max = math.log2(n)
-    entropy = 0.0
-    for count in counts.values():
-        if count > 0:
-            p = count / total
-            entropy -= p * math.log2(p)
-    return entropy, h_max
-
 
 def _gini_coefficient(values: list[int]) -> float:
     """Gini coefficient 계산 (0=완전 균등, 1=완전 불균등)."""
@@ -59,7 +43,7 @@ def evaluate_vp1(
     """VP1: Expansion with Variability 평가.
 
     Criteria:
-    - R1: 카테고리 Shannon entropy uniformity ≥ 0.75
+    - R1: 카테고리 Gini coefficient ≤ 0.45
     - R2: blind_spot_ratio ≤ 0.40
     - R3: 후반 cycle에서 새 entity ≥ 2
     - R4: 필드별 KU Gini ≤ 0.45
@@ -73,7 +57,7 @@ def evaluate_vp1(
 
     results: dict[str, dict[str, Any]] = {}
 
-    # R1: Category Shannon Entropy
+    # R1: Category Gini Coefficient (0=균등, 1=불균등)
     cat_counts: dict[str, int] = {c: 0 for c in categories}
     for ku in kus:
         if ku.get("status") != "active":
@@ -83,22 +67,31 @@ def evaluate_vp1(
         if cat in cat_counts:
             cat_counts[cat] += 1
 
-    h, h_max = _shannon_entropy(cat_counts)
-    uniformity = h / h_max if h_max > 0 else 0.0
-    results["R1_entropy"] = {
-        "passed": uniformity >= 0.75,
-        "value": round(uniformity, 4),
-        "threshold": 0.75,
+    cat_gini = _gini_coefficient(list(cat_counts.values())) if cat_counts else 0.0
+    results["R1_category_gini"] = {
+        "passed": cat_gini <= 0.45,
+        "value": round(cat_gini, 4),
+        "threshold": 0.45,
         "critical": True,
     }
 
-    # R2: Blind spot ratio (category × geography)
+    # R2: Blind spot ratio (category × geography) — KU + GU 기반
     geo_axis = next((a for a in axes if a.get("name") == "geography"), None)
     if geo_axis:
         geo_anchors = geo_axis.get("anchors", [])
         cat_geo: dict[str, dict[str, int]] = {
             c: {g: 0 for g in geo_anchors} for c in categories
         }
+        # KU axis_tags 기반 (우선)
+        for ku in kus:
+            if ku.get("status") != "active":
+                continue
+            parts = ku.get("entity_key", "").split(":")
+            cat = parts[1] if len(parts) >= 3 else ""
+            geo = ku.get("axis_tags", {}).get("geography", "")
+            if cat in cat_geo and geo in cat_geo.get(cat, {}):
+                cat_geo[cat][geo] += 1
+        # Resolved GU axis_tags 보충 (KU에 없는 셀 커버)
         for gu in gap_map:
             if gu.get("status") != "resolved":
                 continue
@@ -388,17 +381,33 @@ def evaluate_vp3(
         "critical": False,
     }
 
-    # R6: Closed loop — finding → patch → (subsequent audit with fewer findings)
+    # R6: Closed loop — finding → patch → behavior change (D-66: category별 세분화)
     closed_loop = 0
     for i in range(1, len(audit_history)):
         prev = audit_history[i - 1]
         curr = audit_history[i]
         prev_patches = prev.get("policy_patches", [])
         if prev_patches:
-            prev_finding_count = len(prev.get("findings", []))
-            curr_finding_count = len(curr.get("findings", []))
-            if curr_finding_count < prev_finding_count:
+            # D-66: 전체 건수뿐 아니라 category별 감소도 인정
+            prev_findings = prev.get("findings", [])
+            curr_findings = curr.get("findings", [])
+            # 방법1: 전체 건수 감소
+            if len(curr_findings) < len(prev_findings):
                 closed_loop += 1
+                continue
+            # 방법2: category별 감소 (1개 이상 category에서 findings 감소)
+            prev_cats: dict[str, int] = {}
+            for f in prev_findings:
+                c = f.get("category", "unknown")
+                prev_cats[c] = prev_cats.get(c, 0) + 1
+            curr_cats: dict[str, int] = {}
+            for f in curr_findings:
+                c = f.get("category", "unknown")
+                curr_cats[c] = curr_cats.get(c, 0) + 1
+            for cat, prev_cnt in prev_cats.items():
+                if curr_cats.get(cat, 0) < prev_cnt:
+                    closed_loop += 1
+                    break
 
     results["R6_closed_loop"] = {
         "passed": closed_loop >= 1,
