@@ -7,6 +7,7 @@ SearchTool Protocol을 구현하는 Real 검색 어댑터.
 from __future__ import annotations
 
 import logging
+import re
 import time
 from typing import Any
 
@@ -36,7 +37,7 @@ def _retry_with_backoff(
         except Exception as exc:
             last_exc = exc
             exc_str = str(exc).lower()
-            is_retryable = "429" in exc_str or "rate" in exc_str or "5" in exc_str[:1]
+            is_retryable = bool(re.search(r"429|5\d\d|rate", exc_str))
             if not is_retryable or attempt == max_retries:
                 raise
             wait = BACKOFF_BASE * (BACKOFF_FACTOR ** attempt)
@@ -59,6 +60,7 @@ class TavilySearchAdapter:
 
         self._client = TavilyClient(api_key=config.api_key)
         self._max_results = config.max_results
+        self._timeout = config.request_timeout
         self.search_calls: int = 0
         self.fetch_calls: int = 0
 
@@ -69,6 +71,7 @@ class TavilySearchAdapter:
             self._client.search,
             query=query,
             max_results=self._max_results,
+            timeout=self._timeout,
         )
         results = []
         for item in response.get("results", []):
@@ -87,6 +90,7 @@ class TavilySearchAdapter:
             response = _retry_with_backoff(
                 self._client.extract,
                 urls=[url],
+                timeout=self._timeout,
             )
             extracted = response.get("results", [])
             if extracted:

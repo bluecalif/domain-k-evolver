@@ -64,6 +64,9 @@ def load_state(domain_path: str | Path) -> EvolverState:
 
     Returns:
         EvolverState dict.
+
+    Raises:
+        StateCorruptError: JSON 파싱 실패 시 (.bak 복구 시도 후에도 실패).
     """
     state_dir = Path(domain_path) / "state"
     # snapshot 디렉토리는 state/ 하위 없이 직접 JSON 포함
@@ -73,10 +76,10 @@ def load_state(domain_path: str | Path) -> EvolverState:
 
     for filename, field in _FILE_MAP.items():
         path = state_dir / filename
-        if path.exists():
-            data[field] = _read_json(path)
-        else:
-            data[field] = [] if field in ("knowledge_units", "gap_map") else {}
+        data[field] = _load_json_with_recovery(path, field)
+
+    # 필수 필드 검증
+    _validate_required_fields(data)
 
     cycle = data.get("metrics", {}).get("cycle", 0)
 
@@ -92,6 +95,47 @@ def load_state(domain_path: str | Path) -> EvolverState:
         "hitl_pending": None,
     }
     return state
+
+
+class StateCorruptError(Exception):
+    """State JSON 파일 복구 불가능."""
+
+
+def _load_json_with_recovery(path: Path, field: str) -> dict | list:
+    """JSON 로드 — 실패 시 .bak 복구 시도."""
+    default = [] if field in ("knowledge_units", "gap_map") else {}
+
+    if not path.exists():
+        return default
+
+    # 1차: 원본 파일 시도
+    try:
+        return _read_json(path)
+    except (json.JSONDecodeError, UnicodeDecodeError) as exc:
+        logger.error("JSON 파싱 실패: %s — %s", path, exc)
+
+    # 2차: .bak 복구 시도
+    bak_path = path.with_suffix(path.suffix + ".bak")
+    if bak_path.exists():
+        try:
+            data = _read_json(bak_path)
+            logger.warning("Backup 에서 복구: %s → %s", bak_path, path)
+            # 복구된 데이터로 원본 덮어쓰기
+            _write_json(path, data)
+            return data
+        except (json.JSONDecodeError, UnicodeDecodeError) as exc2:
+            logger.error("Backup 복구도 실패: %s — %s", bak_path, exc2)
+
+    raise StateCorruptError(
+        f"State 파일 복구 불가: {path} (원본 + .bak 모두 실패)"
+    )
+
+
+def _validate_required_fields(data: dict) -> None:
+    """State 필수 필드 존재 검증."""
+    for field in ("knowledge_units", "gap_map", "domain_skeleton"):
+        if field not in data:
+            raise StateCorruptError(f"필수 필드 누락: {field}")
 
 
 def save_state(state: EvolverState, domain_path: str | Path) -> None:
@@ -111,7 +155,12 @@ def save_state(state: EvolverState, domain_path: str | Path) -> None:
     for filename, field in _FILE_MAP.items():
         data = state.get(field)
         if data is not None:
-            _write_json(state_dir / filename, data)
+            target = state_dir / filename
+            # .bak rotation — 기존 파일이 있으면 백업
+            if target.exists():
+                bak_path = target.with_suffix(target.suffix + ".bak")
+                shutil.copy2(target, bak_path)
+            _write_json(target, data)
 
 
 def snapshot_state(domain_path: str | Path, cycle: int) -> Path:

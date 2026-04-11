@@ -72,6 +72,7 @@ def create_llm(config: LLMConfig | None = None, *, track_usage: bool = True) -> 
             max_tokens=config.max_tokens,
             api_key=config.api_key,
             max_retries=3,
+            request_timeout=config.request_timeout,
         )
         if track_usage:
             return LLMCallCounter(llm)

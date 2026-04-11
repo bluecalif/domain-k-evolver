@@ -139,6 +139,7 @@ class TestTavilySearchAdapterCounter:
         adapter.search_calls = 0
         adapter.fetch_calls = 0
         adapter._max_results = 5
+        adapter._timeout = 30
 
         mock_client = MagicMock()
         mock_client.search.return_value = {
@@ -161,6 +162,7 @@ class TestTavilySearchAdapterCounter:
         adapter.search_calls = 0
         adapter.fetch_calls = 0
         adapter._max_results = 5
+        adapter._timeout = 30
 
         mock_client = MagicMock()
         mock_client.extract.return_value = {

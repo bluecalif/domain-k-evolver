@@ -274,7 +274,7 @@ def integrate_node(
                 num = int(ku_id.replace("KU-", ""))
                 max_ku_id = max(max_ku_id, num)
             except ValueError:
-                pass
+                logger.warning("비정상 KU ID 형식: %r — 무시", ku_id)
 
     # GU ID 카운터
     max_gu_id = 0
@@ -285,7 +285,7 @@ def integrate_node(
                 num = int(gu_id.replace("GU-", ""))
                 max_gu_id = max(max_gu_id, num)
             except ValueError:
-                pass
+                logger.warning("비정상 GU ID 형식: %r — 무시", gu_id)
 
     # 통합 처리
     adds: list[dict] = []

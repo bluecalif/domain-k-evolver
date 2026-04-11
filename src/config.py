@@ -17,6 +17,7 @@ class LLMConfig:
     model: str = "gpt-4.1-mini"
     temperature: float = 0.2
     max_tokens: int = 4096
+    request_timeout: int = 60
     api_key: str = ""
 
     @classmethod
@@ -37,6 +38,7 @@ class SearchConfig:
     provider: str = "tavily"
     api_key: str = ""
     max_results: int = 5
+    request_timeout: int = 30
 
     @classmethod
     def from_env(cls) -> SearchConfig:

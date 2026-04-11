@@ -71,19 +71,18 @@ def _collect_single_gu(
 ) -> list[dict]:
     """단일 GU에 대한 수집 + 파싱 (병렬 실행 단위)."""
     all_results: list[dict] = []
+    failures: list[str] = []
 
     for query in gu_queries:
         try:
             results = search_tool.search(query)
             all_results.extend(results)
-        except Exception:
-            for _ in range(2):
-                try:
-                    results = search_tool.search(query)
-                    all_results.extend(results)
-                    break
-                except Exception:
-                    continue
+        except (TimeoutError, ConnectionError, OSError) as exc:
+            logger.warning("collect search failed: %r — %s", query, exc)
+            failures.append(f"search:{query}")
+        except Exception as exc:
+            logger.warning("collect search unexpected error: %r — %s", query, exc)
+            failures.append(f"search:{query}")
 
     # URL fetch (상위 2개)
     fetched_content = ""
@@ -93,8 +92,12 @@ def _collect_single_gu(
             try:
                 content = search_tool.fetch(url)
                 fetched_content += content + "\n"
-            except Exception:
-                pass
+            except (TimeoutError, ConnectionError, OSError) as exc:
+                logger.warning("collect fetch failed: %s — %s", url, exc)
+                failures.append(f"fetch:{url}")
+            except Exception as exc:
+                logger.warning("collect fetch unexpected error: %s — %s", url, exc)
+                failures.append(f"fetch:{url}")
 
     if llm is not None:
         prompt = _build_parse_prompt(gu, all_results, fetched_content)
@@ -161,6 +164,8 @@ def collect_node(
 
     # 병렬 수집 (search_tool + llm이 있을 때)
     all_claims: list[dict] = []
+    total_gu_count = len(tasks)
+    failed_gu_count = 0
 
     if tasks and (llm is not None or search_tool is not None):
         workers = min(max_workers, len(tasks))
@@ -171,21 +176,31 @@ def collect_node(
                 executor.submit(_collect_single_gu, gu, gu_queries, search_tool, llm): gu.get("gu_id")
                 for gu, gu_queries in tasks
             }
-            for future in as_completed(futures):
+            for future in as_completed(futures, timeout=120):
                 gu_id = futures[future]
                 try:
-                    claims = future.result()
+                    claims = future.result(timeout=60)
                     all_claims.extend(claims)
                     logger.info("collect: %s → %d claims", gu_id, len(claims))
+                except TimeoutError:
+                    logger.warning("collect: %s timeout (60s)", gu_id)
+                    failed_gu_count += 1
                 except Exception as e:
                     logger.warning("collect: %s 실패 — %s", gu_id, e)
+                    failed_gu_count += 1
     else:
         # search_tool 없으면 순차 (결정론적 mock)
         for gu, gu_queries in tasks:
             claims = _parse_claims_deterministic(gu, [], "")
             all_claims.extend(claims)
 
-    return {"current_claims": all_claims}
+    # collect_failure_rate 계산
+    failure_rate = failed_gu_count / total_gu_count if total_gu_count > 0 else 0.0
+
+    return {
+        "current_claims": all_claims,
+        "collect_failure_rate": round(failure_rate, 3),
+    }
 
 
 def _build_parse_prompt(
