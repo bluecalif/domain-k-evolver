@@ -59,6 +59,7 @@ class OrchestratorConfig:
     audit_interval: int = 5  # N cycle마다 Executive Audit 실행 (0=비활성)
     bench_domain: str = "japan-travel"
     bench_path: str = "bench"
+    bench_root: str = ""  # Silver: 직접 trial 경로 (설정 시 bench_path/bench_domain 무시)
 
     @classmethod
     def from_env(cls) -> OrchestratorConfig:
@@ -71,6 +72,7 @@ class OrchestratorConfig:
             audit_interval=int(os.environ.get("EVOLVER_AUDIT_INTERVAL", "5")),
             bench_domain=os.environ.get("EVOLVER_BENCH_DOMAIN", "japan-travel"),
             bench_path=os.environ.get("EVOLVER_BENCH_PATH", "bench"),
+            bench_root=os.environ.get("EVOLVER_BENCH_ROOT", ""),
         )
 
 

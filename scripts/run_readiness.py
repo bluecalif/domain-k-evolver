@@ -31,7 +31,9 @@ logging.basicConfig(
 logger = logging.getLogger("run_readiness")
 
 
-def _run_benchmark(cycles: int, resume: bool) -> tuple[dict, list[dict]]:
+def _run_benchmark(
+    cycles: int, resume: bool, bench_root: str | None = None,
+) -> tuple[dict, list[dict]]:
     """N Cycle 벤치마크 실행 → (final_state, trajectory)."""
     from src.adapters.llm_adapter import create_llm
     from src.adapters.search_adapter import create_search_tool
@@ -41,17 +43,34 @@ def _run_benchmark(cycles: int, resume: bool) -> tuple[dict, list[dict]]:
     config = EvolverConfig.from_env()
     config.validate_api_keys()
 
-    # 15 cycle 설정 — Gate 평가 위해 plateau/convergence 비활성화
-    orch_cfg = OrchestratorConfig(
-        max_cycles=cycles,
-        snapshot_every=config.orchestrator.snapshot_every,
-        invariant_check=config.orchestrator.invariant_check,
-        stop_on_convergence=False,
-        plateau_window=0,  # plateau 감지 비활성화
-        audit_interval=5,
-        bench_domain=f"{config.orchestrator.bench_domain}-readiness",
-        bench_path=config.orchestrator.bench_path,
-    )
+    if bench_root:
+        # Silver: --bench-root 직접 경로 사용
+        orch_cfg = OrchestratorConfig(
+            max_cycles=cycles,
+            snapshot_every=config.orchestrator.snapshot_every,
+            invariant_check=config.orchestrator.invariant_check,
+            stop_on_convergence=False,
+            plateau_window=0,
+            audit_interval=5,
+            bench_domain=config.orchestrator.bench_domain,
+            bench_path=config.orchestrator.bench_path,
+            bench_root=bench_root,
+        )
+        output_path = Path(bench_root)
+    else:
+        # Legacy: {bench_domain}-readiness 경로
+        orch_cfg = OrchestratorConfig(
+            max_cycles=cycles,
+            snapshot_every=config.orchestrator.snapshot_every,
+            invariant_check=config.orchestrator.invariant_check,
+            stop_on_convergence=False,
+            plateau_window=0,
+            audit_interval=5,
+            bench_domain=f"{config.orchestrator.bench_domain}-readiness",
+            bench_path=config.orchestrator.bench_path,
+        )
+        output_path = Path(orch_cfg.bench_path) / orch_cfg.bench_domain
+
     config = EvolverConfig(
         llm=config.llm, search=config.search, orchestrator=orch_cfg,
     )
@@ -61,25 +80,38 @@ def _run_benchmark(cycles: int, resume: bool) -> tuple[dict, list[dict]]:
 
     orchestrator = Orchestrator(config, llm=llm, search_tool=search_tool)
 
-    # Seed state(cycle-0-snapshot)에서 시작 — Phase 5 코드 효과 측정
+    # Seed state 로드
     from src.utils.state_io import load_state
-    output_path = Path(orch_cfg.bench_path) / orch_cfg.bench_domain  # japan-travel-readiness
-    # 원본 bench domain에서 seed 로드
-    orig_domain = orch_cfg.bench_domain.removesuffix("-readiness")
-    orig_path = Path(orch_cfg.bench_path) / orig_domain
-    seed_path = orig_path / "state-snapshots" / "cycle-0-snapshot"
 
     if resume and (output_path / "state").exists():
         initial_state = load_state(output_path)
         logger.info("Resume: readiness 결과에서 State 로드")
-    elif seed_path.exists():
-        initial_state = load_state(seed_path)
-        initial_state["current_cycle"] = 0
-        logger.info("Seed state 로드: %s (KU=%d, GU=%d)",
-                     seed_path, len(initial_state.get("knowledge_units", [])),
-                     len(initial_state.get("gap_map", [])))
+    elif bench_root:
+        # Silver: bench-root 에 기존 state 가 있으면 사용, 없으면 원본 seed 에서
+        orig_domain = config.orchestrator.bench_domain
+        orig_path = Path(config.orchestrator.bench_path) / orig_domain
+        seed_path = orig_path / "state-snapshots" / "cycle-0-snapshot"
+        if seed_path.exists():
+            initial_state = load_state(seed_path)
+            initial_state["current_cycle"] = 0
+            logger.info("Seed state 로드: %s (KU=%d, GU=%d)",
+                         seed_path, len(initial_state.get("knowledge_units", [])),
+                         len(initial_state.get("gap_map", [])))
+        else:
+            initial_state = load_state(orig_path)
     else:
-        initial_state = load_state(orig_path)
+        # Legacy: 원본 bench domain 에서 seed 로드
+        orig_domain = orch_cfg.bench_domain.removesuffix("-readiness")
+        orig_path = Path(orch_cfg.bench_path) / orig_domain
+        seed_path = orig_path / "state-snapshots" / "cycle-0-snapshot"
+        if seed_path.exists():
+            initial_state = load_state(seed_path)
+            initial_state["current_cycle"] = 0
+            logger.info("Seed state 로드: %s (KU=%d, GU=%d)",
+                         seed_path, len(initial_state.get("knowledge_units", [])),
+                         len(initial_state.get("gap_map", [])))
+        else:
+            initial_state = load_state(orig_path)
 
     results = orchestrator.run(initial_state)
     final_state = results[-1].state if results else initial_state
@@ -142,6 +174,8 @@ def main() -> None:
     parser.add_argument("--evaluate-only", action="store_true",
                         help="기존 결과로 Gate만 평가 (API 호출 없음)")
     parser.add_argument("--resume", action="store_true")
+    parser.add_argument("--bench-root", type=str, default=None,
+                        help="Silver trial 직접 경로 (예: bench/silver/japan-travel/p0-20260411-baseline)")
     args = parser.parse_args()
 
     if args.evaluate_only:
@@ -149,7 +183,7 @@ def main() -> None:
         state, trajectory = _load_existing_results()
     else:
         logger.info("벤치마크 실행: %d cycles", args.cycles)
-        state, trajectory = _run_benchmark(args.cycles, args.resume)
+        state, trajectory = _run_benchmark(args.cycles, args.resume, args.bench_root)
 
     # Gate 평가
     from src.utils.readiness_gate import evaluate_readiness
@@ -159,13 +193,16 @@ def main() -> None:
     _print_report(gate_result)
 
     # 결과 저장
-    from src.config import EvolverConfig
-    config = EvolverConfig.from_env()
-    domain_path = Path(config.orchestrator.bench_path) / config.orchestrator.bench_domain
-    if domain_path.name.endswith("-readiness"):
-        output_path = domain_path
+    if args.bench_root:
+        output_path = Path(args.bench_root)
     else:
-        output_path = domain_path.parent / f"{domain_path.name}-readiness"
+        from src.config import EvolverConfig
+        config = EvolverConfig.from_env()
+        domain_path = Path(config.orchestrator.bench_path) / config.orchestrator.bench_domain
+        if domain_path.name.endswith("-readiness"):
+            output_path = domain_path
+        else:
+            output_path = domain_path.parent / f"{domain_path.name}-readiness"
     output_path.mkdir(parents=True, exist_ok=True)
 
     report_path = output_path / "readiness-report.json"

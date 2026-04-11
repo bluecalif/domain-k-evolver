@@ -42,13 +42,15 @@ def main() -> None:
     parser.add_argument("--domain", type=str, default=None, help="Override bench domain")
     parser.add_argument("--dry-run", action="store_true", help="Config 출력만 하고 실행하지 않음")
     parser.add_argument("--resume", action="store_true", help="이전 auto 결과에서 이어서 실행")
+    parser.add_argument("--bench-root", type=str, default=None,
+                        help="Silver trial 직접 경로 (예: bench/silver/japan-travel/p0-20260411-baseline)")
     args = parser.parse_args()
 
     config = EvolverConfig.from_env()
     config.validate_api_keys()
 
-    if args.domain:
-        # Override domain (frozen dataclass → recreate)
+    if args.domain or args.bench_root:
+        # Override domain/bench-root (frozen dataclass → recreate)
         from src.config import OrchestratorConfig
         orch = OrchestratorConfig(
             max_cycles=args.cycles,
@@ -56,8 +58,9 @@ def main() -> None:
             invariant_check=config.orchestrator.invariant_check,
             stop_on_convergence=config.orchestrator.stop_on_convergence,
             plateau_window=config.orchestrator.plateau_window,
-            bench_domain=args.domain,
+            bench_domain=args.domain or config.orchestrator.bench_domain,
             bench_path=config.orchestrator.bench_path,
+            bench_root=args.bench_root or "",
         )
         from src.config import EvolverConfig as EC
         config = EC(llm=config.llm, search=config.search, orchestrator=orch)
@@ -67,8 +70,12 @@ def main() -> None:
                 config.orchestrator.plateau_window)
 
     # State 로드
-    domain_path = Path(config.orchestrator.bench_path) / config.orchestrator.bench_domain
-    output_path = domain_path.parent / f"{domain_path.name}-auto"
+    if config.orchestrator.bench_root:
+        domain_path = Path(config.orchestrator.bench_root)
+        output_path = domain_path
+    else:
+        domain_path = Path(config.orchestrator.bench_path) / config.orchestrator.bench_domain
+        output_path = domain_path.parent / f"{domain_path.name}-auto"
 
     if args.resume and (output_path / "state").exists():
         state = load_state(output_path)

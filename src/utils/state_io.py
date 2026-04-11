@@ -1,15 +1,38 @@
 """JSON 파일 I/O 유틸리티 — State ↔ 5개 JSON 파일 변환.
 
 bench/{domain}/state/ 디렉토리의 5개 JSON 파일을 EvolverState로 로드/저장.
+Silver 세대: --bench-root 격리 + legacy bench 쓰기 금지.
 """
 
 from __future__ import annotations
 
 import json
+import logging
 import shutil
 from pathlib import Path
 
 from src.state import EvolverState
+
+logger = logging.getLogger(__name__)
+
+# Legacy bench 경로 — read-only (Bronze 보호)
+_LEGACY_BENCH_DIRS = {"japan-travel"}
+
+
+def _check_write_guard(domain_path: Path) -> None:
+    """Legacy bench 디렉토리 쓰기 금지 가드.
+
+    bench/japan-travel/ 에 직접 쓰기를 시도하면 에러 발생.
+    bench/japan-travel-auto/, bench/silver/japan-travel/ 등은 허용.
+    """
+    resolved = domain_path.resolve()
+    # bench/{legacy_name} 패턴만 차단 (bench/{legacy_name}-auto 등은 허용)
+    if resolved.parent.name == "bench" and resolved.name in _LEGACY_BENCH_DIRS:
+        raise PermissionError(
+            f"Legacy bench 쓰기 금지: {domain_path} (read-only). "
+            f"Silver trial 은 bench/silver/ 하위에, "
+            f"auto 결과는 {resolved.name}-auto/ 에 저장하세요."
+        )
 
 # State JSON 파일 ↔ EvolverState 필드 매핑
 _FILE_MAP: dict[str, str] = {
@@ -76,8 +99,12 @@ def save_state(state: EvolverState, domain_path: str | Path) -> None:
 
     Args:
         state: 저장할 EvolverState.
-        domain_path: bench/{domain} 디렉토리 경로.
+        domain_path: bench/{domain} 또는 bench/silver/{domain}/{trial_id} 경로.
+
+    Raises:
+        PermissionError: legacy bench 디렉토리에 쓰기 시도 시.
     """
+    _check_write_guard(Path(domain_path))
     state_dir = Path(domain_path) / "state"
     state_dir.mkdir(parents=True, exist_ok=True)
 
@@ -91,12 +118,16 @@ def snapshot_state(domain_path: str | Path, cycle: int) -> Path:
     """state/ → state-snapshots/cycle-{n}-snapshot/ 스냅샷 복사.
 
     Args:
-        domain_path: bench/{domain} 디렉토리 경로.
+        domain_path: bench/{domain} 또는 bench/silver/{domain}/{trial_id} 경로.
         cycle: 스냅샷 대상 Cycle 번호.
 
     Returns:
         생성된 스냅샷 디렉토리 경로.
+
+    Raises:
+        PermissionError: legacy bench 디렉토리에 쓰기 시도 시.
     """
+    _check_write_guard(Path(domain_path))
     domain = Path(domain_path)
     state_dir = domain / "state"
     snapshot_dir = domain / "state-snapshots" / f"cycle-{cycle}-snapshot"

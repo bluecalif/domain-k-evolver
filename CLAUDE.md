@@ -60,6 +60,10 @@ src/            — LangGraph 자동화 코드 (구현 예정)
 python -m pytest                    # Run all tests
 ```
 
+## Bash Tool Rules
+
+- **항상 절대경로 사용** — 특히 git 명령어. `cd` 대신 절대경로로 실행.
+
 ## Encoding (Windows + Korean)
 
 | Context | Rule |

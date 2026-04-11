@@ -68,7 +68,10 @@ class Orchestrator:
 
     @property
     def _domain_path(self) -> Path:
-        return Path(self.config.orchestrator.bench_path) / self.config.orchestrator.bench_domain
+        orch = self.config.orchestrator
+        if orch.bench_root:
+            return Path(orch.bench_root)
+        return Path(orch.bench_path) / orch.bench_domain
 
     def run(self, initial_state: EvolverState | None = None) -> list[CycleResult]:
         """Multi-Cycle 실행.

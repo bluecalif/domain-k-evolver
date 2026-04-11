@@ -33,13 +33,36 @@ logger = logging.getLogger("run_one_cycle")
 
 
 def main() -> None:
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Evolver 1-Cycle Run")
+    parser.add_argument("--bench-root", type=str, default=None,
+                        help="Silver trial 직접 경로 (예: bench/silver/japan-travel/p0-20260411-baseline)")
+    args = parser.parse_args()
+
     config = EvolverConfig.from_env()
+    if args.bench_root:
+        from src.config import OrchestratorConfig, EvolverConfig as EC
+        orch = OrchestratorConfig(
+            max_cycles=1,
+            snapshot_every=config.orchestrator.snapshot_every,
+            invariant_check=config.orchestrator.invariant_check,
+            stop_on_convergence=config.orchestrator.stop_on_convergence,
+            plateau_window=config.orchestrator.plateau_window,
+            bench_domain=config.orchestrator.bench_domain,
+            bench_path=config.orchestrator.bench_path,
+            bench_root=args.bench_root,
+        )
+        config = EC(llm=config.llm, search=config.search, orchestrator=orch)
     config.validate_api_keys()
 
     logger.info("Config: model=%s, search=%s", config.llm.model, config.search.provider)
 
     # State 로드
-    domain_path = Path(config.orchestrator.bench_path) / config.orchestrator.bench_domain
+    if config.orchestrator.bench_root:
+        domain_path = Path(config.orchestrator.bench_root)
+    else:
+        domain_path = Path(config.orchestrator.bench_path) / config.orchestrator.bench_domain
     state = load_state(domain_path)
     logger.info(
         "State 로드: KU=%d, GU=%d, cycle=%d",
@@ -88,8 +111,11 @@ def main() -> None:
         prescriptions = critique.get("prescriptions", [])
         logger.info("Prescriptions: %d", len(prescriptions))
 
-    # State 저장 (원본 보존을 위해 별도 경로 — state-auto/state/ 에 저장)
-    output_path = domain_path.parent / f"{domain_path.name}-auto"
+    # State 저장
+    if config.orchestrator.bench_root:
+        output_path = Path(config.orchestrator.bench_root)
+    else:
+        output_path = domain_path.parent / f"{domain_path.name}-auto"
     save_state(final_state, output_path)
     logger.info("State 저장: %s/state/", output_path)
 
