@@ -47,7 +47,7 @@
 ### Silver Phase Dev-Docs (예정)
 | Phase | 디렉토리 | 선행 조건 |
 |-------|----------|-----------|
-| Silver P0 | `dev/active/phase-si-p0-foundation/` | 즉시 착수 가능 |
+| Silver P0 | `dev/active/phase-si-p0-foundation/` | 즉시 착수 가능 (**dev-docs 생성 완료**) |
 | Silver P1 | `dev/active/phase-si-p1-entity-resolution/` | P0 gate pass |
 | Silver P2 | `dev/active/phase-si-p2-remodel/` | P1 |
 | Silver P3 | `dev/active/phase-si-p3-acquisition/` | P0 gate pass (P1 과 병렬 가능) |
