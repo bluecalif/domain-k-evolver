@@ -1,223 +1,314 @@
 # Project Overall Plan
-> Last Updated: 2026-03-08 (Phase 5 Stage D 진행)
-> Status: In Progress — Phase 5 Stage D (GU Resolve Rate 개선)
+> Last Updated: 2026-04-11
+> Status: Bronze 세대 완료 → **Silver 세대 착수 대기** (Silver P0 즉시 가능)
 
 ## 1. Summary (개요)
 
 Domain-K-Evolver — 도메인 불문 자기확장 지식 Evolver 프레임워크.
 부분적으로 알려진 지식에서 시작해 Gap-driven 계획 → 수집 → 통합 → 비평 → 계획수정 루프를 반복하며 지식을 자동 확장.
 
-**목표**: draft.md의 설계를 LangGraph 기반 자동화 파이프라인으로 구현하여 실제 동작하는 Evolver 완성.
+**목표 (Bronze → Silver)**: draft.md의 설계를 LangGraph 기반 자동화 파이프라인으로 구현하여(Bronze 완료) → 운영 가능 형태로 굳히고(Silver) → 2차 도메인에서 무관성 실증.
 
-**범위**: Cycle 0 수동 검증(완료) → Cycle 1 수동 검증(완료) → GU 전략 재검토(Phase 0C) → LangGraph 자동화 → 벤치 검증 → 다중 도메인 확장.
+**범위**: Cycle 0/1 수동 검증 → GU 전략 재검토 → LangGraph 자동화 → Cycle 품질 리모델링 → Self-Governing (audit/policy/gate) → Inner Loop 품질 → **Silver: Foundation Hardening → Entity Resolution → Remodel → Acquisition Expansion → Coverage Intelligence → Telemetry/Dashboard → Multi-Domain Validation**.
 
 ---
 
 ## 2. Current State (현재 상태)
 
-### 완료된 항목
-- Cycle 0 수동 실행 완료 (japan-travel 벤치): KU 13, EU 18, Gap 21 open / 7 resolved
-- Cycle 1 수동 실행 완료: KU 21 (active 19 + disputed 2), EU 33, Gap 16 open / 15 resolved
-- Cycle 2 수동 실행 완료 (Jump Mode): KU 28, EU 55, Gap 21 open / 18 resolved
-- Axis Coverage Matrix + Jump Mode 실측 검증 완료 (geography deficit 해소)
-- expansion-policy v1.0 확정 (trigger 임계치, explore/exploit 비율, guardrail 수치)
-- JSON Schema 4종 확정 (KU, EU, GU, PU) → `schemas/`
-- 6대 Deliverable 템플릿 확정 → `templates/`
-- Metrics 6개 공식 + 건강 지표 임계치 확정
-- 5대 불변원칙 + 자동 검증 방법 확정 (Conflict-preserving 실전 검증 포함)
-- Critique→Plan 컴파일 6개 규칙 확정
-- LangGraph 노드/엣지 설계 초안 완성 (design-v2.md §10)
-- Claude Code 인프라 구축: CLAUDE.md, commands(3), hooks(1), skills(5)
-- GU Bootstrap 명세 공식화 완료 → `docs/gu-bootstrap-spec.md`
-- GU Expansion Policy 확정 → `docs/gu-bootstrap-expansion-policy.md` (v1.0 확정)
-- **Phase 1 완료**: LangGraph Core Pipeline — src/ 16파일, tests/ 10파일, 191 tests passed
-  - StateGraph 14노드 (8 core + cycle_inc + 5 HITL gate)
-  - 조건부 엣지 4개 (mode/collect/integrate/critique)
-  - Mock LLM + 결정론적 fallback 기반 단위/통합 테스트
-- **Phase 2 Stage A 인프라 코드 작성 완료**: config, adapters, orchestrator, metrics_logger
-- **Phase 2 Stage A' 완료**: Real API 1 Cycle 성공 (KU 28→34, +6)
-- **Phase 2 Stage B' 완료**: 3 Cycle 연속 성공, 불변원칙 위반 0건, 254 tests
-  - KU 28→42, GU resolved 21→32
-  - LLM 17 calls (84K tokens), Search 42, Fetch 28
-- **Phase 2 Stage C' 완료**: 10 Cycle 자동화 + 심층 분석, 272 tests
-  - KU 28→85 (active 31, disputed 54), GU resolved 75
-  - LLM 69 calls (1,002K tokens), Search 177, Fetch 118
-  - 핵심 결론: 지식 발견 엔진 OK, `_detect_conflict()` FP가 유일 병목
-  - FP 수정 시 active KU 성장률 0.4→4.6/cycle (11.5x 개선) 추정
-  - `docs/phase2-analysis.md` 심층 보고서, `scripts/analyze_trajectory.py` 분석 도구
-- **Phase 3 완료**: Cycle Quality Remodeling, 301 tests, 9/9 tasks
-  - Active KU 31→77 (+148%), Disputed 54→0 (-100%), conflict_rate 0.635→0.000
-  - Active 성장률 0.3→4.3/cycle (14.3x), Health D→B
-  - Stage A: hybrid conflict detection (D-41)
-  - Stage B: Evidence-weighted dispute resolution (D-42)
-  - Stage C: C6 수렴조건 + early stopping 개선 (D-43)
-  - `docs/phase3-analysis.md` 심층 보고서
-- **Phase 4 완료**: Self-Governing Evolver, 420 tests, 11/11 tasks
-  - Stage A: Executive Audit (4.1~4.3), Stage B: Policy Evolution (4.4~4.6)
-  - Stage C: Strategic Self-Tuning (4.7~4.9), Stage D: Readiness Gate (4.10~4.11)
-  - VP3 Self-Governance 6/6 PASS, VP1/VP2 FAIL → Phase 5 보완 삽입 (D-47)
-  - `docs/phase4-readiness-report.md` 보고서
+### Bronze 세대 완료 (Phase 0 ~ Phase 5)
+- **Phase 0 / 0B / 0C**: Cycle 0·1 수동 검증 + GU 전략(v1.0) 확정, Axis Coverage Matrix + Jump Mode 실측 성공
+- **Phase 1**: LangGraph Core Pipeline — StateGraph 14노드, 191 tests
+- **Phase 2**: Bench Integration & Real Self-Evolution — OpenAI gpt-4.1-mini + Tavily, 10 Cycle 자동, 272 tests
+- **Phase 3**: Cycle Quality Remodeling — Active 31→77, Disputed 54→0, conflict_rate 0.635→0.000, 301 tests
+- **Phase 4**: Self-Governing Evolver — audit/policy/credibility/readiness-gate, 420 tests, **Gate FAIL** (VP1/VP2)
+- **Phase 5**: Inner Loop Quality — axis_tags 전파, staleness refresh, adaptive cap, multi-evidence boost, **Gate #5 PASS** (VP1 5/5, VP2 6/6, VP3 5/6), **468 tests**, commit `b122a23`
 
-### 자산
+### Silver 세대 착수 준비 (2026-04-11)
+- **단일 진실 소스**: `docs/silver-masterplan-v2.md` (§4 Phase 표)
+- **실행 backlog**: `docs/silver-implementation-tasks.md` (119 tasks, Phase 5 baseline 468 tests 기준)
+- **개정 포인트 (Bronze 상태 반영)**:
+  - Phase 4·5 에서 완료된 audit / policy evolution / staleness / multi-evidence boost 는 Silver에서 재진행하지 않음
+  - 남은 Outer-Loop 작업은 **remodel 노드 + phase transition** 뿐
+  - 기존 `dev/active/p0-p1-remediation-plan.md` 의 8건은 전부 미해결 → Silver P0 에 흡수
+  - v1 masterplan 의 WS/Phase/Deliverable 4중 재진술 → v2 의 **Phase 표 단일 진실 소스** 로 대체
+  - 정성 게이트 ("improves", "visible") → 정량 임계치 + blocking scenario test
+
+### 자산 (현 commit 기준)
 ```
-schemas/          — 4종 JSON Schema (확정)
-templates/        — 6대 Deliverable MD 템플릿 (확정)
-bench/japan-travel/
-  state/          — 5개 State JSON (Cycle 2 결과)
-  cycle-0/        — 6개 Deliverable (수동 실행 결과)
-  cycle-1/        — 5개 Deliverable (수동 실행 결과)
-  state-snapshots/ — Cycle 0, 1 스냅샷
-docs/             — draft.md, design-v2.md, gu-bootstrap-spec.md, gu-bootstrap-expansion-policy.md
-src/adapters/     — llm_adapter.py, search_adapter.py (Phase 2 인프라)
-src/config.py     — 환경 설정 (API 키, 모델명 등)
-src/orchestrator.py — 사이클 관리 Orchestrator
-src/utils/metrics_logger.py — 사이클별 Metrics 기록
-.claude/          — commands, hooks, skills (개발 인프라)
+schemas/          — KU/EU/GU/PU/policy 5종 (remodel_report / telemetry.v1 추가 예정: Silver)
+templates/        — 6대 Deliverable MD 템플릿 (Silver: si-trial-card / si-readiness-report / si-index-row 추가 예정)
+bench/japan-travel/            — Bronze 수동 실행 원본 (read-only)
+bench/japan-travel-auto/       — Phase 3 최종 10 Cycle 자동 실행
+bench/japan-travel-readiness/  — Phase 4·5 Gate 벤치마크
+(Silver: bench/silver/{domain}/{trial_id}/ 로 이전 예정)
+src/nodes/        — seed, mode, plan, collect, integrate, critique, plan_modify, hitl_gate, audit, dispute_resolver
+                     (Silver: remodel 신규)
+src/adapters/     — llm_adapter.py, search_adapter.py
+                     (Silver: providers/{base,tavily,ddg,curated}_provider.py + fetch_pipeline.py)
+src/utils/        — state_io, schema_validator, metrics, invariant_checker, policy_manager, readiness_gate,
+                     plateau_detector, metrics_logger, llm_parse
+                     (Silver: entity_resolver, novelty, coverage_map 신규)
+src/obs/          — 부재 (Silver P5 에서 telemetry + dashboard 신규)
 ```
 
 ---
 
 ## 3. Target State (목표 상태)
 
-프로젝트 완료 시:
-- LangGraph 기반 자동 Inner Loop 동작 (Seed → Plan → Collect → Integrate → Critique → PM)
-- HITL Gate A~E 작동 (LangGraph interrupt)
-- japan-travel 벤치에서 Cycle 1+ 자동 실행 성공
-- 5대 불변원칙 자동 검증 통과
-- **Outer Loop 자동 Audit + Policy 자동 재설계** (Phase 4 ✅)
-- **Inner Loop 품질 보완** — axis_tags, staleness, 균형 (Phase 5)
-- **Evolver Readiness Gate 3/3 PASS** (Phase 5 Gate 재실행)
-- 새 도메인에서 Seed Pack만으로 Evolver 가동 가능 (Phase 6)
+### Bronze (달성)
+- LangGraph 기반 자동 Inner Loop 동작 (Seed → Plan → Collect → Integrate → Critique → PM) ✅
+- HITL Gate 작동 (A~E) ✅
+- japan-travel 벤치에서 Cycle 1+ 자동 실행 성공 ✅
+- 5대 불변원칙 자동 검증 통과 ✅
+- Outer Loop 자동 Audit + Policy 자동 재설계 ✅ (Phase 4)
+- Inner Loop 품질 보완 ✅ (Phase 5)
+- Evolver Readiness Gate 3/3 PASS ✅ (Phase 5 Gate #5)
+
+### Silver (목표)
+- **Foundation Hardening** — bare-except 0, timeout/retry/복구 정상화, collect_failure_rate 등 reliability 메트릭 emit
+- **Entity Resolution** — alias/is_a 해상도, conflict ledger 영구 보존
+- **Outer-Loop Remodel 완결** — audit 결과를 구조 변경 제안으로 compile, HITL-R 승인 게이트 + phase transition 저장
+- **Acquisition Expansion** — SEARCH/FETCH/PARSE 3단계 분리, provider 플러그인, provenance + 소스 다양성 메트릭, 비용 예산 가드
+- **Coverage Intelligence** — novelty/overlap/deficit 근거 기반 plan 선택, reason_code 100%
+- **Telemetry & Dashboard** — telemetry.v1 계약 + 단일 운영자용 FastAPI+htmx 대시보드 (LOC ≤ 2,000)
+- **Multi-Domain Validation** — 2차 도메인에서 10 cycle smoke, Gate #5 동등 기준 (VP1 ≥ 4/5, VP2 ≥ 5/6, VP3 ≥ 4/6), framework 수정 ≤ 5건
+- **HITL 축소** — 매 cycle HITL-A/B/C 제거, HITL-S/R/D/E 4세트 체제
+- **S1~S11 시나리오 blocking test** 전부 pass
+- **Silver readiness review (Gate #6)** 승인
 
 ---
 
 ## 4. Phase 구성
 
-### Phase 0: Cycle 0 수동 검증 ✅ Complete
-- 수동으로 전체 Inner Loop 실행
-- JSON Schema, Metrics, 불변원칙 검증
-- design-v2.md 도출
+### Bronze 세대 Phases (완료)
 
-### Phase 0B: Cycle 1 수동 검증 ✅ Complete
-- Conflict-preserving 원칙 실전 검증 성공 (disputed 2건, condition_split + hold)
-- 동적 GU 3개 발견 (GU-0029~0031), 상한 이내
-- 5대 불변원칙 전체 PASS
-- Cycle 1 Deliverables → `bench/japan-travel/cycle-1/`
+#### Phase 0: Cycle 0 수동 검증 ✅
+- design-v2.md 도출 완료
 
-### Phase 0C: GU 전략 재검토 ✅ Complete
-- **목적**: 축(axis) 기반 커버리지 분석 + Quantum Jump 수동 테스트 + 정책 확정
-- **근거**: gu-bootstrap-expansion-policy.md (v0.1)의 3가지 구조적 한계 지적
-  1. 국소 최적화 편향 — 기존 open GU 주변만 반복 탐색
-  2. 초기 스켈레톤 불완전성 — category 축만 관리, geography/condition/risk 축 미추적
-  3. 상한 경직성 — 고정 20% 상한은 구조 결손 회복에 느림
-- **입력**: Cycle 1 State + gu-bootstrap-expansion-policy.md (v0.1) + revised-plan-c2.md
-- **산출물**:
-  - japan-travel skeleton에 geography/condition/risk 축 명시 추가
-  - Axis Coverage Matrix 첫 계산 (31 GU 다축 분류, 결손 정량화)
-  - Cycle 2를 Jump Mode로 수동 실행, trigger/guardrail 검증
-  - gu-bootstrap-expansion-policy v0.1 → v1.0 승격 (수치 임계치 확정)
-  - design-v2 또는 design-v3로 정책 흡수
-- **Phase 1 입력 조건**: Phase 0C 완료 + 확정된 GU 전략 정책
+#### Phase 0B: Cycle 1 수동 검증 ✅
+- Conflict-preserving 실전 검증 성공 (disputed 2건, condition_split + hold)
 
-### Phase 1: LangGraph Core Pipeline ✅ Complete
-- **완료**: 2026-03-05 | 191 tests passed
-- **상세**: `dev/active/phase1-langgraph-core/` 참조
-- **Stage A**: 기반 구축 — EvolverState 타입 + I/O + Schema 검증 + Metrics (5/5 ✅)
-- **Stage B**: 노드 구현 — seed, mode, plan, collect, integrate, critique, plan_modify, hitl_gate (8/8 ✅)
-- **Stage C**: Graph 빌드 — StateGraph + 엣지 라우팅 + 단위 테스트 (3/3 ✅)
-- 총 16 tasks 완료 (S:1, M:6, L:7, XL:2)
+#### Phase 0C: GU 전략 재검토 ✅
+- Axis Coverage Matrix + Jump Mode 실측, expansion-policy v1.0 확정
 
-### Phase 2: Bench Integration & Real Self-Evolution ✅ Complete
-- **완료**: 2026-03-06 | 272 tests passed, 16/16 tasks
-- **기술**: OpenAI gpt-4.1-mini (LLM) + Tavily Search (검색) — D-29, D-30
-- **재설계**: 25-task 4-Stage Mock 위주 → **16-task 3-Stage Real API First** (D-34, D-35)
-- **Stage A'** (5 tasks, 2.1~2.5): Smoke Test → Real 1 Cycle ✅
-- **Stage B'** (6 tasks, 2.6~2.11): 안정화 + 3 Cycle ✅
-- **Stage C'** (5 tasks, 2.12~2.16): 10+ Cycle 자동화 + 심층 분석 ✅
-- **상세**: `dev/active/phase2-bench-validation/` 참조
+#### Phase 1: LangGraph Core Pipeline ✅
+- 191 tests, 8노드 + 5 HITL Gate + cycle_inc = 14 노드 StateGraph
 
-### Phase 3: Cycle Quality Remodeling ✅ Complete
-- **완료**: 2026-03-06 | 301 tests passed, 9/9 tasks
-- **상세**: `dev/active/phase3-cycle-remodeling/` 참조
-- **Stage A** (3 tasks, 3.1~3.3): Semantic Conflict Detection — hybrid rule+LLM (D-41) ✅
-- **Stage B** (3 tasks, 3.4~3.6): Dispute Resolution — Evidence-weighted (D-42) ✅
-- **Stage C** (3 tasks, 3.7~3.9): 수렴 개선 + 10 Cycle 검증 — C6 conflict_rate (D-43) ✅
-- **결과**: Active 31→77 (+148%), Disputed 54→0, conflict_rate 0→0, Health D→B
+#### Phase 2: Bench Integration & Real Self-Evolution ✅
+- 272 tests, 10 Cycle 자동 실행, D-29~D-39
 
-### Phase 4: Self-Governing Evolver ✅ Complete (Gate FAIL → Phase 5 삽입)
-- **완료**: 2026-03-07 | 420 tests passed, 11/11 tasks
-- **상세**: `dev/active/phase4-self-governing/` 참조
-- **Stage A** (3 tasks, 4.1~4.3): Outer Loop Audit ✅
-- **Stage B** (3 tasks, 4.4~4.6): Policy Evolution ✅
-- **Stage C** (3 tasks, 4.7~4.9): Strategic Self-Tuning ✅
-- **Stage D** (2 tasks, 4.10~4.11): Readiness Gate ✅ (실행 완료, **Gate FAIL**)
-  - VP1 FAIL (3/5): blind_spot=0.85, field_gini=0.518
-  - VP2 FAIL (2/6): gap_res=0.844, min_ku=3, staleness=59
-  - VP3 PASS (6/6): audit=2, policy=2, closed_loop=1
-- **기술 결정**: D-44 ~ D-52
+#### Phase 3: Cycle Quality Remodeling ✅
+- 301 tests, Active +148%, conflict_rate → 0, D-40~D-43
 
-### Phase 5: Inner Loop Quality — In Progress (Stage D)
-- **목적**: Phase 4 Gate FAIL의 Inner Loop 품질 문제 해결 (D-47 보완 Phase)
-- **선행**: VP1-R1 Shannon→Gini (D-53) ✅
-- **Stage A** (4 tasks, 5.1~5.4): Geography Axis-Tags 전파 ✅ — blind_spot 0.85→0.0
-- **Stage B** (2 tasks, 5.5~5.6): Staleness 자동갱신 ✅ — staleness 59→11
-- **Stage C** (2 tasks, 5.7~5.8): Category 균형 + Field 다양성 ✅ — field_gini 0.518→0.437
-- **Gate 재실행 #1** (5.9): **FAIL** — VP1 개선, VP2 gap_resolution 0.545 (악화)
-  - 근본 원인: GU 생성(~72/cycle) >> 해결(~8/cycle) — target_count 하드캡이 collect 처리량 제한
-- **Stage D** (2 tasks, 5.10a~5.10b): bench 정리 (D-61) + GU Resolve Rate 개선 — target_count 캡 제거, 비례 스케일 (D-60)
-- **Gate 재실행 #2** (5.11): 5 cycle 검증 → 15 cycle 풀 실행
-- **상세**: `dev/active/phase5-inner-loop-quality/` 참조
-- **기술 결정**: D-53 ~ D-61
-- **테스트**: 437 tests passed
+#### Phase 4: Self-Governing Evolver ✅ (Gate FAIL → Phase 5 삽입)
+- 420 tests, Stage A~D (Audit / Policy / Self-Tuning / Readiness Gate)
+- D-44~D-52
+- **Gate FAIL**: VP1 3/5, VP2 2/6, VP3 6/6 → Phase 5 보완 삽입
 
-### Phase 6: Multi-Domain & Robustness (Phase 5 Gate PASS 후)
-- 새 도메인 Seed Pack 작성 + Evolver 가동
-- 에러 처리 + 복구 메커니즘
-- 성능 최적화 (토큰/API 비용)
-- **진입 조건**: Phase 5 Gate 재실행 3/3 PASS
+#### Phase 5: Inner Loop Quality ✅
+- **완료**: 2026-03-09 | 468 tests passed, 23/23 tasks, commit `b122a23`
+- Stage A~D: axis_tags 전파, staleness 자동갱신, category 균형, GU resolve rate
+- Stage E: staleness 메커니즘 개선 (D-62~D-66) — observed_at today, confidence 가중, adaptive cap, T7 trigger, closed_loop 세분화
+- Stage E-2: VP2 잔여 FAIL 해결 (D-67~D-70) — 신규/업데이트 observed_at, evidence-count 가중, multi-evidence boost
+- **Gate #5 PASS**: VP1 5/5, VP2 6/6, VP3 5/6
+- avg_confidence 0.755→0.822, staleness 93→0, gap_resolution 0.780→0.909
+
+---
+
+### Silver 세대 Phases (단일 진실 소스: `docs/silver-masterplan-v2.md` §4)
+
+#### Silver P0. Foundation Hardening
+- **Goal**: silent failure 제거, Silver 벤치 격리 확립, HITL 정책 축소 (§14)
+- **WS**: WS1 (masterplan 라벨)
+- **Scope (locked, 8 core + 벤치/HITL)**:
+  - P0-A: Silver 벤치 스캐폴딩 (`bench/silver/`, INDEX, 템플릿, `--bench-root`, config snapshot)
+  - P0-B: remediation 8건 — retry 정규표현(P0-3), LLM/Search timeout(P0-2), collect 로깅/집계(P0-1), integrate ValueError 로깅(P1-1), state_io 복구/rotation(P1-4), 테스트(P1-3)
+  - P0-C: HITL 정책 축소 — inline A/B/C 제거, HITL-S/R/D/E 4세트 도입, `dispute_queue` 필드 추가
+  - P0-D: baseline trial 재현 (`p0-{date}-baseline`) — Phase 4·5 동등 스모크 증명
+  - P0-X: 인터페이스 고정 (P1/P3 병렬 착수 전 필수)
+- **Gate (정량)**:
+  - 대상 모듈 bare-except 0
+  - `collect_failure_rate`, `timeout_count`, `retry_success_rate` emit
+  - 테스트 ≥ 488 (468 + 20)
+  - 48h soak: adapter kill → 그래프 hang 없음
+  - baseline trial: VP1 ≥ 4/5, VP2 ≥ 5/6 재현
+  - 일반 cycle inline HITL-A/B/C 호출 0
+  - S1/S2/S3 scenario pass
+- **Depends on**: 없음 (즉시 착수)
+
+#### Silver P1. Entity Resolution & State Safety
+- **Goal**: 구조적 무결성 — alias / is_a / conflict ledger
+- **Scope**:
+  - `src/utils/entity_resolver.py` [NEW] — resolve_alias / resolve_is_a / canonicalize_entity_key
+  - `integrate.py._find_existing_ku` resolver 연동
+  - `state/conflict_ledger.json` 영구 보존
+  - skeleton `aliases` / `is_a` validator
+- **Gate (정량)**:
+  - 동의어 (JR-Pass / 재팬레일패스), is_a (shinkansen is_a train) 각 pass
+  - japan-travel 재실행: 중복 KU ≥ 15% 감소 (P0 baseline 대비)
+  - 충돌 KU 100% 가 ledger 에 영구 보존
+  - S4/S5/S6 pass
+  - 테스트 ≥ 508 (P0 + 20)
+- **Depends on**: P0 (state_io 안전성, P0-X 인터페이스 고정)
+- **병렬 가능**: P3
+
+#### Silver P2. Outer-Loop Remodel 완결
+- **Goal**: audit 결과를 구조 변경 액션 (merge/split/reclassify/policy/gap rule)으로 compile
+- **Scope**:
+  - `src/nodes/remodel.py` [NEW]
+  - `schemas/remodel_report.schema.json` [NEW]
+  - `graph.py` — `cycle % 10 == 0 and audit.has_critical` → remodel → HITL-R → phase_bump|plan_modify
+  - phase transition 저장 (`state/phase_{N}/...`)
+  - Rollback 경로
+- **Gate (정량)**:
+  - 합성 시나리오 엔티티 중복률 30%+ → remodel 탐지·제안
+  - HITL 승인 → 다음 cycle skeleton 실제 변경
+  - rollback → state diff = ∅
+  - S7 scenario (trigger 부분) pass
+  - 테스트 ≥ P1 종료 + 15
+- **Depends on**: P0, P1
+
+#### Silver P3. Acquisition Expansion
+- **Goal**: snippet 의존 탈피, 소스 다양성 측정 가능화
+- **Scope**:
+  - Provider 플러그인 — `src/adapters/providers/{base,tavily,ddg,curated}_provider.py` [NEW]
+  - `src/adapters/fetch_pipeline.py` [NEW] — robots / content-type / timeout / max_bytes / trust_tier
+  - `collect.py` 를 SEARCH → FETCH → PARSE 3단계로 리팩터
+  - Provenance 스키마 확장 (`providers_used`, `domain`, `fetch_ok`, `trust_tier`, 등)
+  - `SearchConfig` 확장 (`enable_tavily`, `enable_ddg_fallback`, `fetch_top_n`, `max_bytes_per_url`, `entropy_floor`, `k_per_provider`)
+  - Source diversity: `domain_entropy`, `provider_entropy`
+  - 비용 가드: `cycle_llm_token_budget`, `cycle_fetch_bytes_budget` + degrade 모드
+- **Gate (정량)**:
+  - fetch 성공률 ≥ 80%
+  - claim 당 평균 EU ≥ 1.8
+  - `domain_entropy` ≥ 2.5 bits
+  - cycle 당 LLM 비용 ≤ baseline × 2.0
+  - robots.txt 차단 pass (S8)
+  - 비용 budget degrade (S9)
+  - 테스트 ≥ P1 종료 + 35
+- **Depends on**: P0 (timeout/retry, P0-X 인터페이스 고정)
+- **병렬 가능**: P1
+
+#### Silver P4. Coverage Intelligence
+- **Goal**: plan 이 novelty / overlap / deficit 근거로 target 선택
+- **Scope**:
+  - `src/utils/novelty.py` [NEW] — Jaccard / token / entity overlap
+  - `src/utils/coverage_map.py` [NEW] — axis × entity 그리드, deficit score
+  - `plan.py` reason_code (`deficit:...`, `plateau:novelty<...`, `audit:merge_pending`, `remodel:pending`, `seed:initial`)
+  - `critique.py` metric 기반 처방 (`overlap > 0.8` → jump)
+  - `plateau_detector.py` novelty trigger
+- **Gate (정량)**:
+  - plan output 모든 target 이 reason_code 보유
+  - 10 cycle 연속 run novelty 평균 ≥ 0.25
+  - 인위적 plateau → audit/remodel trigger 발동
+  - S7 full scenario pass
+- **Depends on**: P2 (remodel), P3 (provenance)
+
+#### Silver P5. Telemetry Contract & Dashboard
+- **Goal**: 운영자가 JSON 파일 없이 상태 파악·개입
+- **실행 순서**: P5-A (schema + emit) → P5-B (UI). UI-first 금지.
+- **Scope**:
+  - `schemas/telemetry.v1.schema.json` [NEW] — cycle 단위 snapshot
+  - `src/obs/telemetry.py` [NEW] — jsonl append-only, atomic write
+  - Dashboard: FastAPI + htmx + Chart.js, localhost only
+  - Views: overview / cycle timeline / gap coverage map / source reliability / conflict ledger / HITL inbox (3탭) / remodel review
+  - `docs/operator-guide.md` (≤ 20 페이지)
+- **Gate (정량)**:
+  - 100 cycle fixture: 모든 view 10s 이내 로드
+  - telemetry schema contract 테스트 (positive + negative)
+  - S10 scenario pass
+  - 대시보드 LOC ≤ 2,000 (하드 리밋)
+  - 운영자 가이드 ≥ 5페이지 walkthrough
+- **Depends on**: P0 (metric emit), P3 (provenance), P4 (novelty)
+
+#### Silver P6. Multi-Domain Validation (Silver 완료 exit gate)
+- **Goal**: 프레임워크 도메인 무관성 실증
+- **Scope**:
+  - 2차 도메인 선정 (후보: 국내 부동산 / OSS LLM 생태계 / 한국 세법) — japan-travel 대비 time horizon / hierarchy depth / source language 3축 중 2축 이상 이질
+  - Seed skeleton + seed pack, 10 cycle smoke run
+  - Framework-vs-domain delta memo
+- **Gate (정량)**:
+  - 10 cycle 내 Gate #5 동등 (VP1 ≥ 4/5, VP2 ≥ 5/6, VP3 ≥ 4/6)
+  - framework 수정 ≤ 5건
+  - 한글 출처 처리 에러 0
+  - S11 scenario pass
+- **Depends on**: P1 ~ P5 전부
+
+---
+
+### 의존성 그래프
+
+```
+P0 ──┬── P1 ──┐
+     │        ├── P2 ──┐
+     ├── P3 ──┼────────┤
+              └─ P4 ──┼── P5 ── P6
+```
+
+- **병렬 가능**: P1 ∥ P3 (P0-X 인터페이스 고정 후)
+- **P5-A (schema)**: P3 와 동시 정의 (provenance 필드 공유)
+- **직렬 제약**: P2 는 P1 필요, P4 는 P2+P3, P6 는 모두 필요
 
 ---
 
 ## 5. Task Breakdown (전체)
 
-| Phase | Stage | Size | Task 수 | Status |
-|-------|-------|------|---------|--------|
-| Phase 0 | Cycle 0 수동 검증 | — | — | ✅ Complete |
-| Phase 0B | Cycle 1 수동 검증 | S~L | 5 | ✅ Complete |
-| Phase 0C | A~C: 축 선언 + Jump Mode + 정책 확정 | M~XL | 6 | ✅ Complete |
-| Phase 1 | A: 기반 (State, I/O, Schema, Metrics) | S~M | 5 | ✅ Complete |
-| Phase 1 | B: 노드 구현 (8개: seed~hitl_gate) | M~XL | 8 | ✅ Complete |
-| Phase 1 | C: Graph 빌드 + 테스트 | M~L | 3 | ✅ Complete |
-| Phase 2 | A': Smoke + 1 Cycle | S~L | 5 | ✅ Complete |
-| Phase 2 | B': 안정화 + 3 Cycle | S~L | 6 | ✅ Complete |
-| Phase 2 | C': 10+ Cycle 자동화 | S~L | 5 | ✅ Complete |
-| Phase 3 | A: Semantic Conflict Detection | M~L | 3 | ✅ Complete |
-| Phase 3 | B: Dispute Resolution | M~L | 3 | ✅ Complete |
-| Phase 3 | C: 수렴 개선 + 재검증 | S~L | 3 | ✅ Complete |
-| Phase 4 | A: Outer Loop Audit | M~L | 3 | ✅ Complete |
-| Phase 4 | B: Policy Evolution | M~L | 3 | ✅ Complete |
-| Phase 4 | C: Strategic Self-Tuning | M~L | 3 | ✅ Complete |
-| Phase 4 | D: Evolver Readiness Gate | M~L | 2 | ✅ Complete (FAIL) |
-| Phase 5 | 선행: Gate 메트릭 수정 | S | 1 | ✅ Complete |
-| Phase 5 | A: Geography Axis-Tags 전파 | S~M | 4 | ✅ Complete |
-| Phase 5 | B: Staleness 자동갱신 | M~L | 2 | ✅ Complete |
-| Phase 5 | C: Category 균형 + Field 다양성 | M | 2 | ✅ Complete |
-| Phase 5 | D: bench 정리 + GU Resolve Rate 개선 | S~M | 2 | |
-| Phase 5 | 검증: Gate 재실행 | L | 2 | 1/2 (FAIL→재시도) |
-| Phase 6 | Multi-Domain & Robustness | L~XL | TBD | |
-| **총계** | | | **~75** | |
+### Bronze (완료)
+
+| Phase | Stage 개요 | Task 수 | Status |
+|-------|-----------|---------|--------|
+| Phase 0 | Cycle 0 수동 | — | ✅ Complete |
+| Phase 0B | Cycle 1 수동 | 5 | ✅ Complete |
+| Phase 0C | 축 선언 + Jump Mode + 정책 | 6 | ✅ Complete |
+| Phase 1 | 기반 + 노드 + Graph 빌드 | 15 | ✅ Complete |
+| Phase 2 | Real API 1/3/10 Cycle | 16 | ✅ Complete |
+| Phase 3 | Conflict + Dispute + 수렴 | 9 | ✅ Complete |
+| Phase 4 | Audit + Policy + Self-Tuning + Gate | 11 | ✅ Complete (Gate FAIL) |
+| Phase 5 | 선행 + A~E + E-2 + Gate 재실행 ×4 | 23 | ✅ Complete (Gate #5 PASS) |
+| **Bronze 합계** | | **85** | ✅ |
+
+### Silver (계획)
+
+| Phase | Name | Tasks | Status |
+|-------|------|-------|--------|
+| Silver P0 | Foundation Hardening | 32 (A:6 + B:9 + C:8 + D:3 + X:6) | 대기 |
+| Silver P1 | Entity Resolution & State Safety | 12 (A:4 + B:4 + C:4) | 대기 |
+| Silver P2 | Outer-Loop Remodel 완결 | 14 (A:4 + B:4 + C:6) | 대기 |
+| Silver P3 | Acquisition Expansion | 22 (A:5 + B:6 + C:6 + D:5) | 대기 |
+| Silver P4 | Coverage Intelligence | 11 (A:3 + B:4 + C:4) | 대기 |
+| Silver P5 | Telemetry Contract & Dashboard | 14 (A:5 + B:5 + C:4) | 대기 |
+| Silver P6 | Multi-Domain Validation | 7 (A:3 + B:3 + C:1) | 대기 |
+| Silver X | Cross-phase 제어 | 7 | 대기 |
+| **Silver 합계** | | **119** | — |
+
+**프로젝트 총계**: Bronze 85 + Silver 119 = **204 tasks**
+
+Silver test 목표: **≥ 588 tests** (468 + P0 20 + P1 20 + P2 15 + P3 35 + P4 10 + P5 15 + P6 5 = 588)
 
 ---
 
 ## 6. Risks & Mitigation
 
-| 리스크 | 심각도 | 완화 전략 |
-|--------|--------|-----------|
-| LLM 토큰 비용 폭발 (collect/integrate) | High | Budget/Stop Rule 강제, 작은 벤치 데이터로 검증 |
-| WebSearch/WebFetch 신뢰성 | Medium | 재시도 로직, 캐시, fallback 출처 |
-| JSON 파일 I/O 동시성 (LangGraph) | Low | 단일 스레드 실행, 파일 락 불필요 |
-| Cycle 간 State 불일치 | Medium | Schema 검증 + 불변원칙 자동 체크 매 노드 후 |
-| Windows 인코딩 문제 (한글) | Medium | utf-8 명시, PYTHONUTF8=1 강제 |
+### Silver 리스크 레지스터 (masterplan v2 §8)
+
+| ID | 리스크 | L | I | 완화 | Owner |
+|----|--------|---|---|------|-------|
+| R1 | fetch 확장 → LLM 비용 3~5배 증가 | H | H | P3 cycle 비용 예산 + degrade 모드, baseline × 2.0 상한 | P3 |
+| R2 | robots.txt / 저작권 위반 | M | H | robots 체크, content-type 필터, trust_tier 차등 | P3 |
+| R3 | remodel 이 state 구조 파괴 | M | H | phase transition 저장, HITL-R 승인, rollback 경로 | P2 |
+| R4 | 대시보드 스프롤 | M | M | LOC 2000 하드 리밋, htmx 단일 운영자, 인증/모바일 비범위 | P5 |
+| R5 | 2차 도메인이 japan-travel 과 유사 | M | M | 3축 중 2축 이질 강제, framework 수정 ≤ 5건 | P6 |
+| R6 | P0/P1 확장 → 다른 Phase 지연 | M | M | P0 scope-locked (8건+벤치+HITL), 추가 발견은 P1 이관 | P0 |
+| R7 | DDG / alt-provider rate-limit 위반 | M | M | optional fallback 전용, 기본은 Tavily | P3 |
+| R8 | 한글 출처 인코딩/형태소 이슈 | M | M | P6 에 utf-8 강제 + 한글 테스트 케이스 | P6 |
+| R9 | Phase 병렬화 충돌 (P1 ∥ P3) | L | M | P0-X 인터페이스 고정 선행 | P0 |
+| R10 | HITL-D 배치 큐 적체 | M | M | 대시보드 배치 뷰 Day 1, `dispute_queue > 20` → 자동 HITL-E | P5 |
+
+### Bronze 잔류 리스크 (Silver에서 감시)
+| 리스크 | 심각도 | 완화 |
+|--------|--------|------|
+| JSON 파일 I/O 동시성 | Low | 단일 스레드 실행 유지 |
+| Windows 인코딩 (한글) | Medium | utf-8 명시, PYTHONUTF8=1 |
 
 ---
 
@@ -226,17 +317,22 @@ src/utils/metrics_logger.py — 사이클별 Metrics 기록
 ### 내부
 | 모듈 | 의존 대상 |
 |------|-----------|
-| 노드 구현 | EvolverState 타입, JSON I/O |
-| Graph 빌드 | 모든 노드 |
-| 벤치 연결 | Graph + bench/state/ 데이터 |
-| 불변원칙 검증 | Metrics 유틸 + Schema 검증 |
+| Silver P1 entity_resolver | P0 state_io 복구 + 인터페이스 고정 |
+| Silver P2 remodel | P1 alias/canonicalize, P0-C HITL-R stub edge |
+| Silver P3 providers / fetch_pipeline | P0 timeout/retry, SearchConfig 확장 |
+| Silver P4 novelty / coverage_map | P2 remodel trigger, P3 provenance |
+| Silver P5 telemetry / dashboard | P0 metric emit, P3 provenance 필드 확정, P4 reason_code |
+| Silver P6 multi-domain | P1~P5 전체 + 한글 출처 인코딩 |
 
-### 외부 (Python 패키지)
-| 패키지 | 용도 | 비고 |
-|--------|------|------|
-| langgraph | StateGraph, 엣지 라우팅, interrupt | 핵심 |
-| langchain-core | BaseTool, LLM 인터페이스 | LangGraph 의존 |
-| langchain-openai | ChatOpenAI (GPT) | LLM 호출 (D-29) |
-| tavily-python | TavilySearchResults | 웹 검색 (D-30) |
-| jsonschema | JSON Schema Draft 2020-12 검증 | Schema 정합성 |
-| pydantic | 타입 정의 (선택) | EvolverState 보강 시 |
+### 외부 (Python 패키지, Silver 추가분)
+| 패키지 | 용도 | Phase |
+|--------|------|-------|
+| duckduckgo-search (optional) | DDG provider fallback | P3 |
+| fastapi, uvicorn, jinja2 | Dashboard | P5 |
+| htmx, chart.js (CDN or vendored) | Dashboard UI | P5 |
+| (기존 유지) langgraph, langchain-openai, tavily-python, jsonschema | Bronze 전체 | — |
+
+### 문서 의존성
+- `docs/silver-masterplan-v2.md` — 단일 진실 소스 (Phase 표, HITL 정책, Provider 상세, 벤치 관리)
+- `docs/silver-implementation-tasks.md` — 실행 backlog (touched files + 정량 gate + blocking scenario)
+- `dev/active/p0-p1-remediation-plan.md` — P0 gate pass 시점에 deprecated 표기 + v2 링크 (X2)
