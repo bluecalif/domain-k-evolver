@@ -1,6 +1,6 @@
 # Project Overall Context
 > Last Updated: 2026-04-12
-> Status: Bronze 완료 (468 tests) → **Silver P0 완료** (510 tests, Gate PASS) → P1/P3 착수 가능
+> Status: Bronze 완료 (468 tests) → Silver P0 완료 (510 tests, Gate PASS) → **Silver P1 완료** (544 tests, S4/S5/S6 pass) → P3 착수 가능
 
 ## 1. 핵심 파일
 
@@ -48,9 +48,9 @@
 | Phase | 디렉토리 | 선행 조건 |
 |-------|----------|-----------|
 | Silver P0 | `dev/active/phase-si-p0-foundation/` | ✅ **완료** (32/32, Gate PASS, 510 tests) |
-| Silver P1 | `dev/active/phase-si-p1-entity-resolution/` | P0 gate pass ✅ → **Planning** |
+| Silver P1 | `dev/active/phase-si-p1-entity-resolution/` | ✅ **완료** (12/12, 544 tests, S4/S5/S6 pass) |
 | Silver P2 | `dev/active/phase-si-p2-remodel/` | P1 |
-| Silver P3 | `dev/active/phase-si-p3-acquisition/` | P0 gate pass (P1 과 병렬 가능) |
+| Silver P3 | `dev/active/phase-si-p3-acquisition/` | P0 gate pass ✅ → **Planning** (dev-docs 생성 완료) |
 | Silver P4 | `dev/active/phase-si-p4-coverage/` | P2 + P3 |
 | Silver P5 | `dev/active/phase-si-p5-telemetry-dashboard/` | P3 + P4 |
 | Silver P6 | `dev/active/phase-si-p6-multidomain/` | P1~P5 전부 (Silver exit gate) |

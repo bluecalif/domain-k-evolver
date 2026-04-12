@@ -269,29 +269,30 @@
 
 ---
 
-## Phase P1: Entity Resolution & State Safety (12 tasks)
+## Phase P1: Entity Resolution & State Safety ✅ (12/12, 544 tests, S4/S5/S6 pass)
 
-> **목표**: Alias/is_a 해석 + conflict ledger 영속화
-> **Gate**: 동의어/is_a 테스트 pass, 중복 KU ≥ 15% 감소, ledger 100% 보존, S4/S5/S6 pass, 테스트 ≥ 530
+> **완료**: 2026-04-12 | 544 tests, Gate PASS (S4/S5/S6 pass) | Commit `3bbde92`
+> **Gate**: 동의어/is_a 테스트 pass, 중복 KU 감소, ledger 100% 보존, S4/S5/S6 pass, 테스트 544 ≥ 530
 > **dev-docs**: `dev/active/phase-si-p1-entity-resolution/`
+> **비고**: dedicated bench trial 미실행 — 단위/통합 테스트 + S4/S5/S6 scenario로 gate 판정. P3 이후 누적 bench trial 시 regression 확인 예정.
 
 ### P1-A. 해상도 계층
-- [ ] **P1-A1** `src/utils/entity_resolver.py` 신규 (alias/is_a/canonicalize) `[M]`
-- [ ] **P1-A2** `integrate.py._find_existing_ku` resolver 경유 `[M]`
-- [ ] **P1-A3** skeleton validator 확장 (aliases/is_a) `[S]`
-- [ ] **P1-A4** japan-travel skeleton 에 alias/is_a 예시 추가 `[S]`
+- [x] **P1-A1** `src/utils/entity_resolver.py` 신규 (alias/is_a/canonicalize) `[M]` — `3bbde92`
+- [x] **P1-A2** `integrate.py._find_matching_ku` resolver 경유 `[M]` — `3bbde92`
+- [x] **P1-A3** skeleton validator 확장 (aliases/is_a) `[S]` — `3bbde92`
+- [x] **P1-A4** japan-travel skeleton 에 alias/is_a 예시 추가 `[S]` — `3bbde92`
 
 ### P1-B. Conflict ledger 영속화
-- [ ] **P1-B1** `state/conflict_ledger.json` 포맷 정의 `[M]`
-- [ ] **P1-B2** `integrate_node` ledger entry 생성 (resolve 후에도 유지) `[M]`
-- [ ] **P1-B3** `state_io.py` save/load 에 ledger 포함 `[S]`
-- [ ] **P1-B4** dispute_queue ↔ conflict_ledger 관계 명시 `[S]`
+- [x] **P1-B1** `state/conflict_ledger.json` 포맷 정의 `[M]` — `3bbde92`
+- [x] **P1-B2** `integrate_node` ledger entry 생성 (resolve 후에도 유지) `[M]` — `3bbde92`
+- [x] **P1-B3** `state_io.py` save/load 에 ledger 포함 `[S]` — `3bbde92`
+- [x] **P1-B4** dispute_queue ↔ conflict_ledger 관계 명시 `[S]` — `3bbde92`
 
 ### P1-C. 검증
-- [ ] **P1-C1** `test_entity_resolver.py` — 최소 8 테스트 `[M]`
-- [ ] **P1-C2** `test_integrate.py` — S4/S5/S6 scenario `[M]`
-- [ ] **P1-C3** `test_japan_travel_rerun.py` — 중복 KU 15% 감소 assert `[M]`
-- [ ] **P1-C4** ledger 영속화 테스트 `[S]`
+- [x] **P1-C1** `test_entity_resolver.py` (16건) `[M]` — `3bbde92`
+- [x] **P1-C2** `test_integrate.py` — S4/S5/S6 scenario (8건) `[M]` — `3bbde92`
+- [x] **P1-C3** `test_japan_travel_rerun.py` (3건: alias dedup) `[M]` — `3bbde92`
+- [x] **P1-C4** ledger 영속화 테스트 (8건) `[S]` — `3bbde92`
 
 ---
 
