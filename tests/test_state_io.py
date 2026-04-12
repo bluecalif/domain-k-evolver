@@ -234,3 +234,23 @@ class TestStateIoWriteGuard:
         """snapshot_state 도 legacy bench 에서 차단."""
         with pytest.raises(PermissionError):
             snapshot_state(BENCH, cycle=99)
+
+
+class TestX4NewStateFields:
+    """P0-X4: load_state 후 4개 신규 필드가 빈 기본값으로 초기화."""
+
+    def test_conflict_ledger_default(self):
+        state = load_state(BENCH)
+        assert state["conflict_ledger"] == []
+
+    def test_phase_history_default(self):
+        state = load_state(BENCH)
+        assert state["phase_history"] == []
+
+    def test_coverage_map_default(self):
+        state = load_state(BENCH)
+        assert state["coverage_map"] == {}
+
+    def test_novelty_history_default(self):
+        state = load_state(BENCH)
+        assert state["novelty_history"] == []

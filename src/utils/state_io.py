@@ -93,6 +93,10 @@ def load_state(domain_path: str | Path) -> EvolverState:
         "axis_coverage": None,
         "jump_history": [],
         "hitl_pending": None,
+        "conflict_ledger": [],
+        "phase_history": [],
+        "coverage_map": {},
+        "novelty_history": [],
     }
     return state
 

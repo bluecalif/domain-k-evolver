@@ -218,3 +218,9 @@ class EvolverState(TypedDict, total=False):
 
     # Silver: dispute batch queue (HITL-D 비블로킹, P0-C7)
     dispute_queue: list[dict]
+
+    # Silver P0-X4: 후속 Phase 용 필드 예약 (빈 컨테이너 기본값)
+    conflict_ledger: list[dict]   # P1: 충돌 감사 로그 (영속)
+    phase_history: list[dict]     # P2: phase transition 스냅샷
+    coverage_map: dict            # P4: 축 × 엔티티 그리드
+    novelty_history: list[float]  # P4: cycle 별 novelty 점수
