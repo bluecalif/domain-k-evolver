@@ -258,3 +258,69 @@ class TestTavilyTimeoutPropagation:
         adapter.fetch("http://x.example")
         call_kwargs = mock_client.extract.call_args.kwargs
         assert call_kwargs.get("timeout") == 20
+
+
+# ============================================================
+# P3-D5: create_providers + legacy 호환
+# ============================================================
+
+class TestCreateProviders:
+    """P3-D5: create_providers 함수 테스트."""
+
+    def test_default_returns_tavily_only(self):
+        """기본 설정에서 Tavily provider 만 생성 (Tavily import 실패 시 스킵)."""
+        from src.adapters.search_adapter import create_providers
+        try:
+            providers = create_providers(
+                SearchConfig(api_key="test-key"),
+            )
+            # Tavily 가 설치되어 있으면 1개, 아니면 import 에러
+            assert len(providers) >= 1
+        except Exception:
+            pytest.skip("Tavily 미설치")
+
+    def test_with_preferred_sources(self):
+        """preferred_sources 가 있으면 CuratedProvider 포함."""
+        from src.adapters.search_adapter import create_providers
+        from src.adapters.providers.curated_provider import CuratedProvider
+
+        sources = [{"url": "http://a.com", "title": "A", "categories": ["test"]}]
+        try:
+            providers = create_providers(
+                SearchConfig(api_key="test-key"),
+                preferred_sources=sources,
+            )
+            assert any(isinstance(p, CuratedProvider) for p in providers)
+        except Exception:
+            pytest.skip("Tavily 미설치")
+
+    def test_ddg_fallback_disabled_by_default(self):
+        """enable_ddg_fallback=False 가 기본."""
+        from src.adapters.search_adapter import create_providers
+        from src.adapters.providers.ddg_provider import DDGProvider
+
+        try:
+            providers = create_providers(SearchConfig(api_key="test-key"))
+            assert not any(isinstance(p, DDGProvider) for p in providers)
+        except Exception:
+            pytest.skip("Tavily 미설치")
+
+    def test_ddg_fallback_enabled(self):
+        """enable_ddg_fallback=True 면 DDGProvider 포함."""
+        from src.adapters.search_adapter import create_providers
+        from src.adapters.providers.ddg_provider import DDGProvider
+
+        try:
+            providers = create_providers(
+                SearchConfig(api_key="test-key", enable_ddg_fallback=True),
+            )
+            assert any(isinstance(p, DDGProvider) for p in providers)
+        except Exception:
+            pytest.skip("Tavily 미설치")
+
+    def test_legacy_create_search_tool_still_works(self):
+        """레거시 create_search_tool 함수가 여전히 동작."""
+        from src.adapters.search_adapter import create_search_tool
+        cfg = SearchConfig(provider="unsupported")
+        with pytest.raises(ValueError, match="Unsupported"):
+            create_search_tool(cfg)

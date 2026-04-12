@@ -1,7 +1,8 @@
-"""SearchTool Adapter — Tavily Search 래퍼.
+"""SearchTool Adapter — Tavily Search 래퍼 + retry 유틸.
 
-SearchTool Protocol을 구현하는 Real 검색 어댑터.
-429/5xx 에러 시 지수 백오프 재시도 + 호출 카운터.
+P3-A5: TavilySearchAdapter 는 레거시 호환용 (deprecated).
+신규 코드는 src.adapters.providers 의 SearchProvider 구현체를 사용할 것.
+_retry_with_backoff 는 공용 유틸로 유지.
 """
 
 from __future__ import annotations
@@ -50,7 +51,12 @@ def _retry_with_backoff(
 
 
 class TavilySearchAdapter:
-    """Tavily Search API를 SearchTool 프로토콜에 맞춰 래핑."""
+    """Tavily Search API를 SearchTool 프로토콜에 맞춰 래핑.
+
+    .. deprecated::
+        P3-A5: 신규 코드는 TavilyProvider (src.adapters.providers.tavily_provider) 사용.
+        이 클래스는 기존 SearchTool Protocol 호환용으로만 유지.
+    """
 
     def __init__(self, config: SearchConfig | None = None) -> None:
         if config is None:
@@ -105,7 +111,10 @@ class TavilySearchAdapter:
 
 
 def create_search_tool(config: SearchConfig | None = None) -> SearchTool:
-    """SearchTool 인스턴스 생성.
+    """SearchTool 인스턴스 생성 (레거시 호환).
+
+    .. deprecated::
+        P3-A5: 신규 코드는 create_providers() 사용.
 
     Args:
         config: 검색 설정. None이면 환경변수에서 로드.
@@ -120,3 +129,41 @@ def create_search_tool(config: SearchConfig | None = None) -> SearchTool:
         return TavilySearchAdapter(config)
 
     raise ValueError(f"Unsupported search provider: {config.provider}")
+
+
+def create_providers(
+    config: SearchConfig | None = None,
+    *,
+    preferred_sources: list[dict] | None = None,
+) -> list:
+    """P3 SearchProvider 인스턴스 목록 생성.
+
+    Args:
+        config: 검색 설정. None이면 환경변수에서 로드.
+        preferred_sources: skeleton preferred_sources (CuratedProvider 용).
+
+    Returns:
+        활성 SearchProvider 리스트 (순서: curated → tavily → ddg).
+    """
+    from src.adapters.providers.curated_provider import CuratedProvider
+    from src.adapters.providers.ddg_provider import DDGProvider
+    from src.adapters.providers.tavily_provider import TavilyProvider
+
+    if config is None:
+        config = SearchConfig.from_env()
+
+    providers = []
+
+    # Curated 는 preferred_sources 가 있으면 항상 포함
+    if preferred_sources:
+        providers.append(CuratedProvider(preferred_sources))
+
+    # Tavily (기본)
+    if getattr(config, "enable_tavily", True):
+        providers.append(TavilyProvider(config))
+
+    # DDG (optional fallback)
+    if getattr(config, "enable_ddg_fallback", False):
+        providers.append(DDGProvider())
+
+    return providers

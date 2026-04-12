@@ -13,6 +13,9 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+ddg = [
+    "duckduckgo-search>=7.0",
+]
 dev = [
     "pytest>=9.0",
 ]

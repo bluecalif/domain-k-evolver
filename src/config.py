@@ -42,12 +42,26 @@ class LLMConfig:
 
 @dataclass(frozen=True)
 class SearchConfig:
-    """검색 도구 설정."""
+    """검색 도구 설정.
+
+    P3-C4: 7개 필드 확장 (enable_tavily ~ per_domain_min_interval_s).
+    """
 
     provider: str = "tavily"
     api_key: str = ""
     max_results: int = 5
     request_timeout: int = 30
+    # P3-C4 신규 필드
+    enable_tavily: bool = True
+    enable_ddg_fallback: bool = False
+    fetch_top_n: int = 3
+    max_bytes_per_url: int = 500_000
+    entropy_floor: float = 2.5
+    k_per_provider: int = 5
+    per_domain_min_interval_s: float = 1.0
+    # P3-C6 비용 가드
+    cycle_llm_token_budget: int = 100_000
+    cycle_fetch_bytes_budget: int = 10_000_000
 
     @classmethod
     def from_env(cls) -> SearchConfig:
@@ -55,6 +69,15 @@ class SearchConfig:
             provider=os.environ.get("EVOLVER_SEARCH_PROVIDER", "tavily"),
             api_key=os.environ.get("TAVILY_API_KEY", ""),
             max_results=int(os.environ.get("EVOLVER_SEARCH_MAX_RESULTS", "5")),
+            enable_tavily=os.environ.get("EVOLVER_ENABLE_TAVILY", "true").lower() == "true",
+            enable_ddg_fallback=os.environ.get("EVOLVER_ENABLE_DDG", "false").lower() == "true",
+            fetch_top_n=int(os.environ.get("EVOLVER_FETCH_TOP_N", "3")),
+            max_bytes_per_url=int(os.environ.get("EVOLVER_MAX_BYTES_PER_URL", "500000")),
+            entropy_floor=float(os.environ.get("EVOLVER_ENTROPY_FLOOR", "2.5")),
+            k_per_provider=int(os.environ.get("EVOLVER_K_PER_PROVIDER", "5")),
+            per_domain_min_interval_s=float(os.environ.get("EVOLVER_RATE_LIMIT_S", "1.0")),
+            cycle_llm_token_budget=int(os.environ.get("EVOLVER_CYCLE_LLM_BUDGET", "100000")),
+            cycle_fetch_bytes_budget=int(os.environ.get("EVOLVER_CYCLE_FETCH_BUDGET", "10000000")),
         )
 
 

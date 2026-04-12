@@ -93,7 +93,8 @@ class TestCollectNode:
         }
         collect_node(state, search_tool=tool)
         assert len(tool.search_calls) == 2
-        assert len(tool.fetch_calls) == 2  # top 2 results fetched
+        # P3-C2: fetch 는 FetchPipeline 으로 이관, 레거시 search_tool.fetch 미호출
+        assert len(tool.fetch_calls) == 0
 
     def test_no_search_tool_returns_empty(self) -> None:
         state = {
@@ -315,10 +316,15 @@ class TestCollectDuplicateGU:
         assert isinstance(result["current_claims"], list)
 
     def test_claim_has_provenance_field(self) -> None:
-        """P0-X3: 결정론적 fallback 에서 생성된 claim 에 provenance 필드 존재 (None)."""
+        """P3-C3: 결정론적 fallback 에서 생성된 claim 에 provenance dict 존재."""
         tool = MockSearchTool()
         state = _gu_state(["GU-0001"])
         result = collect_node(state, search_tool=tool)
         for claim in result["current_claims"]:
             assert "provenance" in claim
-            assert claim["provenance"] is None
+            prov = claim["provenance"]
+            assert isinstance(prov, dict)
+            assert "providers_used" in prov
+            assert "domain" in prov
+            assert "fetch_ok" in prov
+            assert "trust_tier" in prov
