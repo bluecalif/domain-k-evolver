@@ -331,6 +331,22 @@ Silver test 목표: **≥ 588 tests** (468 + P0 20 + P1 20 + P2 15 + P3 35 + P4 
 | htmx, chart.js (CDN or vendored) | Dashboard UI | P5 |
 | (기존 유지) langgraph, langchain-openai, tavily-python, jsonschema | Bronze 전체 | — |
 
+### Silver 잔여 작업 (Remaining — robots.txt 대응)
+
+| ID | 항목 | 설명 | Phase |
+|----|------|------|-------|
+| C-5 | API Provider 플러그인 | Reddit API, Twitter/X API 등 공식 API를 통한 합법적 데이터 접근. robots.txt 우회 없이 구조화된 데이터 확보. 별도 SearchProvider 플러그인으로 구현. | Silver 잔여 (P3 후속) |
+| C-6 | Archive/Cache fallback Provider | Google Cache, Wayback Machine을 fallback source로 활용. 원본 접근 불가 시 아카이브에서 스냅샷 취득. | Silver 잔여 (P3 후속) |
+
+> **배경**: P3 Gate에서 67건 fetch 중 21건(31%)이 robots.txt 차단 (reddit, facebook, instagram 등). A-1 (Curated 강화) + B-3 (사전 필터링)으로 당장 효율을 개선했으나, SNS/커뮤니티 소스 접근은 근본��으로 API 기반 접근이 필요.
+
+### Gold 세대 Must-Have (robots.txt 근본 대응)
+
+| 항목 | 설명 | 근거 |
+|------|------|------|
+| API Provider 플러그인 (Reddit, Twitter/X 등) | 공식 API를 통한 구조화된 데이터 접근. SearchProvider 프로토콜 구현. | Silver P3에서 robots 차단률 31% — SNS 소스 접근 불가 |
+| Archive/Cache fallback Provider (Wayback Machine, Google Cache) | 원본 접근 불가 시 아카이브 활용. FetchPipeline fallback 경로 추가. | 403/SSL 에러 + robots 차단 = 전체 fetch의 41% 손실 |
+
 ### 문서 의존성
 - `docs/silver-masterplan-v2.md` — 단일 진실 소스 (Phase 표, HITL 정책, Provider 상세, 벤치 관리)
 - `docs/silver-implementation-tasks.md` — 실행 backlog (touched files + 정량 gate + blocking scenario)

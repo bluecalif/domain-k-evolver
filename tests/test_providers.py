@@ -227,6 +227,51 @@ class TestCuratedProvider:
         assert len(results) == 1
 
 
+class TestCuratedFromSkeleton:
+    """A-1: skeleton preferred_sources → CuratedProvider 연동."""
+
+    def test_skeleton_preferred_sources_loaded(self) -> None:
+        """skeleton 의 preferred_sources 형식으로 CuratedProvider 생성."""
+        preferred_sources = [
+            {
+                "url": "https://www.japan-guide.com",
+                "title": "Japan Guide",
+                "categories": ["transport", "accommodation", "attraction"],
+                "axis_tags": {},
+            },
+            {
+                "url": "https://www.japanrailpass.net/en/",
+                "title": "Japan Rail Pass",
+                "categories": ["pass-ticket", "transport"],
+                "axis_tags": {},
+            },
+        ]
+        cp = CuratedProvider(preferred_sources=preferred_sources)
+        results = cp.search("japan rail pass transport")
+        assert len(results) > 0
+        assert any("japanrailpass" in r.url for r in results)
+
+    def test_create_providers_with_preferred_sources(self) -> None:
+        """create_providers 에 preferred_sources 전달 시 CuratedProvider 포함."""
+        from src.adapters.search_adapter import create_providers
+        from src.config import SearchConfig
+
+        config = SearchConfig(
+            provider="tavily", api_key="test-key",
+            enable_tavily=True, enable_ddg_fallback=False,
+        )
+
+        preferred_sources = [
+            {"url": "http://a.com", "title": "A", "categories": ["test"]},
+        ]
+
+        with patch("tavily.TavilyClient"):
+            providers = create_providers(config, preferred_sources=preferred_sources)
+
+        provider_ids = [getattr(p, "provider_id", "") for p in providers]
+        assert "curated" in provider_ids
+
+
 class TestMatchScore:
     def test_full_match(self) -> None:
         score = _match_score({"hello", "world"}, {"title": "Hello World", "url": "", "categories": []})

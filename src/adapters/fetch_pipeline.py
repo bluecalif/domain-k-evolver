@@ -114,6 +114,15 @@ class FetchPipeline:
         self._robots = _RobotsCache(user_agent) if robots_check else None
         self._limiter = _RateLimiter(per_domain_min_interval_s)
 
+    def is_robots_allowed(self, url: str) -> bool:
+        """URL이 robots.txt에 의해 허용되는지 사전 확인.
+
+        robots_check=False이면 항상 True 반환.
+        """
+        if self._robots is None:
+            return True
+        return self._robots.is_allowed(url)
+
     def fetch_many(
         self,
         urls: list[str],

@@ -204,6 +204,7 @@ class TestFetchPhase:
             SearchResult(url="http://b.com", title="B", snippet="s"),
         ]
         pipeline = MagicMock()
+        pipeline.is_robots_allowed.return_value = True
         pipeline.fetch_many.return_value = [
             FetchResult(url="http://a.com", fetch_ok=True),
             FetchResult(url="http://b.com", fetch_ok=True),
@@ -220,7 +221,57 @@ class TestFetchPhase:
             for i in range(10)
         ]
         pipeline = MagicMock()
+        pipeline.is_robots_allowed.return_value = True
         pipeline.fetch_many.return_value = []
         _fetch_phase(sr, pipeline, fetch_top_n=2)
         call_args = pipeline.fetch_many.call_args
         assert len(call_args[0][0]) == 2
+
+    def test_robots_prefilter_skips_blocked(self) -> None:
+        """B-3: robots 차단 URL을 건너뛰고 대체 URL 선택."""
+        sr = [
+            SearchResult(url="http://reddit.com/r/japan", title="Reddit", snippet="s"),
+            SearchResult(url="http://ok-site.com/page", title="OK", snippet="s"),
+            SearchResult(url="http://facebook.com/travel", title="FB", snippet="s"),
+            SearchResult(url="http://good.com/info", title="Good", snippet="s"),
+        ]
+        pipeline = MagicMock()
+        pipeline.is_robots_allowed.side_effect = lambda url: url not in {
+            "http://reddit.com/r/japan", "http://facebook.com/travel",
+        }
+        pipeline.fetch_many.return_value = [
+            FetchResult(url="http://ok-site.com/page", fetch_ok=True),
+            FetchResult(url="http://good.com/info", fetch_ok=True),
+        ]
+
+        results = _fetch_phase(sr, pipeline, fetch_top_n=2)
+
+        # robots 차단 2건 + fetch 성공 2건 = 4건
+        assert len(results) == 4
+        blocked = [r for r in results if r.failure_reason == "robots_prefilter"]
+        assert len(blocked) == 2
+        assert {r.url for r in blocked} == {
+            "http://reddit.com/r/japan", "http://facebook.com/travel",
+        }
+
+        fetched = [r for r in results if r.fetch_ok]
+        assert len(fetched) == 2
+        # fetch_many 에는 허용된 URL만 전달
+        call_urls = pipeline.fetch_many.call_args[0][0]
+        assert "http://reddit.com/r/japan" not in call_urls
+        assert "http://facebook.com/travel" not in call_urls
+
+    def test_robots_prefilter_all_blocked(self) -> None:
+        """모든 URL이 robots 차단되면 빈 fetch + blocked 결과만."""
+        sr = [
+            SearchResult(url="http://reddit.com/1", title="R1", snippet="s"),
+            SearchResult(url="http://reddit.com/2", title="R2", snippet="s"),
+        ]
+        pipeline = MagicMock()
+        pipeline.is_robots_allowed.return_value = False
+
+        results = _fetch_phase(sr, pipeline, fetch_top_n=3)
+
+        assert len(results) == 2
+        assert all(r.failure_reason == "robots_prefilter" for r in results)
+        pipeline.fetch_many.assert_not_called()

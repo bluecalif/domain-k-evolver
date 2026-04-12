@@ -78,23 +78,7 @@ def _run_benchmark(
     llm = create_llm(config.llm)
     search_tool = create_search_tool(config.search)
 
-    # P3: providers + fetch_pipeline 생성
-    from src.adapters.search_adapter import create_providers
-    from src.adapters.fetch_pipeline import FetchPipeline
-
-    providers = create_providers(config.search)
-    fetch_pipeline = FetchPipeline(
-        robots_check=True,
-        max_bytes=config.search.max_bytes_per_url,
-        per_domain_min_interval_s=config.search.per_domain_min_interval_s,
-    )
-
-    orchestrator = Orchestrator(
-        config, llm=llm, search_tool=search_tool,
-        providers=providers, fetch_pipeline=fetch_pipeline,
-    )
-
-    # Seed state 로드
+    # Seed state 로드 (providers 생성 전에 skeleton 필요)
     from src.utils.state_io import load_state
 
     if resume and (output_path / "state").exists():
@@ -126,6 +110,25 @@ def _run_benchmark(
                          len(initial_state.get("gap_map", [])))
         else:
             initial_state = load_state(orig_path)
+
+    # P3: skeleton preferred_sources → providers + fetch_pipeline 생성
+    from src.adapters.search_adapter import create_providers
+    from src.adapters.fetch_pipeline import FetchPipeline
+
+    preferred_sources = initial_state.get("domain_skeleton", {}).get("preferred_sources")
+    providers = create_providers(config.search, preferred_sources=preferred_sources)
+    fetch_pipeline = FetchPipeline(
+        robots_check=True,
+        max_bytes=config.search.max_bytes_per_url,
+        per_domain_min_interval_s=config.search.per_domain_min_interval_s,
+    )
+    if preferred_sources:
+        logger.info("Curated sources 로드: %d건", len(preferred_sources))
+
+    orchestrator = Orchestrator(
+        config, llm=llm, search_tool=search_tool,
+        providers=providers, fetch_pipeline=fetch_pipeline,
+    )
 
     results = orchestrator.run(initial_state)
     final_state = results[-1].state if results else initial_state

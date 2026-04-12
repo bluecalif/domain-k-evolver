@@ -92,23 +92,38 @@ def _fetch_phase(
     """FETCH 단계: SearchResult URL → FetchResult 리스트.
 
     fetch_pipeline 이 None 이면 빈 리스트 반환 (테스트 모드).
+    B-3: robots.txt 사전 필터링 — 차단될 URL을 건너뛰고 대체 URL 선택.
     """
     if fetch_pipeline is None:
         return []
 
     urls = []
+    robots_blocked: list[FetchResult] = []
     seen: set[str] = set()
+
     for sr in search_results:
-        if sr.url and sr.url not in seen:
-            seen.add(sr.url)
-            urls.append(sr.url)
+        if not sr.url or sr.url in seen:
+            continue
+        seen.add(sr.url)
+
+        if not fetch_pipeline.is_robots_allowed(sr.url):
+            from datetime import datetime, timezone
+            robots_blocked.append(FetchResult(
+                url=sr.url, fetch_ok=False,
+                retrieved_at=datetime.now(timezone.utc).isoformat(),
+                trust_tier=sr.trust_tier,
+                failure_reason="robots_prefilter",
+            ))
+            continue
+
+        urls.append(sr.url)
         if len(urls) >= fetch_top_n:
             break
 
     if not urls:
-        return []
+        return robots_blocked
 
-    return fetch_pipeline.fetch_many(urls)
+    return robots_blocked + fetch_pipeline.fetch_many(urls)
 
 
 # ============================================================

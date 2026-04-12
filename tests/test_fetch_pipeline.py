@@ -84,6 +84,21 @@ class TestRobotsCache:
 # FetchPipeline — robots 거부 (S8)
 # ============================================================
 
+class TestIsRobotsAllowed:
+    def test_allowed_when_robots_check_disabled(self) -> None:
+        """robots_check=False → 항상 True."""
+        pipeline = FetchPipeline(robots_check=False)
+        assert pipeline.is_robots_allowed("http://blocked.com/secret") is True
+
+    def test_delegates_to_robots_cache(self) -> None:
+        """robots_check=True → _RobotsCache 에 위임."""
+        pipeline = FetchPipeline(robots_check=True)
+        with patch.object(pipeline._robots, "is_allowed", return_value=False):
+            assert pipeline.is_robots_allowed("http://blocked.com/page") is False
+        with patch.object(pipeline._robots, "is_allowed", return_value=True):
+            assert pipeline.is_robots_allowed("http://ok.com/page") is True
+
+
 class TestFetchPipelineRobots:
     def test_robots_blocked_returns_failure(self) -> None:
         """S8: robots.txt 거부 시 fetch_ok=False, failure_reason='robots'."""
