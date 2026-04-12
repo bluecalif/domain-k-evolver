@@ -1,6 +1,6 @@
 # Silver P2: Outer-Loop Remodel 완결
 > Last Updated: 2026-04-12
-> Status: Stage A+B 완료 (8/14), Stage C 대기
+> Status: 구현 완료 (14/14), Gate 대기
 
 ## 1. Summary (개요)
 
@@ -41,7 +41,7 @@
 | `EvolverState.phase_number` | ✅ 추가 (P2-A3) |
 | `snapshot_phase()` | ✅ 구현 완료 (P2-A4) |
 | `orchestrator.py` remodel | ✅ 구현 완료 (P2-B3/B4) — _maybe_run_remodel, _apply_remodel_proposals |
-| 테스트 | 642 tests (605 + 37 P2 신규) |
+| 테스트 | 645 tests (605 + 40 P2 신규) |
 
 ---
 

@@ -1,6 +1,6 @@
 # Silver P2: Outer-Loop Remodel — Tasks
 > Last Updated: 2026-04-12
-> Status: Stage A+B 완료 (8/14)
+> Status: 구현 완료 (14/14), Gate 대기
 
 ## Summary
 
@@ -8,8 +8,8 @@
 |-------|-------|------|--------|
 | A. Remodel node + schema | 4 | 4/4 | ✅ 완료 |
 | B. Graph/orchestrator 통합 | 4 | 4/4 | ✅ 완료 |
-| C. 검증 | 6 | 0/6 | 대기 |
-| **합계** | **14** | **8/14** | Stage A+B 완료 |
+| C. 검증 | 6 | 6/6 | ✅ 완료 |
+| **합계** | **14** | **14/14** | ✅ 구현 완료 |
 
 **Size 분포**: S: 5 / M: 8 / L: 1
 
@@ -120,30 +120,20 @@
 
 ## Stage C: 검증
 
-- [ ] **P2-C1** merge 시나리오 테스트 `[S]`
-  - 합성: entity 중복률 30%+ 상황 → remodel이 merge proposal 생성
-  - `tests/test_nodes/test_remodel.py`
-  - Commit: —
+- [x] **P2-C1** merge 시나리오 테스트 `[S]`
+  - TestMergeProposal (3 tests) + TestPhaseTransition::test_merge (Stage B)
 
-- [ ] **P2-C2** split 시나리오 테스트 `[S]`
-  - 합성: 하나의 entity_key에 상반된 axis_tag 2개 이상 → split proposal
-  - Commit: —
+- [x] **P2-C2** split 시나리오 테스트 `[S]`
+  - TestSplitProposal (2 tests) + TestPhaseTransition::test_split (Stage B)
 
-- [ ] **P2-C3** reclassify 시나리오 테스트 `[S]`
-  - 합성: 카테고리 부정합 → reclassify proposal
-  - Commit: —
+- [x] **P2-C3** reclassify 시나리오 테스트 `[S]`
+  - TestReclassifyProposal (2 tests) + TestPhaseTransition::test_reclassify (Stage B)
 
-- [ ] **P2-C4** rollback 시나리오 테스트 `[S]`
-  - 승인 거부 → state diff = ∅ 검증
-  - Commit: —
+- [x] **P2-C4** rollback 시나리오 테스트 `[S]`
+  - TestRollback (2 tests) — rejection → state diff = ∅, rollback_payload 검증
 
-- [ ] **P2-C5** S7 trigger 경로 테스트 `[M]`
-  - 저novelty 5 cycle → audit trigger → remodel 제안
-  - P4와 공유되지만 여기서는 **trigger 경로**만 assert
-  - coverage 근거는 P4-C에서
-  - Commit: —
+- [x] **P2-C5** S7 trigger 경로 테스트 `[M]`
+  - TestS7TriggerPath (3 tests) — plateau→audit→remodel, critical 없으면 스킵, 전체 경로
 
-- [ ] **P2-C6** schema 양방향 테스트 `[S]`
-  - 유효 report → validate pass
-  - 필수 필드 누락 report → validate fail
-  - Commit: —
+- [x] **P2-C6** schema 양방향 테스트 `[S]`
+  - TestSchemaValidation (5 tests) — valid pass, missing field fail, invalid type/status fail, run_remodel 출력 validate

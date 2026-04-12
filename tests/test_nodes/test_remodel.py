@@ -955,3 +955,190 @@ class TestRollback:
         payload = _build_rollback_payload(state, proposals)
         assert "skeleton_snapshot" in payload
         assert payload["skeleton_snapshot"] == state["domain_skeleton"]
+
+
+# ---------------------------------------------------------------------------
+# P2-C5: S7 trigger 경로 테스트 (저novelty → audit → remodel)
+# ---------------------------------------------------------------------------
+
+class TestS7TriggerPath:
+    """S7 시나리오: 저novelty 5 cycle → plateau 감지 → audit 발동 → remodel 제안.
+
+    여기서는 trigger 경로만 assert. coverage 근거는 P4-C에서.
+    """
+
+    def test_plateau_triggers_audit_which_triggers_remodel(self, tmp_path):
+        """plateau 감지 → audit critical finding → remodel 실행."""
+        from src.config import EvolverConfig, OrchestratorConfig
+        from src.orchestrator import Orchestrator
+        from src.utils.plateau_detector import PlateauDetector
+
+        domain_path = tmp_path / "test-domain"
+        state_dir = domain_path / "state"
+        state_dir.mkdir(parents=True)
+        for fname in ("knowledge-units.json", "gap-map.json", "domain-skeleton.json",
+                       "metrics.json", "policies.json"):
+            (state_dir / fname).write_text("{}", encoding="utf-8")
+
+        cfg = EvolverConfig(
+            orchestrator=OrchestratorConfig(
+                audit_interval=5,
+                plateau_window=5,
+                bench_root=str(domain_path),
+            ),
+        )
+        orch = Orchestrator(cfg)
+
+        # 5 cycle 동안 동일 KU/GU 상태 (plateau)
+        state = {
+            "knowledge_units": [
+                {"ku_id": "KU-0001", "entity_key": "t:transport:a", "field": "p",
+                 "value": "1", "status": "active", "evidence_links": ["EU-0001"],
+                 "confidence": 0.8, "observed_at": "2026-04-12"},
+            ],
+            "gap_map": [],
+            "domain_skeleton": {
+                "domain": "t",
+                "categories": [
+                    {"slug": "transport", "description": ""},
+                    {"slug": "food", "description": ""},
+                ],
+                "axes": [],
+                "aliases": {},
+            },
+            "metrics": {"cycle": 5, "rates": {}},
+            "policies": {},
+            "current_cycle": 5,
+            "hitl_pending": None,
+            "phase_number": 0,
+            "phase_history": [],
+            "remodel_report": None,
+            "conflict_ledger": [],
+            "dispute_queue": [],
+            "coverage_map": {},
+            "novelty_history": [],
+            "net_gap_changes": [],
+        }
+
+        # plateau detector에 5 cycle 동일 상태 기록
+        detector = PlateauDetector(window=5)
+        for c in range(1, 6):
+            detector.record(c, state)
+        assert detector.is_plateau(), "5 cycle 동일 → plateau"
+
+        # audit 실행 → critical finding (food 카테고리 KU 0개)
+        from src.nodes.audit import run_audit
+        trajectory = [
+            {"cycle": c, "ku_active": 1, "llm_calls": 5, "avg_confidence": 0.8,
+             "multi_evidence_rate": 0.0}
+            for c in range(1, 6)
+        ]
+        audit_report = run_audit(state, trajectory, audit_cycle=5)
+        # food 카테고리 KU 0개 → critical coverage_gap
+        critical_findings = [
+            f for f in audit_report["findings"] if f.get("severity") == "critical"
+        ]
+        assert len(critical_findings) >= 1, "food 카테고리 KU 0개 → critical finding"
+
+        # audit_history에 추가
+        state["audit_history"] = [audit_report]
+
+        # remodel 트리거 (cycle=5, interval=5)
+        orch._maybe_run_remodel(state, 5, cfg.orchestrator)
+
+        # remodel 실행됨 → phase bump
+        assert state["phase_number"] == 1, "remodel 제안 → 자동 승인 → phase bump"
+        assert len(state["phase_history"]) == 1
+        assert state["phase_history"][0]["cycle"] == 5
+
+    def test_plateau_without_critical_skips_remodel(self, tmp_path):
+        """plateau 감지되어도 critical finding 없으면 remodel 스킵."""
+        from src.config import EvolverConfig, OrchestratorConfig
+        from src.orchestrator import Orchestrator
+
+        cfg = EvolverConfig(
+            orchestrator=OrchestratorConfig(
+                audit_interval=5,
+                bench_root=str(tmp_path),
+            ),
+        )
+        orch = Orchestrator(cfg)
+
+        state = {
+            "knowledge_units": [
+                {"ku_id": "KU-0001", "entity_key": "t:cat:a", "field": "p",
+                 "value": "1", "status": "active", "evidence_links": ["EU-0001"],
+                 "confidence": 0.8, "observed_at": "2026-04-12"},
+            ],
+            "gap_map": [],
+            "domain_skeleton": {
+                "domain": "t",
+                "categories": [{"slug": "cat", "description": ""}],
+                "axes": [],
+                "aliases": {},
+            },
+            "metrics": {"cycle": 5, "rates": {}},
+            "policies": {},
+            "current_cycle": 5,
+            "hitl_pending": None,
+            "phase_number": 0,
+            "phase_history": [],
+            "remodel_report": None,
+            "audit_history": [{
+                "audit_cycle": 5,
+                "window": [1, 5],
+                "findings": [{
+                    "finding_id": "F-COV-01",
+                    "category": "axis_imbalance",
+                    "severity": "warning",  # warning, not critical
+                    "description": "균등도 부족",
+                    "evidence": {},
+                }],
+                "recommendations": [],
+                "policy_patches": [],
+            }],
+        }
+
+        orch._maybe_run_remodel(state, 5, cfg.orchestrator)
+        assert state["phase_number"] == 0, "critical 없으면 remodel 스킵"
+
+    def test_s7_full_path_plateau_to_remodel_proposal(self):
+        """S7 전체 경로: plateau state → audit findings → remodel proposals 생성."""
+        # 1. 저novelty state 구성 (1개 entity, 2개 category 중 1개만 채움)
+        kus = [
+            {"ku_id": "KU-0001", "entity_key": "t:transport:a", "field": "price",
+             "value": "1000", "status": "active", "evidence_links": ["EU-0001"],
+             "confidence": 0.8, "observed_at": "2026-04-12"},
+        ]
+        skeleton = {
+            "domain": "t",
+            "categories": [
+                {"slug": "transport", "description": ""},
+                {"slug": "food", "description": ""},
+            ],
+            "axes": [],
+            "aliases": {},
+        }
+
+        # 2. audit 실행
+        from src.nodes.audit import run_audit
+        state = {
+            "knowledge_units": kus,
+            "gap_map": [],
+            "domain_skeleton": skeleton,
+            "policies": {},
+        }
+        trajectory = [
+            {"cycle": c, "ku_active": 1, "llm_calls": 5, "avg_confidence": 0.8,
+             "multi_evidence_rate": 0.0}
+            for c in range(1, 6)
+        ]
+        audit_report = run_audit(state, trajectory, audit_cycle=5)
+
+        # 3. remodel 실행
+        report = run_remodel(state, audit_report)
+
+        # 4. gap_rule 제안이 food 카테고리에 대해 생성되는지 확인
+        gap_rules = [p for p in report["proposals"] if p["type"] == "gap_rule"]
+        assert len(gap_rules) >= 1, "food 카테고리 critical gap → gap_rule 제안"
+        assert any("food" in str(p.get("params", {})) for p in gap_rules)
