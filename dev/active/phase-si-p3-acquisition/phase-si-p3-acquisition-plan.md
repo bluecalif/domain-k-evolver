@@ -1,6 +1,6 @@
 # Silver P3: Acquisition Expansion
 > Last Updated: 2026-04-12
-> Status: **Complete — Gate PASS**
+> Status: **Complete — Gate PASS + Post-Gate 개선 완료**
 > Source: `docs/silver-masterplan-v2.md` §4 P3 + §13, `docs/silver-implementation-tasks.md` §7
 
 ---
@@ -231,4 +231,5 @@
 - **Gate 결과**: **PASS**
 - **판정 일시**: 2026-04-12
 - **Debug**: D-110 (fetch_ok robots 제외), D-111 (llm_calls counter)
-- **Commit**: (이번 커밋에 포함)
+- **Gate Commit**: `1367df1`
+- **Post-Gate 개선 Commit**: `5a516fc` — A-1 (Curated 8사이트), B-3 (robots 사전 필터링), Option C 기록, 605 tests

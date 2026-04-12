@@ -1,6 +1,6 @@
 # Silver P3: Acquisition Expansion — Tasks
 > Last Updated: 2026-04-12
-> Status: 22/22 ✅ Gate PASS
+> Status: 22/22 ✅ Gate PASS + Post-Gate 개선 완료
 
 ---
 
@@ -85,3 +85,25 @@
 **Gate 판정**: **PASS** (2026-04-12)
 
 *LLM 비용: trajectory llm_calls 카운터가 P0/P3 모두 0 (pre-existing issue, D-111). P3 추가분은 FetchPipeline(HTTP-only)이므로 LLM 비용 증가 미미.
+
+---
+
+## Post-Gate 개선 (Gate 이후 추가 작업)
+
+- [x] **A-1** `domain-skeleton.json`: preferred_sources 8곳 등록 (japan-guide, jnto, japanrailpass, wikipedia, tokyocheapo, matcha, timeout) — Curated Provider 실질 활성화
+- [x] **B-3** `collect.py._fetch_phase()`: robots.txt 사전 필터링 — 차단될 URL을 fetch 전에 건너뛰고 대체 URL 선택 (fetch 슬롯 낭비 방지)
+- [x] **B-3a** `fetch_pipeline.py`: `FetchPipeline.is_robots_allowed()` public 메서드 추가
+- [x] **A-1a** `run_readiness.py`: skeleton preferred_sources → `create_providers()` 연결
+- [x] Option C (API Provider, Archive fallback) → `project-overall-plan.md` Silver 잔여 + Gold must-have 기록
+- [x] 테스트 605 passed (+6), 3 skipped — commit `5a516fc`
+
+### 다음 Phase E2E에서 검증 필요 (Deferred E2E Verification)
+
+> 아래 항목은 P3 단위테스트로 검증했으나, 실제 E2E bench에서의 효과는 다음 Phase(P2 또는 P4) E2E gate에서 동시 확인해야 함.
+
+| ID | 검증 항목 | 예상 효과 | 측정 방법 |
+|----|-----------|-----------|-----------|
+| V-A1 | Curated preferred_sources가 실제 검색에 기여하는지 | curated provider 결과 ≥ 1건/cycle | trajectory provenance에서 `provider_id="curated"` 카운트 |
+| V-B3 | robots 사전 필터링이 fetch 성공률을 개선하는지 | robots_prefilter 건수 > 0 + fetch 성공률 ≥ 85% | FetchResult failure_reason 분포 비교 (P3 trial 대비) |
+| V-B3a | 차단 URL 대체 선택이 정상 동작하는지 | fetch_top_n 슬롯이 허용 URL로 채워지는지 | fetch_many 호출 인자의 URL 수 == fetch_top_n |
+| V-C56 | Option C 필요성 재검증 | robots+403+SSL 차단률 추이 | 전체 fetch 대비 차단 비율 (P3: 41%) 모니터링 |

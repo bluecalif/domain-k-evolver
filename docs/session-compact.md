@@ -26,9 +26,9 @@ P3 Acquisition Expansion E2E bench 실행 + Gate 판정 + dev-docs/project-overa
 
 ## Current State
 
-- **Git**: branch `main`, latest commit `1367df1` (P3 Gate PASS)
-- **Tests**: 599 passed, 3 skipped
-- **Silver 전체**: P0 32/32 ✅, P1 12/12 ✅, P3 22/22 ✅ (Gate PASS)
+- **Git**: branch `main`, latest commit `5a516fc` (P3 Post-Gate 개선)
+- **Tests**: 605 passed, 3 skipped
+- **Silver 전체**: P0 32/32 ✅, P1 12/12 ✅, P3 22/22 ✅ (Gate PASS + Post-Gate 개선)
 - **다음 Phase**: P2 (Outer-Loop Remodel 완결)
 
 ### Committed Files (commit `1367df1`)

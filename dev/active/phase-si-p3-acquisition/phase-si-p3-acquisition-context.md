@@ -32,11 +32,14 @@
 ### 수정 파일
 | 파일 | 수정 내용 |
 |------|-----------|
-| `src/nodes/collect.py` | 3단계 리팩터 (가장 큰 변경) |
+| `src/nodes/collect.py` | 3단계 리팩터 + **B-3 robots 사전 필터링** |
 | `src/config.py` | SearchConfig 7필드 추가 |
 | `src/adapters/search_adapter.py` | deprecated wrapper 로 축소 |
+| `src/adapters/fetch_pipeline.py` | **B-3a `is_robots_allowed()` public 메서드 추가** |
 | `src/utils/metrics_logger.py` | domain_entropy / provider_entropy emit |
 | `pyproject.toml` | duckduckgo-search optional |
+| `scripts/run_readiness.py` | **A-1a skeleton preferred_sources → create_providers 연결** |
+| `bench/japan-travel/.../domain-skeleton.json` | **A-1 preferred_sources 8곳 등록** |
 | `tests/test_nodes/test_collect.py` | 통합 테스트 추가 |
 
 ---
@@ -125,10 +128,12 @@ cycle_fetch_bytes_budget: int = 10_000_000
 | D-73 | Provider 3개: Tavily 기본 + DDG optional + Curated | masterplan §13 verbatim. DDG 는 entropy_floor 미달 시만 |
 | D-74 | SEARCH / FETCH / PARSE 3단계 분리 | collect.py 에 인라인 fetch 제거, ���일 책임 분리 |
 | D-78 | 비용 가드 — budget + degrade 모드 | R1 완화. baseline × 2.0 상한 |
-| D-100 (예정) | FetchPipeline 은 `urllib.request` 기반 (httpx 미도입) | 외부 의존성 최소화, stdlib 충분 |
-| D-101 (예정) | robots.txt 캐시는 per-run in-memory (파일 캐시 아님) | Silver 규모에서 충분, 복잡도 최소 |
-| D-102 (예정) | CuratedSourceProvider 의 preferred_sources 는 skeleton 필드 | 도메인 설정 파일에 포함, 코드 변경 없이 도메인별 커스텀 |
-| D-103 (예정) | collect_node 외부 인터페이스 보존 (P0-X2) | return dict shape 미변경, 내부만 리팩터 |
+| D-100 | FetchPipeline 은 `urllib.request` 기반 (httpx 미도입) | 외부 의존성 최소화, stdlib 충분 |
+| D-101 | robots.txt 캐시는 per-run in-memory (파일 캐시 아님) | Silver 규모에서 충분, 복잡도 최소 |
+| D-102 | CuratedSourceProvider 의 preferred_sources 는 skeleton 필드 | 도메인 설정 파일에 포함, 코드 변경 없이 도메인별 커스텀 |
+| D-103 | collect_node 외부 인터페이스 보존 (P0-X2) | return dict shape 미변경, 내부만 리팩터 |
+| D-112 | robots.txt 사전 필터링 (B-3) — fetch 전에 차단 URL 건너뛰기 | fetch 슬롯 낭비 방지, 대체 URL 선택으로 실질 성공률 개선 |
+| D-113 | Option C (API Provider / Archive fallback) — Silver 잔여 + Gold must-have 기록 | robots 차단 31% 근본 대응은 API 접근 필요, 현 단계에서는 기록만 |
 
 ---
 
