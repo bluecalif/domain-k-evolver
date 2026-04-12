@@ -21,7 +21,7 @@ load_dotenv(ROOT / ".env")
 
 from src.adapters.llm_adapter import create_llm
 from src.adapters.search_adapter import create_search_tool
-from src.config import EvolverConfig
+from src.config import EvolverConfig, write_config_snapshot
 from src.graph import build_graph
 from src.utils.invariant_checker import check_invariants
 from src.utils.metrics_guard import check_metrics_guard
@@ -82,6 +82,19 @@ def main() -> None:
         logger.info("Resume: auto 결과에서 State 로드")
     else:
         state = load_state(domain_path)
+
+    # Silver trial: config snapshot 자동 작성 (bench_root 설정 시에만)
+    if config.orchestrator.bench_root:
+        try:
+            write_config_snapshot(
+                config,
+                output_path,
+                provider_list=[config.search.provider],
+                skeleton_path=domain_path / "state" / "domain-skeleton.json",
+                repo_dir=ROOT,
+            )
+        except OSError as e:
+            logger.warning("config snapshot 작성 실패: %s", e)
     start_cycle = state.get("current_cycle", 1)
     logger.info("State 로드: KU=%d, GU=%d, cycle=%d",
                 len(state.get("knowledge_units", [])),

@@ -5,8 +5,17 @@ API 키, 모델 파라미터, 실행 옵션을 환경변수에서 로드.
 
 from __future__ import annotations
 
+import dataclasses
+import hashlib
+import json
+import logging
 import os
+import subprocess
 from dataclasses import dataclass, field
+from datetime import datetime, timezone
+from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
@@ -106,3 +115,94 @@ class EvolverConfig:
                 "TAVILY_API_KEY가 설정되지 않았습니다. "
                 ".env 파일 또는 환경변수를 확인하세요."
             )
+
+
+# --- P0-A6: config snapshot ---------------------------------------------
+
+def _get_git_head(repo_dir: Path | None = None) -> str:
+    """현재 git HEAD commit hash. 실패 시 'unknown'."""
+    try:
+        cmd = ["git"]
+        if repo_dir is not None:
+            cmd += ["-C", str(repo_dir)]
+        cmd += ["rev-parse", "HEAD"]
+        out = subprocess.check_output(cmd, stderr=subprocess.DEVNULL, timeout=5)
+        return out.decode("utf-8").strip()
+    except (subprocess.SubprocessError, FileNotFoundError, OSError) as e:
+        logger.warning("git HEAD 조회 실패: %s", e)
+        return "unknown"
+
+
+def _redact(value: object) -> object:
+    """API 키는 snapshot 에 저장하지 않는다."""
+    if isinstance(value, dict):
+        out = {}
+        for k, v in value.items():
+            if k == "api_key":
+                out[k] = "<redacted>" if v else ""
+            else:
+                out[k] = _redact(v)
+        return out
+    return value
+
+
+def write_config_snapshot(
+    config: EvolverConfig,
+    trial_dir: Path | str,
+    *,
+    provider_list: list[str] | None = None,
+    skeleton_path: Path | str | None = None,
+    repo_dir: Path | str | None = None,
+) -> Path:
+    """Silver trial 시작 시 `config.snapshot.json` 을 trial_dir 에 기록.
+
+    Args:
+        config: 실행에 사용되는 EvolverConfig.
+        trial_dir: Silver trial 디렉토리 (`bench/silver/{domain}/{trial_id}/`).
+        provider_list: 활성 provider 목록. 미지정 시 `[config.search.provider]`.
+        skeleton_path: domain-skeleton.json 경로. 미지정 시 `trial_dir/state/domain-skeleton.json`
+            → 존재하지 않으면 `"missing"` 해시로 기록.
+        repo_dir: git HEAD 조회 기준 디렉토리. 미지정 시 현재 작업 디렉토리.
+
+    Returns:
+        작성된 snapshot 파일의 Path.
+    """
+    trial_dir = Path(trial_dir)
+    trial_dir.mkdir(parents=True, exist_ok=True)
+
+    if provider_list is None:
+        provider_list = [config.search.provider]
+
+    # skeleton sha256
+    if skeleton_path is None:
+        candidate = trial_dir / "state" / "domain-skeleton.json"
+        skeleton_path = candidate if candidate.exists() else None
+    else:
+        skeleton_path = Path(skeleton_path)
+
+    if skeleton_path is not None and skeleton_path.exists():
+        skeleton_sha256 = hashlib.sha256(skeleton_path.read_bytes()).hexdigest()
+        skeleton_ref = str(skeleton_path)
+    else:
+        skeleton_sha256 = "missing"
+        skeleton_ref = str(skeleton_path) if skeleton_path is not None else ""
+
+    snapshot = {
+        "schema_version": 1,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "git_head": _get_git_head(Path(repo_dir) if repo_dir else None),
+        "llm": _redact(dataclasses.asdict(config.llm)),
+        "search": _redact(dataclasses.asdict(config.search)),
+        "orchestrator": dataclasses.asdict(config.orchestrator),
+        "providers": list(provider_list),
+        "skeleton_path": skeleton_ref,
+        "skeleton_sha256": skeleton_sha256,
+    }
+
+    target = trial_dir / "config.snapshot.json"
+    target.write_text(
+        json.dumps(snapshot, indent=2, ensure_ascii=False),
+        encoding="utf-8",
+    )
+    logger.info("config snapshot 기록: %s", target)
+    return target

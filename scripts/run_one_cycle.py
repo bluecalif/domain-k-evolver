@@ -21,7 +21,7 @@ load_dotenv(ROOT / ".env")
 
 from src.adapters.llm_adapter import create_llm
 from src.adapters.search_adapter import create_search_tool
-from src.config import EvolverConfig
+from src.config import EvolverConfig, write_config_snapshot
 from src.graph import build_graph
 from src.utils.state_io import load_state, save_state
 
@@ -64,6 +64,19 @@ def main() -> None:
     else:
         domain_path = Path(config.orchestrator.bench_path) / config.orchestrator.bench_domain
     state = load_state(domain_path)
+
+    # Silver trial: config snapshot 자동 작성
+    if config.orchestrator.bench_root:
+        try:
+            write_config_snapshot(
+                config,
+                Path(config.orchestrator.bench_root),
+                provider_list=[config.search.provider],
+                skeleton_path=domain_path / "state" / "domain-skeleton.json",
+                repo_dir=ROOT,
+            )
+        except OSError as e:
+            logger.warning("config snapshot 작성 실패: %s", e)
     logger.info(
         "State 로드: KU=%d, GU=%d, cycle=%d",
         len(state.get("knowledge_units", [])),
