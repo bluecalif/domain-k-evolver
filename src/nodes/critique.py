@@ -378,8 +378,9 @@ def critique_node(
     axis_cov = compute_axis_coverage(gap_map, skeleton)
     deficits = compute_deficit_ratios(axis_cov, skeleton)
 
-    # Dispute Resolution (Phase 3 Stage B)
-    dispute_log = resolve_disputes(kus, llm=llm)
+    # Dispute Resolution (Phase 3 Stage B) + P1-B2 conflict_ledger 연동
+    conflict_ledger = state.get("conflict_ledger", [])
+    dispute_log = resolve_disputes(kus, llm=llm, conflict_ledger=conflict_ledger)
 
     # 실패모드 분석 (dispute resolution 후 — 해소된 KU는 consistency 처방 불필요)
     prescriptions = _analyze_failure_modes(kus, gap_map, skeleton, today)
@@ -513,5 +514,9 @@ def critique_node(
     # dispute resolution으로 KU 상태가 변경되었으면 반환
     if dispute_log:
         result["knowledge_units"] = kus
+
+    # P1-B2: conflict_ledger 가 업데이트되었으면 반환
+    if conflict_ledger:
+        result["conflict_ledger"] = conflict_ledger
 
     return result

@@ -23,7 +23,7 @@
 | Phase | Total | S | M | L | Done | Gate |
 |-------|-------|---|---|---|------|------|
 | P0 Foundation Hardening | 32 | 18 | 13 | 1 | **32/32** ✅ | PASS (VP1 5/5, VP2 5/6, VP3 5/6) |
-| P1 Entity Resolution | 12 | 3 | 9 | 0 | 0/12 | 대기 |
+| P1 Entity Resolution | 12 | 5 | 7 | 0 | 0/12 | Planning |
 | P2 Outer-Loop Remodel | 14 | 5 | 8 | 1 | 0/14 | 대기 |
 | P3 Acquisition Expansion | 22 | 7 | 13 | 2 | 0/22 | 대기 |
 | P4 Coverage Intelligence | 11 | 5 | 6 | 0 | 0/11 | 대기 |
@@ -272,7 +272,8 @@
 ## Phase P1: Entity Resolution & State Safety (12 tasks)
 
 > **목표**: Alias/is_a 해석 + conflict ledger 영속화
-> **Gate**: 동의어/is_a 테스트 pass, 중복 KU ≥ 15% 감소, ledger 100% 보존, S4/S5/S6 pass, 테스트 ≥ 508
+> **Gate**: 동의어/is_a 테스트 pass, 중복 KU ≥ 15% 감소, ledger 100% 보존, S4/S5/S6 pass, 테스트 ≥ 530
+> **dev-docs**: `dev/active/phase-si-p1-entity-resolution/`
 
 ### P1-A. 해상도 계층
 - [ ] **P1-A1** `src/utils/entity_resolver.py` 신규 (alias/is_a/canonicalize) `[M]`

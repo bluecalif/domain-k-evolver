@@ -123,18 +123,21 @@ src/obs/          — 부재 (Silver P5 에서 telemetry + dashboard 신규)
 
 #### Silver P1. Entity Resolution & State Safety
 - **Goal**: 구조적 무결성 — alias / is_a / conflict ledger
+- **Status**: Planning (dev-docs 생성 완료: `dev/active/phase-si-p1-entity-resolution/`)
 - **Scope**:
   - `src/utils/entity_resolver.py` [NEW] — resolve_alias / resolve_is_a / canonicalize_entity_key
-  - `integrate.py._find_existing_ku` resolver 연동
-  - `state/conflict_ledger.json` 영구 보존
-  - skeleton `aliases` / `is_a` validator
+  - `integrate.py._find_matching_ku` resolver 연동
+  - `state/conflict_ledger.json` 영구 보존 (append-only, 삭제 금지)
+  - skeleton `aliases` / `is_a` validator (backward compat)
+  - japan-travel skeleton alias/is_a 예시 추가
+- **Stages**: A (해상도 계층, 4 tasks) → B (Conflict ledger, 4 tasks) → C (검증, 4 tasks)
 - **Gate (정량)**:
   - 동의어 (JR-Pass / 재팬레일패스), is_a (shinkansen is_a train) 각 pass
   - japan-travel 재실행: 중복 KU ≥ 15% 감소 (P0 baseline 대비)
   - 충돌 KU 100% 가 ledger 에 영구 보존
   - S4/S5/S6 pass
-  - 테스트 ≥ 508 (P0 + 20)
-- **Depends on**: P0 (state_io 안전성, P0-X 인터페이스 고정)
+  - 테스트 ≥ 530 (P0 510 + 20)
+- **Depends on**: P0 (state_io 안전성, P0-X 인터페이스 고정) ✅
 - **병렬 가능**: P3
 
 #### Silver P2. Outer-Loop Remodel 완결

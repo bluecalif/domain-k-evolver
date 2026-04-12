@@ -182,3 +182,34 @@ def test_bench_validate_state():
     state = load_state(BENCH)
     errors = validate_state(state)
     assert errors == [], f"State errors: {[e.message for e in errors]}"
+
+
+# --- Silver P1-A3: skeleton aliases/is_a validation ---
+
+from src.utils.schema_validator import validate_skeleton_aliases
+
+
+class TestSkeletonAliasValidation:
+    def test_valid_aliases(self):
+        skeleton = {
+            "aliases": {"jr-pass": ["japan-rail-pass", "재팬레일패스"]},
+            "is_a": {"shinkansen": "train"},
+        }
+        assert validate_skeleton_aliases(skeleton) == []
+
+    def test_no_aliases_field_passes(self):
+        """aliases/is_a 없는 skeleton → 통과 (backward compat)."""
+        assert validate_skeleton_aliases({}) == []
+        assert validate_skeleton_aliases({"domain": "test"}) == []
+
+    def test_aliases_not_dict(self):
+        errors = validate_skeleton_aliases({"aliases": "not-dict"})
+        assert len(errors) == 1
+
+    def test_aliases_value_not_list(self):
+        errors = validate_skeleton_aliases({"aliases": {"key": "not-list"}})
+        assert len(errors) == 1
+
+    def test_is_a_value_not_str(self):
+        errors = validate_skeleton_aliases({"is_a": {"child": 123}})
+        assert len(errors) == 1

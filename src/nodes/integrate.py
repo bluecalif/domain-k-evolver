@@ -13,6 +13,7 @@ from math import ceil
 from typing import Any
 
 from src.state import EvolverState
+from src.utils.entity_resolver import canonicalize_entity_key
 from src.utils.llm_parse import extract_json
 
 logger = logging.getLogger(__name__)
@@ -29,8 +30,22 @@ def _find_matching_ku(
     entity_key: str,
     field: str,
     knowledge_units: list[dict],
+    skeleton: dict | None = None,
 ) -> dict | None:
-    """entity_key + field로 기존 KU 검색."""
+    """entity_key + field로 기존 KU 검색.
+
+    Silver P1-A2: skeleton 이 있으면 canonical key 기반 매칭 우선.
+    기존 exact match 는 resolver fallback 으로 유지.
+    """
+    # 1차: canonical key 매칭 (resolver 경유)
+    if skeleton:
+        canonical = canonicalize_entity_key(entity_key, skeleton)
+        for ku in knowledge_units:
+            ku_canonical = canonicalize_entity_key(ku.get("entity_key", ""), skeleton)
+            if ku_canonical == canonical and ku.get("field") == field:
+                return ku
+
+    # 2차: exact match fallback (skeleton 없거나 canonical 매칭 실패)
     for ku in knowledge_units:
         if ku.get("entity_key") == entity_key and ku.get("field") == field:
             return ku
@@ -238,6 +253,19 @@ def _generate_dynamic_gus(
     return new_gus
 
 
+def _next_ledger_id(ledger: list[dict]) -> str:
+    """conflict_ledger 의 다음 ID 생성."""
+    max_id = 0
+    for entry in ledger:
+        lid = entry.get("ledger_id", "")
+        if lid.startswith("CL-"):
+            try:
+                max_id = max(max_id, int(lid[3:]))
+            except ValueError:
+                pass
+    return f"CL-{max_id + 1:04d}"
+
+
 def _compute_dynamic_gu_cap(mode: str, open_count: int) -> int:
     """동적 GU 상한 계산."""
     if mode == "jump":
@@ -262,6 +290,7 @@ def integrate_node(
     mode_decision = state.get("current_mode", {})
     mode = mode_decision.get("mode", "normal")
     dispute_queue = list(state.get("dispute_queue", []))
+    conflict_ledger = list(state.get("conflict_ledger", []))
 
     open_count = sum(1 for gu in gap_map if gu.get("status") == "open")
     dynamic_cap = _compute_dynamic_gu_cap(mode, open_count)
@@ -309,8 +338,9 @@ def integrate_node(
             if geo:
                 axis_tags["geography"] = geo
 
-        # Entity Resolution
-        existing_ku = _find_matching_ku(entity_key, field, kus)
+        # Entity Resolution (P1-A2: resolver 경유)
+        entity_key = canonicalize_entity_key(entity_key, skeleton)
+        existing_ku = _find_matching_ku(entity_key, field, kus, skeleton)
 
         if existing_ku is not None:
             # Stale refresh: 기존 KU 갱신 (충돌 감지 스킵)
@@ -369,6 +399,17 @@ def integrate_node(
                         "existing_value": str(existing_ku.get("value", ""))[:100],
                         "new_value": str(value)[:100],
                         "cycle": state.get("current_cycle", 0),
+                    })
+
+                    # Silver P1-B2: conflict_ledger entry (append-only, 삭제 금지)
+                    eu_ids = list(existing_ku.get("evidence_links", []))
+                    conflict_ledger.append({
+                        "ledger_id": _next_ledger_id(conflict_ledger),
+                        "ku_id": existing_ku.get("ku_id", ""),
+                        "created_at": date.today().isoformat(),
+                        "status": "open",
+                        "conflicting_evidence": eu_ids,
+                        "resolution": None,
                     })
 
                 elif conflict == "condition_split":
@@ -496,4 +537,5 @@ def integrate_node(
         "gap_map": gap_map,
         "current_claims": claims,
         "dispute_queue": dispute_queue,
+        "conflict_ledger": conflict_ledger,
     }

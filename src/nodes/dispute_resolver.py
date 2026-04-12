@@ -7,6 +7,7 @@ D-42: Evidence-weighted resolution 전략.
 from __future__ import annotations
 
 import logging
+from datetime import date
 from typing import Any
 
 from src.utils.llm_parse import extract_json
@@ -114,12 +115,37 @@ def resolve_dispute(ku: dict, decision: dict) -> bool:
     return True
 
 
+def _update_ledger_on_resolve(
+    conflict_ledger: list[dict],
+    ku_id: str,
+    method: str,
+) -> None:
+    """Silver P1-B2: dispute resolve 시 conflict_ledger 의 해당 entry status=resolved 로 업데이트.
+
+    삭제 금지 (append-only, D-98). status 변경만 허용.
+    """
+    for entry in conflict_ledger:
+        if entry.get("ku_id") == ku_id and entry.get("status") == "open":
+            entry["status"] = "resolved"
+            entry["resolution"] = {
+                "method": method,
+                "resolved_at": date.today().isoformat(),
+                "chosen_ku": ku_id,
+            }
+
+
 def resolve_disputes(
     kus: list[dict],
     *,
     llm: Any | None = None,
+    conflict_ledger: list[dict] | None = None,
 ) -> list[dict]:
     """전체 KU 목록에서 disputed KU를 평가하고 해소.
+
+    Args:
+        kus: KU 목록 (in-place 수정).
+        llm: LLM 인스턴스.
+        conflict_ledger: conflict_ledger 리스트 (in-place 수정). None 이면 ledger 업데이트 스킵.
 
     Returns:
         해소된 KU ID 목록 (resolution log).
@@ -133,18 +159,24 @@ def resolve_disputes(
         decision = evaluate_disputed_ku(ku, llm=llm)
 
         if resolve_dispute(ku, decision):
+            ku_id = ku.get("ku_id", "")
             resolved_log.append({
-                "ku_id": ku.get("ku_id", ""),
+                "ku_id": ku_id,
                 "entity_key": ku.get("entity_key", ""),
                 "field": ku.get("field", ""),
                 "reason": decision.get("reason", ""),
             })
             logger.info(
                 "Dispute resolved: %s (%s/%s) — %s",
-                ku.get("ku_id", ""),
+                ku_id,
                 ku.get("entity_key", ""),
                 ku.get("field", ""),
                 decision.get("reason", ""),
             )
+
+            # Silver P1-B2: conflict_ledger 업데이트
+            if conflict_ledger is not None:
+                method = decision.get("reason", "unknown")
+                _update_ledger_on_resolve(conflict_ledger, ku_id, method)
 
     return resolved_log

@@ -15,7 +15,9 @@ from src.nodes.integrate import (
     _copy_axis_tags,
     _generate_dynamic_gus,
     _infer_geography,
+    _find_matching_ku,
 )
+from tests.conftest import make_minimal_state
 
 
 class TestNormalizeEntityKey:
@@ -1287,3 +1289,247 @@ class TestProvenancePassthrough:
         result = integrate_node(state)
         split_ku = [ku for ku in result["knowledge_units"] if ku.get("ku_id") == "KU-0002"][0]
         assert split_ku["provenance"] == {"provider": "ddg", "fetch_method": "scrape"}
+
+
+# --- Silver P1 Tests: S4/S5/S6 Scenarios ---
+
+SKELETON_P1 = {
+    "domain": "japan-travel",
+    "categories": [{"slug": "transport"}, {"slug": "pass-ticket"}],
+    "fields": [
+        {"name": "price", "type": "object", "categories": ["*"]},
+        {"name": "duration", "type": "string", "categories": ["transport", "pass-ticket"]},
+    ],
+    "aliases": {
+        "japan-travel:pass-ticket:jr-pass": [
+            "japan-rail-pass",
+            "재팬레일패스",
+            "japan-travel:pass-ticket:japan-rail-pass",
+        ],
+        "japan-travel:transport:shinkansen": ["bullet-train", "신칸센"],
+    },
+    "is_a": {
+        "japan-travel:transport:shinkansen": "japan-travel:transport:train",
+        "japan-travel:transport:train": "japan-travel:transport:rail",
+    },
+}
+
+
+class TestS4AliasEquivalence:
+    """S4 scenario: 동의어 2개 (JR-Pass / 재팬레일패스) — 중복 KU 미생성."""
+
+    def test_alias_claim_updates_existing_ku(self) -> None:
+        """alias 로 들어온 claim 이 기존 canonical KU 를 update (신규 생성 안함)."""
+        state = make_minimal_state(
+            knowledge_units=[
+                {
+                    "ku_id": "KU-0001",
+                    "entity_key": "japan-travel:pass-ticket:jr-pass",
+                    "field": "price",
+                    "value": "50000 JPY",
+                    "observed_at": "2026-01-01",
+                    "evidence_links": ["EU-0001"],
+                    "confidence": 0.8,
+                    "status": "active",
+                },
+            ],
+            current_claims=[
+                {
+                    "claim_id": "CL-ALIAS",
+                    "entity_key": "재팬레일패스",  # alias
+                    "field": "price",
+                    "value": "50000 JPY",
+                    "source_gu_id": "",
+                    "evidence": {"eu_id": "EU-0002", "credibility": 0.85},
+                },
+            ],
+            domain_skeleton=SKELETON_P1,
+            current_mode={"mode": "normal"},
+        )
+        result = integrate_node(state)
+        kus = result["knowledge_units"]
+        # 신규 KU 미생성: 여전히 1개
+        assert len(kus) == 1
+        assert kus[0]["ku_id"] == "KU-0001"
+        assert "EU-0002" in kus[0]["evidence_links"]
+
+    def test_full_key_alias_updates_existing(self) -> None:
+        """full key alias (japan-travel:pass-ticket:japan-rail-pass) → canonical KU update."""
+        state = make_minimal_state(
+            knowledge_units=[
+                {
+                    "ku_id": "KU-0001",
+                    "entity_key": "japan-travel:pass-ticket:jr-pass",
+                    "field": "price",
+                    "value": "50000 JPY",
+                    "observed_at": "2026-01-01",
+                    "evidence_links": ["EU-0001"],
+                    "confidence": 0.8,
+                    "status": "active",
+                },
+            ],
+            current_claims=[
+                {
+                    "claim_id": "CL-FULL",
+                    "entity_key": "japan-travel:pass-ticket:japan-rail-pass",
+                    "field": "price",
+                    "value": "50000 JPY",
+                    "source_gu_id": "",
+                    "evidence": {"eu_id": "EU-0003", "credibility": 0.9},
+                },
+            ],
+            domain_skeleton=SKELETON_P1,
+            current_mode={"mode": "normal"},
+        )
+        result = integrate_node(state)
+        assert len(result["knowledge_units"]) == 1
+
+
+class TestS5IsAInheritance:
+    """S5 scenario: is_a (shinkansen is_a train) — resolver 경유 매칭."""
+
+    def test_find_matching_ku_with_resolver(self) -> None:
+        """resolver 가 있으면 alias 기반으로 기존 KU 를 찾는다."""
+        kus = [
+            {
+                "ku_id": "KU-0010",
+                "entity_key": "japan-travel:transport:shinkansen",
+                "field": "price",
+            },
+        ]
+        # bullet-train 은 shinkansen 의 alias
+        found = _find_matching_ku("bullet-train", "price", kus, SKELETON_P1)
+        assert found is not None
+        assert found["ku_id"] == "KU-0010"
+
+    def test_is_a_does_not_merge_different_entities(self) -> None:
+        """is_a 관계가 있어도 다른 entity_key 는 별도 KU 유지.
+
+        shinkansen is_a train 이지만, shinkansen claim 이
+        train KU 를 덮어쓰면 안됨.
+        """
+        state = make_minimal_state(
+            knowledge_units=[
+                {
+                    "ku_id": "KU-0020",
+                    "entity_key": "japan-travel:transport:train",
+                    "field": "price",
+                    "value": "general train price",
+                    "observed_at": "2026-01-01",
+                    "evidence_links": ["EU-0010"],
+                    "confidence": 0.7,
+                    "status": "active",
+                },
+            ],
+            current_claims=[
+                {
+                    "claim_id": "CL-SHIN",
+                    "entity_key": "japan-travel:transport:shinkansen",
+                    "field": "price",
+                    "value": "14000 JPY",
+                    "source_gu_id": "",
+                    "evidence": {"eu_id": "EU-0011", "credibility": 0.8},
+                },
+            ],
+            domain_skeleton=SKELETON_P1,
+            current_mode={"mode": "normal"},
+        )
+        result = integrate_node(state)
+        kus = result["knowledge_units"]
+        # shinkansen 은 별도 KU 로 생성 (train KU 와 분리)
+        assert len(kus) == 2
+        shinkansen_kus = [ku for ku in kus if "shinkansen" in ku.get("entity_key", "")]
+        assert len(shinkansen_kus) == 1
+
+
+class TestS6ConflictLedgerPersistence:
+    """S6 scenario: conflict 보존 후 resolve — ledger 영구 보존."""
+
+    def test_conflict_creates_ledger_entry(self) -> None:
+        """conflict hold 시 conflict_ledger 에 entry 생성."""
+        state = make_minimal_state(
+            knowledge_units=[
+                {
+                    "ku_id": "KU-0030",
+                    "entity_key": "japan-travel:transport:shinkansen",
+                    "field": "price",
+                    "value": "14000 JPY",
+                    "observed_at": "2026-01-01",
+                    "evidence_links": ["EU-0020"],
+                    "confidence": 0.8,
+                    "status": "active",
+                },
+            ],
+            current_claims=[
+                {
+                    "claim_id": "CL-CONFLICT",
+                    "entity_key": "japan-travel:transport:shinkansen",
+                    "field": "price",
+                    "value": "16000 JPY",  # 충돌
+                    "source_gu_id": "",
+                    "evidence": {"eu_id": "EU-0021", "credibility": 0.7},
+                },
+            ],
+            domain_skeleton=SKELETON_P1,
+            current_mode={"mode": "normal"},
+            conflict_ledger=[],
+        )
+        result = integrate_node(state)
+        ledger = result["conflict_ledger"]
+        assert len(ledger) >= 1
+        entry = ledger[0]
+        assert entry["ku_id"] == "KU-0030"
+        assert entry["status"] == "open"
+        assert entry["resolution"] is None
+
+    def test_ledger_entry_survives_resolution(self) -> None:
+        """dispute resolve 후에도 ledger entry 는 삭제되지 않고 status=resolved."""
+        from src.nodes.dispute_resolver import resolve_disputes
+
+        kus = [
+            {
+                "ku_id": "KU-0040",
+                "entity_key": "japan-travel:transport:bus",
+                "field": "price",
+                "value": "500 JPY",
+                "evidence_links": ["EU-A", "EU-B", "EU-C", "EU-D"],
+                "confidence": 0.9,
+                "status": "disputed",
+                "disputes": [{"nature": "price conflict", "resolution": "hold"}],
+            },
+        ]
+        ledger = [
+            {
+                "ledger_id": "CL-0001",
+                "ku_id": "KU-0040",
+                "created_at": "2026-04-12",
+                "status": "open",
+                "conflicting_evidence": ["EU-A", "EU-B"],
+                "resolution": None,
+            },
+        ]
+        resolve_disputes(kus, conflict_ledger=ledger)
+        # KU 가 resolved 되면 ledger entry 도 resolved
+        assert kus[0]["status"] == "active"
+        assert ledger[0]["status"] == "resolved"
+        assert ledger[0]["resolution"] is not None
+        assert ledger[0]["resolution"]["chosen_ku"] == "KU-0040"
+
+    def test_conflict_ledger_returned_in_output(self) -> None:
+        """integrate_node 결과에 conflict_ledger 필드 포함."""
+        state = make_minimal_state(
+            current_claims=[
+                {
+                    "claim_id": "CL-NEW",
+                    "entity_key": "japan-travel:transport:taxi",
+                    "field": "price",
+                    "value": "700 JPY",
+                    "source_gu_id": "",
+                    "evidence": {"eu_id": "EU-0050", "credibility": 0.7},
+                },
+            ],
+            domain_skeleton=SKELETON_P1,
+            current_mode={"mode": "normal"},
+        )
+        result = integrate_node(state)
+        assert "conflict_ledger" in result

@@ -43,6 +43,11 @@ _FILE_MAP: dict[str, str] = {
     "policies.json": "policies",
 }
 
+# Silver P1-B3: 추가 state 파일 (파일 부재 시 빈 배열, migration-safe)
+_OPTIONAL_LIST_FILES: dict[str, str] = {
+    "conflict-ledger.json": "conflict_ledger",
+}
+
 
 def _read_json(path: Path) -> dict | list:
     with open(path, encoding="utf-8") as f:
@@ -78,6 +83,18 @@ def load_state(domain_path: str | Path) -> EvolverState:
         path = state_dir / filename
         data[field] = _load_json_with_recovery(path, field)
 
+    # Silver P1-B3: optional list 파일 로드 (부재 시 빈 배열)
+    for filename, field in _OPTIONAL_LIST_FILES.items():
+        path = state_dir / filename
+        if path.exists():
+            try:
+                data[field] = _read_json(path)
+            except (json.JSONDecodeError, UnicodeDecodeError):
+                logger.warning("Optional file 파싱 실패, 빈 배열 사용: %s", path)
+                data[field] = []
+        else:
+            data[field] = []
+
     # 필수 필드 검증
     _validate_required_fields(data)
 
@@ -93,7 +110,7 @@ def load_state(domain_path: str | Path) -> EvolverState:
         "axis_coverage": None,
         "jump_history": [],
         "hitl_pending": None,
-        "conflict_ledger": [],
+        "conflict_ledger": data.get("conflict_ledger", []),
         "phase_history": [],
         "coverage_map": {},
         "novelty_history": [],
@@ -166,6 +183,16 @@ def save_state(state: EvolverState, domain_path: str | Path) -> None:
                 shutil.copy2(target, bak_path)
             _write_json(target, data)
 
+    # Silver P1-B3: optional list 파일 저장
+    for filename, field in _OPTIONAL_LIST_FILES.items():
+        data = state.get(field)
+        if data:  # 빈 배열이 아닌 경우만 저장
+            target = state_dir / filename
+            if target.exists():
+                bak_path = target.with_suffix(target.suffix + ".bak")
+                shutil.copy2(target, bak_path)
+            _write_json(target, data)
+
 
 def snapshot_state(domain_path: str | Path, cycle: int) -> Path:
     """state/ → state-snapshots/cycle-{n}-snapshot/ 스냅샷 복사.
@@ -190,7 +217,7 @@ def snapshot_state(domain_path: str | Path, cycle: int) -> Path:
 
     snapshot_dir.mkdir(parents=True, exist_ok=True)
 
-    for filename in _FILE_MAP:
+    for filename in list(_FILE_MAP) + list(_OPTIONAL_LIST_FILES):
         src = state_dir / filename
         if src.exists():
             shutil.copy2(src, snapshot_dir / filename)

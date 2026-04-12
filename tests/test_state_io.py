@@ -254,3 +254,100 @@ class TestX4NewStateFields:
     def test_novelty_history_default(self):
         state = load_state(BENCH)
         assert state["novelty_history"] == []
+
+
+class TestConflictLedgerPersistence:
+    """Silver P1-C4: conflict_ledger save/load 영속화 테스트."""
+
+    def test_save_and_load_ledger(self, tmp_path):
+        """ledger 가 save → load round-trip 유지."""
+        from tests.conftest import make_minimal_state
+
+        domain_dir = tmp_path / "test-domain"
+        state_dir = domain_dir / "state"
+        state_dir.mkdir(parents=True)
+
+        # 필수 파일 생성
+        for fname, default in [
+            ("knowledge-units.json", "[]"),
+            ("gap-map.json", "[]"),
+            ("domain-skeleton.json", '{"domain":"test"}'),
+            ("metrics.json", '{"cycle": 1}'),
+            ("policies.json", "{}"),
+        ]:
+            (state_dir / fname).write_text(default, encoding="utf-8")
+
+        ledger_data = [
+            {
+                "ledger_id": "CL-0001",
+                "ku_id": "KU-0001",
+                "created_at": "2026-04-12",
+                "status": "open",
+                "conflicting_evidence": ["EU-0001", "EU-0002"],
+                "resolution": None,
+            },
+            {
+                "ledger_id": "CL-0002",
+                "ku_id": "KU-0002",
+                "created_at": "2026-04-12",
+                "status": "resolved",
+                "conflicting_evidence": ["EU-0003"],
+                "resolution": {
+                    "method": "evidence_weighted",
+                    "resolved_at": "2026-04-12",
+                    "chosen_ku": "KU-0002",
+                },
+            },
+        ]
+
+        state = make_minimal_state(conflict_ledger=ledger_data)
+        state["domain_skeleton"] = {"domain": "test"}
+        state["metrics"] = {"cycle": 1}
+        save_state(state, str(domain_dir))
+
+        # ledger 파일 존재 확인
+        assert (state_dir / "conflict-ledger.json").exists()
+
+        # load 후 데이터 일치 확인
+        loaded = load_state(str(domain_dir))
+        assert len(loaded["conflict_ledger"]) == 2
+        assert loaded["conflict_ledger"][0]["ledger_id"] == "CL-0001"
+        assert loaded["conflict_ledger"][1]["status"] == "resolved"
+
+    def test_load_without_ledger_file(self, tmp_path):
+        """ledger 파일 부재 시 빈 배열 (migration-safe)."""
+        domain_dir = tmp_path / "no-ledger-domain"
+        state_dir = domain_dir / "state"
+        state_dir.mkdir(parents=True)
+
+        for fname, default in [
+            ("knowledge-units.json", "[]"),
+            ("gap-map.json", "[]"),
+            ("domain-skeleton.json", '{"domain":"test"}'),
+            ("metrics.json", '{"cycle": 1}'),
+            ("policies.json", "{}"),
+        ]:
+            (state_dir / fname).write_text(default, encoding="utf-8")
+
+        loaded = load_state(str(domain_dir))
+        assert loaded["conflict_ledger"] == []
+
+    def test_ledger_id_queryable_after_resolve(self, tmp_path):
+        """resolved 전환 후에도 ledger_id 로 조회 가능."""
+        ledger = [
+            {
+                "ledger_id": "CL-0010",
+                "ku_id": "KU-0050",
+                "created_at": "2026-04-12",
+                "status": "resolved",
+                "conflicting_evidence": ["EU-0100"],
+                "resolution": {
+                    "method": "evidence majority",
+                    "resolved_at": "2026-04-12",
+                    "chosen_ku": "KU-0050",
+                },
+            },
+        ]
+        found = [e for e in ledger if e["ledger_id"] == "CL-0010"]
+        assert len(found) == 1
+        assert found[0]["status"] == "resolved"

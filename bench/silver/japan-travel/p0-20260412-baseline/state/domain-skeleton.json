@@ -191,5 +191,17 @@
   "canonical_key_rule": {
     "format": "japan-travel:{category}:{slug}",
     "slug_rules": "영문 소문자, 하이픈 구분, 공식 영문 명칭 기반"
+  },
+  "aliases": {
+    "japan-travel:pass-ticket:jr-pass": ["japan-rail-pass", "재팬레일패스", "japan-travel:pass-ticket:japan-rail-pass"],
+    "japan-travel:transport:shinkansen": ["bullet-train", "신칸센"],
+    "japan-travel:connectivity:pocket-wifi": ["portable-wifi", "포켓와이파이"],
+    "japan-travel:payment:suica": ["suica-card", "스이카"]
+  },
+  "is_a": {
+    "japan-travel:transport:shinkansen": "japan-travel:transport:train",
+    "japan-travel:transport:narita-express": "japan-travel:transport:train",
+    "japan-travel:transport:yamanote-line": "japan-travel:transport:train",
+    "japan-travel:transport:train": "japan-travel:transport:rail"
   }
 }

@@ -48,7 +48,7 @@
 | Phase | 디렉토리 | 선행 조건 |
 |-------|----------|-----------|
 | Silver P0 | `dev/active/phase-si-p0-foundation/` | ✅ **완료** (32/32, Gate PASS, 510 tests) |
-| Silver P1 | `dev/active/phase-si-p1-entity-resolution/` | P0 gate pass |
+| Silver P1 | `dev/active/phase-si-p1-entity-resolution/` | P0 gate pass ✅ → **Planning** |
 | Silver P2 | `dev/active/phase-si-p2-remodel/` | P1 |
 | Silver P3 | `dev/active/phase-si-p3-acquisition/` | P0 gate pass (P1 과 병렬 가능) |
 | Silver P4 | `dev/active/phase-si-p4-coverage/` | P2 + P3 |
@@ -174,6 +174,10 @@ class EvolverState(TypedDict):
 | D-79 | Silver 완료 test 목표 ≥ 588 (Bronze 468 + 120) | Silver 전체 |
 | D-80 | 2차 도메인 선정 기준 — japan-travel 대비 time horizon / hierarchy depth / source language 3축 중 2축 이상 이질 | P6 |
 | D-88~D-95 | P0 진행 중 결정: collect/integrate I/O shape 동결, HITL-E 임계치, config snapshot, provenance, EvolverState 5필드, fresh seed 전략 | P0 |
+| D-96 (예정) | alias map 은 skeleton 정적 선언 (LLM 동적 생성 아님) — 결정론적 매칭 보장 | P1 |
+| D-97 (예정) | is_a depth limit = 5 — 순환 방지 | P1 |
+| D-98 (예정) | conflict_ledger = append-only (삭제 불가, status 변경만) — 감사 추적성 | P1 |
+| D-99 (예정) | dispute_queue = 휘발성, conflict_ledger = 영속 감사 로그 — 독립 구조 | P1 |
 
 ---
 

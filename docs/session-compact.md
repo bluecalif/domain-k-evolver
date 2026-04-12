@@ -41,7 +41,7 @@ Silver P0 Foundation Hardening 완료 + 전체 docs 동기화. ✅ **완료**
 
 - [x] P0 전체 완료 (32/32)
 - [x] `/step-update --sync-overall` — docs 동기화
-- [ ] **Silver P1** Entity Resolution & State Safety (12 tasks) — P0 gate pass 후 착수 가능
+- [x] **Silver P1** Entity Resolution & State Safety (12/12) — 544 tests, S4/S5/S6 pass
 - [ ] **Silver P3** Acquisition Expansion (22 tasks) — P0 gate pass 후 P1 과 병렬 착수 가능
 
 ## Key Decisions (이번 세션)
