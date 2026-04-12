@@ -1,15 +1,15 @@
 # Silver P2: Outer-Loop Remodel — Tasks
 > Last Updated: 2026-04-12
-> Status: Stage A 완료 (4/14)
+> Status: Stage A+B 완료 (8/14)
 
 ## Summary
 
 | Stage | Tasks | Done | Status |
 |-------|-------|------|--------|
 | A. Remodel node + schema | 4 | 4/4 | ✅ 완료 |
-| B. Graph/orchestrator 통합 | 4 | 0/4 | 대기 |
+| B. Graph/orchestrator 통합 | 4 | 4/4 | ✅ 완료 |
 | C. 검증 | 6 | 0/6 | 대기 |
-| **합계** | **14** | **4/14** | Stage A 완료 |
+| **합계** | **14** | **8/14** | Stage A+B 완료 |
 
 **Size 분포**: S: 5 / M: 8 / L: 1
 
@@ -97,30 +97,24 @@
 
 ## Stage B: Graph/orchestrator 통합
 
-- [ ] **P2-B1** `graph.py` remodel 경로 추가 `[M]`
-  - critique → audit → remodel → hitl_r → (approve) phase_bump | (reject) plan_modify
-  - 조건: `cycle > 0 and cycle % 10 == 0 and audit.has_critical`
-  - hitl_r 노드는 이미 등록됨 (line 167), 엣지 연결만 필요
-  - Commit: —
+- [x] **P2-B1** `graph.py` remodel 경로 추가 `[M]`
+  - remodel 노드 등록 (Orchestrator 관리, inner-loop edge 없음)
+  - remodel_node import 추가, docstring 에 Remodel Flow 문서화
+  - audit → remodel 트리거는 Orchestrator._maybe_run_remodel 에서 관리
 
-- [ ] **P2-B2** `hitl_gate.py` HITL-R 핸들러 완성 `[M]`
-  - P0-C5의 stub → 실구현 승격
-  - remodel report 내용 표시 + 승인/거부 응답 처리
-  - Commit: —
+- [x] **P2-B2** `hitl_gate.py` HITL-R 핸들러 완성 `[M]`
+  - _build_gate_payload("R"): proposals_summary, report_id, proposal_count 표시
+  - _handle_response: approve → approval.status="approved", reject → approval.status="rejected"
+  - 자동 승인 (response=None) 지원
 
-- [ ] **P2-B3** `orchestrator.py` phase transition 핸들러 `[M]`
-  - 승인된 report를 실제 skeleton 수정으로 apply
-  - merge: entity_key 통합 + KU/EU 재연결
-  - split: entity_key 분할 + 관련 데이터 분리
-  - reclassify: category 변경
-  - 실패 시 rollback 경로 실행
-  - Commit: —
+- [x] **P2-B3** `orchestrator.py` phase transition 핸들러 `[M]`
+  - _maybe_run_remodel: audit has_critical + cycle % interval → remodel 트리거
+  - _apply_remodel_proposals: merge/split/reclassify KU entity_key 변경
+  - phase bump (+1) + snapshot_phase + phase_history 기록
 
-- [ ] **P2-B4** Rejection/rollback path `[M]`
-  - report가 `rejected`로 종료 → active state 변경 없음
-  - rollback_payload 검증만 수행
-  - state diff = ∅ 보장
-  - Commit: —
+- [x] **P2-B4** Rejection/rollback path `[M]`
+  - _hitl_response = {"action": "reject"} → state 무변경 (phase_number, entity_key 불변)
+  - remodel_report.approval.status = "rejected" 기록
 
 ---
 

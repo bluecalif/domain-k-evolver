@@ -4,15 +4,21 @@ P0-C1/C2/C3 (P0 Foundation Hardening, Stage C): HITL 축소 반영.
 Bronze HITL-A/B/C/D 인라인 게이트 제거, Silver HITL-S/R/E 재배치.
 masterplan v2 §14 기반.
 
-Silver Flow:
+Silver Flow (Inner Loop — 단일 사이클):
   START → seed → (phase 첫 cycle → hitl_s → mode, else → mode)
     → mode → (auto_pause violations → hitl_e → plan, else → plan)
     → plan → collect → integrate → critique
     → (converged → END, else → plan_modify → cycle_inc → END)
 
+Remodel Flow (Outer Loop — Orchestrator 관리, P2):
+  Orchestrator._maybe_run_remodel:
+    audit (has_critical) + cycle % remodel_interval == 0
+    → remodel_node → HITL-R → (approve) phase_transition + phase_bump
+                              → (reject) skip (state 무변경)
+
 HITL gates:
   - S: phase 첫 cycle seed 승인 (blocking)
-  - R: Remodel 승인 (stub, P2 실구현)
+  - R: Remodel 승인 (P2 구현, Orchestrator 관리)
   - E: Exception auto-pause (should_auto_pause 5개 임계치 위반 시)
   - D: dispute_queue 비블로킹 append (graph edge 아님, integrate_node 내부 처리)
 """
@@ -30,6 +36,7 @@ from src.nodes.hitl_gate import hitl_gate_node
 from src.nodes.integrate import integrate_node
 from src.nodes.mode import mode_node
 from src.nodes.plan import plan_node
+from src.nodes.remodel import remodel_node
 from src.nodes.plan_modify import plan_modify_node
 from src.nodes.seed import seed_node
 from src.state import EvolverState
@@ -166,6 +173,9 @@ def build_graph(
     graph.add_node("hitl_s", _make_hitl_node("S", response=hitl_response))
     graph.add_node("hitl_r", _make_hitl_node("R", response=hitl_response))
     graph.add_node("hitl_e", _make_hitl_node("E", response=hitl_response))
+
+    # -- Remodel node (P2) — Orchestrator 관리, inner-loop edge 없음 --
+    graph.add_node("remodel", remodel_node)
 
     # -- Edges --
 

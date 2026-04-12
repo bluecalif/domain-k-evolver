@@ -27,9 +27,9 @@ Silver P2 (Outer-Loop Remodel 완결) dev-docs 생성 + Phase Gate 단계 포함
 ## Current State
 
 - **Git**: branch `main`, latest commit `692b1df` (P2 dev-docs 생성)
-- **Tests**: 630 collected (605 기존 + 25 P2 신규)
-- **Silver 전체**: P0 32/32 ✅, P1 12/12 ✅, P3 22/22 ✅, **P2 4/14 Stage A 완료**
-- **다음**: P2 Stage B 착수 (B1: graph.py remodel 경로)
+- **Tests**: 642 collected (605 기존 + 37 P2 신규)
+- **Silver 전체**: P0 32/32 ✅, P1 12/12 ✅, P3 22/22 ✅, **P2 8/14 Stage A+B 완료**
+- **다음**: P2 Stage C 착수 (검증 6 tasks)
 
 ### Changed Files (uncommitted)
 - `dev/active/phase-si-p2-remodel/si-p2-remodel-plan.md` — 신규
@@ -53,7 +53,7 @@ Silver P2 (Outer-Loop Remodel 완결) dev-docs 생성 + Phase Gate 단계 포함
 - [x] P2-A2: `schemas/remodel_report.schema.json` [M] — Draft 2020-12
 - [x] P2-A3: `EvolverState.phase_number` + `remodel_report` [S]
 - [x] P2-A4: `state/phase_{N}/` 스냅샷 로직 [M] — snapshot_phase()
-- [ ] P2-B1~B4: Graph/orchestrator 통합 (4 tasks)
+- [x] P2-B1~B4: Graph/orchestrator 통합 (4 tasks) — graph remodel 노드, HITL-R 실구현, orchestrator remodel 트리거+적용+rollback
 - [ ] P2-C1~C6: 검증 (6 tasks)
 - [ ] P2 Gate: E2E bench + 자가평가 + debug + dev-docs
 

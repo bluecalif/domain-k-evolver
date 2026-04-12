@@ -31,9 +31,21 @@ def _build_gate_payload(gate: str, state: EvolverState) -> dict:
             "cycle": state.get("current_cycle", 0),
         }
     elif gate == "R":
+        remodel_report = state.get("remodel_report") or {}
+        proposals = remodel_report.get("proposals", [])
         return {
             "gate": "R",
-            "description": "Remodel 제안 승인 (stub — P2 실구현)",
+            "description": "Remodel 제안 승인",
+            "report_id": remodel_report.get("report_id", ""),
+            "proposal_count": len(proposals),
+            "proposals_summary": [
+                {
+                    "type": p.get("type"),
+                    "rationale": p.get("rationale", "")[:100],
+                    "target_entities": p.get("target_entities", []),
+                }
+                for p in proposals
+            ],
         }
     elif gate == "E":
         from src.utils.metrics_guard import should_auto_pause
@@ -57,22 +69,47 @@ def _handle_response(
     action = response.get("action", "approve")
 
     if action == "approve":
-        return {"hitl_pending": None}
+        result: dict[str, Any] = {"hitl_pending": None}
+        # HITL-R approve: remodel_report 에 승인 상태 기록
+        if gate == "R":
+            remodel_report = state.get("remodel_report")
+            if remodel_report:
+                remodel_report = dict(remodel_report)
+                remodel_report["approval"] = {
+                    "status": "approved",
+                    "actor": response.get("actor", "human"),
+                    "at": response.get("at", ""),
+                }
+                result["remodel_report"] = remodel_report
+        return result
 
     elif action == "reject":
-        return {
+        result_rej: dict[str, Any] = {
             "hitl_pending": {
                 "gate": gate,
                 "result": "rejected",
                 "reason": response.get("reason", ""),
             },
         }
+        # HITL-R reject: remodel_report 에 거부 상태 기록, state 무변경 보장
+        if gate == "R":
+            remodel_report = state.get("remodel_report")
+            if remodel_report:
+                remodel_report = dict(remodel_report)
+                remodel_report["approval"] = {
+                    "status": "rejected",
+                    "actor": response.get("actor", "human"),
+                    "at": response.get("at", ""),
+                    "reason": response.get("reason", ""),
+                }
+                result_rej["remodel_report"] = remodel_report
+        return result_rej
 
     elif action == "modify":
-        result: dict[str, Any] = {"hitl_pending": None}
+        result_mod: dict[str, Any] = {"hitl_pending": None}
         if gate == "S" and "modified_skeleton" in response:
-            result["domain_skeleton"] = response["modified_skeleton"]
-        return result
+            result_mod["domain_skeleton"] = response["modified_skeleton"]
+        return result_mod
 
     return {"hitl_pending": None}
 

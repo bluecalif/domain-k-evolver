@@ -90,13 +90,14 @@ class TestGraphBuild:
         assert graph is not None
 
     def test_node_count(self):
-        """8 core + cycle_inc + 3 HITL (S/R/E) = 11 노드 (+ __start__)."""
+        """8 core + cycle_inc + 3 HITL (S/R/E) + remodel = 12 노드 (+ __start__)."""
         graph = build_graph()
         node_names = set(graph.nodes.keys()) - {"__start__"}
         expected = {
             "seed", "mode", "plan", "collect", "integrate",
             "critique", "plan_modify", "cycle_inc",
             "hitl_s", "hitl_r", "hitl_e",
+            "remodel",
         }
         assert node_names == expected
 

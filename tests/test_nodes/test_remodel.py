@@ -520,3 +520,438 @@ class TestPhaseSnapshot:
         # 두 번째 스냅샷 (덮어쓰기)
         result = snapshot_phase(domain, 1)
         assert result.exists()
+
+
+# ---------------------------------------------------------------------------
+# P2-B2: HITL-R 핸들러 테스트
+# ---------------------------------------------------------------------------
+
+class TestHitlRHandler:
+    def test_hitl_r_approve_updates_report(self):
+        """HITL-R approve → remodel_report.approval.status = approved."""
+        from src.nodes.hitl_gate import hitl_gate_node
+
+        report = {
+            "report_id": "RM-0001",
+            "proposals": [{"type": "merge", "rationale": "test"}],
+            "approval": {"status": "pending"},
+        }
+        state = {
+            "hitl_pending": {"gate": "R"},
+            "remodel_report": report,
+        }
+        result = hitl_gate_node(state, response={"action": "approve", "actor": "tester"})
+        assert result["hitl_pending"] is None
+        assert result["remodel_report"]["approval"]["status"] == "approved"
+        assert result["remodel_report"]["approval"]["actor"] == "tester"
+
+    def test_hitl_r_reject_preserves_state(self):
+        """HITL-R reject → remodel_report.approval.status = rejected."""
+        from src.nodes.hitl_gate import hitl_gate_node
+
+        report = {
+            "report_id": "RM-0001",
+            "proposals": [{"type": "merge", "rationale": "test"}],
+            "approval": {"status": "pending"},
+        }
+        state = {
+            "hitl_pending": {"gate": "R"},
+            "remodel_report": report,
+        }
+        result = hitl_gate_node(
+            state, response={"action": "reject", "reason": "불필요", "actor": "tester"},
+        )
+        assert result["hitl_pending"]["result"] == "rejected"
+        assert result["remodel_report"]["approval"]["status"] == "rejected"
+        assert result["remodel_report"]["approval"]["reason"] == "불필요"
+
+    def test_hitl_r_auto_approve(self):
+        """HITL-R response=None → 자동 승인."""
+        from src.nodes.hitl_gate import hitl_gate_node
+
+        state = {
+            "hitl_pending": {"gate": "R"},
+            "remodel_report": {
+                "report_id": "RM-0001",
+                "proposals": [],
+                "approval": {"status": "pending"},
+            },
+        }
+        result = hitl_gate_node(state, response=None)
+        assert result["hitl_pending"] is None
+
+    def test_hitl_r_payload_shows_proposals(self):
+        """HITL-R payload 에 proposals_summary 포함."""
+        from src.nodes.hitl_gate import _build_gate_payload
+
+        state = {
+            "remodel_report": {
+                "report_id": "RM-0001",
+                "proposals": [
+                    {"type": "merge", "rationale": "entity 중복률 50%", "target_entities": ["a", "b"]},
+                    {"type": "split", "rationale": "상반 geo tag", "target_entities": ["c"]},
+                ],
+                "approval": {"status": "pending"},
+            },
+        }
+        payload = _build_gate_payload("R", state)
+        assert payload["gate"] == "R"
+        assert payload["proposal_count"] == 2
+        assert len(payload["proposals_summary"]) == 2
+        assert payload["proposals_summary"][0]["type"] == "merge"
+
+
+# ---------------------------------------------------------------------------
+# P2-B3: Orchestrator remodel 통합 테스트
+# ---------------------------------------------------------------------------
+
+class TestOrchestratorRemodel:
+    def _make_orch_state(self, cycle: int = 10) -> dict:
+        """remodel 테스트용 Orchestrator state."""
+        return {
+            "knowledge_units": [
+                {
+                    "ku_id": "KU-0001", "entity_key": "japan-travel:transport:item-01",
+                    "field": "price", "value": "1000", "status": "active",
+                    "evidence_links": ["EU-0001"], "confidence": 0.85,
+                    "observed_at": "2026-04-12",
+                },
+                {
+                    "ku_id": "KU-0002", "entity_key": "japan-travel:transport:item-02",
+                    "field": "price", "value": "1000", "status": "active",
+                    "evidence_links": ["EU-0002"], "confidence": 0.85,
+                    "observed_at": "2026-04-12",
+                },
+            ],
+            "gap_map": [],
+            "domain_skeleton": {
+                "domain": "japan-travel",
+                "categories": [{"slug": "transport", "description": ""}],
+                "axes": [],
+                "aliases": {},
+            },
+            "metrics": {"cycle": cycle, "rates": {}},
+            "policies": {},
+            "current_cycle": cycle,
+            "current_plan": None,
+            "current_claims": None,
+            "current_critique": None,
+            "current_mode": None,
+            "axis_coverage": None,
+            "jump_history": [],
+            "hitl_pending": None,
+            "conflict_ledger": [],
+            "phase_number": 0,
+            "phase_history": [],
+            "remodel_report": None,
+            "audit_history": [{
+                "audit_cycle": cycle,
+                "window": [1, cycle],
+                "findings": [{
+                    "finding_id": "F-COV-FOOD",
+                    "category": "coverage_gap",
+                    "severity": "critical",
+                    "description": "카테고리 'food' KU 0개",
+                    "evidence": {"category": "food", "ku_count": 0},
+                }],
+                "recommendations": [],
+                "policy_patches": [],
+            }],
+            "dispute_queue": [],
+            "coverage_map": {},
+            "novelty_history": [],
+            "net_gap_changes": [],
+        }
+
+    def test_remodel_triggers_on_critical_audit(self, tmp_path):
+        """critical finding + cycle % interval == 0 → remodel 실행."""
+        from src.config import EvolverConfig, OrchestratorConfig
+        from src.orchestrator import Orchestrator
+
+        domain_path = tmp_path / "test-domain"
+        state_dir = domain_path / "state"
+        state_dir.mkdir(parents=True)
+        for fname in ("knowledge-units.json", "gap-map.json", "domain-skeleton.json",
+                       "metrics.json", "policies.json"):
+            (state_dir / fname).write_text("{}", encoding="utf-8")
+
+        cfg = EvolverConfig(
+            orchestrator=OrchestratorConfig(
+                audit_interval=10,
+                bench_root=str(domain_path),
+            ),
+        )
+        orch = Orchestrator(cfg)
+        state = self._make_orch_state(cycle=10)
+
+        orch._maybe_run_remodel(state, 10, cfg.orchestrator)
+
+        # remodel 실행됨 → phase_number bump
+        assert state["phase_number"] == 1
+        assert len(state["phase_history"]) == 1
+        assert state["phase_history"][0]["cycle"] == 10
+
+    def test_remodel_skips_without_critical(self, tmp_path):
+        """critical finding 없으면 remodel 스킵."""
+        from src.config import EvolverConfig, OrchestratorConfig
+        from src.orchestrator import Orchestrator
+
+        cfg = EvolverConfig(
+            orchestrator=OrchestratorConfig(
+                audit_interval=10,
+                bench_root=str(tmp_path),
+            ),
+        )
+        orch = Orchestrator(cfg)
+        state = self._make_orch_state(cycle=10)
+        # finding 을 warning 으로 변경
+        state["audit_history"][0]["findings"][0]["severity"] = "warning"
+
+        orch._maybe_run_remodel(state, 10, cfg.orchestrator)
+        assert state["phase_number"] == 0  # 변경 없음
+
+    def test_remodel_skips_wrong_cycle(self, tmp_path):
+        """cycle % interval != 0 이면 remodel 스킵."""
+        from src.config import EvolverConfig, OrchestratorConfig
+        from src.orchestrator import Orchestrator
+
+        cfg = EvolverConfig(
+            orchestrator=OrchestratorConfig(
+                audit_interval=10,
+                bench_root=str(tmp_path),
+            ),
+        )
+        orch = Orchestrator(cfg)
+        state = self._make_orch_state(cycle=7)
+
+        orch._maybe_run_remodel(state, 7, cfg.orchestrator)
+        assert state["phase_number"] == 0  # 변경 없음
+
+
+# ---------------------------------------------------------------------------
+# P2-B3: Phase transition (merge/split/reclassify 적용)
+# ---------------------------------------------------------------------------
+
+class TestPhaseTransition:
+    def test_merge_applies_entity_key_change(self, tmp_path):
+        """merge 제안 승인 → KU entity_key 통합."""
+        from src.config import EvolverConfig, OrchestratorConfig
+        from src.orchestrator import Orchestrator
+
+        domain_path = tmp_path / "test-domain"
+        state_dir = domain_path / "state"
+        state_dir.mkdir(parents=True)
+        for fname in ("knowledge-units.json", "gap-map.json", "domain-skeleton.json",
+                       "metrics.json", "policies.json"):
+            (state_dir / fname).write_text("{}", encoding="utf-8")
+
+        cfg = EvolverConfig(
+            orchestrator=OrchestratorConfig(bench_root=str(domain_path)),
+        )
+        orch = Orchestrator(cfg)
+        state = {
+            "knowledge_units": [
+                {"ku_id": "KU-0001", "entity_key": "t:cat:a", "field": "p", "value": "1",
+                 "status": "active", "evidence_links": ["EU-0001"], "confidence": 0.8},
+                {"ku_id": "KU-0002", "entity_key": "t:cat:b", "field": "p", "value": "1",
+                 "status": "active", "evidence_links": ["EU-0002"], "confidence": 0.8},
+            ],
+            "domain_skeleton": {"domain": "t", "categories": [{"slug": "cat"}]},
+            "remodel_report": {
+                "report_id": "RM-0001",
+                "proposals": [{
+                    "type": "merge",
+                    "rationale": "50% overlap",
+                    "target_entities": ["t:cat:a", "t:cat:b"],
+                    "params": {"canonical_key": "t:cat:a"},
+                    "expected_delta": {"metric": "entity_count", "before": 2, "after": 1},
+                }],
+                "approval": {"status": "approved"},
+            },
+            "phase_number": 0,
+            "phase_history": [],
+        }
+
+        orch._apply_remodel_proposals(state, cycle_num=10)
+
+        # KU-0002 의 entity_key 가 canonical 로 변경됨
+        assert state["knowledge_units"][0]["entity_key"] == "t:cat:a"
+        assert state["knowledge_units"][1]["entity_key"] == "t:cat:a"
+        assert state["phase_number"] == 1
+
+    def test_split_applies_geo_based_keys(self, tmp_path):
+        """split 제안 승인 → geography 기반 entity_key 분리."""
+        from src.config import EvolverConfig, OrchestratorConfig
+        from src.orchestrator import Orchestrator
+
+        domain_path = tmp_path / "test-domain"
+        state_dir = domain_path / "state"
+        state_dir.mkdir(parents=True)
+        for fname in ("knowledge-units.json", "gap-map.json", "domain-skeleton.json",
+                       "metrics.json", "policies.json"):
+            (state_dir / fname).write_text("{}", encoding="utf-8")
+
+        cfg = EvolverConfig(
+            orchestrator=OrchestratorConfig(bench_root=str(domain_path)),
+        )
+        orch = Orchestrator(cfg)
+        state = {
+            "knowledge_units": [
+                {"ku_id": "KU-0001", "entity_key": "t:cat:item", "field": "p", "value": "1",
+                 "status": "active", "evidence_links": ["EU-0001"], "confidence": 0.8,
+                 "axis_tags": {"geography": "tokyo"}},
+                {"ku_id": "KU-0002", "entity_key": "t:cat:item", "field": "p", "value": "2",
+                 "status": "active", "evidence_links": ["EU-0002"], "confidence": 0.8,
+                 "axis_tags": {"geography": "osaka"}},
+            ],
+            "domain_skeleton": {"domain": "t", "categories": [{"slug": "cat"}]},
+            "remodel_report": {
+                "report_id": "RM-0002",
+                "proposals": [{
+                    "type": "split",
+                    "rationale": "상반 geo tag",
+                    "target_entities": ["t:cat:item"],
+                    "params": {
+                        "new_keys": ["t:cat:item-tokyo", "t:cat:item-osaka"],
+                        "split_axis": "geography",
+                        "axis_values": ["tokyo", "osaka"],
+                    },
+                    "expected_delta": {"metric": "entity_count", "before": 1, "after": 2},
+                }],
+                "approval": {"status": "approved"},
+            },
+            "phase_number": 0,
+            "phase_history": [],
+        }
+
+        orch._apply_remodel_proposals(state, cycle_num=10)
+
+        assert state["knowledge_units"][0]["entity_key"] == "t:cat:item-tokyo"
+        assert state["knowledge_units"][1]["entity_key"] == "t:cat:item-osaka"
+        assert state["phase_number"] == 1
+
+    def test_reclassify_changes_category(self, tmp_path):
+        """reclassify 제안 승인 → entity_key 의 category 변경."""
+        from src.config import EvolverConfig, OrchestratorConfig
+        from src.orchestrator import Orchestrator
+
+        domain_path = tmp_path / "test-domain"
+        state_dir = domain_path / "state"
+        state_dir.mkdir(parents=True)
+        for fname in ("knowledge-units.json", "gap-map.json", "domain-skeleton.json",
+                       "metrics.json", "policies.json"):
+            (state_dir / fname).write_text("{}", encoding="utf-8")
+
+        cfg = EvolverConfig(
+            orchestrator=OrchestratorConfig(bench_root=str(domain_path)),
+        )
+        orch = Orchestrator(cfg)
+        state = {
+            "knowledge_units": [
+                {"ku_id": "KU-0001", "entity_key": "t:old-cat:item", "field": "p", "value": "1",
+                 "status": "active", "evidence_links": ["EU-0001"], "confidence": 0.8},
+            ],
+            "domain_skeleton": {"domain": "t", "categories": [{"slug": "new-cat"}]},
+            "remodel_report": {
+                "report_id": "RM-0003",
+                "proposals": [{
+                    "type": "reclassify",
+                    "rationale": "category 부정합",
+                    "target_entities": ["t:old-cat:item"],
+                    "params": {"from_category": "old-cat", "to_category": "new-cat"},
+                    "expected_delta": {"metric": "category_validity", "before": 0.0, "after": 1.0},
+                }],
+                "approval": {"status": "approved"},
+            },
+            "phase_number": 0,
+            "phase_history": [],
+        }
+
+        orch._apply_remodel_proposals(state, cycle_num=10)
+
+        assert state["knowledge_units"][0]["entity_key"] == "t:new-cat:item"
+        assert state["phase_number"] == 1
+
+
+# ---------------------------------------------------------------------------
+# P2-B4: Rollback (rejection → state diff = ∅)
+# ---------------------------------------------------------------------------
+
+class TestRollback:
+    def test_rejection_no_state_change(self, tmp_path):
+        """remodel 거부 → state 무변경 (phase_number, KU entity_key 불변)."""
+        from src.config import EvolverConfig, OrchestratorConfig
+        from src.orchestrator import Orchestrator
+
+        domain_path = tmp_path / "test-domain"
+        state_dir = domain_path / "state"
+        state_dir.mkdir(parents=True)
+        for fname in ("knowledge-units.json", "gap-map.json", "domain-skeleton.json",
+                       "metrics.json", "policies.json"):
+            (state_dir / fname).write_text("{}", encoding="utf-8")
+
+        cfg = EvolverConfig(
+            orchestrator=OrchestratorConfig(
+                audit_interval=10,
+                bench_root=str(domain_path),
+            ),
+        )
+        orch = Orchestrator(cfg)
+        orch._hitl_response = {"action": "reject", "reason": "불필요"}
+
+        state = {
+            "knowledge_units": [
+                {"ku_id": "KU-0001", "entity_key": "t:cat:a", "field": "p", "value": "1",
+                 "status": "active", "evidence_links": ["EU-0001"], "confidence": 0.8,
+                 "observed_at": "2026-04-12"},
+                {"ku_id": "KU-0002", "entity_key": "t:cat:b", "field": "p", "value": "1",
+                 "status": "active", "evidence_links": ["EU-0002"], "confidence": 0.8,
+                 "observed_at": "2026-04-12"},
+            ],
+            "gap_map": [],
+            "domain_skeleton": {"domain": "t", "categories": [{"slug": "cat"}], "axes": [], "aliases": {}},
+            "metrics": {"cycle": 10, "rates": {}},
+            "policies": {},
+            "current_cycle": 10,
+            "hitl_pending": None,
+            "phase_number": 0,
+            "phase_history": [],
+            "remodel_report": None,
+            "audit_history": [{
+                "audit_cycle": 10,
+                "window": [1, 10],
+                "findings": [{
+                    "finding_id": "F-COV-X",
+                    "category": "coverage_gap",
+                    "severity": "critical",
+                    "description": "test",
+                    "evidence": {"category": "x", "ku_count": 0},
+                }],
+                "recommendations": [],
+                "policy_patches": [],
+            }],
+        }
+
+        # 원본 entity_key 보존 확인용
+        original_ek_0 = state["knowledge_units"][0]["entity_key"]
+        original_ek_1 = state["knowledge_units"][1]["entity_key"]
+
+        orch._maybe_run_remodel(state, 10, cfg.orchestrator)
+
+        # 거부 → state 무변경
+        assert state["phase_number"] == 0
+        assert state["knowledge_units"][0]["entity_key"] == original_ek_0
+        assert state["knowledge_units"][1]["entity_key"] == original_ek_1
+        assert len(state["phase_history"]) == 0
+
+    def test_rollback_payload_has_skeleton_snapshot(self):
+        """rollback_payload 에 skeleton_snapshot 이 포함."""
+        kus = [
+            {"ku_id": "KU-0001", "entity_key": "t:cat:a", "field": "p",
+             "value": "1", "status": "active", "evidence_links": ["EU-0001"], "confidence": 0.8},
+        ]
+        state = _make_state(kus=kus)
+        proposals = [{"type": "merge", "target_entities": ["t:cat:a"], "params": {}}]
+        payload = _build_rollback_payload(state, proposals)
+        assert "skeleton_snapshot" in payload
+        assert payload["skeleton_snapshot"] == state["domain_skeleton"]

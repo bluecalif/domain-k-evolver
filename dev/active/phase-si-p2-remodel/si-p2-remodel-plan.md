@@ -1,6 +1,6 @@
 # Silver P2: Outer-Loop Remodel 완결
 > Last Updated: 2026-04-12
-> Status: Stage A 완료 (4/14), Stage B 대기
+> Status: Stage A+B 완료 (8/14), Stage C 대기
 
 ## 1. Summary (개요)
 
@@ -32,15 +32,16 @@
 | 항목 | 상태 |
 |------|------|
 | `audit.py` 4 분석함수 | ✅ 구현 완료 (Bronze P4) |
-| `hitl_gate.py` HITL-R stub | ✅ stub 존재 (P0-C5) |
-| `graph.py` hitl_r 노드 | ✅ 등록됨 (엣지 미연결) |
+| `hitl_gate.py` HITL-R | ✅ 실구현 완료 (P2-B2) — approve/reject 처리, proposals_summary 표시 |
+| `graph.py` remodel 노드 | ✅ 등록 완료 (P2-B1) — Orchestrator 관리 |
 | `EvolverState.phase_history` | ✅ 필드 선언됨 (`state.py:224`) |
 | `entity_resolver.py` | ✅ 완료 (P1) |
 | `remodel.py` | ✅ 구현 완료 (P2-A1) |
 | `remodel_report.schema.json` | ✅ 구현 완료 (P2-A2) |
 | `EvolverState.phase_number` | ✅ 추가 (P2-A3) |
 | `snapshot_phase()` | ✅ 구현 완료 (P2-A4) |
-| 테스트 | 630 tests (605 + 25 P2 신규) |
+| `orchestrator.py` remodel | ✅ 구현 완료 (P2-B3/B4) — _maybe_run_remodel, _apply_remodel_proposals |
+| 테스트 | 642 tests (605 + 37 P2 신규) |
 
 ---
 

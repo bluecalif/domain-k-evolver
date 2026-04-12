@@ -13,12 +13,14 @@ from typing import Any
 from src.config import EvolverConfig, OrchestratorConfig
 from src.graph import build_graph
 from src.nodes.audit import run_audit
+from src.nodes.hitl_gate import hitl_gate_node
+from src.nodes.remodel import run_remodel
 from src.state import EvolverState
 from src.utils.metrics_guard import check_metrics_guard
 from src.utils.metrics_logger import MetricsLogger
 from src.utils.plateau_detector import PlateauDetector
 from src.utils.policy_manager import apply_patches, rollback, should_rollback
-from src.utils.state_io import load_state, save_state, snapshot_state
+from src.utils.state_io import load_state, save_state, snapshot_phase, snapshot_state
 
 logger = logging.getLogger(__name__)
 
@@ -69,6 +71,7 @@ class Orchestrator:
         self.audit_reports: list[dict] = []
         self._pre_patch_policies: dict | None = None  # 롤백용 백업
         self._patch_applied_cycle: int = 0  # patch 적용 cycle
+        self._hitl_response: dict | None = None  # HITL 응답 (테스트용 주입)
 
     @property
     def _domain_path(self) -> Path:
@@ -120,6 +123,9 @@ class Orchestrator:
 
             # Executive Audit (Phase 4) — patch 적용 포함
             self._maybe_run_audit(state, cycle_num, orch_cfg)
+
+            # Remodel (P2) — audit 후 조건 충족 시 실행
+            self._maybe_run_remodel(state, cycle_num, orch_cfg)
 
             # 사이클 후 처리: save, snapshot
             self._post_cycle(state, cycle_num, orch_cfg)
@@ -265,6 +271,164 @@ class Orchestrator:
             logger.info("Policy patch 성능 유지 확인 (cycle=%d)", cycle_num)
 
         self._pre_patch_policies = None
+
+    def _maybe_run_remodel(
+        self,
+        state: EvolverState,
+        cycle_num: int,
+        cfg: OrchestratorConfig,
+    ) -> None:
+        """Remodel 조건 확인 + 실행 (P2).
+
+        조건: cycle > 0 AND cycle % remodel_interval == 0 AND audit.has_critical.
+        remodel_interval 은 audit_interval 과 동일 (기본 10).
+        """
+        remodel_interval = getattr(cfg, "remodel_interval", cfg.audit_interval)
+        if remodel_interval <= 0:
+            return
+        if cycle_num <= 0 or cycle_num % remodel_interval != 0:
+            return
+
+        # 최신 audit 에 critical finding 이 있는지 확인
+        audit_history = state.get("audit_history") or []
+        if not audit_history:
+            return
+
+        latest_audit = audit_history[-1]
+        findings = latest_audit.get("findings", [])
+        has_critical = any(f.get("severity") == "critical" for f in findings)
+        if not has_critical:
+            logger.info("Remodel 스킵: cycle=%d, critical finding 없음", cycle_num)
+            return
+
+        # Remodel report 생성
+        report = run_remodel(state, latest_audit)
+        state["remodel_report"] = report
+
+        if not report.get("proposals"):
+            logger.info("Remodel 스킵: cycle=%d, 제안 0건", cycle_num)
+            return
+
+        # HITL-R 게이트
+        state["hitl_pending"] = {
+            "gate": "R",
+            "report_id": report["report_id"],
+            "proposal_count": len(report["proposals"]),
+        }
+        hitl_result = hitl_gate_node(state, response=self._hitl_response)
+
+        # hitl_result 를 state 에 반영
+        for k, v in hitl_result.items():
+            state[k] = v
+
+        # 승인/거부 판정
+        approval = state.get("remodel_report", {}).get("approval", {})
+        if approval.get("status") == "approved":
+            self._apply_remodel_proposals(state, cycle_num)
+        elif approval.get("status") == "rejected":
+            logger.info(
+                "Remodel 거부: cycle=%d, report=%s, reason=%s",
+                cycle_num,
+                report.get("report_id"),
+                approval.get("reason", ""),
+            )
+        else:
+            # auto-approve (response=None 이면 hitl_gate_node 가 자동 승인)
+            self._apply_remodel_proposals(state, cycle_num)
+
+    def _apply_remodel_proposals(
+        self,
+        state: EvolverState,
+        cycle_num: int,
+    ) -> None:
+        """승인된 remodel 제안을 skeleton/state 에 적용 + phase bump.
+
+        proposal types:
+        - merge: entity_key 통합 (KU entity_key 재연결)
+        - split: entity_key 분할 (KU entity_key 분리)
+        - reclassify: category 변경
+        - alias_canonicalize / source_policy / gap_rule: 기록만 (skeleton 직접 변경 없음)
+        """
+        report = state.get("remodel_report") or {}
+        proposals = report.get("proposals", [])
+        skeleton = dict(state.get("domain_skeleton", {}))
+        kus = list(state.get("knowledge_units", []))
+
+        applied_count = 0
+        for proposal in proposals:
+            p_type = proposal.get("type")
+            targets = proposal.get("target_entities", [])
+            params = proposal.get("params", {})
+
+            if p_type == "merge" and len(targets) >= 2:
+                canonical = params.get("canonical_key", targets[0])
+                merge_from = [t for t in targets if t != canonical]
+                for ku in kus:
+                    if ku.get("entity_key") in merge_from:
+                        ku["entity_key"] = canonical
+                applied_count += 1
+
+            elif p_type == "split" and targets:
+                source_ek = targets[0]
+                new_keys = params.get("new_keys", [])
+                axis_values = params.get("axis_values", [])
+                if new_keys and axis_values:
+                    for ku in kus:
+                        if ku.get("entity_key") == source_ek:
+                            geo = ku.get("axis_tags", {}).get("geography", "")
+                            if geo in axis_values:
+                                idx = axis_values.index(geo)
+                                if idx < len(new_keys):
+                                    ku["entity_key"] = new_keys[idx]
+                    applied_count += 1
+
+            elif p_type == "reclassify" and targets:
+                from_cat = params.get("from_category", "")
+                to_cat = params.get("to_category", "")
+                if from_cat and to_cat:
+                    for ku in kus:
+                        if ku.get("entity_key") in targets:
+                            ek = ku["entity_key"]
+                            ku["entity_key"] = ek.replace(
+                                f":{from_cat}:", f":{to_cat}:",
+                            )
+                    applied_count += 1
+
+            elif p_type in ("alias_canonicalize", "source_policy", "gap_rule"):
+                # 기록 전용 — phase_history 에 남김
+                applied_count += 1
+
+        state["knowledge_units"] = kus
+        state["domain_skeleton"] = skeleton
+
+        # Phase bump
+        phase_number = state.get("phase_number", 0) + 1
+        state["phase_number"] = phase_number
+
+        # Phase snapshot
+        try:
+            snapshot_phase(self._domain_path, phase_number)
+        except Exception as e:
+            logger.warning("Phase snapshot 실패: %s", e)
+
+        # Phase history 기록
+        phase_history = list(state.get("phase_history") or [])
+        phase_history.append({
+            "phase_number": phase_number,
+            "cycle": cycle_num,
+            "report_id": report.get("report_id", ""),
+            "proposals_applied": applied_count,
+            "proposal_types": [p.get("type") for p in proposals],
+        })
+        state["phase_history"] = phase_history
+
+        logger.info(
+            "Remodel 적용: phase=%d, cycle=%d, proposals=%d/%d applied",
+            phase_number,
+            cycle_num,
+            applied_count,
+            len(proposals),
+        )
 
     def _post_cycle(
         self,
