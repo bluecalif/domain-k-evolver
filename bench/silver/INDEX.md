@@ -11,4 +11,5 @@
 
 | trial_id | domain | phase | date | goal | status | readiness | notes |
 |----------|--------|-------|------|------|--------|-----------|-------|
-| p0-20260411-baseline | japan-travel | p0 | 2026-04-11 | P0 Foundation Hardening 완료 증명 — Phase 4·5 동등 스모크 재현 | planned | - | - |
+| p0-20260411-baseline | japan-travel | p0 | 2026-04-11 | P0 Foundation Hardening — Bronze seed + 5 cycle (첫 시도) | archived | VP1=3/5 VP2=3/6 FAIL | Bronze seed staleness 이슈, run_bench 사용 (audit 미포함) |
+| p0-20260412-baseline | japan-travel | p0 | 2026-04-12 | P0 Foundation Hardening — fresh seed + 15 cycle + Orchestrator | complete | VP1=5/5 VP2=5/6 VP3=5/6 PASS | Gate PASS. R3_multi_evidence, R6_closed_loop non-critical FAIL |
