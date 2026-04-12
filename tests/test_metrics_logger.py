@@ -100,3 +100,18 @@ class TestMetricsLogger:
         out = tmp_path / "empty.csv"
         logger.save_csv(out)
         assert not out.exists()
+
+    def test_collect_failure_rate_in_entry(self):
+        """P0-X5: collect_failure_rate 가 logger entry 에 기록."""
+        logger = MetricsLogger()
+        state = _make_state()
+        state["collect_failure_rate"] = 0.25
+        entry = logger.log(1, state)
+        assert entry["collect_failure_rate"] == 0.25
+
+    def test_collect_failure_rate_default_zero(self):
+        """collect_failure_rate 없는 state → 0.0 기본값."""
+        logger = MetricsLogger()
+        state = _make_state()
+        entry = logger.log(1, state)
+        assert entry["collect_failure_rate"] == 0.0

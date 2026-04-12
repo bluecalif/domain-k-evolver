@@ -61,6 +61,7 @@ class MetricsLogger:
             "gap_resolution_rate": rates.get("gap_resolution_rate", 0.0),
             "staleness_risk": rates.get("staleness_risk", 0),
             "mode": (state.get("current_mode") or {}).get("mode", "normal"),
+            "collect_failure_rate": state.get("collect_failure_rate", 0.0),
             "llm_calls": llm_calls,
             "llm_tokens": llm_tokens,
             "search_calls": search_calls,
