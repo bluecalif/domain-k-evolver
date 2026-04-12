@@ -5,57 +5,85 @@
 
 ## Goal
 
-E2E test gate 체계 점검 + P1/P3 dev-docs gate 절차 보강 + project-overall P1 완료 동기화 + 커밋
+P3 Acquisition Expansion 구현 (22 tasks) + E2E bench 실행 + Gate 판정
 
 ## Completed
 
-- [x] P0 전체 완료 (32/32, 510 tests, Gate PASS)
-- [x] P1 전체 완료 (12/12, 544 tests, S4/S5/S6 pass) — commit `5e48748`
-- [x] P3 Phase dev-docs 4개 파일 생성:
-  - `dev/active/phase-si-p3-acquisition/phase-si-p3-acquisition-plan.md` (7 sections, 22 tasks)
-  - `dev/active/phase-si-p3-acquisition/phase-si-p3-acquisition-context.md` (4 sections)
-  - `dev/active/phase-si-p3-acquisition/phase-si-p3-acquisition-tasks.md` (22 tasks: A5+B6+C6+D5)
-  - `dev/active/phase-si-p3-acquisition/debug-history.md` (빈 placeholder)
+- [x] P3 Stage A: Provider 플러그인 (A1~A5) — `src/adapters/providers/` 4파일 + `search_adapter.py` 확장
+- [x] P3 Stage B: FetchPipeline (B1~B6) — `src/adapters/fetch_pipeline.py` (robots/ct/bytes/rate-limit)
+- [x] P3 Stage C: Collect 리팩터 + Config + Provenance + Entropy (C1~C6)
+- [x] P3 Stage D: 테스트 (D1~D5) — 55 신규 테스트 → **총 599 passed**
+- [x] 커밋: `2bd4086 [si-p3] P3 Acquisition Expansion 구현 완료 (22/22, 599 tests)`
+- [x] `build_graph` + `Orchestrator`에 providers/fetch_pipeline/search_config 파라미터 추가
+- [x] `run_readiness.py`에 P3 인프라 연결 (create_providers + FetchPipeline)
+- [x] P3 trial 디렉토리 생성: `bench/silver/japan-travel/p3-20260412-acquisition/` (state + trajectory 폴더)
 
 ## Current State
 
-- **Git**: branch `main`, latest commit `3bbde92` (P1 완료)
-- **Tests**: 544 passed
-- **Silver 전체**: P0 32/32 ✅, P1 12/12 ✅, P3 0/22 (dev-docs 생성됨, 미커밋)
-- **Gate 체계 보강**: P1/P3 dev-docs에 Phase Gate Process + E2E Bench Results 추가 완료, project-overall P1 완료 반영 완료
+- **Git**: branch `main`, latest commit `2bd4086` (P3 구현 완료)
+- **Tests**: 599 passed, 3 skipped
+- **Uncommitted changes**: `graph.py`, `orchestrator.py`, `run_readiness.py` (P3 연결), trial 디렉토리
+- **Silver 전체**: P0 32/32 ✅, P1 12/12 ✅, P3 22/22 ✅ (Gate 미실행)
 
 ### Changed Files (uncommitted)
 
-- P3 dev-docs 4개 파일 (신규)
-- P1 dev-docs 2개 파일 (gate 절차 보강)
-- project-overall 3개 파일 (P1 완료 + P3 Planning 동기화)
-- session-compact.md
+- `src/graph.py` — build_graph에 providers/fetch_pipeline/search_config 파라미터 추가
+- `src/orchestrator.py` — Orchestrator에 providers/fetch_pipeline 전달
+- `scripts/run_readiness.py` — P3 providers + FetchPipeline 생성 코드 추가
+- `bench/silver/japan-travel/p3-20260412-acquisition/` — trial 디렉토리 (신규, 빈 state/trajectory)
+
+### Committed Files (commit `2bd4086`)
+
+- `src/adapters/providers/__init__.py` (신규)
+- `src/adapters/providers/base.py` (신규 — SearchProvider Protocol + SearchResult)
+- `src/adapters/providers/tavily_provider.py` (신규 — Tavily provider)
+- `src/adapters/providers/ddg_provider.py` (신규 — DDG optional fallback)
+- `src/adapters/providers/curated_provider.py` (신규 — preferred_sources 매칭)
+- `src/adapters/fetch_pipeline.py` (신규 — FetchPipeline + RobotsCache + RateLimiter)
+- `src/adapters/search_adapter.py` (수정 — deprecated 마킹 + create_providers)
+- `src/config.py` (수정 — SearchConfig 14필드 확장)
+- `src/nodes/collect.py` (수정 — 3단계 SEARCH→FETCH→PARSE + provenance + entropy)
+- `pyproject.toml` (수정 — duckduckgo-search optional)
+- `tests/test_providers.py` (신규 — 21 tests)
+- `tests/test_fetch_pipeline.py` (신규 — 16 tests)
+- `tests/test_collect_p3.py` (신규 — 13 tests)
+- `tests/test_adapters.py` (수정 — 5 tests 추가)
+- `tests/test_nodes/test_collect.py` (수정 — P3 동작 반영)
 
 ## Remaining / TODO
 
-### 미커밋 변경분
+### 즉시 해야 할 것
 
-1. ✅ P1/P3 dev-docs gate 절차 보강 완료
-2. ✅ project-overall P1 완료 + P3 Planning 동기화 완료
-3. **Git 커밋**: P3 dev-docs + gate 체계 보강 + project-overall 동기화
+1. **trial-card.md 생성** — `bench/silver/japan-travel/p3-20260412-acquisition/trial-card.md`
+2. **seed state 복사** — cycle-0-snapshot에서 trial state/ 로 복사
+3. **E2E bench 실행** — `python scripts/run_readiness.py --bench-root bench/silver/japan-travel/p3-20260412-acquisition --cycles 5`
+4. **결과 자가평가** — fetch ≥ 80%, EU/claim ≥ 1.8, entropy ≥ 2.5, 비용 ≤ 2×
+5. **graph/orchestrator 변경 커밋** — P3 연결 코드 커밋
+6. **dev-docs 업데이트** — tasks.md 체크, plan.md Status, E2E Bench Results 테이블 채움
+7. **project-overall 동기화** — P3 완료 반영
+8. **Gate 판정 커밋** — `[si-p3] Gate PASS/FAIL: {근거}`
 
-### P3 구현 (dev-docs 완료 후)
+### P3 Gate 정량 기준 (tasks.md §Phase Gate Checklist)
 
-- Stage A: Provider 플러그인 (P3-A1~A5) — SearchProvider Protocol + Tavily/DDG/Curated
-- Stage B: FetchPipeline (P3-B1~B6) — robots.txt, content-type, max_bytes, rate-limit
-- Stage C: Collect 리팩터 (P3-C1~C6) — 3단계 분리 + provenance + 비용 가드
-- Stage D: 테스트 (P3-D1~D5) — 35+ 신규 테스트
+- [ ] fetch 성공률 ≥ 80%
+- [ ] claim 당 평균 EU ≥ 1.8
+- [ ] domain_entropy ≥ 2.5 bits
+- [ ] cycle 당 LLM 비용 ≤ baseline × 2.0
+- [ ] robots.txt 거부 차단 (S8) pass
+- [ ] cost budget degrade (S9) pass
+- [ ] provenance KU/EU 저장→load 왕복 보존
+- [ ] 테스트 수 ≥ 579 (현재 599 ✅)
 
 ## Key Decisions
 
-- **D-96**: alias map = skeleton 정적 선언 (LLM 동적 생성 아님)
-- **D-97**: is_a depth limit = 5
-- **D-98**: conflict_ledger = append-only (삭제 불가)
-- **D-99**: dispute_queue = 휘발성, conflict_ledger = 영속
-- **D-100 (예정)**: FetchPipeline 은 `urllib.request` 기반 (httpx 미도입)
-- **D-101 (예정)**: robots.txt 캐시 = per-run in-memory
-- **D-102 (예정)**: CuratedSourceProvider 의 preferred_sources = skeleton 필드
-- **D-103 (예정)**: collect_node 외부 인터페이스 보존 (P0-X2 동결)
+- **D-100**: FetchPipeline은 `urllib.request` 기반 (httpx 미도입)
+- **D-101**: robots.txt 캐시 = per-run in-memory
+- **D-102**: CuratedProvider의 preferred_sources = skeleton 필드 (빈 목록이면 0건 반환)
+- **D-103**: collect_node 외부 인터페이스 보존 (P0-X2 동결 준수)
+- **P3 provider 순서**: curated → tavily → ddg
+- **SearchConfig 확장**: 기존 4필드 + 10 신규 = 14필드 (frozen dataclass 유지)
+- **collect.py 3단계**: _search_phase → _fetch_phase → _parse_phase (deterministic or LLM)
+- **provenance 7필드**: providers_used, domain, fetch_ok, fetch_depth, content_type, retrieved_at, trust_tier
 
 ## Context
 
@@ -68,29 +96,22 @@ E2E test gate 체계 점검 + P1/P3 dev-docs gate 절차 보강 + project-overal
 - **커밋 prefix**: `[si-p{N}]`
 - **인코딩**: `PYTHONUTF8=1`, `encoding='utf-8'` 명시
 
-### P1 완료 성과
+### E2E bench 실행 참조
 
-- `src/utils/entity_resolver.py` [NEW] — alias/is_a/canonicalize
-- `integrate.py` — canonical key matching + conflict ledger
-- `dispute_resolver.py` — ledger 업데이트
-- `critique.py` — ledger 전달
-- `state_io.py` — conflict_ledger.json save/load
-- `schema_validator.py` — skeleton aliases/is_a validation
-- japan-travel skeleton — aliases 4건 + is_a 4건
-- 테스트 510 → 544 (+34), S4/S5/S6 pass
+- Seed state: `bench/japan-travel/state-snapshots/cycle-0-snapshot/` (13 KU, cycle 0)
+- P0 baseline trial: `bench/silver/japan-travel/p0-20260412-baseline/` (결과 있음)
+- 스크립트: `scripts/run_readiness.py --bench-root <trial-path> --cycles 5`
+- Orchestrator가 providers/fetch_pipeline을 graph에 전달하도록 이미 연결됨
 
-### 참조
+### 참조 파일
 
-- P0 dev-docs: `dev/active/phase-si-p0-foundation/`
-- P1 dev-docs: `dev/active/phase-si-p1-entity-resolution/`
 - P3 dev-docs: `dev/active/phase-si-p3-acquisition/`
 - project-overall: `dev/active/project-overall/`
 - Silver masterplan: `docs/silver-masterplan-v2.md`
 
 ## Next Action
 
-1. `git status` 로 uncommitted 변경 확인
-2. project-overall 3개 파일 동기화 (P1 완료 반영 + P3 dev-docs 링크)
-3. 정합성 검증
-4. 커밋: `[si-p3] dev-docs 생성 + project-overall 동기화`
-5. P3 구현 착수 (Stage A: Provider 플러그인부터)
+1. trial-card.md 생성 + seed state 복사
+2. `python scripts/run_readiness.py --bench-root bench/silver/japan-travel/p3-20260412-acquisition --cycles 5` 실행
+3. 결과 분석 + Gate 판정
+4. graph/orchestrator 변경 + dev-docs + project-overall 커밋

@@ -78,7 +78,21 @@ def _run_benchmark(
     llm = create_llm(config.llm)
     search_tool = create_search_tool(config.search)
 
-    orchestrator = Orchestrator(config, llm=llm, search_tool=search_tool)
+    # P3: providers + fetch_pipeline 생성
+    from src.adapters.search_adapter import create_providers
+    from src.adapters.fetch_pipeline import FetchPipeline
+
+    providers = create_providers(config.search)
+    fetch_pipeline = FetchPipeline(
+        robots_check=True,
+        max_bytes=config.search.max_bytes_per_url,
+        per_domain_min_interval_s=config.search.per_domain_min_interval_s,
+    )
+
+    orchestrator = Orchestrator(
+        config, llm=llm, search_tool=search_tool,
+        providers=providers, fetch_pipeline=fetch_pipeline,
+    )
 
     # Seed state 로드
     from src.utils.state_io import load_state

@@ -54,10 +54,14 @@ class Orchestrator:
         *,
         llm: Any | None = None,
         search_tool: Any | None = None,
+        providers: list | None = None,
+        fetch_pipeline: Any | None = None,
     ) -> None:
         self.config = config or EvolverConfig()
         self._llm = llm
         self._search_tool = search_tool
+        self._providers = providers
+        self._fetch_pipeline = fetch_pipeline
         self.logger = MetricsLogger()
         pw = self.config.orchestrator.plateau_window
         self.plateau_detector = PlateauDetector(window=max(pw, 2)) if pw > 0 else None
@@ -146,6 +150,9 @@ class Orchestrator:
             graph = build_graph(
                 llm=self._llm,
                 search_tool=self._search_tool,
+                providers=self._providers,
+                fetch_pipeline=self._fetch_pipeline,
+                search_config=self.config.search,
             )
 
             # Graph 실행 — invoke로 최종 state 직접 획득

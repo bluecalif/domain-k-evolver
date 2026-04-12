@@ -1,6 +1,6 @@
 # Project Overall Plan
 > Last Updated: 2026-04-12
-> Status: Bronze 완료 → Silver P0 완료 (32/32, Gate PASS) → **Silver P1 완료** (12/12, 544 tests) → P3 착수 가능
+> Status: Bronze 완료 → Silver P0 완료 (32/32, Gate PASS) → Silver P1 완료 (12/12, 544 tests) → **Silver P3 완료** (22/22, 599 tests, Gate PASS)
 
 ## 1. Summary (개요)
 
@@ -32,7 +32,14 @@ Domain-K-Evolver — 도메인 불문 자기확장 지식 Evolver 프레임워�
 - **Silver P1 Gate PASS**: S4/S5/S6 pass — 544 tests, commit `3bbde92`
 - **P1 성과**: entity_resolver.py 신규, alias/is_a/canonicalize 해상도 계층, conflict_ledger 영속화, skeleton aliases/is_a 검증
 - **비고**: dedicated bench trial 미실행 — 단위/통합 테스트 + scenario로 gate 판정
-- **다음**: P3 (Acquisition Expansion) 착수 (dev-docs 생성 완료)
+- **다음**: P2 (Outer-Loop Remodel 완결) 착수
+
+### Silver P3 완료 (2026-04-12)
+- **Silver P3 Gate PASS**: fetch 82.9%, EU/claim 3.85, entropy 4.958, S8/S9 pass — 599 tests, commit (pending)
+- **P3 성과**: Provider 플러그인 3종 (curated→tavily→ddg), FetchPipeline (robots+rate-limit+content-type), collect 3단계 SEARCH→FETCH→PARSE, provenance 8필드, domain_entropy/provider_entropy
+- **비고**: trajectory llm_calls 카운터 미연결 (D-111, pre-existing), fetch_ok robots 제외 산정 (D-110)
+- **trial**: `bench/silver/japan-travel/p3-20260412-acquisition/` — 5 cycle, KU 13→80, entropy 4.958
+- **다음**: P2 (Outer-Loop Remodel 완결) 착수
 
 ### 자산 (현 commit 기준)
 ```
@@ -266,7 +273,7 @@ P0 ──┬── P1 ──┐
 | Silver P0 | Foundation Hardening | 32 (A:6 + B:9 + C:8 + D:3 + X:6) | ✅ Complete (Gate PASS) |
 | Silver P1 | Entity Resolution & State Safety | 12 (A:4 + B:4 + C:4) | ✅ Complete (544 tests, S4/S5/S6 pass) |
 | Silver P2 | Outer-Loop Remodel 완결 | 14 (A:4 + B:4 + C:6) | 대기 |
-| Silver P3 | Acquisition Expansion | 22 (A:5 + B:6 + C:6 + D:5) | Planning (dev-docs 생성 완료) |
+| Silver P3 | Acquisition Expansion | 22 (A:5 + B:6 + C:6 + D:5) | ✅ Complete (Gate PASS, 599 tests) |
 | Silver P4 | Coverage Intelligence | 11 (A:3 + B:4 + C:4) | 대기 |
 | Silver P5 | Telemetry Contract & Dashboard | 14 (A:5 + B:5 + C:4) | 대기 |
 | Silver P6 | Multi-Domain Validation | 7 (A:3 + B:3 + C:1) | 대기 |

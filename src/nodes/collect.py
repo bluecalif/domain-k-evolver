@@ -135,6 +135,7 @@ def _build_provenance(
         "content_type": fr_match.content_type if fr_match else "",
         "retrieved_at": fr_match.retrieved_at if fr_match else "",
         "trust_tier": fr_match.trust_tier if fr_match else "secondary",
+        "failure_reason": fr_match.failure_reason if fr_match and not fr_match.fetch_ok else "",
     }
 
 
