@@ -1,6 +1,6 @@
 # Silver P0: Foundation Hardening — Context
 > Last Updated: 2026-04-12
-> Status: In Progress (22/32, 69%) — Stage A/B/C 완료
+> Status: In Progress (23/32, 72%) — Stage A(+A6)/B/C 완료
 
 ## 1. 핵심 파일
 
@@ -116,13 +116,14 @@ novelty_history: list[float]    # P4: cycle 별 novelty 점수
 |------|------|------|
 | D-88+ | `collect_node` 반환값 shape 확정 (`current_claims` + `collect_failure_rate`) | ✅ B6 완료 (e73b136) |
 | D-89+ | HITL-E 임계치 5개 최종값: conflict>0.25, evidence<0.55, collect_fail>0.50, staleness>0.30, avg_conf<0.60 | ✅ C4/C6 완료 (83ce974) |
-| D-90+ | config.snapshot.json 필드 목록 확정 | A6 (대기) |
+| D-90 | config.snapshot.json 필드: schema_version/timestamp/git_head/llm/search/orchestrator/providers/skeleton_path/skeleton_sha256 + api_key redact | ✅ A6 완료 (`6c7f28f`) |
 
 ### Stage A/B/C 완료 파일 (2026-04-12)
 - **Stage A (`2f9117a`)**: `bench/silver/INDEX.md`, `templates/si-*.md` 3종, `bench/silver/japan-travel/p0-20260411-baseline/`, `src/config.py` (bench_root), `src/utils/state_io.py` (write guard), `src/orchestrator.py` (bench_root 우선), `scripts/run_*.py` 3종 (--bench-root 인자)
 - **Stage B (`e73b136`)**: `src/adapters/search_adapter.py`, `src/adapters/llm_adapter.py`, `src/config.py`, `src/nodes/collect.py`, `src/nodes/integrate.py`, `src/utils/state_io.py`
 - **Stage C (`83ce974`)**: `src/graph.py` (Silver flow), `src/nodes/hitl_gate.py` (S/R/E 재작성), `src/nodes/integrate.py` (dispute_queue append), `src/state.py` (dispute_queue 필드), `src/utils/metrics_guard.py` (should_auto_pause)
 - **Tests (`f21a249`)**: `tests/test_nodes/test_collect.py` +10, `tests/test_state_io.py` +9, `tests/test_adapters.py` +6, `tests/test_graph.py` +4, `tests/test_nodes/test_hitl_gate.py` 전면 재작성
+- **A6 (`6c7f28f`)**: `src/config.py` (`write_config_snapshot` + `_get_git_head` + `_redact`), `scripts/run_bench.py`·`scripts/run_one_cycle.py` (load_state 직후 snapshot 호출), `tests/test_config.py` +10 (TestWriteConfigSnapshot 클래스). 500 passed.
 
 ---
 

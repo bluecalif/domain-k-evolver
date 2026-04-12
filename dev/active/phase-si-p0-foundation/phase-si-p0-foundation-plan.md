@@ -1,7 +1,7 @@
 # Silver P0: Foundation Hardening
 > Last Updated: 2026-04-12
-> Status: In Progress (22/32, 69%) — Stage A/B/C 완료, Stage X/D 대기
-> Current Step: P0-A6 (config.snapshot.json 자동 작성) → P0-X → P0-D
+> Status: In Progress (23/32, 72%) — Stage A(+A6)/B/C 완료, Stage X/D 대기
+> Current Step: P0-X1 (integrate_node I/O snapshot) → P0-X → P0-D
 
 ## 1. Summary (개요)
 
@@ -25,13 +25,14 @@
 - **468 tests** (baseline), commit `b122a23`, Gate #5 PASS (VP1 5/5, VP2 6/6, VP3 5/6)
 
 ### Silver P0 진행 (2026-04-12)
-- **490 passed** (목표 ≥ 488 달성), 3 skipped
+- **500 passed** (목표 ≥ 488 달성), 3 skipped
 - 완료 커밋 체인:
   - `7bc2dc8` — dev-docs (P0 plan/context/tasks)
   - `2f9117a` — Stage A: 벤치 스캐폴딩 + `--bench-root` 격리 (A1~A5)
   - `e73b136` — Stage B: Remediation 8건 (B1~B8)
   - `83ce974` — Stage C: HITL 축소 Silver S/R/E (C1~C7)
   - `f21a249` — Stage B9+C8: 테스트 일괄 +29건
+  - `6c7f28f` — Stage A6: config.snapshot.json 자동 작성 (+10 tests)
 - `src/graph.py`: Silver flow — `seed → (첫cycle→hitl_s→mode, else→mode) → mode → (auto_pause→hitl_e→plan, else→plan) → plan → collect → integrate → critique → (converged→END, else→plan_modify→cycle_inc→END)`
 - `src/nodes/hitl_gate.py`: S/R/E only, Bronze A/B/C/D → DeprecationWarning
 - `src/utils/metrics_guard.py`: `should_auto_pause()` + `AUTO_PAUSE_THRESHOLDS` 5개 임계치

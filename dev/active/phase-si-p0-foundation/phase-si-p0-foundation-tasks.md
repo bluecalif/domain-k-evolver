@@ -1,19 +1,19 @@
 # Silver P0: Foundation Hardening — Tasks
 > Last Updated: 2026-04-12
-> Status: In Progress (22/32, 69%)
+> Status: In Progress (23/32, 72%)
 
 ## Summary
 
 | Stage | Total | Done | Status |
 |-------|-------|------|--------|
-| A. 벤치 스캐폴딩 | 6 | 5/6 | A6 남음 |
+| A. 벤치 스캐폴딩 | 6 | 6/6 | ✅ 완료 |
 | B. Remediation | 9 | 9/9 | ✅ 완료 |
 | C. HITL 축소 | 8 | 8/8 | ✅ 완료 |
 | X. 인터페이스 고정 | 6 | 0/6 | 대기 |
 | D. Baseline trial | 3 | 0/3 | 대기 |
-| **합계** | **32** | **22/32** | 69% |
+| **합계** | **32** | **23/32** | 72% |
 
-테스트: 468 (baseline) → **490 passed** (목표 ≥ 488 ✅)
+테스트: 468 (baseline) → **500 passed** (목표 ≥ 488 ✅)
 
 ---
 
@@ -27,7 +27,7 @@
 - [x] **P0-A3** 첫 baseline trial 경로: `bench/silver/japan-travel/p0-20260411-baseline/` + 하위 `state/`, `trajectory/`, `telemetry/`, `trial-card.md` `[S]` — `2f9117a`
 - [x] **P0-A4** `state_io.py`/`orchestrator.py` `--bench-root` 경로 격리 + legacy bench 쓰기 금지 `[M]` — `2f9117a`
 - [x] **P0-A5** `run_bench.py`/`run_one_cycle.py`/`run_readiness.py` `--bench-root` 인자 전달 (기본값 없음) `[S]` — `2f9117a`
-- [ ] **P0-A6** `config.snapshot.json` 자동 작성 (dataclass 직렬화 + git HEAD + provider list + seed skeleton hash) `[M]`
+- [x] **P0-A6** `config.snapshot.json` 자동 작성 (dataclass 직렬화 + git HEAD + provider list + seed skeleton hash + api_key redact) `[M]` — `6c7f28f`
 
 ---
 
