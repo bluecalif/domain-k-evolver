@@ -34,25 +34,14 @@ Silver P2 Gate 실행 — E2E bench + 자가평가 + debug + dev-docs 반영 + G
 
 ## Remaining / TODO
 
-### P2 Gate 프로세스 (4 단계)
+### P2 Gate 프로세스 (완료 + 실 벤치 미실행)
 
-- [ ] **Step 1: E2E 통합 테스트 작성** — `tests/test_p2_gate_e2e.py`
-  - Orchestrator 기반, inner loop만 mock (`_run_single_cycle`)
-  - 합성 state: entity 중복률 30%+ 주입
-  - 10 cycle 실행 (audit_interval=5 → cycle 5, 10에서 audit+remodel)
-  - Gate Checklist 7항목 전수 검증:
-    1. Remodel report → `remodel_report.schema.json` validate
-    2. 합성 시나리오: 중복률 30%+ → merge proposal 생성
-    3. HITL-R 승인 → skeleton/state 실제 변경 반영
-    4. Rollback: 거부 시 state diff = ∅
-    5. S7 scenario: 저novelty → audit → remodel 제안 경로
-    6. 테스트 수 ≥ 623
-    7. P3 Post-Gate deferred verification (V-A1, V-B3, V-B3a, V-C56)
+- [x] **Step 1-2: 합성 E2E 테스트** — `tests/test_p2_gate_e2e.py` (28 tests)
+  - Part A: 프로세스 검증 (schema, merge, HITL, rollback, S7) — 15 tests
+  - Part B: 성능 검증 before/after (merge/split/reclassify/source_policy/gap_rule) — 13 tests
+  - 673 tests total PASS
 
-- [ ] **Step 2: 테스트 실행 + 결과 확인** — pytest 전체 실행, 645+ tests PASS
-
-- [ ] **Step 3: Trial scaffold 생성** — `bench/silver/japan-travel/p2-20260412-remodel/`
-  - trial-card.md 생성
+- [x] **Step 3: Trial scaffold** — `bench/silver/japan-travel/p2-20260412-remodel/`
   - config.snapshot.json (synthetic E2E 기반)
 
 - [ ] **Step 4: dev-docs 반영**

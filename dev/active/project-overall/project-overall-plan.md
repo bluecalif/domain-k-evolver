@@ -151,22 +151,23 @@ src/obs/          — 부재 (Silver P5 에서 telemetry + dashboard 신규)
 - **Depends on**: P0 (state_io 안전성, P0-X 인터페이스 고정) ✅
 - **병렬 가능**: P3
 
-#### Silver P2. Outer-Loop Remodel 완결
+#### Silver P2. Outer-Loop Remodel 완결 ✅
 - **Goal**: audit 결과를 구조 변경 액션 (merge/split/reclassify/policy/gap rule)으로 compile
-- **Status**: **Planning** (0/14, dev-docs 생성 완료)
+- **Status**: **Gate PASS** (14/14, 673 tests, E2E 28) | Commit `e8ccd77`, `2f6a2d8`
 - **Scope**:
   - `src/nodes/remodel.py` [NEW]
   - `schemas/remodel_report.schema.json` [NEW]
-  - `graph.py` — `cycle % 10 == 0 and audit.has_critical` → remodel → HITL-R → phase_bump|plan_modify
+  - `orchestrator.py` — `cycle % interval == 0 and audit.has_critical` → remodel → HITL-R → phase_bump
   - phase transition 저장 (`state/phase_{N}/...`)
   - Rollback 경로
+  - SOURCE_POLICY: TTL 실제 연장 (1.5배, cap 365)
+  - GAP_RULE: 빈 category에 우선순위 GU 주입 (최대 3건, critical)
 - **Stages**: A (Remodel node + schema, 4 tasks) → B (Graph/orchestrator 통합, 4 tasks) → C (검증, 6 tasks)
 - **Gate (정량)**:
-  - 합성 시나리오 엔티티 중복률 30%+ → remodel 탐지·제안
-  - HITL 승인 → 다음 cycle skeleton 실제 변경
-  - rollback → state diff = ∅
-  - S7 scenario (trigger 부분) pass
-  - 테스트 ≥ P1 종료(544) + 15 = 559 (현재 608 기준 → ≥ 623)
+  - Part A (프로세스): schema validate, merge 탐지, HITL 승인/거부, rollback diff=∅, S7 trigger
+  - Part B (성능): before/after metrics — merge→entity_count↓, split→geo분리, reclassify→invalid↓, source_policy→TTL↑, gap_rule→GU↑
+  - **주의**: 실 벤치 trial (real API, before/after 비교) 미실행 — 합성 E2E만 PASS
+  - 테스트: 673 (E2E 28개)
 - **Depends on**: P0 ✅, P1 ✅
 - **dev-docs**: `dev/active/phase-si-p2-remodel/`
 

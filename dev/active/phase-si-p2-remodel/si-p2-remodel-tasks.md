@@ -18,12 +18,14 @@
 ## Phase Gate Process (필수 순서)
 
 > 각 Phase 를 닫기 전에 반드시 아래 순서를 거친다. Unit test 카운터만으로 gate 판정 금지.
+> **합성 E2E만으로 gate 불가 — 실 벤치 trial (real API, before/after metrics 비교) 필수.**
 
-1. **E2E bench 실행** — `bench/silver/japan-travel/p2-{date}-remodel/` trial 실행. 합성 시나리오 기반 (entity 중복률 30%+ 주입 → 10 cycle run → remodel 발동 확인)
-2. **결과 자가평가** — 정량 기준 (remodel report schema validate, rollback diff=∅, 중복 탐지, S7 trigger) + blocking scenario 확인
-3. **Debug 루프** — bench 에서 발견된 이슈는 gate 통과 전 fix, `debug-history.md` 기록
-4. **dev-docs 반영** — Phase Gate Checklist 체크, E2E Bench Results 실측값, plan.md Status 업데이트
-5. **Gate 판정 commit** — `[si-p2] Gate PASS/FAIL: {근거}` 로 기록
+1. **합성 E2E 테스트** — 프로세스 정합성 검증 (schema validate, rollback, trigger 경로 등)
+2. **실 벤치 trial 실행** — real API (LLM + search) 로 Orchestrator 실행, before/after metrics 비교로 실제 성능 개선 확인
+3. **결과 자가평가** — 합성 E2E PASS + 실 벤치 metrics 개선 확인
+4. **Debug 루프** — bench 에서 발견된 이슈는 gate 통과 전 fix, `debug-history.md` 기록
+5. **dev-docs 반영** — Phase Gate Checklist 체크, E2E Bench Results 실측값, plan.md Status 업데이트
+6. **Gate 판정 commit** — `[si-p2] Gate PASS/FAIL: {근거}` 로 기록
 
 ## Phase Gate Checklist
 

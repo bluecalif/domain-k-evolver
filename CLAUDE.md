@@ -82,3 +82,4 @@ python -m pytest                    # Run all tests
 - **Branches**: `feature/[phase-name]`
 - **entity_key 형식**: `{domain}:{category}:{slug}` (예: japan-travel:transport:jr-pass)
 - **Convention checks**: 5대 불변원칙 준수, Metrics 임계치 확인, Schema 정합성
+- **Phase Gate**: 합성 E2E만으로 gate 불가. 실 벤치 trial (real API, before/after metrics 비교) 필수
