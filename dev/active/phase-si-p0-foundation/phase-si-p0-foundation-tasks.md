@@ -83,6 +83,16 @@
 
 ---
 
+## Phase Gate Process (필수 순서)
+
+> 각 Phase 를 닫기 전에 반드시 아래 순서를 거친다. Unit test 카운터만으로 gate 판정 금지.
+
+1. **E2E bench 실행** — Stage D 의 baseline trial 을 실제 실행 (`run_bench --bench-root bench/silver/japan-travel/p0-{date}-baseline`)
+2. **결과 자가평가** — VP1/VP2/VP3 정량 기준 + S1/S2/S3 시나리오 + HITL-A/B/C 0건 확인
+3. **Debug 루프** — bench 에서 발견된 이슈는 gate 통과 전에 fix. 이력은 `debug-history.md` 에 기록
+4. **dev-docs 반영** — 아래 Phase Gate Checklist 체크, E2E Bench Results 테이블 실측값 채움, plan.md Status 업데이트
+5. **Gate 판정 commit** — `[si-p0] Gate PASS/FAIL: {근거}` 로 기록 후 다음 Phase 이동
+
 ## Phase Gate Checklist
 
 - [ ] bare-except 0건
