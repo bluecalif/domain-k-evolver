@@ -1,6 +1,7 @@
 # Silver P0: Foundation Hardening
-> Last Updated: 2026-04-11
-> Status: Planning
+> Last Updated: 2026-04-12
+> Status: In Progress (22/32, 69%) — Stage A/B/C 완료, Stage X/D 대기
+> Current Step: P0-A6 (config.snapshot.json 자동 작성) → P0-X → P0-D
 
 ## 1. Summary (개요)
 
@@ -21,17 +22,29 @@
 ## 2. Current State (현재 상태)
 
 ### Bronze 완료 자산
-- **468 tests**, commit `b122a23`, Gate #5 PASS (VP1 5/5, VP2 6/6, VP3 5/6)
-- `src/graph.py`: 매 cycle `hitl_a/b/c/d/e` 경유 (Silver에서 A/B/C 제거 대상)
-- `src/nodes/collect.py` L79~97: 이중 bare-except, fetch 실패 무시
-- `src/adapters/search_adapter.py` L39: retry 판정 `"5" in exc_str[:1]` — 5xx 대부분 누락
-- `src/nodes/integrate.py` L270~288: `except ValueError: pass`
-- `src/utils/state_io.py` L54~56: JSON 실패 시 빈 state로 조용히 시작
-- `bench/silver/` 부재, `bench/japan-travel/` read-only
+- **468 tests** (baseline), commit `b122a23`, Gate #5 PASS (VP1 5/5, VP2 6/6, VP3 5/6)
 
-### 미해결 (Silver P0 흡수)
-- `dev/active/p0-p1-remediation-plan.md` 8건 전부 열림 (P0-1~P0-3, P1-1~P1-4 중 P1-2 제외)
-- HITL inline edge 5개 중 A/B/C 3개 제거 필요
+### Silver P0 진행 (2026-04-12)
+- **490 passed** (목표 ≥ 488 달성), 3 skipped
+- 완료 커밋 체인:
+  - `7bc2dc8` — dev-docs (P0 plan/context/tasks)
+  - `2f9117a` — Stage A: 벤치 스캐폴딩 + `--bench-root` 격리 (A1~A5)
+  - `e73b136` — Stage B: Remediation 8건 (B1~B8)
+  - `83ce974` — Stage C: HITL 축소 Silver S/R/E (C1~C7)
+  - `f21a249` — Stage B9+C8: 테스트 일괄 +29건
+- `src/graph.py`: Silver flow — `seed → (첫cycle→hitl_s→mode, else→mode) → mode → (auto_pause→hitl_e→plan, else→plan) → plan → collect → integrate → critique → (converged→END, else→plan_modify→cycle_inc→END)`
+- `src/nodes/hitl_gate.py`: S/R/E only, Bronze A/B/C/D → DeprecationWarning
+- `src/utils/metrics_guard.py`: `should_auto_pause()` + `AUTO_PAUSE_THRESHOLDS` 5개 임계치
+- `src/nodes/collect.py`: 구체 예외 로깅 + `collect_failure_rate` emit + future timeout 60s/120s
+- `src/adapters/search_adapter.py`: retry regex `r"429|5\d\d|rate"` + Tavily timeout 명시
+- `src/utils/state_io.py`: .bak rotation + recovery path + 필수필드 검증 + legacy write guard
+- `src/state.py`: `dispute_queue: list[dict]` 필드 추가
+- `bench/silver/japan-travel/p0-20260411-baseline/` 존재 (A3)
+
+### 미완료
+- **Stage A**: A6 (config.snapshot.json 자동 작성)
+- **Stage X**: X1~X6 (인터페이스 고정 6건)
+- **Stage D**: D1~D3 (baseline trial 재현 + gate)
 
 ---
 

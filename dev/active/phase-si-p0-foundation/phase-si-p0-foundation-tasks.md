@@ -1,68 +1,66 @@
 # Silver P0: Foundation Hardening — Tasks
-> Last Updated: 2026-04-11
-> Status: Planning (0/32)
+> Last Updated: 2026-04-12
+> Status: In Progress (22/32, 69%)
 
 ## Summary
 
 | Stage | Total | Done | Status |
 |-------|-------|------|--------|
-| A. 벤치 스캐폴딩 | 6 | 0/6 | 대기 |
-| B. Remediation | 9 | 0/9 | 대기 |
-| C. HITL 축소 | 8 | 0/8 | 대기 |
+| A. 벤치 스캐폴딩 | 6 | 5/6 | A6 남음 |
+| B. Remediation | 9 | 9/9 | ✅ 완료 |
+| C. HITL 축소 | 8 | 8/8 | ✅ 완료 |
 | X. 인터페이스 고정 | 6 | 0/6 | 대기 |
 | D. Baseline trial | 3 | 0/3 | 대기 |
-| **합계** | **32** | **0/32** | — |
+| **합계** | **32** | **22/32** | 69% |
 
-테스트: 468 (baseline) → 목표 ≥ 488
+테스트: 468 (baseline) → **490 passed** (목표 ≥ 488 ✅)
 
 ---
 
 ## Stage A: Silver 벤치 스캐폴딩
 
-- [ ] **P0-A1** `bench/silver/INDEX.md` 생성 (§12.4 verbatim 컬럼: trial_id | domain | phase | date | goal | status | readiness | notes) `[S]`
-- [ ] **P0-A2** 템플릿 3종 생성 `[S]`
+- [x] **P0-A1** `bench/silver/INDEX.md` 생성 (§12.4 verbatim 컬럼: trial_id | domain | phase | date | goal | status | readiness | notes) `[S]` — `2f9117a`
+- [x] **P0-A2** 템플릿 3종 생성 `[S]` — `2f9117a`
   - `templates/si-trial-card.md` (goal / config diff / 가설)
   - `templates/si-readiness-report.md` (VP1/VP2/VP3 결과 + diff 해석)
   - `templates/si-index-row.md` (INDEX 한 줄 삽입 snippet)
-- [ ] **P0-A3** 첫 baseline trial 경로: `bench/silver/japan-travel/p0-{YYYYMMDD}-baseline/` + 하위 `state/`, `trajectory/`, `telemetry/`, `trial-card.md`, `config.snapshot.json` `[S]`
-- [ ] **P0-A4** `state_io.py`/`orchestrator.py` `--bench-root` 경로 격리 + legacy bench 쓰기 금지 `[M]`
-- [ ] **P0-A5** `run_bench.py`/`run_one_cycle.py`/`run_readiness.py` `--bench-root` 인자 전달 (기본값 없음) `[S]`
+- [x] **P0-A3** 첫 baseline trial 경로: `bench/silver/japan-travel/p0-20260411-baseline/` + 하위 `state/`, `trajectory/`, `telemetry/`, `trial-card.md` `[S]` — `2f9117a`
+- [x] **P0-A4** `state_io.py`/`orchestrator.py` `--bench-root` 경로 격리 + legacy bench 쓰기 금지 `[M]` — `2f9117a`
+- [x] **P0-A5** `run_bench.py`/`run_one_cycle.py`/`run_readiness.py` `--bench-root` 인자 전달 (기본값 없음) `[S]` — `2f9117a`
 - [ ] **P0-A6** `config.snapshot.json` 자동 작성 (dataclass 직렬화 + git HEAD + provider list + seed skeleton hash) `[M]`
 
 ---
 
 ## Stage B: 기존 remediation 8건
 
-- [ ] **P0-B1** (P0-3) `search_adapter.py` L39 retry 판정 정규표현화: `re.search(r"\b(429|5\d\d|rate[ _-]?limit)\b", exc_str)` `[S]`
-- [ ] **P0-B2** (P0-2a) `config.py` `LLMConfig.request_timeout=60`, `SearchConfig.request_timeout=30` + `from_env()` 확장 `[S]`
-- [ ] **P0-B3** (P0-2b) `llm_adapter.py` L69 `ChatOpenAI(..., timeout=config.request_timeout)` `[S]`
-- [ ] **P0-B4** (P0-2c) `search_adapter.py` Tavily `search`/`extract` 명시적 timeout `[S]`
-- [ ] **P0-B5** (P0-2d) `collect.py` L169 `future.result(timeout=overall_timeout)` + per-GU 실패 카운터 `[M]`
-- [ ] **P0-B6** (P0-1) `collect.py` L76~L97 이중 bare-except 제거 + 로깅 + `collect_failure_rate` emit + **반환값 shape 변경** `[M]`
-- [ ] **P0-B7** (P1-1) `integrate.py` L270~L288 `except ValueError: pass` → `logger.warning` + `preserved.append(raw_ref)` `[S]`
-- [ ] **P0-B8** (P1-4) `state_io.py` L54~L56 복구: JSON decode 실패 → `.bak` 시도 → `StateIOError` / 필수필드 누락 → skip / save 전 `.bak` rotation `[M]`
-- [ ] **P0-B9** (P1-3) 테스트 확장 `[L]`
-  - `test_collect.py`: S1 (timeout), S2 (malformed JSON), empty search, duplicate claim — 최소 8개
-  - `test_state_io.py`: S3 (corrupt JSON), 필수필드 누락, `.bak` 복구, save rotation — 최소 6개
-  - `test_search_adapter.py`: 504 retry, timeout metric — 최소 4개
+- [x] **P0-B1** (P0-3) `search_adapter.py` L39 retry 판정 정규표현화: `re.search(r"429|5\d\d|rate", exc_str)` `[S]` — `e73b136`
+- [x] **P0-B2** (P0-2a) `config.py` `LLMConfig.request_timeout=60`, `SearchConfig.request_timeout=30` + `from_env()` 확장 `[S]` — `e73b136`
+- [x] **P0-B3** (P0-2b) `llm_adapter.py` L69 `ChatOpenAI(..., timeout=config.request_timeout)` `[S]` — `e73b136`
+- [x] **P0-B4** (P0-2c) `search_adapter.py` Tavily `search`/`extract` 명시적 timeout `[S]` — `e73b136`
+- [x] **P0-B5** (P0-2d) `collect.py` L169 `future.result(timeout=60)` + `as_completed(timeout=120)` + per-GU 실패 카운터 `[M]` — `e73b136`
+- [x] **P0-B6** (P0-1) `collect.py` L76~L97 이중 bare-except 제거 + 로깅 + `collect_failure_rate` emit + **반환값 shape 변경** `[M]` — `e73b136`
+- [x] **P0-B7** (P1-1) `integrate.py` L270~L288 `except ValueError: pass` → `logger.warning` `[S]` — `e73b136`
+- [x] **P0-B8** (P1-4) `state_io.py` L54~L56 복구: JSON decode 실패 → `.bak` 시도 → `StateCorruptError` / save 전 `.bak` rotation `[M]` — `e73b136`
+- [x] **P0-B9** (P1-3) 테스트 확장 `[L]` — `f21a249`
+  - `test_collect.py` +10: S1 (timeout graceful), S2 (malformed JSON fallback), empty search, duplicate GU, failure_rate
+  - `test_state_io.py` +9: S3 (corrupt JSON), .bak 복구, 필수필드, save rotation, write guard
+  - `test_adapters.py` +6: 504/503/500 retry, Tavily timeout propagation
 
 ---
 
 ## Stage C: HITL 정책 축소
 
-- [ ] **P0-C1** `graph.py` edge 변경: `plan→hitl_a→collect` → `plan→collect`, `collect→integrate` 고정 + HITL-E 분기, `integrate→critique` 고정 + dispute append `[M]`
-- [ ] **P0-C2** `graph.py` HITL-S edge: `seed→hitl_s→mode` (조건: `current_cycle==1 and phase_just_started`) `[M]`
-- [ ] **P0-C3** `route_after_critique` 단순화: HITL-D(audit) → audit 직접 호출로 전환 `[S]`
-- [ ] **P0-C4** `should_auto_pause()` 공통 함수 (5개 임계치: collect_failure_rate>0.3, conflict_rate>0.4, fetch_failure_rate>0.5, cost_regression, dispute_queue>20) `[M]`
-- [ ] **P0-C5** `hitl_gate.py` → enum `"S"|"R"|"E"` 3케이스 축소 (A/B/C/D 제거, deprecation 1회 warning + no-op) `[M]`
-- [ ] **P0-C6** `metrics_guard.py` 확장: Silver 5개 임계치 + `cost_regression_flag`/`dispute_queue_size` 는 실제 interrupt `[M]`
-- [ ] **P0-C7** `EvolverState.dispute_queue: list[DisputeEntry]` 추가 (`src/state.py`) + `integrate_node` auto-resolve 실패 append `[S]`
-- [ ] **P0-C8** 테스트 `[M]`
-  - `test_graph.py`: 일반 cycle HITL-A/B/C 0회 호출
-  - `test_graph.py`: HITL-S phase 첫 cycle 에서만
-  - `test_graph.py`: auto-pause 5조건 → HITL-E 라우팅
-  - `test_hitl_gate.py`: 축소된 enum + deprecation 경로
-  - 최소 10개
+- [x] **P0-C1** `graph.py` edge 변경: `plan→hitl_a→collect` → `plan→collect`, `collect→integrate` 고정, `integrate→critique` 고정 `[M]` — `83ce974`
+- [x] **P0-C2** `graph.py` HITL-S edge: `seed → (첫 cycle → hitl_s → mode, else → mode)` via `route_after_seed` `[M]` — `83ce974`
+- [x] **P0-C3** `route_after_critique` 단순화: 10-cycle HITL-D 분기 제거, `converged → END, else → plan_modify` `[S]` — `83ce974`
+- [x] **P0-C4** `should_auto_pause()` 공통 함수 (5개 임계치: conflict_rate>0.25, evidence_rate<0.55, collect_failure_rate>0.50, staleness_ratio>0.30, avg_confidence<0.60) `[M]` — `83ce974` (Stage B 선행분)
+- [x] **P0-C5** `hitl_gate.py` → enum `"S"|"R"|"E"` 3케이스 축소 (A/B/C/D → DeprecationWarning + auto-approve) `[M]` — `83ce974`
+- [x] **P0-C6** `metrics_guard.py` 확장: Silver `AUTO_PAUSE_THRESHOLDS` + `should_auto_pause` 통합, `route_after_mode` 에서 interrupt `[M]` — `83ce974`
+- [x] **P0-C7** `EvolverState.dispute_queue: list[dict]` 추가 + `integrate_node` conflict_hold 시 append `[S]` — `83ce974`
+- [x] **P0-C8** 테스트 `[M]` — `83ce974` + `f21a249`
+  - `test_graph.py`: Bronze gate 제거, hitl_s 첫 cycle, auto-pause 5조건 완결, subsequent cycle skip
+  - `test_hitl_gate.py`: S/R/E 8건 + DeprecationWarning 파라메트라이즈 4건
+  - 누적 16개+
 
 ---
 

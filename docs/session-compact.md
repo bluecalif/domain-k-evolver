@@ -1,74 +1,96 @@
 # Session Compact
 
 > Generated: 2026-04-11
+> Updated: 2026-04-12
 > Source: Conversation compaction via /compact-and-go
 
 ## Goal
 
-이전 세션에서 완료한 Silver 부트스트랩 commit 후, Silver P0 (Foundation Hardening) dev-docs 를 `/dev-docs create P0 in detail` 로 생성.
+Silver P0 (Foundation Hardening) 실행 — dev-docs commit 후 P0-A~D 32 tasks 순차 진행.
 
 ## Completed
 
-### Part 1 — Silver 부트스트랩 Commit
+### Commits
 
-- [x] `b8b0b78` — Silver 세대 계획 수립 + docs 정리 + skill 4종 생성 (27 files, +4720/-600)
-  - docs/ Bronze 문서 11개 + Silver 초안 3개 → `docs/archive/` 이동
-  - `silver-masterplan-v2.md`, `silver-implementation-tasks.md` 신규
-  - project-overall 3파일 갱신 (plan/tasks 전면 재작성, context 부분 갱신)
-  - Silver skill 4종 + 검증 workspace
+- [x] `7bc2dc8` — P0 dev-docs 4파일 + project-overall-context.md + session-compact.md (6 files)
+- [x] `2f9117a` — Stage A: Silver 벤치 스캐폴딩 + --bench-root 격리 (P0-A1~A5, 12 files)
+- [x] `e73b136` — Stage B: Remediation 8건 (P0-B1~B8, 7 files)
+- [x] `83ce974` — Stage C: HITL 축소 Silver S/R/E 재배치 (P0-C1~C7, 7 files)
+- [x] `f21a249` — Stage B9+C8: 테스트 일괄 +29건 (490 passed, gate ≥ 488 충족)
 
-### Part 2 — P0 Dev-Docs 생성 (4파일)
+### Stage A — Silver 벤치 스캐폴딩 (P0-A1~A5 완료)
 
-- [x] `dev/active/phase-si-p0-foundation/phase-si-p0-foundation-plan.md` 생성
-  - 10개 섹션: Summary → Current State → Target State → Stages(A/B/C/X/D) → Task Breakdown → 실행순서 → Risks → Dependencies → Phase Gate → **E2E Bench Results**
-  - 32 tasks (S:18 M:13 L:1), 5 Stages
-- [x] `dev/active/phase-si-p0-foundation/phase-si-p0-foundation-context.md` 생성
-  - 핵심 파일 (코드 15개 + 문서 6개), 생성/수정 파일 목록, State 확장, 결정사항, 컨벤션 체크
-- [x] `dev/active/phase-si-p0-foundation/phase-si-p0-foundation-tasks.md` 생성
-  - 32 tasks 체크리스트 (stage-grouped) + Phase Gate Checklist + **E2E Bench Results 테이블**
-- [x] `dev/active/phase-si-p0-foundation/debug-history.md` 생성 (빈 템플릿)
+- [x] P0-A1: `bench/silver/INDEX.md` 생성 (§12.4 verbatim 컬럼)
+- [x] P0-A2: 템플릿 3종 (`si-trial-card.md`, `si-readiness-report.md`, `si-index-row.md`)
+- [x] P0-A3: `bench/silver/japan-travel/p0-20260411-baseline/` 디렉토리 + `trial-card.md`
+- [x] P0-A4: `config.py` bench_root 필드, `state_io.py` write guard, `orchestrator.py` bench_root 우선
+- [x] P0-A5: 스크립트 3종 `--bench-root` 인자 전달
 
-### Part 3 — project-overall 동기화
+### Stage B — Remediation 8건 (P0-B1~B8 완료)
 
-- [x] `project-overall-context.md` — Silver P0 행에 "dev-docs 생성 완료" 표기
-- [x] 정합성 검증 PASS (tasks 32개 일치, gate verbatim, E2E Bench Results 양쪽 포함)
+- [x] P0-B1: `search_adapter.py` retry 판정 `re.search(r"429|5\d\d|rate")`
+- [x] P0-B2: `config.py` request_timeout (LLM 60s, Search 30s)
+- [x] P0-B3: `llm_adapter.py` ChatOpenAI request_timeout 전달
+- [x] P0-B4: `search_adapter.py` Tavily timeout 명시
+- [x] P0-B5: `collect.py` ThreadPoolExecutor future timeout (60s/120s)
+- [x] P0-B6: `collect.py` bare-except 제거 + 구체 예외 로깅 + `collect_failure_rate` emit
+- [x] P0-B7: `integrate.py` except ValueError: pass → logger.warning
+- [x] P0-B8: `state_io.py` .bak rotation + JSON 복구 경로 + 필수필드 검증
+
+### Stage C — HITL 축소 (P0-C1~C7 완료, 2026-04-12)
+
+- [x] P0-C7: `state.py` dispute_queue 필드 + `integrate.py` dispute append
+- [x] P0-C4: `metrics_guard.py` should_auto_pause() 5개 임계치
+- [x] P0-C6: `metrics_guard.py` Silver v2 AUTO_PAUSE_THRESHOLDS
+- [x] P0-C5: `hitl_gate.py` 전면 재작성 — S/R/E + A/B/C/D DeprecationWarning
+- [x] P0-C1: `graph.py` A/B/C edge 제거 — plan/collect/integrate 직결
+- [x] P0-C2: `graph.py` `route_after_seed` + hitl_s/hitl_r 노드 등록
+- [x] P0-C3: `route_after_critique` 단순화 — 10-cycle hitl_d 분기 제거
+
+### Stage B9+C8 — 테스트 일괄 (2026-04-12, `f21a249`)
+
+- [x] test_collect.py +10 (S1 timeout, S2 malformed, empty, duplicate, failure_rate)
+- [x] test_state_io.py +9 (S3 corrupt, .bak 복구, 필수필드, rotation, write guard)
+- [x] test_adapters.py +6 (504/503/500 retry, Tavily timeout propagation)
+- [x] test_graph.py +4 (staleness/avg_confidence route, Bronze gate 미호출, subsequent cycle skip)
+- [x] test_hitl_gate.py 전면 재작성 (Silver S/R/E 8건 + DeprecationWarning 4건)
 
 ## Current State
 
-- **Bronze 세대**: 완료 (commit `b122a23`, 468 tests, Gate #5 PASS)
-- **Silver 세대**: 계획 + 도구화 + P0 dev-docs 완료, **P0-A1 즉시 착수 가능**
-- **Git**: branch `main`, latest commit `b8b0b78` (silver-bootstrap)
-- **미커밋**: P0 dev-docs 4파일 + project-overall-context.md 수정 (5파일)
-
-### Changed Files (미커밋)
-
-- `dev/active/phase-si-p0-foundation/phase-si-p0-foundation-plan.md` — NEW
-- `dev/active/phase-si-p0-foundation/phase-si-p0-foundation-context.md` — NEW
-- `dev/active/phase-si-p0-foundation/phase-si-p0-foundation-tasks.md` — NEW
-- `dev/active/phase-si-p0-foundation/debug-history.md` — NEW
-- `dev/active/project-overall/project-overall-context.md` — P0 dev-docs 생성 반영
+- **Git**: branch `main`, latest commit `f21a249` (Stage B9+C8)
+- **Tests**: **490 passed**, 3 skipped (gate ≥ 488 달성 ✅)
+- **작업 트리**: clean (docs/session-compact.md 이번 업데이트 제외)
 
 ## Remaining / TODO
 
-### 즉시 가능
+### 즉시
 
-- [ ] **git commit** — P0 dev-docs 4파일 + context.md 수정 (commit 후 P0 착수)
-- [ ] **P0-A1 착수** — `bench/silver/INDEX.md` 생성 (silver-trial-scaffold skill 첫 실호출)
-- [ ] P0-A2~A6 → P0-B1~B9 → P0-C1~C8 → P0-X1~X6 → P0-D1~D3 (plan.md §6 권장 순서)
+- [ ] **P0-A6**: `config.snapshot.json` 자동 작성 (dataclass 직렬화 + git HEAD + provider list + seed skeleton hash)
+- [ ] **P0-X1~X6**: 인터페이스 고정 (6건)
+  - X1: integrate_node I/O snapshot
+  - X2: collect_node I/O snapshot
+  - X3: Claim/EU provenance 필드 예약
+  - X4: EvolverState 5개 신규 필드 일괄 선언
+  - X5: metrics_logger key 동결 문서화
+  - X6: tests/conftest.py 공통 fixture 재정비
+- [ ] **P0-D1~D3**: Silver baseline trial 재현 + readiness-report.md + INDEX 갱신
 
 ### 보류
 
-- [ ] `project-overall-context.md` 잔여 4섹션 갱신 (이전 세션 reject 후 미해결)
-  - Phase 5 테이블 (10/13 → 23/23)
-  - Silver Dev-Docs 예정 섹션
-  - D-71~D-80 결정 추가
-  - S1~S11 blocking scenario 참조
+- [ ] `project-overall-context.md` 잔여 4섹션 갱신 (P0 완료 후)
 
 ## Key Decisions
 
-- **D-81**: project-overall-tasks.md 는 Bronze + Silver 통합 단일 파일 (이전 세션)
-- **D-82~D-87**: Silver skill 4종 masterplan 거울, 분리 원칙, 개명, anti-trigger (이전 세션)
-- **E2E Bench Results 표준화**: 모든 phase dev-docs 의 plan.md 와 tasks.md 에 E2E Bench Results 섹션을 포함. Phase 종료 시 trial 실측값 + Phase 5 regression 비교 테이블을 기록. Gate 판정의 정량 근거로 사용.
+- **HITL 전환 모델** (plan.md §Stage C):
+  - A/B/C → 제거 (graph edge 삭제)
+  - D → 의미 전환: dispute batch queue (비블로킹, graph edge 아님)
+  - E → 의미 전환: should_auto_pause() 5개 임계치 위반 시 interrupt
+  - S → 신규: phase 첫 cycle seed 승인
+  - R → 신규 stub (P2 실구현)
+- **collect_failure_rate**: collect_node 반환값에 포함, state에 전파
+- **AUTO_PAUSE_THRESHOLDS**: conflict_rate>0.25, evidence_rate<0.55, collect_failure_rate>0.50, staleness_ratio>0.30, avg_confidence<0.60
+- **state_io write guard**: `bench/japan-travel/` 직접 쓰기 차단 (PermissionError)
+- **CLAUDE.md**: Bash 절대경로 규칙 추가
 
 ## Context
 
@@ -76,44 +98,49 @@
 
 ### 핵심 참조 파일
 
-- **단일 진실 소스**: `docs/silver-masterplan-v2.md` (§4 Phase 표 / §7 시나리오 / §12 벤치 / §13 provider / §14 HITL)
-- **실행 backlog**: `docs/silver-implementation-tasks.md` (119 tasks)
-- **P0 dev-docs**: `dev/active/phase-si-p0-foundation/` (plan/context/tasks/debug-history)
-- **project-overall**: `dev/active/project-overall/` (plan/context/tasks)
-- **Silver skill 4종**: `.claude/skills/silver-{trial-scaffold,phase-gate-check,hitl-policy,provider-fetch}/SKILL.md`
+- **masterplan**: `docs/silver-masterplan-v2.md` (§4/§7/§12/§13/§14)
+- **P0 plan**: `dev/active/phase-si-p0-foundation/phase-si-p0-foundation-plan.md`
+- **P0 tasks**: `dev/active/phase-si-p0-foundation/phase-si-p0-foundation-tasks.md`
+- **project-overall**: `dev/active/project-overall/`
+- **Silver skills**: `.claude/skills/silver-{trial-scaffold,phase-gate-check,hitl-policy,provider-fetch}/SKILL.md`
 
 ### 중요 제약
 
-- **Bronze 보호**: `bench/japan-travel/` read-only
-- **Silver bench 격리**: `bench/silver/{domain}/{trial_id}/`, `--bench-root` 필수
-- **P0 scope-locked** (D-76): 8 remediation + 벤치 + HITL + 인터페이스 외 추가 금지
-- **인코딩**: PYTHONUTF8=1, utf-8 명시, bash shell (Git Bash)
+- **Bronze 보호**: `bench/japan-travel/` read-only (write guard 적용됨)
+- **P0 scope-locked** (D-76): 추가 기능 금지
+- **인코딩**: PYTHONUTF8=1, utf-8 명시
 - **언어**: 한국어
-- **E2E Bench Results**: 모든 phase dev-docs plan.md/tasks.md 말미에 포함 필수
+- **Bash**: 항상 절대경로 사용
 
-### P0 실행 순서 (plan.md §6)
+### graph.py C1~C3 구현 가이드 (중단된 지점)
+
+현재 `graph.py` 는 Bronze 구조 (hitl_a~e 5개 노드, A/B/C conditional edges). Silver 구조로 변경 필요:
 
 ```
-1. P0-A1~A3 (벤치 디렉토리/템플릿)
-2. P0-A4~A5 (--bench-root 격리)
-3. P0-B1~B8 (remediation)
-4. P0-C1~C7 (HITL 축소)
-5. P0-B9 + P0-C8 (테스트)
-6. P0-A6 (config snapshot)
-7. P0-X1~X6 (인터페이스 고정)
-8. P0-D1~D3 (baseline trial + gate)
+Silver Flow:
+START → seed → (첫cycle → hitl_s → mode, else → mode)
+  → mode → (auto_pause → hitl_e → plan, else → plan)
+  → plan → collect → integrate → critique
+  → (converged → END, else → plan_modify → cycle_inc → END)
 ```
+
+노드 목록 (Silver):
+- seed, mode, plan, collect, integrate, critique, plan_modify, cycle_inc
+- hitl_s (seed 승인), hitl_r (stub), hitl_e (exception auto-pause)
+- hitl_a~d 삭제
+
+`hitl_gate.py` 는 이미 S/R/E 전용으로 재작성 완료.
+`should_auto_pause()` 는 `metrics_guard.py` 에 구현 완료.
 
 ## Next Action
 
-**P0 dev-docs commit → P0-A1 착수.**
+**P0-A6 (config.snapshot.json 자동 작성) → P0-X1~X6 (인터페이스 고정) → P0-D1~D3 (baseline trial)**
 
 재개 순서:
 
-1. git commit: P0 dev-docs 4파일 + project-overall-context.md 수정
-   - commit subject: `[si-p0] dev-docs: P0 Foundation Hardening 계획 + 컨텍스트 + 태스크 + E2E Bench Results`
-2. P0-A1: `bench/silver/INDEX.md` 생성 — silver-trial-scaffold skill 첫 실호출
-3. P0-A2: 템플릿 3종 생성
-4. 이후 plan.md §6 순서대로 진행
-
-권장: commit 먼저 → P0-A1 즉시 착수. 사용자에게 commit 여부 확인 후 진행.
+1. P0-A6: `src/config.py` dataclass 직렬화 + `scripts/` 에서 snapshot emit
+2. P0-X1~X6: 인터페이스 스냅샷 + state 필드 + conftest 재정비
+3. P0-D1: Phase 5 스모크를 `bench/silver/japan-travel/p0-20260411-baseline/` 에 재실행
+4. P0-D2: readiness-report.md 작성 (VP1 ≥ 4/5, VP2 ≥ 5/6)
+5. P0-D3: INDEX.md 첫 행 삽입
+6. Phase Gate 판정 → P0 완료 → P1/P3 branch 분기 가능
