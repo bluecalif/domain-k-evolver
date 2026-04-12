@@ -1,15 +1,15 @@
 # Silver P2: Outer-Loop Remodel — Tasks
 > Last Updated: 2026-04-12
-> Status: Planning (0/14)
+> Status: Stage A 완료 (4/14)
 
 ## Summary
 
 | Stage | Tasks | Done | Status |
 |-------|-------|------|--------|
-| A. Remodel node + schema | 4 | 0/4 | 대기 |
+| A. Remodel node + schema | 4 | 4/4 | ✅ 완료 |
 | B. Graph/orchestrator 통합 | 4 | 0/4 | 대기 |
 | C. 검증 | 6 | 0/6 | 대기 |
-| **합계** | **14** | **0/14** | Planning |
+| **합계** | **14** | **4/14** | Stage A 완료 |
 
 **Size 분포**: S: 5 / M: 8 / L: 1
 
@@ -72,27 +72,26 @@
 
 ## Stage A: Remodel node + schema
 
-- [ ] **P2-A1** `src/nodes/remodel.py` 신규 `[L]`
+- [x] **P2-A1** `src/nodes/remodel.py` 신규 `[L]`
   - 입력: audit 결과 (4 분석함수 출력) + 현 state
   - 출력: `RemodelReport` (proposals 리스트)
   - Phase 4 `audit.py`의 4 분석함수 결과를 **소비만**, 중복 분석 금지
   - proposal types: merge / split / reclassify / alias_canonicalize / source_policy / gap_rule
-  - Commit: —
+  - 함수: `run_remodel()`, `remodel_node()`, `_propose_merges/splits/reclassify/from_audit_findings`
 
-- [ ] **P2-A2** `schemas/remodel_report.schema.json` 필드 정의 `[M]`
+- [x] **P2-A2** `schemas/remodel_report.schema.json` 필드 정의 `[M]`
   - report_id, created_at, source_audit_id, proposals[], rollback_payload, approval
-  - proposal: type, rationale, target_entities, params, expected_delta
+  - proposal: type (6종 enum), rationale, target_entities, params, expected_delta
   - approval: status (pending/approved/rejected), actor, at
-  - Commit: —
+  - JSON Schema Draft 2020-12, $defs 사용
 
-- [ ] **P2-A3** `EvolverState.phase_number: int` 필드 추가 `[S]`
-  - `src/state.py` — phase_history는 이미 선언 (line 224), phase_number 추가
-  - Commit: —
+- [x] **P2-A3** `EvolverState.phase_number: int` + `remodel_report: dict | None` 필드 추가 `[S]`
+  - `src/state.py` — phase_number, remodel_report 추가
+  - `src/utils/state_io.py` — load_state 초기화 (phase_number=0, remodel_report=None)
 
-- [ ] **P2-A4** `state/phase_{N}/` 스냅샷 저장 로직 `[M]`
-  - phase bump 시 현 state 전체를 `state/phase_{N}/`로 복사
-  - `state_io.py` 또는 별도 유틸에 구현
-  - Commit: —
+- [x] **P2-A4** `state/phase_{N}/` 스냅샷 저장 로직 `[M]`
+  - `src/utils/state_io.py:snapshot_phase()` — phase bump 시 state/phase_{N}/ 로 복사
+  - 기존 `snapshot_state()` 패턴과 동일, write guard 포함
 
 ---
 

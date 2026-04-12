@@ -1,0 +1,126 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "remodel_report.schema.json",
+  "title": "Remodel Report",
+  "description": "Outer-Loop Remodel 제안 보고서. audit 결과를 기반으로 skeleton/state 구조 변경을 제안한다.",
+  "type": "object",
+  "required": [
+    "report_id",
+    "created_at",
+    "source_audit_id",
+    "proposals",
+    "rollback_payload",
+    "approval"
+  ],
+  "properties": {
+    "report_id": {
+      "type": "string",
+      "pattern": "^RM-[0-9]{4}$",
+      "description": "고유 식별자. 형식: RM-NNNN"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "보고서 생성 시점 (ISO 8601)"
+    },
+    "source_audit_id": {
+      "type": "integer",
+      "description": "이 보고서를 생성시킨 audit의 cycle 번호"
+    },
+    "proposals": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/proposal"
+      },
+      "description": "구조 변경 제안 목록"
+    },
+    "rollback_payload": {
+      "type": "object",
+      "description": "승인 전 state 스냅샷 — 롤백 시 복원 데이터",
+      "properties": {
+        "skeleton_snapshot": {
+          "type": "object",
+          "description": "변경 전 domain_skeleton"
+        },
+        "affected_kus": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "영향받는 KU ID 목록"
+        }
+      },
+      "additionalProperties": true
+    },
+    "approval": {
+      "$ref": "#/$defs/approval"
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "proposal": {
+      "type": "object",
+      "required": ["type", "rationale", "target_entities", "params", "expected_delta"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "merge",
+            "split",
+            "reclassify",
+            "alias_canonicalize",
+            "source_policy",
+            "gap_rule"
+          ],
+          "description": "제안 유형"
+        },
+        "rationale": {
+          "type": "string",
+          "description": "제안 근거"
+        },
+        "target_entities": {
+          "type": "array",
+          "items": { "type": "string" },
+          "minItems": 1,
+          "description": "대상 entity_key 목록"
+        },
+        "params": {
+          "type": "object",
+          "description": "유형별 파라미터 (merge: canonical_key, split: new_keys 등)",
+          "additionalProperties": true
+        },
+        "expected_delta": {
+          "type": "object",
+          "description": "예상 지표 변화",
+          "properties": {
+            "metric": { "type": "string" },
+            "before": { "type": "number" },
+            "after": { "type": "number" }
+          },
+          "required": ["metric", "before", "after"],
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "approval": {
+      "type": "object",
+      "required": ["status"],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["pending", "approved", "rejected"],
+          "description": "승인 상태"
+        },
+        "actor": {
+          "type": "string",
+          "description": "승인/거부한 주체"
+        },
+        "at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "승인/거부 시점"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

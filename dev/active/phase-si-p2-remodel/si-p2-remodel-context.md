@@ -1,6 +1,6 @@
 # Silver P2: Outer-Loop Remodel — Context
 > Last Updated: 2026-04-12
-> Status: Planning
+> Status: Stage A 완료 (4/14)
 
 ## 1. 핵심 파일
 

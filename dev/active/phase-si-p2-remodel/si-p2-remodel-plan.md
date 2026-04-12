@@ -1,6 +1,6 @@
 # Silver P2: Outer-Loop Remodel 완결
 > Last Updated: 2026-04-12
-> Status: Planning
+> Status: Stage A 완료 (4/14), Stage B 대기
 
 ## 1. Summary (개요)
 
@@ -36,9 +36,11 @@
 | `graph.py` hitl_r 노드 | ✅ 등록됨 (엣지 미연결) |
 | `EvolverState.phase_history` | ✅ 필드 선언됨 (`state.py:224`) |
 | `entity_resolver.py` | ✅ 완료 (P1) |
-| `remodel.py` | ❌ 미존재 |
-| `remodel_report.schema.json` | ❌ 미존재 |
-| 테스트 | 608 tests (P1 544 + P3 55 + 추가) |
+| `remodel.py` | ✅ 구현 완료 (P2-A1) |
+| `remodel_report.schema.json` | ✅ 구현 완료 (P2-A2) |
+| `EvolverState.phase_number` | ✅ 추가 (P2-A3) |
+| `snapshot_phase()` | ✅ 구현 완료 (P2-A4) |
+| 테스트 | 630 tests (605 + 25 P2 신규) |
 
 ---
 

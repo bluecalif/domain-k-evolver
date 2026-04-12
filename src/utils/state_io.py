@@ -111,7 +111,9 @@ def load_state(domain_path: str | Path) -> EvolverState:
         "jump_history": [],
         "hitl_pending": None,
         "conflict_ledger": data.get("conflict_ledger", []),
+        "phase_number": 0,
         "phase_history": [],
+        "remodel_report": None,
         "coverage_map": {},
         "novelty_history": [],
     }
@@ -223,3 +225,37 @@ def snapshot_state(domain_path: str | Path, cycle: int) -> Path:
             shutil.copy2(src, snapshot_dir / filename)
 
     return snapshot_dir
+
+
+def snapshot_phase(domain_path: str | Path, phase_number: int) -> Path:
+    """state/ → state/phase_{N}/ phase 스냅샷 복사 (P2-A4).
+
+    phase bump 시 현재 state 전체를 phase 번호별 디렉토리로 보존한다.
+
+    Args:
+        domain_path: bench/{domain} 또는 bench/silver/{domain}/{trial_id} 경로.
+        phase_number: 스냅샷 대상 phase 번호.
+
+    Returns:
+        생성된 phase 스냅샷 디렉토리 경로.
+
+    Raises:
+        PermissionError: legacy bench 디렉토리에 쓰기 시도 시.
+    """
+    _check_write_guard(Path(domain_path))
+    domain = Path(domain_path)
+    state_dir = domain / "state"
+    phase_dir = domain / "state" / f"phase_{phase_number}"
+
+    if phase_dir.exists():
+        shutil.rmtree(phase_dir)
+
+    phase_dir.mkdir(parents=True, exist_ok=True)
+
+    for filename in list(_FILE_MAP) + list(_OPTIONAL_LIST_FILES):
+        src = state_dir / filename
+        if src.exists():
+            shutil.copy2(src, phase_dir / filename)
+
+    logger.info("Phase snapshot 저장: phase_%d → %s", phase_number, phase_dir)
+    return phase_dir

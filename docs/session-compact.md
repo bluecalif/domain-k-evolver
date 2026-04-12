@@ -26,10 +26,10 @@ Silver P2 (Outer-Loop Remodel 완결) dev-docs 생성 + Phase Gate 단계 포함
 
 ## Current State
 
-- **Git**: branch `main`, latest commit `5795bba` (P3 Post-Gate 개선)
-- **Tests**: 608 collected
-- **Silver 전체**: P0 32/32 ✅, P1 12/12 ✅, P3 22/22 ✅, **P2 0/14 Planning**
-- **다음**: P2 Stage A 착수
+- **Git**: branch `main`, latest commit `692b1df` (P2 dev-docs 생성)
+- **Tests**: 630 collected (605 기존 + 25 P2 신규)
+- **Silver 전체**: P0 32/32 ✅, P1 12/12 ✅, P3 22/22 ✅, **P2 4/14 Stage A 완료**
+- **다음**: P2 Stage B 착수 (B1: graph.py remodel 경로)
 
 ### Changed Files (uncommitted)
 - `dev/active/phase-si-p2-remodel/si-p2-remodel-plan.md` — 신규
@@ -49,10 +49,10 @@ Silver P2 (Outer-Loop Remodel 완결) dev-docs 생성 + Phase Gate 단계 포함
 - [ ] **feedback memory 업데이트**: "Phase dev-docs 생성 시 Phase Gate Process + E2E Bench Results 템플릿을 반드시 포함" — 기존 `feedback_phase_gate.md` 에 dev-docs 생성 시점 규칙 추가
 
 ### P2 구현
-- [ ] P2-A1: `src/nodes/remodel.py` 신규 [L]
-- [ ] P2-A2: `schemas/remodel_report.schema.json` [M]
-- [ ] P2-A3: `EvolverState.phase_number` [S]
-- [ ] P2-A4: `state/phase_{N}/` 스냅샷 로직 [M]
+- [x] P2-A1: `src/nodes/remodel.py` 신규 [L] — run_remodel, remodel_node, 6종 proposal
+- [x] P2-A2: `schemas/remodel_report.schema.json` [M] — Draft 2020-12
+- [x] P2-A3: `EvolverState.phase_number` + `remodel_report` [S]
+- [x] P2-A4: `state/phase_{N}/` 스냅샷 로직 [M] — snapshot_phase()
 - [ ] P2-B1~B4: Graph/orchestrator 통합 (4 tasks)
 - [ ] P2-C1~C6: 검증 (6 tasks)
 - [ ] P2 Gate: E2E bench + 자가평가 + debug + dev-docs

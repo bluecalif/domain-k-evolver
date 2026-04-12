@@ -221,6 +221,8 @@ class EvolverState(TypedDict, total=False):
 
     # Silver P0-X4: 후속 Phase 용 필드 예약 (빈 컨테이너 기본값)
     conflict_ledger: list[dict]   # P1: 충돌 감사 로그 (영속)
+    phase_number: int             # P2: 현재 phase 번호 (remodel 승인 시 +1)
     phase_history: list[dict]     # P2: phase transition 스냅샷
+    remodel_report: dict | None   # P2: 현재 pending RemodelReport (HITL-R 전달용)
     coverage_map: dict            # P4: 축 × 엔티티 그리드
     novelty_history: list[float]  # P4: cycle 별 novelty 점수
