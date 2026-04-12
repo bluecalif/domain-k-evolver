@@ -1,17 +1,20 @@
-"""Domain-K-Evolver StateGraph 빌드 + 엣지 라우팅.
+"""Domain-K-Evolver StateGraph 빌드 + 엣지 라우팅 (Silver).
 
-Task 1.14 + 1.15: Graph 구조, 조건부 엣지, HITL Gate 통합.
-design-v2 §10 기반.
+P0-C1/C2/C3 (P0 Foundation Hardening, Stage C): HITL 축소 반영.
+Bronze HITL-A/B/C/D 인라인 게이트 제거, Silver HITL-S/R/E 재배치.
+masterplan v2 §14 기반.
 
-Flow:
-  START → seed → mode → plan → hitl_a → collect → integrate → critique
-    → plan_modify → cycle_inc → mode (loop)
+Silver Flow:
+  START → seed → (phase 첫 cycle → hitl_s → mode, else → mode)
+    → mode → (auto_pause violations → hitl_e → plan, else → plan)
+    → plan → collect → integrate → critique
+    → (converged → END, else → plan_modify → cycle_inc → END)
 
-Conditional edges:
-  - mode: convergence_warning → hitl_e → plan, else → plan
-  - collect → hitl_b (high-risk claims) or integrate
-  - integrate → hitl_c (disputed KUs) or critique
-  - critique → END (converged) / hitl_d (10-cycle audit) / plan_modify
+HITL gates:
+  - S: phase 첫 cycle seed 승인 (blocking)
+  - R: Remodel 승인 (stub, P2 실구현)
+  - E: Exception auto-pause (should_auto_pause 5개 임계치 위반 시)
+  - D: dispute_queue 비블로킹 append (graph edge 아님, integrate_node 내부 처리)
 """
 
 from __future__ import annotations
@@ -30,6 +33,7 @@ from src.nodes.plan import plan_node
 from src.nodes.plan_modify import plan_modify_node
 from src.nodes.seed import seed_node
 from src.state import EvolverState
+from src.utils.metrics_guard import should_auto_pause
 
 
 # ---------------------------------------------------------------------------
@@ -62,60 +66,44 @@ def cycle_increment_node(state: EvolverState) -> dict:
 
 
 # ---------------------------------------------------------------------------
-# Routing functions (Task 1.15)
+# Routing functions (Silver: P0-C1~C3)
 # ---------------------------------------------------------------------------
 
+def route_after_seed(state: EvolverState) -> str:
+    """seed_node 이후: phase 첫 cycle → hitl_s, else → mode.
+
+    seed_node는 current_cycle==0에서 시작해 1로 설정한다.
+    current_cycle > 1 이면 subsequent cycle → 이미 승인받은 seed → mode 직행.
+    """
+    if state.get("current_cycle", 0) <= 1:
+        return "hitl_s"
+    return "mode"
+
+
 def route_after_mode(state: EvolverState) -> str:
-    """mode_node 이후: convergence_warning → hitl_e, else → plan."""
-    mode_decision = state.get("current_mode") or {}
-    if mode_decision.get("convergence_warning"):
+    """mode_node 이후: should_auto_pause 위반 → hitl_e, else → plan.
+
+    Silver HITL-E: 5개 임계치 (conflict_rate, evidence_rate,
+    collect_failure_rate, staleness_ratio, avg_confidence) 중 1개라도
+    위반 시 interrupt.
+    """
+    pause_result = should_auto_pause(state)
+    if pause_result.should_pause:
         return "hitl_e"
     return "plan"
 
 
-def route_after_collect(state: EvolverState) -> str:
-    """collect_node 이후: high-risk claims → hitl_b, else → integrate."""
-    claims = state.get("current_claims") or []
-    if any(c.get("risk_flag") for c in claims):
-        return "hitl_b"
-    return "integrate"
-
-
-def route_after_integrate(state: EvolverState) -> str:
-    """integrate_node 이후: disputed KUs → hitl_c, else → critique."""
-    kus = state.get("knowledge_units") or []
-    if any(ku.get("status") == "disputed" for ku in kus):
-        return "hitl_c"
-    return "critique"
-
-
 def route_after_critique(state: EvolverState) -> str:
-    """critique_node 이후: converged → END, 10-cycle → hitl_d, else → plan_modify."""
-    critique = state.get("current_critique") or {}
+    """critique_node 이후: converged → END, else → plan_modify.
 
-    # 수렴 판정
+    Silver: HITL-D 는 dispute batch queue (integrate_node 에서 append) →
+    graph edge 아니므로 10-cycle audit 분기 제거.
+    """
+    critique = state.get("current_critique") or {}
     convergence = critique.get("convergence", {})
     if convergence.get("converged"):
         return END
-
-    # Gate D: 10 Cycle마다 Executive Audit
-    cycle = state.get("current_cycle", 0)
-    if cycle > 0 and cycle % 10 == 0:
-        return "hitl_d"
-
     return "plan_modify"
-
-
-def has_high_risk_claims(state: EvolverState) -> bool:
-    """Gate B 발동 여부."""
-    claims = state.get("current_claims") or []
-    return any(c.get("risk_flag") for c in claims)
-
-
-def has_disputes(state: EvolverState) -> bool:
-    """Gate C 발동 여부."""
-    kus = state.get("knowledge_units") or []
-    return any(ku.get("status") == "disputed" for ku in kus)
 
 
 def should_continue(state: EvolverState) -> str:
@@ -136,7 +124,7 @@ def build_graph(
     search_tool: Any | None = None,
     hitl_response: dict | None = None,
 ) -> StateGraph:
-    """Evolver StateGraph 빌드.
+    """Evolver StateGraph 빌드 (Silver).
 
     Args:
         llm: LLM 인스턴스. None이면 결정론적 fallback.
@@ -148,7 +136,7 @@ def build_graph(
     """
     graph = StateGraph(EvolverState)
 
-    # -- Nodes --
+    # -- Core pipeline nodes --
     graph.add_node("seed", seed_node)
     graph.add_node("mode", mode_node)
     graph.add_node("plan", partial(plan_node, llm=llm))
@@ -161,20 +149,23 @@ def build_graph(
     graph.add_node("plan_modify", partial(plan_modify_node, llm=llm))
     graph.add_node("cycle_inc", cycle_increment_node)
 
-    # HITL Gate nodes (각 gate 지점마다 별도 등록)
-    graph.add_node("hitl_a", _make_hitl_node("A", response=hitl_response))
-    graph.add_node("hitl_b", _make_hitl_node("B", response=hitl_response))
-    graph.add_node("hitl_c", _make_hitl_node("C", response=hitl_response))
-    graph.add_node("hitl_d", _make_hitl_node("D", response=hitl_response))
+    # -- Silver HITL nodes (S / R / E) --
+    graph.add_node("hitl_s", _make_hitl_node("S", response=hitl_response))
+    graph.add_node("hitl_r", _make_hitl_node("R", response=hitl_response))
     graph.add_node("hitl_e", _make_hitl_node("E", response=hitl_response))
 
     # -- Edges --
 
-    # START → seed → mode
+    # START → seed → (첫 cycle → hitl_s → mode, else → mode)
     graph.add_edge(START, "seed")
-    graph.add_edge("seed", "mode")
+    graph.add_conditional_edges(
+        "seed",
+        route_after_seed,
+        {"hitl_s": "hitl_s", "mode": "mode"},
+    )
+    graph.add_edge("hitl_s", "mode")
 
-    # mode → (conditional) plan or hitl_e
+    # mode → (auto_pause → hitl_e → plan, else → plan)
     graph.add_conditional_edges(
         "mode",
         route_after_mode,
@@ -182,33 +173,17 @@ def build_graph(
     )
     graph.add_edge("hitl_e", "plan")
 
-    # plan → hitl_a (Gate A: 항상) → collect
-    graph.add_edge("plan", "hitl_a")
-    graph.add_edge("hitl_a", "collect")
+    # plan → collect → integrate → critique (인라인 HITL 제거)
+    graph.add_edge("plan", "collect")
+    graph.add_edge("collect", "integrate")
+    graph.add_edge("integrate", "critique")
 
-    # collect → (conditional) hitl_b or integrate
-    graph.add_conditional_edges(
-        "collect",
-        route_after_collect,
-        {"hitl_b": "hitl_b", "integrate": "integrate"},
-    )
-    graph.add_edge("hitl_b", "integrate")
-
-    # integrate → (conditional) hitl_c or critique
-    graph.add_conditional_edges(
-        "integrate",
-        route_after_integrate,
-        {"hitl_c": "hitl_c", "critique": "critique"},
-    )
-    graph.add_edge("hitl_c", "critique")
-
-    # critique → (conditional) END / hitl_d / plan_modify
+    # critique → (converged → END, else → plan_modify)
     graph.add_conditional_edges(
         "critique",
         route_after_critique,
-        {END: END, "hitl_d": "hitl_d", "plan_modify": "plan_modify"},
+        {END: END, "plan_modify": "plan_modify"},
     )
-    graph.add_edge("hitl_d", "plan_modify")
 
     # plan_modify → cycle_inc → END (단일 사이클, 루프는 Orchestrator가 외부 관리)
     graph.add_edge("plan_modify", "cycle_inc")

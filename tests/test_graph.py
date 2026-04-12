@@ -1,6 +1,11 @@
-"""test_graph — StateGraph 빌드 + 엣지 라우팅 + 통합 테스트.
+"""test_graph — StateGraph 빌드 + 엣지 라우팅 + 통합 테스트 (Silver).
 
-Task 1.14/1.15/1.16: Graph 컴파일, 라우팅 함수, 단일 Cycle 실행.
+P0-C1/C2/C3 반영: HITL-A/B/C/D 제거, HITL-S/R/E 재배치.
+Silver Flow:
+  START → seed → (첫 cycle → hitl_s → mode, else → mode)
+    → mode → (auto_pause → hitl_e → plan, else → plan)
+    → plan → collect → integrate → critique
+    → (converged → END, else → plan_modify → cycle_inc → END)
 """
 
 from __future__ import annotations
@@ -13,12 +18,9 @@ import pytest
 from src.graph import (
     build_graph,
     cycle_increment_node,
-    has_disputes,
-    has_high_risk_claims,
-    route_after_collect,
     route_after_critique,
-    route_after_integrate,
     route_after_mode,
+    route_after_seed,
     should_continue,
 )
 from src.state import EvolverState
@@ -60,9 +62,9 @@ def _make_state(**overrides) -> dict:
         "knowledge_units": [],
         "gap_map": [],
         "policies": {},
-        "metrics": {},
+        "metrics": {"rates": {"evidence_rate": 1.0, "avg_confidence": 1.0}},
         "domain_skeleton": {},
-        "current_cycle": 1,
+        "current_cycle": 2,  # default: not first cycle
         "current_plan": None,
         "current_claims": None,
         "current_critique": None,
@@ -80,7 +82,7 @@ def _make_state(**overrides) -> dict:
 # ===========================================================================
 
 class TestGraphBuild:
-    """Task 1.14: Graph 컴파일 + 노드 등록."""
+    """Silver Graph 빌드 + 노드 등록."""
 
     def test_compile_success(self):
         """기본 빌드 — 컴파일 성공."""
@@ -88,16 +90,22 @@ class TestGraphBuild:
         assert graph is not None
 
     def test_node_count(self):
-        """8개 노드 + cycle_inc + 5개 HITL + __start__ = 15개."""
+        """8 core + cycle_inc + 3 HITL (S/R/E) = 11 노드 (+ __start__)."""
         graph = build_graph()
-        # __start__ 제외 실제 노드 14개
         node_names = set(graph.nodes.keys()) - {"__start__"}
         expected = {
             "seed", "mode", "plan", "collect", "integrate",
             "critique", "plan_modify", "cycle_inc",
-            "hitl_a", "hitl_b", "hitl_c", "hitl_d", "hitl_e",
+            "hitl_s", "hitl_r", "hitl_e",
         }
         assert node_names == expected
+
+    def test_bronze_hitl_removed(self):
+        """Bronze HITL-A/B/C/D 노드는 Silver 그래프에 없다."""
+        graph = build_graph()
+        nodes = set(graph.nodes.keys())
+        for removed in ("hitl_a", "hitl_b", "hitl_c", "hitl_d"):
+            assert removed not in nodes
 
     def test_build_with_custom_tools(self):
         """LLM/search_tool/hitl_response 주입 — 컴파일 성공."""
@@ -110,79 +118,84 @@ class TestGraphBuild:
 
 
 # ===========================================================================
-# 2. 라우팅 함수 테스트 (Task 1.15)
+# 2. 라우팅 함수 테스트 (Silver P0-C1~C3)
 # ===========================================================================
 
+class TestRouteAfterSeed:
+    """seed_node 이후 라우팅 — phase 첫 cycle 조건부 HITL-S."""
+
+    def test_first_cycle_routes_to_hitl_s(self):
+        state = _make_state(current_cycle=1)
+        assert route_after_seed(state) == "hitl_s"
+
+    def test_cycle_zero_routes_to_hitl_s(self):
+        """초기 상태(cycle=0)도 첫 cycle로 간주."""
+        state = _make_state(current_cycle=0)
+        assert route_after_seed(state) == "hitl_s"
+
+    def test_subsequent_cycle_routes_to_mode(self):
+        state = _make_state(current_cycle=2)
+        assert route_after_seed(state) == "mode"
+
+    def test_later_cycle_routes_to_mode(self):
+        state = _make_state(current_cycle=10)
+        assert route_after_seed(state) == "mode"
+
+
 class TestRouteAfterMode:
-    """mode_node 이후 라우팅."""
+    """mode_node 이후 라우팅 — should_auto_pause 기반."""
 
-    def test_normal_mode(self):
-        state = _make_state(current_mode={"mode": "normal"})
-        assert route_after_mode(state) == "plan"
-
-    def test_jump_mode_no_warning(self):
-        state = _make_state(current_mode={"mode": "jump"})
-        assert route_after_mode(state) == "plan"
-
-    def test_convergence_warning(self):
+    def test_healthy_routes_to_plan(self):
         state = _make_state(
-            current_mode={"mode": "jump", "convergence_warning": True}
+            metrics={"rates": {
+                "evidence_rate": 0.8,
+                "conflict_rate": 0.1,
+                "staleness_ratio": 0.1,
+                "avg_confidence": 0.8,
+            }},
+            collect_failure_rate=0.0,
+        )
+        assert route_after_mode(state) == "plan"
+
+    def test_conflict_rate_violation_routes_to_hitl_e(self):
+        state = _make_state(
+            metrics={"rates": {
+                "evidence_rate": 0.8,
+                "conflict_rate": 0.30,  # > 0.25 → violation
+                "staleness_ratio": 0.1,
+                "avg_confidence": 0.8,
+            }},
+            collect_failure_rate=0.0,
         )
         assert route_after_mode(state) == "hitl_e"
 
-    def test_empty_mode(self):
-        state = _make_state(current_mode=None)
-        assert route_after_mode(state) == "plan"
+    def test_evidence_rate_violation_routes_to_hitl_e(self):
+        state = _make_state(
+            metrics={"rates": {
+                "evidence_rate": 0.40,  # < 0.55
+                "conflict_rate": 0.1,
+                "staleness_ratio": 0.1,
+                "avg_confidence": 0.8,
+            }},
+            collect_failure_rate=0.0,
+        )
+        assert route_after_mode(state) == "hitl_e"
 
-
-class TestRouteAfterCollect:
-    """collect_node 이후 라우팅."""
-
-    def test_no_claims(self):
-        state = _make_state(current_claims=[])
-        assert route_after_collect(state) == "integrate"
-
-    def test_normal_claims(self):
-        claims = [{"text": "claim1"}, {"text": "claim2"}]
-        state = _make_state(current_claims=claims)
-        assert route_after_collect(state) == "integrate"
-
-    def test_high_risk_claims(self):
-        claims = [
-            {"text": "safe"},
-            {"text": "danger", "risk_flag": True},
-        ]
-        state = _make_state(current_claims=claims)
-        assert route_after_collect(state) == "hitl_b"
-
-    def test_none_claims(self):
-        state = _make_state(current_claims=None)
-        assert route_after_collect(state) == "integrate"
-
-
-class TestRouteAfterIntegrate:
-    """integrate_node 이후 라우팅."""
-
-    def test_no_disputes(self):
-        kus = [{"ku_id": "KU-0001", "status": "active"}]
-        state = _make_state(knowledge_units=kus)
-        assert route_after_integrate(state) == "critique"
-
-    def test_with_disputes(self):
-        kus = [
-            {"ku_id": "KU-0001", "status": "active"},
-            {"ku_id": "KU-0002", "status": "disputed"},
-        ]
-        state = _make_state(knowledge_units=kus)
-        assert route_after_integrate(state) == "hitl_c"
-
-    def test_empty_kus(self):
-        state = _make_state(knowledge_units=[])
-        assert route_after_integrate(state) == "critique"
+    def test_collect_failure_rate_violation_routes_to_hitl_e(self):
+        state = _make_state(
+            metrics={"rates": {
+                "evidence_rate": 0.8,
+                "conflict_rate": 0.1,
+                "staleness_ratio": 0.1,
+                "avg_confidence": 0.8,
+            }},
+            collect_failure_rate=0.60,  # > 0.50
+        )
+        assert route_after_mode(state) == "hitl_e"
 
 
 class TestRouteAfterCritique:
-    """critique_node 이후 라우팅."""
+    """critique_node 이후 라우팅 — Silver 단순화 (hitl_d 제거)."""
 
     def test_converged(self):
         critique = {"convergence": {"converged": True}}
@@ -194,18 +207,19 @@ class TestRouteAfterCritique:
         state = _make_state(current_critique=critique, current_cycle=3)
         assert route_after_critique(state) == "plan_modify"
 
-    def test_gate_d_10_cycle(self):
+    def test_cycle_10_does_not_trigger_hitl_d(self):
+        """Silver: 10-cycle audit 분기 제거 — plan_modify 로 직행."""
         critique = {"convergence": {"converged": False}}
         state = _make_state(current_critique=critique, current_cycle=10)
-        assert route_after_critique(state) == "hitl_d"
+        assert route_after_critique(state) == "plan_modify"
 
-    def test_gate_d_20_cycle(self):
+    def test_cycle_20_does_not_trigger_hitl_d(self):
         critique = {"convergence": {"converged": False}}
         state = _make_state(current_critique=critique, current_cycle=20)
-        assert route_after_critique(state) == "hitl_d"
+        assert route_after_critique(state) == "plan_modify"
 
-    def test_converged_overrides_gate_d(self):
-        """수렴이 Gate D보다 우선."""
+    def test_converged_overrides_cycle(self):
+        """수렴이 최우선."""
         critique = {"convergence": {"converged": True}}
         state = _make_state(current_critique=critique, current_cycle=10)
         assert route_after_critique(state) == "__end__"
@@ -220,7 +234,7 @@ class TestRouteAfterCritique:
 # ===========================================================================
 
 class TestHelperFunctions:
-    """should_continue, has_high_risk_claims, has_disputes, cycle_increment."""
+    """should_continue, cycle_increment."""
 
     def test_should_continue_yes(self):
         state = _make_state(
@@ -233,28 +247,6 @@ class TestHelperFunctions:
             current_critique={"convergence": {"converged": True}}
         )
         assert should_continue(state) == "end"
-
-    def test_has_high_risk_claims_true(self):
-        state = _make_state(
-            current_claims=[{"risk_flag": True}]
-        )
-        assert has_high_risk_claims(state) is True
-
-    def test_has_high_risk_claims_false(self):
-        state = _make_state(current_claims=[{"text": "safe"}])
-        assert has_high_risk_claims(state) is False
-
-    def test_has_disputes_true(self):
-        state = _make_state(
-            knowledge_units=[{"status": "disputed"}]
-        )
-        assert has_disputes(state) is True
-
-    def test_has_disputes_false(self):
-        state = _make_state(
-            knowledge_units=[{"status": "active"}]
-        )
-        assert has_disputes(state) is False
 
     def test_cycle_increment(self):
         state = _make_state(current_cycle=3)
@@ -271,17 +263,7 @@ class TestHelperFunctions:
 # ===========================================================================
 
 def _stream_until(graph, state, stop_after, *, config=None):
-    """graph.stream()으로 특정 노드까지만 실행, 누적 state 반환.
-
-    Args:
-        graph: 컴파일된 StateGraph.
-        state: 초기 State dict.
-        stop_after: 이 노드 실행 후 중단.
-        config: LangGraph config (recursion_limit 등).
-
-    Returns:
-        (accumulated_state, visited_nodes) 튜플.
-    """
+    """graph.stream()으로 특정 노드까지만 실행, 누적 state 반환."""
     if config is None:
         config = {"recursion_limit": 100}
     accumulated = dict(state)
@@ -362,35 +344,30 @@ class TestSingleCycleRun:
         for gu in gap_map:
             assert gu["gu_id"].startswith("GU-")
 
+    def test_first_cycle_passes_through_hitl_s(self, skeleton, kus, policies):
+        """첫 cycle 실행 시 hitl_s 가 visited 에 포함된다."""
+        graph = build_graph(hitl_response={"action": "approve"})
+        state = _make_bench_state(skeleton, kus, policies)
+
+        _, visited = _stream_until(graph, state, "mode")
+
+        assert "seed" in visited
+        assert "hitl_s" in visited
+        assert "mode" in visited
+
 
 class TestConvergenceTermination:
     """수렴 시 Graph 종료 확인."""
 
     def test_converged_critique_ends_graph(self, skeleton, kus, policies):
-        """critique가 수렴 판정하면 route_after_critique → END.
-
-        _check_convergence 직접 검증 + 라우팅 함수 확인.
-        """
-        # 충분한 evidence가 있는 KU (evidence_rate, confidence 충족)
-        rich_kus = []
-        for i, ku in enumerate(kus):
-            enriched = dict(ku)
-            enriched["evidence_links"] = [f"EU-{i:04d}"]
-            enriched["confidence"] = 0.9
-            enriched["status"] = "active"
-            rich_kus.append(enriched)
-
-        # 수렴 critique 결과를 가진 state에서 라우팅 검증
+        """critique가 수렴 판정하면 route_after_critique → END."""
         converged_critique = {"convergence": {"converged": True}}
         state = _make_state(
             current_critique=converged_critique,
             current_cycle=5,
-            knowledge_units=rich_kus,
         )
-        # route_after_critique가 END 반환
         assert route_after_critique(state) == "__end__"
 
-        # 수렴 안 된 상태에서는 plan_modify
         not_converged = {"convergence": {"converged": False}}
         state2 = _make_state(
             current_critique=not_converged,
@@ -398,39 +375,11 @@ class TestConvergenceTermination:
         )
         assert route_after_critique(state2) == "plan_modify"
 
-    def test_convergence_overrides_gate_d_at_cycle_10(self):
-        """수렴이 Gate D(10-cycle audit)보다 우선."""
+    def test_convergence_overrides_cycle_10(self):
+        """수렴이 최우선 — Silver 에서는 10-cycle audit 분기 자체가 없음."""
         converged = {"convergence": {"converged": True}}
         state = _make_state(current_critique=converged, current_cycle=10)
         assert route_after_critique(state) == "__end__"
-
-
-class TestHITLGateIntegration:
-    """HITL Gate 통합 — 자동 승인 흐름."""
-
-    def test_gate_a_auto_approve(self, skeleton, kus, policies):
-        """Gate A(Plan 승인) — response=None → 자동 승인 → collect 진행."""
-        graph = build_graph(hitl_response=None)
-        state = _make_bench_state(skeleton, kus, policies)
-
-        result, visited = _stream_until(graph, state, "collect")
-
-        # hitl_a를 통과해서 collect까지 실행됨
-        assert "hitl_a" in visited
-        assert "collect" in visited
-        assert result["current_plan"] is not None
-        # hitl_pending은 처리 후 None
-        assert result.get("hitl_pending") is None
-
-    def test_explicit_approve_response(self, skeleton, kus, policies):
-        """명시적 approve 응답 주입."""
-        graph = build_graph(hitl_response={"action": "approve"})
-        state = _make_bench_state(skeleton, kus, policies)
-
-        result, visited = _stream_until(graph, state, "collect")
-
-        assert "hitl_a" in visited
-        assert result["current_plan"] is not None
 
 
 # ===========================================================================

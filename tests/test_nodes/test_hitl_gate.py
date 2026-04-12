@@ -1,120 +1,115 @@
-"""test_hitl_gate — hitl_gate_node 단위 테스트."""
+"""test_hitl_gate — Silver hitl_gate_node 단위 테스트.
+
+P0-C5 반영: HITL-A/B/C/D 제거, HITL-S/R/E 유효.
+Deprecated gate 호출 시 DeprecationWarning + auto-approve.
+"""
 
 from __future__ import annotations
 
+import warnings
+
 import pytest
 
-from src.nodes.hitl_gate import check_gate_conditions, hitl_gate_node
+from src.nodes.hitl_gate import hitl_gate_node
 
 
-class TestHitlGateNode:
-    def test_auto_approve(self) -> None:
-        state = {"hitl_pending": {"gate": "A"}, "current_plan": {"target_gaps": []}}
-        result = hitl_gate_node(state)
-        assert result["hitl_pending"] is None
-
-    def test_explicit_approve(self) -> None:
-        state = {"hitl_pending": {"gate": "A"}, "current_plan": {}}
-        result = hitl_gate_node(state, response={"action": "approve"})
-        assert result["hitl_pending"] is None
-
-    def test_reject(self) -> None:
-        state = {"hitl_pending": {"gate": "A"}, "current_plan": {}}
-        result = hitl_gate_node(state, response={"action": "reject", "reason": "Bad plan"})
-        assert result["hitl_pending"]["result"] == "rejected"
-        assert result["hitl_pending"]["reason"] == "Bad plan"
-
-    def test_modify_plan(self) -> None:
-        state = {"hitl_pending": {"gate": "A"}, "current_plan": {"target_gaps": ["GU-0001"]}}
-        modified = {"target_gaps": ["GU-0002"]}
-        result = hitl_gate_node(state, response={"action": "modify", "modified_plan": modified})
-        assert result["hitl_pending"] is None
-        assert result["current_plan"]["target_gaps"] == ["GU-0002"]
+class TestHitlGateNodeSilver:
+    """Silver HITL-S / HITL-R / HITL-E 단위 테스트."""
 
     def test_no_gate_pending(self) -> None:
         state = {"hitl_pending": None}
         result = hitl_gate_node(state)
         assert result["hitl_pending"] is None
 
-    def test_gate_b_high_risk(self) -> None:
+    # -- Gate S (Seed 승인) --
+
+    def test_gate_s_auto_approve(self) -> None:
         state = {
-            "hitl_pending": {"gate": "B"},
-            "current_claims": [
-                {"risk_flag": True, "claim_id": "CL-001"},
-                {"risk_flag": False, "claim_id": "CL-002"},
-            ],
+            "hitl_pending": {"gate": "S"},
+            "domain_skeleton": {"domain": "japan-travel"},
+            "knowledge_units": [],
+            "gap_map": [{"gu_id": "GU-0001"}],
+            "current_cycle": 1,
+        }
+        result = hitl_gate_node(state)
+        assert result["hitl_pending"] is None
+
+    def test_gate_s_explicit_approve(self) -> None:
+        state = {
+            "hitl_pending": {"gate": "S"},
+            "domain_skeleton": {"domain": "japan-travel"},
         }
         result = hitl_gate_node(state, response={"action": "approve"})
         assert result["hitl_pending"] is None
 
-    def test_gate_c_conflict_modify(self) -> None:
+    def test_gate_s_reject(self) -> None:
         state = {
-            "hitl_pending": {"gate": "C"},
-            "knowledge_units": [
-                {"ku_id": "KU-001", "status": "disputed"},
-                {"ku_id": "KU-002", "status": "active"},
-            ],
+            "hitl_pending": {"gate": "S"},
+            "domain_skeleton": {"domain": "japan-travel"},
         }
-        result = hitl_gate_node(state, response={
-            "action": "modify",
-            "resolutions": [{"ku_id": "KU-001", "new_status": "active"}],
-        })
+        result = hitl_gate_node(
+            state, response={"action": "reject", "reason": "Skeleton incomplete"},
+        )
+        assert result["hitl_pending"]["result"] == "rejected"
+        assert result["hitl_pending"]["reason"] == "Skeleton incomplete"
+
+    def test_gate_s_modify_skeleton(self) -> None:
+        state = {
+            "hitl_pending": {"gate": "S"},
+            "domain_skeleton": {"domain": "japan-travel", "version": 1},
+        }
+        modified = {"domain": "japan-travel", "version": 2, "categories": []}
+        result = hitl_gate_node(
+            state, response={"action": "modify", "modified_skeleton": modified},
+        )
         assert result["hitl_pending"] is None
-        resolved_ku = next(ku for ku in result["knowledge_units"] if ku["ku_id"] == "KU-001")
-        assert resolved_ku["status"] == "active"
+        assert result["domain_skeleton"]["version"] == 2
 
+    # -- Gate R (Remodel stub, P2) --
 
-class TestCheckGateConditions:
-    def test_gate_b_high_risk_claims(self) -> None:
+    def test_gate_r_auto_approve_stub(self) -> None:
+        state = {"hitl_pending": {"gate": "R"}}
+        result = hitl_gate_node(state)
+        assert result["hitl_pending"] is None
+
+    # -- Gate E (Exception auto-pause) --
+
+    def test_gate_e_auto_approve(self) -> None:
         state = {
-            "current_cycle": 1,
-            "current_claims": [{"risk_flag": True}],
-            "knowledge_units": [],
-            "jump_history": [],
+            "hitl_pending": {"gate": "E"},
+            "metrics": {"rates": {
+                "conflict_rate": 0.30,  # > 0.25
+                "evidence_rate": 0.80,
+                "avg_confidence": 0.8,
+                "staleness_ratio": 0.1,
+            }},
+            "collect_failure_rate": 0.0,
         }
-        result = check_gate_conditions(state)
-        assert result is not None
-        assert result["gate"] == "B"
+        result = hitl_gate_node(state)
+        assert result["hitl_pending"] is None
 
-    def test_gate_c_disputed(self) -> None:
+    def test_gate_e_reject(self) -> None:
         state = {
-            "current_cycle": 1,
-            "current_claims": [],
-            "knowledge_units": [{"status": "disputed"}],
-            "jump_history": [],
+            "hitl_pending": {"gate": "E"},
+            "metrics": {"rates": {"conflict_rate": 0.30}},
+            "collect_failure_rate": 0.0,
         }
-        result = check_gate_conditions(state)
-        assert result is not None
-        assert result["gate"] == "C"
+        result = hitl_gate_node(
+            state, response={"action": "reject", "reason": "Halt"},
+        )
+        assert result["hitl_pending"]["result"] == "rejected"
 
-    def test_gate_d_every_10_cycles(self) -> None:
-        state = {
-            "current_cycle": 10,
-            "current_claims": [],
-            "knowledge_units": [],
-            "jump_history": [],
-        }
-        result = check_gate_conditions(state)
-        assert result is not None
-        assert result["gate"] == "D"
 
-    def test_gate_e_consecutive_jumps(self) -> None:
-        state = {
-            "current_cycle": 3,
-            "current_claims": [],
-            "knowledge_units": [],
-            "jump_history": [2, 3],
-        }
-        result = check_gate_conditions(state)
-        assert result is not None
-        assert result["gate"] == "E"
+class TestDeprecatedGates:
+    """Bronze HITL-A/B/C/D: deprecated — warning + auto-approve."""
 
-    def test_no_gate_needed(self) -> None:
-        state = {
-            "current_cycle": 1,
-            "current_claims": [],
-            "knowledge_units": [{"status": "active"}],
-            "jump_history": [],
-        }
-        result = check_gate_conditions(state)
-        assert result is None
+    @pytest.mark.parametrize("gate", ["A", "B", "C", "D"])
+    def test_deprecated_gate_auto_approves(self, gate: str) -> None:
+        state = {"hitl_pending": {"gate": gate}}
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always")
+            result = hitl_gate_node(state)
+        assert result["hitl_pending"] is None
+        assert any(
+            issubclass(w.category, DeprecationWarning) for w in caught
+        ), f"Gate {gate} should emit DeprecationWarning"

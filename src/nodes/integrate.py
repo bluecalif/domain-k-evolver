@@ -261,6 +261,7 @@ def integrate_node(
     skeleton = state.get("domain_skeleton", {})
     mode_decision = state.get("current_mode", {})
     mode = mode_decision.get("mode", "normal")
+    dispute_queue = list(state.get("dispute_queue", []))
 
     open_count = sum(1 for gu in gap_map if gu.get("status") == "open")
     dynamic_cap = _compute_dynamic_gu_cap(mode, open_count)
@@ -359,6 +360,16 @@ def integrate_node(
 
                     updates.append(existing_ku)
                     claim["integration_result"] = "conflict_hold"
+
+                    # Silver HITL-D: dispute_queue 에 비블로킹 append
+                    dispute_queue.append({
+                        "ku_id": existing_ku.get("ku_id", ""),
+                        "claim_id": claim.get("claim_id", ""),
+                        "field": field,
+                        "existing_value": str(existing_ku.get("value", ""))[:100],
+                        "new_value": str(value)[:100],
+                        "cycle": state.get("current_cycle", 0),
+                    })
 
                 elif conflict == "condition_split":
                     # 조건 분리: 새 KU 생성
@@ -480,4 +491,5 @@ def integrate_node(
         "knowledge_units": kus,
         "gap_map": gap_map,
         "current_claims": claims,
+        "dispute_queue": dispute_queue,
     }

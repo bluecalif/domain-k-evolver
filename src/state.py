@@ -214,3 +214,6 @@ class EvolverState(TypedDict, total=False):
 
     # HITL
     hitl_pending: dict | None
+
+    # Silver: dispute batch queue (HITL-D 비블로킹, P0-C7)
+    dispute_queue: list[dict]
