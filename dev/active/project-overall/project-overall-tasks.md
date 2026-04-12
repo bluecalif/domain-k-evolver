@@ -1,6 +1,6 @@
 # Project Overall Tasks
 > Last Updated: 2026-04-12
-> Status: Bronze 세대 완료 (85/85) · Silver P0 완료 (32/119)
+> Status: Bronze 세대 완료 (85/85) · Silver P0 완료 (32) · P1 완료 (12) · P3 완료 (22) = 66/119
 
 ## Summary
 
@@ -18,21 +18,21 @@
 | Phase 5 (Inner Loop Quality) | 23 | 23/23 ✅ | **468 tests, Gate #5 PASS** | `b122a23` |
 | **Bronze 합계** | **85** | **85/85** | — | — |
 
-### Silver 세대 (P0~P6 + X) — P0 완료, P1 대기
+### Silver 세대 (P0~P6 + X) — P0/P1/P3 완료, P2 Planning
 
 | Phase | Total | S | M | L | Done | Gate |
 |-------|-------|---|---|---|------|------|
 | P0 Foundation Hardening | 32 | 18 | 13 | 1 | **32/32** ✅ | PASS (VP1 5/5, VP2 5/6, VP3 5/6) |
-| P1 Entity Resolution | 12 | 5 | 7 | 0 | 0/12 | Planning |
-| P2 Outer-Loop Remodel | 14 | 5 | 8 | 1 | 0/14 | 대기 |
-| P3 Acquisition Expansion | 22 | 7 | 13 | 2 | 0/22 | 대기 |
+| P1 Entity Resolution | 12 | 5 | 7 | 0 | **12/12** ✅ | PASS (544 tests, S4/S5/S6) |
+| P2 Outer-Loop Remodel | 14 | 5 | 8 | 1 | 0/14 | **Planning** |
+| P3 Acquisition Expansion | 22 | 7 | 13 | 2 | **22/22** ✅ | PASS (599 tests, S8/S9) |
 | P4 Coverage Intelligence | 11 | 5 | 6 | 0 | 0/11 | 대기 |
 | P5 Telemetry & Dashboard | 14 | 3 | 10 | 1 | 0/14 | 대기 |
 | P6 Multi-Domain | 7 | 2 | 3 | 2 | 0/7 | 대기 |
 | X Cross-phase | 7 | 7 | 0 | 0 | 0/7 | — |
 | **Silver 합계** | **119** | — | — | — | **32/119** | — |
 
-**총계: Bronze 85 (완료) + Silver 119 (32 완료) = 204 tasks · 목표 테스트 수 ≥ 588 · 현재 510**
+**총계: Bronze 85 (완료) + Silver 119 (66 완료) = 204 tasks · 목표 테스트 수 ≥ 588 · 현재 608**
 
 참조 문서:
 - 단일 진실 소스: `docs/silver-masterplan-v2.md` §4 Phase 표
