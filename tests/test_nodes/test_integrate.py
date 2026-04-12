@@ -1203,3 +1203,87 @@ class TestStageE2:
         # N=1 (after append), weighted: (0.8*1 + 0.7)/2 = 0.75
         # 1 evidence → no boost
         assert ku["confidence"] == 0.75
+
+
+class TestProvenancePassthrough:
+    """P0-X3: provenance 필드 예약 — claim → KU 전달 검증."""
+
+    def test_provenance_added_to_new_ku(self) -> None:
+        """provenance 가 있는 claim → 신규 KU 에 provenance 전달."""
+        state = {
+            "knowledge_units": [],
+            "gap_map": [],
+            "current_claims": [
+                {
+                    "claim_id": "CL-TEST",
+                    "entity_key": "domain:cat:ent",
+                    "field": "price",
+                    "value": "1000",
+                    "source_gu_id": "",
+                    "evidence": {"eu_id": "EU-001", "credibility": 0.8},
+                    "provenance": {"provider": "tavily", "fetch_method": "search"},
+                },
+            ],
+            "domain_skeleton": {"categories": [], "fields": []},
+            "current_mode": {"mode": "normal"},
+        }
+        result = integrate_node(state)
+        new_ku = result["knowledge_units"][0]
+        assert new_ku["provenance"] == {"provider": "tavily", "fetch_method": "search"}
+
+    def test_provenance_none_omitted_from_ku(self) -> None:
+        """provenance=None 인 claim → KU 에 provenance 키 없음 (sparse)."""
+        state = {
+            "knowledge_units": [],
+            "gap_map": [],
+            "current_claims": [
+                {
+                    "claim_id": "CL-TEST",
+                    "entity_key": "domain:cat:ent",
+                    "field": "price",
+                    "value": "1000",
+                    "source_gu_id": "",
+                    "evidence": {"eu_id": "EU-001", "credibility": 0.8},
+                    "provenance": None,
+                },
+            ],
+            "domain_skeleton": {"categories": [], "fields": []},
+            "current_mode": {"mode": "normal"},
+        }
+        result = integrate_node(state)
+        new_ku = result["knowledge_units"][0]
+        assert "provenance" not in new_ku
+
+    def test_provenance_condition_split(self) -> None:
+        """condition_split 시에도 provenance 전달."""
+        state = {
+            "knowledge_units": [
+                {
+                    "ku_id": "KU-0001",
+                    "entity_key": "domain:cat:ent",
+                    "field": "price",
+                    "value": "500",
+                    "status": "active",
+                    "evidence_links": ["EU-000"],
+                    "confidence": 0.8,
+                },
+            ],
+            "gap_map": [],
+            "current_claims": [
+                {
+                    "claim_id": "CL-TEST",
+                    "entity_key": "domain:cat:ent",
+                    "field": "price",
+                    "value": "800",
+                    "source_gu_id": "",
+                    "evidence": {"eu_id": "EU-002", "credibility": 0.7},
+                    "conditions": {"season": "summer"},
+                    "provenance": {"provider": "ddg", "fetch_method": "scrape"},
+                },
+            ],
+            "domain_skeleton": {"categories": [], "fields": []},
+            "current_mode": {"mode": "normal"},
+        }
+        result = integrate_node(state)
+        split_ku = [ku for ku in result["knowledge_units"] if ku.get("ku_id") == "KU-0002"][0]
+        assert split_ku["provenance"] == {"provider": "ddg", "fetch_method": "scrape"}

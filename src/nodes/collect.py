@@ -57,6 +57,7 @@ def _parse_claims_deterministic(
                 "credibility": 0.7,
             },
             "risk_flag": gu.get("risk_level", "") in HIGH_RISK_LEVELS,
+            "provenance": None,
         }
         claims.append(claim)
 

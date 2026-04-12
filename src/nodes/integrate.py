@@ -390,6 +390,8 @@ def integrate_node(
                         new_ku["axis_tags"] = axis_tags
                     if evidence.get("source_type"):
                         new_ku["source_type"] = evidence["source_type"]
+                    if claim.get("provenance"):
+                        new_ku["provenance"] = claim["provenance"]
                     kus.append(new_ku)
                     adds.append(new_ku)
                     claim["integration_result"] = "condition_split"
@@ -447,6 +449,8 @@ def integrate_node(
                 new_ku["axis_tags"] = axis_tags
             if evidence.get("source_type"):
                 new_ku["source_type"] = evidence["source_type"]
+            if claim.get("provenance"):
+                new_ku["provenance"] = claim["provenance"]
             kus.append(new_ku)
             adds.append(new_ku)
             claim["integration_result"] = "added"

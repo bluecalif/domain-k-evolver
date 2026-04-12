@@ -313,3 +313,12 @@ class TestCollectDuplicateGU:
         # 중복 처리는 구현상 허용 (같은 GU 2번 수집) — 단지 예외 없음만 확인
         assert "current_claims" in result
         assert isinstance(result["current_claims"], list)
+
+    def test_claim_has_provenance_field(self) -> None:
+        """P0-X3: 결정론적 fallback 에서 생성된 claim 에 provenance 필드 존재 (None)."""
+        tool = MockSearchTool()
+        state = _gu_state(["GU-0001"])
+        result = collect_node(state, search_tool=tool)
+        for claim in result["current_claims"]:
+            assert "provenance" in claim
+            assert claim["provenance"] is None

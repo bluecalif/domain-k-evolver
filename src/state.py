@@ -28,6 +28,7 @@ class KnowledgeUnit(TypedDict, total=False):
     dispute: dict
     supersedes: str
     axis_tags: dict  # {"geography": str, ...}
+    provenance: dict | None  # P3 에서 채움: {"provider": str, "fetch_method": str, ...}
 
 
 class GapUnit(TypedDict, total=False):
