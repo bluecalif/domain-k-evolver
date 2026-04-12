@@ -1,6 +1,6 @@
 # Silver P0: Foundation Hardening — Tasks
 > Last Updated: 2026-04-12
-> Status: In Progress (23/32, 72%)
+> Status: In Progress (24/32, 75%)
 
 ## Summary
 
@@ -9,9 +9,9 @@
 | A. 벤치 스캐폴딩 | 6 | 6/6 | ✅ 완료 |
 | B. Remediation | 9 | 9/9 | ✅ 완료 |
 | C. HITL 축소 | 8 | 8/8 | ✅ 완료 |
-| X. 인터페이스 고정 | 6 | 0/6 | 대기 |
+| X. 인터페이스 고정 | 6 | 1/6 | X1 완료 |
 | D. Baseline trial | 3 | 0/3 | 대기 |
-| **합계** | **32** | **23/32** | 72% |
+| **합계** | **32** | **24/32** | 75% |
 
 테스트: 468 (baseline) → **500 passed** (목표 ≥ 488 ✅)
 
@@ -66,7 +66,7 @@
 
 ## Stage X: 인터페이스 고정
 
-- [ ] **P0-X1** `integrate_node` I/O dict shape 동결 → `docs/silver-interface-snapshots/integrate-p0.md` 기록 `[S]`
+- [x] **P0-X1** `integrate_node` I/O dict shape 동결 → `docs/silver-interface-snapshots/integrate-p0.md` 기록 `[S]` — (커밋 대기)
 - [ ] **P0-X2** `collect_node` I/O dict shape 동결 → `docs/silver-interface-snapshots/collect-p0.md` 기록 `[S]`
 - [ ] **P0-X3** `Claim`/`EU` provenance 필드 예약 (optional, None 기본값) — P3 에서 채움 `[S]`
 - [ ] **P0-X4** `EvolverState` 5개 신규 필드 일괄 선언 (`dispute_queue`, `conflict_ledger`, `phase_history`, `coverage_map`, `novelty_history`) — 기본값 빈 컨테이너 `[S]`
