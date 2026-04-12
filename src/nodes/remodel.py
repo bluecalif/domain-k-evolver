@@ -242,6 +242,7 @@ def _propose_from_audit_findings(
                 "params": {
                     "action": "extend_ttl",
                     "finding_id": fid,
+                    "ttl_multiplier": 1.5,
                 },
                 "expected_delta": {
                     "metric": "yield_rate",

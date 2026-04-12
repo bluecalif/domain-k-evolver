@@ -394,8 +394,61 @@ class Orchestrator:
                             )
                     applied_count += 1
 
-            elif p_type in ("alias_canonicalize", "source_policy", "gap_rule"):
-                # 기록 전용 — phase_history 에 남김
+            elif p_type == "source_policy":
+                action = params.get("action")
+                if action == "extend_ttl":
+                    multiplier = params.get("ttl_multiplier", 1.5)
+                    policies = dict(state.get("policies", {}))
+                    ttl_defaults = dict(policies.get("ttl_defaults", {}))
+                    for key in ttl_defaults:
+                        ttl_defaults[key] = min(
+                            int(ttl_defaults[key] * multiplier), 365,
+                        )
+                    policies["ttl_defaults"] = ttl_defaults
+                    state["policies"] = policies
+                applied_count += 1
+
+            elif p_type == "gap_rule":
+                action = params.get("action")
+                if action == "prioritize_category":
+                    target_cat = params.get("category", "")
+                    if target_cat:
+                        gap_map = list(state.get("gap_map", []))
+                        skel_fields = [
+                            f["name"]
+                            for f in skeleton.get("fields", [])
+                        ]
+                        max_id = max(
+                            (
+                                int(gu["gu_id"].split("-")[1])
+                                for gu in gap_map
+                                if gu.get("gu_id")
+                            ),
+                            default=0,
+                        )
+                        domain = skeleton.get("domain", "")
+                        for field in skel_fields[:3]:
+                            max_id += 1
+                            gap_map.append({
+                                "gu_id": f"GU-{max_id:04d}",
+                                "gap_type": "missing",
+                                "target": {
+                                    "entity_key": f"{domain}:{target_cat}:*",
+                                    "field": field,
+                                },
+                                "expected_utility": "critical",
+                                "risk_level": "convenience",
+                                "status": "open",
+                                "trigger": "remodel_gap_rule",
+                                "trigger_source": proposal.get(
+                                    "rationale", "",
+                                ),
+                            })
+                        state["gap_map"] = gap_map
+                applied_count += 1
+
+            elif p_type == "alias_canonicalize":
+                # 의도적 defer — entity_resolver가 ingestion 시 처리
                 applied_count += 1
 
         state["knowledge_units"] = kus
