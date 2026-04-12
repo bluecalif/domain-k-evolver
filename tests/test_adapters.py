@@ -174,3 +174,87 @@ class TestTavilySearchAdapterCounter:
         assert content == "page content"
         assert adapter.fetch_calls == 1
         assert adapter.total_calls == 1
+
+
+# ============================================================
+# P0-B9: search_adapter 추가 — 504/503 retry, timeout 전달
+# ============================================================
+
+class TestRetryOn5xx:
+    """P0-B9: 5xx 에러도 retry 대상 (정규표현식 5\\d\\d)."""
+
+    @patch("src.adapters.search_adapter.time.sleep")
+    def test_retry_on_504(self, mock_sleep):
+        func = MagicMock(side_effect=[
+            Exception("504 Gateway Timeout"),
+            "ok",
+        ])
+        result = _retry_with_backoff(func, max_retries=3)
+        assert result == "ok"
+        assert func.call_count == 2
+
+    @patch("src.adapters.search_adapter.time.sleep")
+    def test_retry_on_503(self, mock_sleep):
+        func = MagicMock(side_effect=[
+            Exception("503 Service Unavailable"),
+            Exception("503 still unavailable"),
+            "recovered",
+        ])
+        result = _retry_with_backoff(func, max_retries=3)
+        assert result == "recovered"
+        assert func.call_count == 3
+        assert mock_sleep.call_count == 2
+
+    @patch("src.adapters.search_adapter.time.sleep")
+    def test_retry_on_500(self, mock_sleep):
+        func = MagicMock(side_effect=[
+            Exception("500 Internal Server Error"),
+            "ok",
+        ])
+        result = _retry_with_backoff(func, max_retries=3)
+        assert result == "ok"
+
+    @patch("src.adapters.search_adapter.time.sleep")
+    def test_5xx_exhausts_retries(self, mock_sleep):
+        func = MagicMock(side_effect=Exception("504 Gateway Timeout"))
+        with pytest.raises(Exception, match="504"):
+            _retry_with_backoff(func, max_retries=2)
+        assert func.call_count == 3  # initial + 2 retries
+
+
+class TestTavilyTimeoutPropagation:
+    """P0-B4: Tavily search/extract 호출 시 timeout 명시 전달."""
+
+    def test_search_passes_timeout_to_client(self):
+        from src.adapters.search_adapter import TavilySearchAdapter
+
+        adapter = TavilySearchAdapter.__new__(TavilySearchAdapter)
+        adapter.search_calls = 0
+        adapter.fetch_calls = 0
+        adapter._max_results = 5
+        adapter._timeout = 15  # 커스텀 timeout
+
+        mock_client = MagicMock()
+        mock_client.search.return_value = {"results": []}
+        adapter._client = mock_client
+
+        adapter.search("q")
+        call_kwargs = mock_client.search.call_args.kwargs
+        assert call_kwargs.get("timeout") == 15
+
+    def test_fetch_passes_timeout_to_client(self):
+        from src.adapters.search_adapter import TavilySearchAdapter
+
+        adapter = TavilySearchAdapter.__new__(TavilySearchAdapter)
+        adapter.search_calls = 0
+        adapter.fetch_calls = 0
+        adapter._max_results = 5
+        adapter._timeout = 20
+
+        mock_client = MagicMock()
+        mock_client.extract.return_value = {"results": [{"raw_content": "c"}]}
+        adapter._client = mock_client
+
+        adapter.fetch("http://x.example")
+        call_kwargs = mock_client.extract.call_args.kwargs
+        assert call_kwargs.get("timeout") == 20

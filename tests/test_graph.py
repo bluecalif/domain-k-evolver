@@ -193,6 +193,30 @@ class TestRouteAfterMode:
         )
         assert route_after_mode(state) == "hitl_e"
 
+    def test_staleness_ratio_violation_routes_to_hitl_e(self):
+        state = _make_state(
+            metrics={"rates": {
+                "evidence_rate": 0.8,
+                "conflict_rate": 0.1,
+                "staleness_ratio": 0.40,  # > 0.30
+                "avg_confidence": 0.8,
+            }},
+            collect_failure_rate=0.0,
+        )
+        assert route_after_mode(state) == "hitl_e"
+
+    def test_avg_confidence_violation_routes_to_hitl_e(self):
+        state = _make_state(
+            metrics={"rates": {
+                "evidence_rate": 0.8,
+                "conflict_rate": 0.1,
+                "staleness_ratio": 0.1,
+                "avg_confidence": 0.50,  # < 0.60
+            }},
+            collect_failure_rate=0.0,
+        )
+        assert route_after_mode(state) == "hitl_e"
+
 
 class TestRouteAfterCritique:
     """critique_node 이후 라우팅 — Silver 단순화 (hitl_d 제거)."""
@@ -354,6 +378,35 @@ class TestSingleCycleRun:
         assert "seed" in visited
         assert "hitl_s" in visited
         assert "mode" in visited
+
+    def test_bronze_hitl_not_visited_in_single_cycle(self, skeleton, kus, policies):
+        """P0-C8: 일반 cycle 에서 HITL-A/B/C/D 가 호출되지 않는다."""
+        graph = build_graph(hitl_response={"action": "approve"})
+        state = _make_bench_state(skeleton, kus, policies)
+
+        _, visited = _stream_until(graph, state, "critique")
+
+        for removed in ("hitl_a", "hitl_b", "hitl_c", "hitl_d"):
+            assert removed not in visited, (
+                f"Bronze gate {removed} unexpectedly visited in Silver flow"
+            )
+
+    def test_subsequent_cycle_skips_hitl_s(self, skeleton, kus, policies):
+        """P0-C8: current_cycle >= 2 인 subsequent cycle 에서는 hitl_s 미통과."""
+        graph = build_graph(hitl_response={"action": "approve"})
+        # 사전에 seed 가 끝난 것처럼 cycle=2 로 시작
+        state = _make_bench_state(
+            skeleton, kus, policies,
+            current_cycle=2,
+            gap_map=[
+                {"gu_id": "GU-0001", "status": "open",
+                 "target": {"entity_key": "japan-travel:transport:x", "field": "price"},
+                 "expected_utility": "high", "risk_level": "financial"},
+            ],
+        )
+
+        _, visited = _stream_until(graph, state, "mode")
+        assert "hitl_s" not in visited
 
 
 class TestConvergenceTermination:
