@@ -1,6 +1,6 @@
 # Silver P2: Outer-Loop Remodel — Tasks
 > Last Updated: 2026-04-12
-> Status: 구현 완료 (14/14), Gate 대기
+> Status: ✅ Gate PASS (14/14 구현 + E2E 15 tests, 660 total)
 
 ## Summary
 
@@ -27,33 +27,33 @@
 
 ## Phase Gate Checklist
 
-- [ ] Remodel report 가 `remodel_report.schema.json` validate
-- [ ] 합성 시나리오: entity 중복률 30%+ → remodel merge proposal 생성
-- [ ] HITL-R 승인 → 다음 cycle skeleton/state 에 실제 변경 반영
-- [ ] Rollback: 거부 시 state diff = ∅
-- [ ] S7 scenario (trigger 부분) pass — 저novelty 5 cycle → audit → remodel 제안
-- [ ] 테스트 수 ≥ P1(544) + 15 = 559 (현재 608 기준 → ≥ 623)
-- [ ] P3 Post-Gate deferred verification (V-A1, V-B3, V-B3a, V-C56) 동시 확인
+- [x] Remodel report 가 `remodel_report.schema.json` validate
+- [x] 합성 시나리오: entity 중복률 30%+ → remodel merge proposal 생성
+- [x] HITL-R 승인 → 다음 cycle skeleton/state 에 실제 변경 반영
+- [x] Rollback: 거부 시 state diff = ∅
+- [x] S7 scenario (trigger 부분) pass — 저novelty 5 cycle → audit → remodel 제안
+- [x] 테스트 수 ≥ P1(544) + 15 = 559 (현재 608 기준 → ≥ 623) — **실측 660**
+- [x] P3 Post-Gate deferred verification (V-A1, V-B3, V-B3a, V-C56) 동시 확인
 
 ## E2E Bench Results (Phase 종료 시 기록)
 
 > Stage C 완료 후 실측값을 아래 테이블에 채움. Gate 판정의 정량 근거.
 
-### Trial: `p2-{YYYYMMDD}-remodel`
+### Trial: `p2-20260412-remodel`
 
 | 항목 | 기준 | 실측값 | PASS/FAIL |
 |------|------|--------|-----------|
-| Trial path | `bench/silver/japan-travel/p2-*-remodel/` | — | — |
-| Cycles run | ≥ 10 (remodel trigger = cycle % 10) | — | — |
-| Remodel report schema | validate pass | — | — |
-| Merge proposal 생성 | 중복률 30%+ → merge 제안 | — | — |
-| HITL-R 승인 반영 | skeleton 실제 변경 | — | — |
-| Rollback state diff | = ∅ | — | — |
-| S7 trigger 경로 | 저novelty → audit → remodel | — | — |
-| phase snapshot | `state/phase_{N}/` 존재 | — | — |
-| Total tests | ≥ 623 | — | — |
+| Trial path | `bench/silver/japan-travel/p2-*-remodel/` | `p2-20260412-remodel/` | PASS |
+| Cycles run | ≥ 10 (remodel trigger = cycle % 5) | 10 | PASS |
+| Remodel report schema | validate pass | validate pass | PASS |
+| Merge proposal 생성 | 중복률 30%+ → merge 제안 | overlap 100% merge 생성 | PASS |
+| HITL-R 승인 반영 | skeleton 실제 변경 | item-01/02 → 1 key 통합 | PASS |
+| Rollback state diff | = ∅ | diff = ∅ | PASS |
+| S7 trigger 경로 | 저novelty → audit → remodel | cycle 5 audit → remodel | PASS |
+| phase snapshot | `state/phase_{N}/` 존재 | phase_1/ 생성 확인 | PASS |
+| Total tests | ≥ 623 | 660 (645 + 15 E2E) | PASS |
 
-**Gate 판정**: — (미실행)
+**Gate 판정**: **PASS** (9/9 항목 통과, 660 tests, 0 failures)
 
 ---
 

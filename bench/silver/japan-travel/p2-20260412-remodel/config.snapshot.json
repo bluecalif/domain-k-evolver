@@ -1,0 +1,33 @@
+{
+  "trial_id": "p2-20260412-remodel",
+  "type": "synthetic_e2e",
+  "orchestrator": {
+    "max_cycles": 10,
+    "audit_interval": 5,
+    "plateau_window": 100,
+    "stop_on_convergence": false
+  },
+  "seed": {
+    "type": "synthetic",
+    "knowledge_units": 4,
+    "entity_keys": [
+      "japan-travel:transport:item-01",
+      "japan-travel:transport:item-02"
+    ],
+    "overlap_ratio": 1.0,
+    "description": "동일 category 내 entity 2개, 동일 (field, value) → 중복률 100%"
+  },
+  "inner_loop": "mocked (_run_single_cycle → CycleResult(state=state))",
+  "outer_loop": "real (audit → remodel → HITL-R → apply)",
+  "hitl_response": {
+    "approve_test": {"action": "approve", "actor": "test"},
+    "reject_test": {"action": "reject", "reason": "test rejection"}
+  },
+  "test_file": "tests/test_p2_gate_e2e.py",
+  "test_count": 15,
+  "total_tests": 660,
+  "results": {
+    "all_pass": true,
+    "gate_items": "8/8 PASS"
+  }
+}

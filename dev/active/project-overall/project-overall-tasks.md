@@ -18,19 +18,19 @@
 | Phase 5 (Inner Loop Quality) | 23 | 23/23 ✅ | **468 tests, Gate #5 PASS** | `b122a23` |
 | **Bronze 합계** | **85** | **85/85** | — | — |
 
-### Silver 세대 (P0~P6 + X) — P0/P1/P3 완료, P2 Planning
+### Silver 세대 (P0~P6 + X) — P0/P1/P2/P3 완료, P4 대기
 
 | Phase | Total | S | M | L | Done | Gate |
 |-------|-------|---|---|---|------|------|
 | P0 Foundation Hardening | 32 | 18 | 13 | 1 | **32/32** ✅ | PASS (VP1 5/5, VP2 5/6, VP3 5/6) |
 | P1 Entity Resolution | 12 | 5 | 7 | 0 | **12/12** ✅ | PASS (544 tests, S4/S5/S6) |
-| P2 Outer-Loop Remodel | 14 | 5 | 8 | 1 | 0/14 | **Planning** |
+| P2 Outer-Loop Remodel | 14 | 5 | 8 | 1 | **14/14** ✅ | PASS (660 tests, E2E 15) |
 | P3 Acquisition Expansion | 22 | 7 | 13 | 2 | **22/22** ✅ | PASS (599 tests, S8/S9) |
 | P4 Coverage Intelligence | 11 | 5 | 6 | 0 | 0/11 | 대기 |
 | P5 Telemetry & Dashboard | 14 | 3 | 10 | 1 | 0/14 | 대기 |
 | P6 Multi-Domain | 7 | 2 | 3 | 2 | 0/7 | 대기 |
 | X Cross-phase | 7 | 7 | 0 | 0 | 0/7 | — |
-| **Silver 합계** | **119** | — | — | — | **32/119** | — |
+| **Silver 합계** | **119** | — | — | — | **80/119** | — |
 
 **총계: Bronze 85 (완료) + Silver 119 (66 완료) = 204 tasks · 목표 테스트 수 ≥ 588 · 현재 608**
 
@@ -302,24 +302,24 @@
 > **Gate**: remodel report schema validate, rollback state diff=∅, 30% 중복 합성 시나리오 탐지, S7 trigger pass
 
 ### P2-A. Remodel node + schema
-- [ ] **P2-A1** `src/nodes/remodel.py` 신규 `[L]`
-- [ ] **P2-A2** `schemas/remodel_report.schema.json` 필드 정의 `[M]`
-- [ ] **P2-A3** `EvolverState.phase_number` + `phase_history` `[S]`
-- [ ] **P2-A4** `state/phase_{N}/` 스냅샷 로직 `[M]`
+- [x] **P2-A1** `src/nodes/remodel.py` 신규 `[L]` — `4cb89da`
+- [x] **P2-A2** `schemas/remodel_report.schema.json` 필드 정의 `[M]` — `4cb89da`
+- [x] **P2-A3** `EvolverState.phase_number` + `phase_history` `[S]` — `4cb89da`
+- [x] **P2-A4** `state/phase_{N}/` 스냅샷 로직 `[M]` — `4cb89da`
 
 ### P2-B. Graph/orchestrator 통합
-- [ ] **P2-B1** `graph.py` critique→audit→remodel→hitl_r→phase_bump 경로 `[M]`
-- [ ] **P2-B2** `hitl_gate.py` HITL-R 핸들러 완성 `[M]`
-- [ ] **P2-B3** `orchestrator.py` phase transition 핸들러 `[M]`
-- [ ] **P2-B4** Rejection/rollback path `[M]`
+- [x] **P2-B1** `graph.py` critique→audit→remodel→hitl_r→phase_bump 경로 `[M]` — `83f4f52`
+- [x] **P2-B2** `hitl_gate.py` HITL-R 핸들러 완성 `[M]` — `83f4f52`
+- [x] **P2-B3** `orchestrator.py` phase transition 핸들러 `[M]` — `83f4f52`
+- [x] **P2-B4** Rejection/rollback path `[M]` — `83f4f52`
 
 ### P2-C. 검증
-- [ ] **P2-C1** merge 시나리오 테스트 `[S]`
-- [ ] **P2-C2** split 시나리오 테스트 `[S]`
-- [ ] **P2-C3** reclassify 시나리오 테스트 `[S]`
-- [ ] **P2-C4** rollback 시나리오 테스트 `[S]`
-- [ ] **P2-C5** S7 trigger 경로 테스트 `[M]`
-- [ ] **P2-C6** schema 양방향 테스트 `[S]`
+- [x] **P2-C1** merge 시나리오 테스트 `[S]` — `b97e287`
+- [x] **P2-C2** split 시나리오 테스트 `[S]` — `b97e287`
+- [x] **P2-C3** reclassify 시나리오 테스트 `[S]` — `b97e287`
+- [x] **P2-C4** rollback 시나리오 테스트 `[S]` — `b97e287`
+- [x] **P2-C5** S7 trigger 경로 테스트 `[M]` — `b97e287`
+- [x] **P2-C6** schema 양방향 테스트 `[S]` — `b97e287`
 
 ---
 

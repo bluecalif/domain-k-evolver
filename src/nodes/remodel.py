@@ -238,7 +238,7 @@ def _propose_from_audit_findings(
             proposals.append({
                 "type": "source_policy",
                 "rationale": f"KU yield 체감 감지 ({fid}): {finding.get('description', '')}",
-                "target_entities": [],
+                "target_entities": ["*:*:*"],
                 "params": {
                     "action": "extend_ttl",
                     "finding_id": fid,
