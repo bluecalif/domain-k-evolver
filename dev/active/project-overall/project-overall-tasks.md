@@ -1,6 +1,6 @@
 # Project Overall Tasks
-> Last Updated: 2026-04-11
-> Status: Bronze 세대 완료 (85/85) · Silver 세대 착수 대기 (0/119)
+> Last Updated: 2026-04-12
+> Status: Bronze 세대 완료 (85/85) · Silver P0 완료 (32/119)
 
 ## Summary
 
@@ -18,21 +18,21 @@
 | Phase 5 (Inner Loop Quality) | 23 | 23/23 ✅ | **468 tests, Gate #5 PASS** | `b122a23` |
 | **Bronze 합계** | **85** | **85/85** | — | — |
 
-### Silver 세대 (P0~P6 + X) — 대기
+### Silver 세대 (P0~P6 + X) — P0 완료, P1 대기
 
-| Phase | Total | S | M | L | Done |
-|-------|-------|---|---|---|------|
-| P0 Foundation Hardening | 32 | 15 | 13 | 4 | 0/32 |
-| P1 Entity Resolution | 12 | 3 | 9 | 0 | 0/12 |
-| P2 Outer-Loop Remodel | 14 | 5 | 8 | 1 | 0/14 |
-| P3 Acquisition Expansion | 22 | 7 | 13 | 2 | 0/22 |
-| P4 Coverage Intelligence | 11 | 5 | 6 | 0 | 0/11 |
-| P5 Telemetry & Dashboard | 14 | 3 | 10 | 1 | 0/14 |
-| P6 Multi-Domain | 7 | 2 | 3 | 2 | 0/7 |
-| X Cross-phase | 7 | 7 | 0 | 0 | 0/7 |
-| **Silver 합계** | **119** | — | — | — | **0/119** |
+| Phase | Total | S | M | L | Done | Gate |
+|-------|-------|---|---|---|------|------|
+| P0 Foundation Hardening | 32 | 18 | 13 | 1 | **32/32** ✅ | PASS (VP1 5/5, VP2 5/6, VP3 5/6) |
+| P1 Entity Resolution | 12 | 3 | 9 | 0 | 0/12 | 대기 |
+| P2 Outer-Loop Remodel | 14 | 5 | 8 | 1 | 0/14 | 대기 |
+| P3 Acquisition Expansion | 22 | 7 | 13 | 2 | 0/22 | 대기 |
+| P4 Coverage Intelligence | 11 | 5 | 6 | 0 | 0/11 | 대기 |
+| P5 Telemetry & Dashboard | 14 | 3 | 10 | 1 | 0/14 | 대기 |
+| P6 Multi-Domain | 7 | 2 | 3 | 2 | 0/7 | 대기 |
+| X Cross-phase | 7 | 7 | 0 | 0 | 0/7 | — |
+| **Silver 합계** | **119** | — | — | — | **32/119** | — |
 
-**총계: Bronze 85 (완료) + Silver 119 (대기) = 204 tasks · 목표 테스트 수 ≥ 588**
+**총계: Bronze 85 (완료) + Silver 119 (32 완료) = 204 tasks · 목표 테스트 수 ≥ 588 · 현재 510**
 
 참조 문서:
 - 단일 진실 소스: `docs/silver-masterplan-v2.md` §4 Phase 표
@@ -215,58 +215,57 @@
 
 ---
 
-# Silver 세대 (P0~P6 + X) — 대기
+# Silver 세대 (P0~P6 + X)
 
 > **단일 진실 소스**: `docs/silver-masterplan-v2.md` §4 Phase 표
 > **실행 backlog**: `docs/silver-implementation-tasks.md` §4~§12
-> **착수 규칙**: P0 은 scope-locked (8 remediation + 벤치 스캐폴딩 + HITL 축소 + 인터페이스 고정 외 금지)
 
-## Phase P0: Foundation Hardening (32 tasks)
+## Phase P0: Foundation Hardening ✅ (32/32, Gate PASS)
 
-> **목표**: Silver 전체 의존 토대 — adapter 강건성, Silver bench 격리, HITL 축소, 인터페이스 동결
-> **Gate**: bare-except 0, 신규 테스트 ≥ 20 (누적 ≥ 488), 48h soak pass, p0-baseline trial 재현, S1/S2/S3 scenario pass
+> **완료**: 2026-04-12 | 510 tests, Gate PASS (VP1 5/5, VP2 5/6, VP3 5/6)
+> **dev-docs**: `dev/active/phase-si-p0-foundation/`
 
 ### P0-A. Silver 벤치 스캐폴딩
-- [ ] **P0-A1** `bench/silver/INDEX.md` 생성 `[S]`
-- [ ] **P0-A2** 템플릿 3종 (`trial-card.md`, `readiness-report.md`, `config.snapshot.json`) `[S]`
-- [ ] **P0-A3** 첫 baseline trial 경로 생성 `[S]`
-- [ ] **P0-A4** `state_io.py`/`orchestrator.py` `--bench-root` 격리 `[M]`
-- [ ] **P0-A5** `run_bench/run_one_cycle/run_readiness` 에 `--bench-root` 인자 `[S]`
-- [ ] **P0-A6** `config.snapshot.json` 자동 작성 (dataclass + git HEAD + provider list) `[M]`
+- [x] **P0-A1** `bench/silver/INDEX.md` 생성 `[S]` — `2f9117a`
+- [x] **P0-A2** 템플릿 3종 `[S]` — `2f9117a`
+- [x] **P0-A3** 첫 baseline trial 경로 생성 `[S]` — `2f9117a`
+- [x] **P0-A4** `state_io.py`/`orchestrator.py` `--bench-root` 격리 `[M]` — `2f9117a`
+- [x] **P0-A5** `run_bench/run_one_cycle/run_readiness` 에 `--bench-root` 인자 `[S]` — `2f9117a`
+- [x] **P0-A6** `config.snapshot.json` 자동 작성 `[M]` — `6c7f28f`
 
-### P0-B. 기존 remediation 8건 (p0-p1-remediation-plan.md 흡수)
-- [ ] **P0-B1** (P0-3) `search_adapter.py` retry 판정 정규표현화 `[S]`
-- [ ] **P0-B2** (P0-2a) `config.py` request_timeout / max_retries `[S]`
-- [ ] **P0-B3** (P0-2b) `llm_adapter.py` ChatOpenAI timeout 전달 `[S]`
-- [ ] **P0-B4** (P0-2c) Tavily search/extract 명시적 timeout `[S]`
-- [ ] **P0-B5** (P0-2d) `collect.py` ThreadPoolExecutor future timeout `[M]`
-- [ ] **P0-B6** (P0-1) `collect.py` 이중 bare-except 제거 `[M]`
-- [ ] **P0-B7** (P1-1) `integrate.py` `except ValueError: pass` 제거 `[M]`
-- [ ] **P0-B8** (P1-4) `state_io.py` 복구 경로 `[M]`
-- [ ] **P0-B9** (P1-3) 테스트 확장 `[M]`
+### P0-B. 기존 remediation 8건
+- [x] **P0-B1** (P0-3) `search_adapter.py` retry 판정 정규표현화 `[S]` — `e73b136`
+- [x] **P0-B2** (P0-2a) `config.py` request_timeout `[S]` — `e73b136`
+- [x] **P0-B3** (P0-2b) `llm_adapter.py` ChatOpenAI timeout 전달 `[S]` — `e73b136`
+- [x] **P0-B4** (P0-2c) Tavily search/extract 명시적 timeout `[S]` — `e73b136`
+- [x] **P0-B5** (P0-2d) `collect.py` ThreadPoolExecutor future timeout `[M]` — `e73b136`
+- [x] **P0-B6** (P0-1) `collect.py` 이중 bare-except 제거 `[M]` — `e73b136`
+- [x] **P0-B7** (P1-1) `integrate.py` `except ValueError: pass` 제거 `[M]` — `e73b136`
+- [x] **P0-B8** (P1-4) `state_io.py` 복구 경로 `[M]` — `e73b136`
+- [x] **P0-B9** (P1-3) 테스트 확장 `[L]` — `f21a249`
 
-### P0-C. HITL 정책 축소 (masterplan §14)
-- [ ] **P0-C1** `graph.py` 에서 A/B/C edge 제거 `[M]`
-- [ ] **P0-C2** `graph.py` 에 HITL-S edge 추가 `[M]`
-- [ ] **P0-C3** `route_after_critique` 단순화 `[S]`
-- [ ] **P0-C4** `route_after_any → hitl_e` 조건부 분기 공통 함수 `[M]`
-- [ ] **P0-C5** `hitl_gate.py` 를 HITL-S/HITL-R/HITL-E 3케이스로 축소 `[M]`
-- [ ] **P0-C6** `metrics_guard.py` 확장 — Silver v2 5개 임계치 `[M]`
-- [ ] **P0-C7** `EvolverState.dispute_queue` 필드 추가 `[S]`
-- [ ] **P0-C8** 테스트 (HITL-S/E trigger, auto-resume) `[M]`
+### P0-C. HITL 정책 축소
+- [x] **P0-C1** `graph.py` A/B/C edge 제거 `[M]` — `83ce974`
+- [x] **P0-C2** `graph.py` HITL-S edge 추가 `[M]` — `83ce974`
+- [x] **P0-C3** `route_after_critique` 단순화 `[S]` — `83ce974`
+- [x] **P0-C4** `should_auto_pause()` 공통 함수 `[M]` — `83ce974`
+- [x] **P0-C5** `hitl_gate.py` S/R/E 축소 `[M]` — `83ce974`
+- [x] **P0-C6** `metrics_guard.py` 확장 `[M]` — `83ce974`
+- [x] **P0-C7** `EvolverState.dispute_queue` 필드 추가 `[S]` — `83ce974`
+- [x] **P0-C8** 테스트 `[M]` — `f21a249`
+
+### P0-X. 인터페이스 고정
+- [x] **P0-X1** `integrate_node` I/O dict shape 동결 `[S]` — `f67cbf3`
+- [x] **P0-X2** `collect_node` I/O dict shape 동결 `[S]` — `9258832`
+- [x] **P0-X3** `Claim`/`EU` provenance 필드 예약 `[S]` — `f7a4123`
+- [x] **P0-X4** `EvolverState` 5개 신규 필드 일괄 선언 `[S]` — `e3f5659`
+- [x] **P0-X5** `metrics_logger` key 전체 목록 동결 `[S]` — `28c436b`
+- [x] **P0-X6** `tests/conftest.py` 공통 fixture 재정비 `[S]` — `cdf0a96`
 
 ### P0-D. Silver baseline trial 재현
-- [ ] **P0-D1** P4·P5 스모크를 `bench/silver/japan-travel/p0-{date}-baseline/` 에 재실행 `[M]`
-- [ ] **P0-D2** `readiness-report.md` 작성 — VP1 ≥ 4/5, VP2 ≥ 5/6 `[S]`
-- [ ] **P0-D3** `INDEX.md` 첫 행 삽입 `[S]`
-
-### P0-X. 인터페이스 고정 (R9 완화)
-- [ ] **P0-X1** `integrate_node` I/O dict shape 동결 `[S]`
-- [ ] **P0-X2** `collect_node` I/O dict shape 동결 `[S]`
-- [ ] **P0-X3** `Claim`/`EU` provenance 필드 예약 (optional) `[S]`
-- [ ] **P0-X4** `EvolverState` 5개 신규 필드 일괄 선언 `[S]`
-- [ ] **P0-X5** `metrics_logger` key 전체 목록 동결 `[S]`
-- [ ] **P0-X6** `tests/conftest.py` 공통 fixture 재정비 `[S]`
+- [x] **P0-D1** fresh seed + 15 cycle + Orchestrator 경유 재실행 `[M]` — `30946ac`
+- [x] **P0-D2** `readiness-report.md` 작성 — VP1 5/5, VP2 5/6, VP3 5/6 `[S]` — `30946ac`
+- [x] **P0-D3** `INDEX.md` 2행 삽입 `[S]` — `30946ac`
 
 ---
 

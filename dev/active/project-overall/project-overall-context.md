@@ -1,6 +1,6 @@
 # Project Overall Context
-> Last Updated: 2026-04-11
-> Status: Bronze 세대 완료 (Phase 0~5, 468 tests, commit `b122a23`) → **Silver 세대 착수 대기** (Silver P0 즉시 가능)
+> Last Updated: 2026-04-12
+> Status: Bronze 완료 (468 tests) → **Silver P0 완료** (510 tests, Gate PASS) → P1/P3 착수 가능
 
 ## 1. 핵심 파일
 
@@ -44,10 +44,10 @@
 | Phase 4 | `dev/active/phase4-self-governing/` | ✅ 11/11, 420 tests (Gate FAIL → Phase 5 삽입) |
 | Phase 5 | `dev/active/phase5-inner-loop-quality/` | ✅ 23/23, 468 tests, Gate #5 PASS |
 
-### Silver Phase Dev-Docs (예정)
+### Silver Phase Dev-Docs
 | Phase | 디렉토리 | 선행 조건 |
 |-------|----------|-----------|
-| Silver P0 | `dev/active/phase-si-p0-foundation/` | 즉시 착수 가능 (**dev-docs 생성 완료**) |
+| Silver P0 | `dev/active/phase-si-p0-foundation/` | ✅ **완료** (32/32, Gate PASS, 510 tests) |
 | Silver P1 | `dev/active/phase-si-p1-entity-resolution/` | P0 gate pass |
 | Silver P2 | `dev/active/phase-si-p2-remodel/` | P1 |
 | Silver P3 | `dev/active/phase-si-p3-acquisition/` | P0 gate pass (P1 과 병렬 가능) |
@@ -173,6 +173,7 @@ class EvolverState(TypedDict):
 | D-78 | 비용 가드 — `cycle_llm_token_budget` + `cycle_fetch_bytes_budget` + degrade 모드 | P3 |
 | D-79 | Silver 완료 test 목표 ≥ 588 (Bronze 468 + 120) | Silver 전체 |
 | D-80 | 2차 도메인 선정 기준 — japan-travel 대비 time horizon / hierarchy depth / source language 3축 중 2축 이상 이질 | P6 |
+| D-88~D-95 | P0 진행 중 결정: collect/integrate I/O shape 동결, HITL-E 임계치, config snapshot, provenance, EvolverState 5필드, fresh seed 전략 | P0 |
 
 ---
 

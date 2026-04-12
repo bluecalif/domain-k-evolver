@@ -1,57 +1,54 @@
 # Session Compact
 
 > Generated: 2026-04-12
-> Source: /compact-and-go (token-limited, current + next only)
+> Source: /step-update --sync-overall (P0 완료 후 전체 동기화)
 
 ## Goal
 
-Silver P0-A6 (`config.snapshot.json` 자동 작성) 구현 → 테스트 → commit. ✅ **완료**
+Silver P0 Foundation Hardening 완료 + 전체 docs 동기화. ✅ **완료**
 
 ## Current State
 
-- **Git**: branch `main`, latest commit `6c7f28f` (A6 커밋 완료)
-- **Tests**: 468 → **500 passed**, 3 skipped (신규 A6 +10)
-- **P0 progress**: **23/32 (72%)** — Stage A/B/C 완료, Stage X/D 대기
+- **Git**: branch `main`, latest commit `30946ac` (D1~D3 + Gate PASS)
+- **Tests**: 468 → **510 passed**, 3 skipped
+- **P0 progress**: **32/32 (100%)** — Gate PASS (VP1 5/5, VP2 5/6, VP3 5/6)
+- **Silver 전체**: 32/119
 
-### Changed Files (uncommitted, A6 작업분)
+### P0 완료 커밋 체인
 
-- `src/config.py` — `write_config_snapshot()` 함수 + `_get_git_head()` + `_redact()` 추가. imports: `dataclasses, hashlib, json, logging, subprocess, datetime, Path`
-- `scripts/run_bench.py` — `bench_root` 설정 시 load_state 직후 `write_config_snapshot` 호출 (skeleton_path=`domain_path/state/domain-skeleton.json`, repo_dir=ROOT)
-- `scripts/run_one_cycle.py` — load_state 직후 동일 호출
-- `tests/test_config.py` — `TestWriteConfigSnapshot` 클래스 10건:
-  1. file_created_with_required_fields
-  2. redacts_api_keys (sk-secret/tvly-secret 문자열 부재)
-  3. skeleton_sha256_matches
-  4. skeleton_missing_falls_back (→ "missing")
-  5. provider_list_default_and_override
-  6. orchestrator_fields_preserved
-  7. git_head_is_string
-  8. trial_dir_created_if_missing
-  9. roundtrip_stable
-  10. git_head_unknown_when_not_a_repo (monkeypatch subprocess.check_output)
+| Commit | Stage | 내용 |
+|--------|-------|------|
+| `2f9117a` | A1~A5 | 벤치 스캐폴딩 + --bench-root 격리 |
+| `e73b136` | B1~B8 | Remediation 8건 |
+| `83ce974` | C1~C7 | HITL 축소 Silver S/R/E |
+| `f21a249` | B9+C8 | 테스트 일괄 +29건 |
+| `6c7f28f` | A6 | config.snapshot.json 자동 작성 |
+| `f67cbf3` | X1 | integrate I/O snapshot |
+| `9258832` | X2 | collect I/O snapshot |
+| `f7a4123` | X3 | provenance field |
+| `e3f5659` | X4 | EvolverState 5개 신규 필드 |
+| `28c436b` | X5 | metrics key freeze |
+| `cdf0a96` | X6 | conftest.py fixture |
+| `30946ac` | D1~D3 | baseline trial + Gate PASS |
 
-### Snapshot JSON 스키마 (확정)
+### Gate 결과 요약
 
-```
-schema_version, timestamp (UTC ISO), git_head (str or "unknown"),
-llm, search (api_key → "<redacted>"), orchestrator,
-providers (list), skeleton_path, skeleton_sha256
-```
+- **VP1 5/5**: category_gini 0.1644, blind_spot 0.0, late_discovery 24, field_gini 0.2863, explore_yield 0.9333
+- **VP2 5/6**: R3_multi_evidence FAIL (0.7165 < 0.80, non-critical) — P1 에서 개선 예상
+- **VP3 5/6**: R6_closed_loop FAIL (0 < 1, non-critical) — P2 에서 개선 예상
 
-## Remaining / TODO (즉시)
+## Remaining / TODO
 
-- [x] 전체 pytest regression — **500 passed, 3 skipped**
-- [x] Commit `6c7f28f` — `[si-p0] Stage A6: config.snapshot.json 자동 작성 (A6)`
-- [x] `/step-update phase-si-p0-foundation A6` — docs 동기화 (23/32, 72%)
-- [ ] **P0-X1** integrate_node I/O dict shape 동결 → `docs/silver-interface-snapshots/integrate-p0.md`
-- [ ] P0-X2~X6 순차 진행 → Stage D baseline trial 재현
+- [x] P0 전체 완료 (32/32)
+- [x] `/step-update --sync-overall` — docs 동기화
+- [ ] **Silver P1** Entity Resolution & State Safety (12 tasks) — P0 gate pass 후 착수 가능
+- [ ] **Silver P3** Acquisition Expansion (22 tasks) — P0 gate pass 후 P1 과 병렬 착수 가능
 
 ## Key Decisions (이번 세션)
 
-- **api_key redact**: snapshot 에 실 키 저장 금지. `_redact()` 가 dict 재귀 순회하여 `api_key` → `"<redacted>"`
-- **git HEAD fallback**: `subprocess.CalledProcessError / FileNotFoundError / OSError` 모두 catch → `"unknown"`
-- **skeleton missing fallback**: `skeleton_sha256 = "missing"` (exception 대신 문자열)
-- **호출 위치**: `bench_root` 설정된 경우에만 (Silver trial). Bronze 흐름은 snapshot 쓰지 않음
+- **D-91~D-94**: integrate/collect I/O shape 동결, provenance=None 예약, EvolverState 5필드
+- **D-95**: D1 첫 시도 Bronze seed FAIL → fresh seed + 15 cycle + Orchestrator 재실행 PASS
+- **Phase gate process**: E2E bench + self-eval + debug loop 필수 (feedback memory 저장)
 
 ## Context
 
@@ -59,20 +56,19 @@ providers (list), skeleton_path, skeleton_sha256
 
 ### 핵심 제약
 
-- **Bash 절대경로 필수** (CLAUDE.md) — `cd` 금지, `python -m pytest "<abs>"` / `git -C "<abs>"` 패턴만
+- **Bash 절대경로 필수** (CLAUDE.md)
 - **Bronze 보호**: `bench/japan-travel/` read-only
-- **커밋 prefix**: `[si-p0]`
+- **커밋 prefix**: `[si-p{N}]`
 - **인코딩**: `PYTHONUTF8=1`, `encoding='utf-8'` 명시
 
 ### 참조
 
-- P0 tasks: `dev/active/phase-si-p0-foundation/phase-si-p0-foundation-tasks.md`
-- P0 plan: `dev/active/phase-si-p0-foundation/phase-si-p0-foundation-plan.md`
-- project root (repo_dir): `C:/Users/User/Learning/KBs-2026/domain-k-evolver`
+- P0 dev-docs: `dev/active/phase-si-p0-foundation/`
+- project-overall: `dev/active/project-overall/`
+- Silver masterplan: `docs/silver-masterplan-v2.md`
+- Baseline trial: `bench/silver/japan-travel/p0-20260412-baseline/`
 
 ## Next Action
 
-1. `PYTHONUTF8=1 python -m pytest "C:/Users/User/Learning/KBs-2026/domain-k-evolver/tests/" --tb=short -q` 로 전체 regression 실행 (절대경로, cd 금지)
-2. 통과 확인 → 4개 파일 staging + commit `[si-p0] Stage A6: config.snapshot.json 자동 작성`
-3. `/step-update phase-si-p0-foundation A6` 실행
-4. 이어서 P0-X1 (integrate_node 인터페이스 스냅샷) 착수
+1. P1 또는 P3 선택 후 `/dev-docs` 로 Phase dev-docs 생성
+2. Phase 착수
