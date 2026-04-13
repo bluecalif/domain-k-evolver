@@ -1,114 +1,102 @@
 # Session Compact
 
-> Generated: 2026-04-12
-> Source: Conversation compaction via /compact-and-go
+> Generated: 2026-04-13 21:30
+> Source: P3/P2 Gate REVOKED 공식 반영
 
 ## Goal
 
-Silver P2 Gate 실행 — E2E bench + 자가평가 + debug + dev-docs 반영 + Gate 판정 commit
+P3 Gate 무효화 → P3 LLM parse 경로 수정 → P3/P2 Gate 재판정
 
 ## Completed
 
-- [x] session-compact.md 읽기 → 현재 상태 파악 (P2 14/14 구현 완료, Gate 대기)
-- [x] P2 Gate 대상 코드 전수 확인:
-  - `src/orchestrator.py` — `_maybe_run_remodel`, `_apply_remodel_proposals` 확인
-  - `src/nodes/remodel.py` — `run_remodel`, 6종 proposal generator 확인
-  - `src/config.py` — `OrchestratorConfig` (audit_interval=5, remodel_interval=audit_interval)
-  - `schemas/remodel_report.schema.json` — Draft 2020-12, 6종 enum, approval status
-  - `scripts/run_bench.py` — Graph 직접 사용 (Orchestrator 미사용 → E2E에 부적합)
-  - `tests/test_orchestrator.py` — 기존 Orchestrator 테스트 (audit, rollback 등)
-  - `tests/test_nodes/test_remodel.py` — P2-C1~C6 단위 테스트 (merge/split/reclassify/schema)
-- [x] P2 Gate E2E 접근 방식 결정
-- [x] Task 4개 생성 (미착수)
+- [x] P3/P2 Gate REVOKED 공식 반영 (dev-docs, debug-history, MEMORY)
+- [x] D-120 문서화: LLM parse 0 claims 근본 원인 분석
+- [x] P2 실 벤치 준비 작업 (run_readiness --audit-interval, run_p2_bench, orchestrator 타이밍 로그 등)
 
 ## Current State
 
-- **Git**: branch `main`, latest commit `b97e287` (Stage C 완료: 645 tests)
-- **Tests**: 660 collected (645 기존 + 15 E2E Gate)
-- **Silver 전체**: P0 32/32 ✅, P1 12/12 ✅, P3 22/22 ✅, **P2 14/14 ✅ Gate PASS**
-- **Uncommitted**: 없음 (clean)
-- **기존 bench trial**: `bench/silver/japan-travel/p0-20260412-baseline/` (P0 trial, 15 cycle)
+- **Git**: branch `main`, latest commit `d89ffb0`
+- **Tests**: 673 passed, 3 skipped
+- **P3 Status**: **REVOKED** — 22/22 구현 완료했으나 LLM parse 경로 미검증으로 gate 무효
+- **P2 Status**: **REVOKED** — P3 연쇄 무효
+- **핵심 블로커**: collect `_parse_claims_llm` 0 claims 문제 (D-120)
 
 ### Changed Files (uncommitted)
-- 없음 (clean state)
+- `scripts/run_readiness.py` — `--audit-interval` 옵션 추가
+- `scripts/run_p2_bench.py` — 신규 (off/on 비교 스크립트)
+- `src/orchestrator.py` — cycle별 타이밍 로그 (time.monotonic)
+- `src/nodes/mode.py` — target_count 상한 10 + 로그
+- `src/nodes/plan.py` — targets/queries/no_query 로그
+- `src/nodes/collect.py` — 0 claims 진단 로그 + parse 진단 로그
+- `docs/session-compact.md` — 현 상태 반영
+- `dev/active/phase-si-p3-acquisition/*` — Gate REVOKED 반영
+- `dev/active/phase-si-p2-remodel/*` — Gate REVOKED 반영
 
 ## Remaining / TODO
 
-### P2 Gate 프로세스 (완료 + 실 벤치 미실행)
+### Phase 1: P3 LLM parse 경로 수정 (블로커)
+- [ ] 실제 API로 단일 GU SEARCH→FETCH→PARSE 수동 검증 (문제 원인 특정)
+- [ ] fetch body가 실제로 비어있는지 확인 (tavily snippet vs fetch body)
+- [ ] LLM parse prompt + response 내용 디버깅
+- [ ] 코드 수정 (원인에 따라 fetch/parse/prompt 중 해당 부분)
+- [ ] P3 테스트에 LLM parse 경로 통합 테스트 추가
 
-- [x] **Step 1-2: 합성 E2E 테스트** — `tests/test_p2_gate_e2e.py` (28 tests)
-  - Part A: 프로세스 검증 (schema, merge, HITL, rollback, S7) — 15 tests
-  - Part B: 성능 검증 before/after (merge/split/reclassify/source_policy/gap_rule) — 13 tests
-  - 673 tests total PASS
+### Phase 2: P3 Gate 재판정
+- [ ] P3 실 벤치 trial 재실행 (real API, LLM parse 경로 검증)
+- [ ] LLM parse claims > 0 확인
+- [ ] Gate 기준 재검증
 
-- [x] **Step 3: Trial scaffold** — `bench/silver/japan-travel/p2-20260412-remodel/`
-  - config.snapshot.json (synthetic E2E 기반)
-
-- [ ] **Step 4: dev-docs 반영**
-  - `si-p2-remodel-tasks.md` Gate Checklist 체크 + E2E Bench Results 실측값 기록
-  - `si-p2-remodel-plan.md` Status 업데이트
-  - `project-overall-tasks.md` P2 Done 반영
-
-- [ ] **Step 5: Gate 판정 commit** — `[si-p2] Gate PASS: {근거}`
+### Phase 3: P2 Gate 재판정
+- [ ] P2 실 벤치 trial 재실행 (OFF/ON 비교)
+- [ ] Gate 기준 재검증
+- [ ] trial-card.md + tasks.md 결과 반영
 
 ## Key Decisions
 
-- **E2E 접근**: Orchestrator 기반 합성 E2E (inner loop mock, outer loop 실제 실행)
-  - `run_bench.py`는 Graph 직접 사용이라 Orchestrator의 remodel 경로를 테스트할 수 없음
-  - Orchestrator의 `_maybe_run_remodel` → `_apply_remodel_proposals` 전체 경로를 E2E로 검증
-- **Remodel 트리거 조건**: `cycle % remodel_interval == 0 AND latest_audit has critical finding`
-  - `remodel_interval`은 `audit_interval`과 동일 (기본 5)
-- **합성 데이터 설계**: 같은 category 내 entity 2개에 동일 field+value → 중복률 100% → merge 제안 확실히 발동
+- D-120: P3/P2 Gate REVOKED — LLM parse 경로 미검증 (2026-04-13)
+- target_count 상한 10 적용 (Normal + Jump 동일) — D-37
+- API 비용 작업은 기존 결과 확인 + 사전 확인 필수 (피드백 메모리)
 
 ## Context
 
 다음 세션에서는 답변에 **한국어** 사용.
 
 ### 핵심 제약
-- **Bash 절대경로 필수** (CLAUDE.md) — `cd` 금지, `git -C <abs_path>` 패턴 사용
+- **Bash 절대경로 필수** (CLAUDE.md) — `cd` 금지, 단일 명령어 우선
 - **Bronze 보호**: `bench/japan-travel/` read-only
-- **커밋 prefix**: `[si-p2]`
+- **커밋 prefix**: `[si-p3]` (P3 수정 시), `[si-p2]` (P2 수정 시)
 - **인코딩**: `PYTHONUTF8=1`, `encoding='utf-8'` 명시
+- **Phase Gate 규칙**: 실 API로 E2E 검증 필수. 합성 E2E만으로 gate 불가
+- **API 비용 주의**: 실행 전 기존 결과 확인 + 유저 확인 필수
 
-### E2E 테스트 설계 핵심
+### D-120 핵심 문제 (P3 LLM parse 0 claims)
 
-1. **합성 state 구성**:
-   - 같은 category 내 entity 2개 (`item-01`, `item-02`)에 동일 `(field, value)` 쌍 → 중복률 30%+
-   - audit에 `critical` severity finding 포함 → remodel 트리거
-   - skeleton에 valid categories 포함
+**문제**: P3 테스트가 전부 `llm=None`/`fetch_pipeline=None`으로 호출 → deterministic fallback만 검증.
 
-2. **Orchestrator 설정**:
-   - `max_cycles=10`, `audit_interval=5`, `plateau_window=100` (비활성화)
-   - `_run_single_cycle` mock → CycleResult(state=state) 반환
+**데이터 흐름 실패 지점**:
+```
+SEARCH (snippet ✓) → FETCH (fetch_pipeline=None → 빈 리스트) → PARSE (llm=None → deterministic fallback)
+```
 
-3. **검증 항목**:
-   - cycle 5에서 audit → remodel → HITL-R → apply (승인 시나리오)
-   - 별도 테스트: rejection → state diff = ∅ (rollback 시나리오)
-   - jsonschema.validate(report, schema) 통과
-   - phase_number 증가, phase_history 기록, phase snapshot 존재
+**테스트에서 안 보이는 이유**:
+- `collect_node(state, providers=[mock])` — fetch_pipeline, llm 미전달
+- `llm=None` → `_parse_claims_deterministic()` 사용 → claims 생성 → 테스트 통과
+- 실제 운영에서는 llm 전달 → `_parse_claims_llm()` 사용 → 0 claims
 
-4. **기존 테스트 참조**:
-   - `tests/test_orchestrator.py` — `_make_minimal_state()`, `_setup_bench()` 헬퍼 활용
-   - `tests/test_nodes/test_remodel.py` — `_make_ku()`, `_make_skeleton()`, `_make_audit_report()` 헬퍼
-
-### 참조 파일
-- P2 dev-docs: `dev/active/phase-si-p2-remodel/`
-- Gate Checklist: `dev/active/phase-si-p2-remodel/si-p2-remodel-tasks.md` lines 29-37
-- E2E Bench Results 템플릿: 같은 파일 lines 42-56
-- Schema: `schemas/remodel_report.schema.json`
-- Orchestrator remodel: `src/orchestrator.py` lines 275-337, 339-431
+**확인 필요 파일**:
+- `src/adapters/providers/tavily_provider.py` — snippet 내용/길이
+- `src/adapters/fetch_pipeline.py` — fetch body 내용/길이
+- `src/nodes/collect.py:_parse_claims_llm` — prompt + LLM response
+- `src/utils/llm_parse.py:extract_json` — 빈 배열 처리
 
 ### Silver 의존성 그래프
-
 ```
 P0 ✅ ─┬── P1 ✅ ──┐
-       │           ├── P2 (Gate 대기) ──┐
-       ├── P3 ✅ ──┼──────────────────┤
+       │           ├── P2 (REVOKED) ──┐
+       ├── P3 (REVOKED) ──┼──────────┤
                    └─ P4 ──┼── P5 ── P6
 ```
 
 ## Next Action
 
-**Step 1: E2E 통합 테스트 작성** (`tests/test_p2_gate_e2e.py`)
-
-합성 state + Orchestrator 10 cycle로 Gate Checklist 전항목 검증하는 E2E 테스트를 작성하고, pytest 실행하여 전체 PASS 확인. 이후 Step 2~5 순서대로 진행.
+**P3 LLM parse 경로 수정 시작** — 실제 API로 문제 원인 특정 후 코드 수정

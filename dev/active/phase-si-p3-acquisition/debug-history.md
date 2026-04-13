@@ -1,6 +1,6 @@
 # Silver P3: Acquisition Expansion — Debug History
-> Last Updated: 2026-04-12
-> Status: Gate PASS
+> Last Updated: 2026-04-13
+> Status: **Gate REVOKED**
 
 ---
 
@@ -40,3 +40,50 @@
 **영향**: LLM 비용 ≤ baseline × 2.0 기준 직접 검증 불가. 단, P3 추가분은 FetchPipeline(HTTP-only)이므로 LLM 비용 증가 미미로 판단.
 
 **조치**: 향후 Phase에서 카운터 연결 수정 검토 (P3 gate에는 영향 없음).
+
+## D-120: LLM parse 0 claims — Gate REVOKED (Critical)
+
+**증상**: P2 실 벤치 trial에서 모든 GU(8/8)에 대해 `_parse_claims_llm`이 0 claims 반환.
+SEARCH=30, FETCH=3(ok=3)인데 LLM이 빈 배열 `[]` 반환.
+
+**근본 원인 (테스트 설계 결함)**:
+
+1. **P3 테스트 전부 `llm=None` / `fetch_pipeline=None`으로 호출**
+   - `collect_node(state, providers=[mock_provider])` — fetch_pipeline, llm 미전달
+   - `llm=None` → `_parse_claims_deterministic()` fallback 사용
+   - `fetch_pipeline=None` → `_fetch_phase()` 빈 리스트 반환
+   - **결과**: LLM parse 경로가 한 번도 실행되지 않음
+
+2. **deterministic fallback이 claims를 생성하므로 테스트는 통과**
+   - `_parse_claims_deterministic()`은 search_results snippet으로 claims 생성
+   - `assert len(result["current_claims"]) > 0` → 통과
+   - 실제로는 "Collected info for X from Y" 패턴의 가짜 claims
+
+3. **P3 E2E bench에서도 동일 문제 은폐**
+   - bench trial의 EU/claim 3.85는 deterministic fallback 결과일 가능성
+   - 또는 실제 LLM이 호출되었으나 0 claims → fallback으로 전환된 결과
+   - 어느 쪽이든 LLM parse 품질을 검증하지 못함
+
+**영향**:
+- P3 Gate PASS 판정 무효 — Phase gate 규칙 (실 데이터 E2E 검증) 위반
+- P2 Gate PASS 판정 연쇄 무효 — P3 위에서 동작
+- P0 baseline(15c)에서는 LLM parse 정상 작동 (KU 13→127, 실제 데이터)
+- P3 provider+fetch 구조 도입 후 LLM parse 경로가 깨졌을 가능성
+
+**의심 원인 (실제 런타임)**:
+1. fetch body가 비어있음 — `fetched_bodies = []` → `fetched_content = ""`
+2. snippet만으로 LLM이 구체적 claims를 추출하지 못함 → `[]` 반환
+3. `extract_json(response.content)`이 빈 배열을 정상 반환 → 0 claims
+4. fallback 미발동 (ValueError/AttributeError가 아니므로)
+
+**확인 필요**:
+- `src/adapters/providers/tavily_provider.py` — snippet 실제 내용 길이
+- `src/adapters/fetch_pipeline.py` — fetch body 실제 길이
+- `src/nodes/collect.py:_parse_claims_llm` — prompt 내용 + LLM 응답 내용
+- Orchestrator에서 collect_node 호출 시 `fetch_pipeline`/`llm` 전달 여부
+
+**수정 방향**:
+1. P3 테스트에 LLM parse 경로 통합 테스트 추가 (mock LLM + real-like fetch body)
+2. 실 API로 단일 GU SEARCH→FETCH→PARSE 수동 검증
+3. 문제 원인 특정 후 코드 수정
+4. 실 벤치 trial 재실행으로 gate 재판정

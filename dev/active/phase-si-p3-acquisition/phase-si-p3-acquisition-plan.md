@@ -1,6 +1,6 @@
 # Silver P3: Acquisition Expansion
-> Last Updated: 2026-04-12
-> Status: **Complete — Gate PASS + Post-Gate 개선 완료**
+> Last Updated: 2026-04-13
+> Status: **REVOKED — Gate 무효화 (LLM parse 경로 미검증, 실 벤치 0 claims 문제)**
 > Source: `docs/silver-masterplan-v2.md` §4 P3 + §13, `docs/silver-implementation-tasks.md` §7
 
 ---
@@ -185,13 +185,14 @@
 ## 8. Phase Gate (정량, masterplan §4 verbatim)
 
 - [x] fetch 성공률 ≥ 80% → **82.9%** (robots/미시도 제외)
-- [x] claim 당 평균 EU ≥ 1.8 → **3.85**
+- [ ] ~~claim 당 평균 EU ≥ 1.8 → **3.85**~~ **REVOKED** — deterministic fallback 결과이며 LLM parse 경로 미검증
 - [x] `domain_entropy` ≥ 2.5 bits → **4.958** (41 domains)
-- [x] cycle 당 LLM 비용 ≤ baseline × 2.0 → N/A (카운터 미연결, D-111)
+- [ ] ~~cycle 당 LLM 비용 ≤ baseline × 2.0~~ **REVOKED** — 카운터 미연결 (D-111) + LLM parse 자체가 0 claims
 - [x] robots.txt 거부 도메인 차단 테스트 pass → **21건 차단**
 - [x] cost budget degrade 모드 동작 → **budget 메커니즘 확인**
 - [x] provenance KU/EU 저장→load 왕복 보존 → **8필드 보존**
 - [x] 테스트 ≥ 579 → **599**
+- [ ] **[신규] LLM parse 경로 실제 API 검증** — SEARCH→FETCH→PARSE(LLM) 전체 경로에서 claims > 0 확인 필수
 
 ---
 
@@ -228,8 +229,12 @@
 
 ### 판정
 
-- **Gate 결과**: **PASS**
-- **판정 일시**: 2026-04-12
-- **Debug**: D-110 (fetch_ok robots 제외), D-111 (llm_calls counter)
-- **Gate Commit**: `1367df1`
-- **Post-Gate 개선 Commit**: `5a516fc` — A-1 (Curated 8사이트), B-3 (robots 사전 필터링), Option C 기록, 605 tests
+- **Gate 결과**: ~~PASS~~ → **REVOKED** (2026-04-13)
+- **원 판정 일시**: 2026-04-12
+- **무효화 사유**: P2 실 벤치 trial에서 모든 GU에 대해 LLM parse 0 claims 반환 발견.
+  P3 테스트가 전부 `llm=None`/`fetch_pipeline=None`으로 실행되어 deterministic fallback만 검증.
+  실제 SEARCH→FETCH→PARSE(LLM) 통합 경로가 한 번도 검증되지 않았음.
+  Phase gate 규칙 (실 데이터 E2E 검증 필수) 위반.
+- **Debug**: D-110, D-111, **D-120 (LLM parse 0 claims — 아래 debug-history 참조)**
+- **Gate Commit**: `1367df1` (무효)
+- **Post-Gate 개선 Commit**: `5a516fc` (무효)

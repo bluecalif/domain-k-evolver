@@ -1,6 +1,6 @@
 # Silver P3: Acquisition Expansion — Tasks
-> Last Updated: 2026-04-12
-> Status: 22/22 ✅ Gate PASS + Post-Gate 개선 완료
+> Last Updated: 2026-04-13
+> Status: **REVOKED** — 22/22 구현 완료했으나 Gate 무효화 (LLM parse 경로 미검증)
 
 ---
 
@@ -82,9 +82,11 @@
 | provenance 왕복 | pass | 8필드 보존 | PASS |
 | Total tests | ≥ 579 | 599 | PASS |
 
-**Gate 판정**: **PASS** (2026-04-12)
+**Gate 판정**: ~~PASS (2026-04-12)~~ → **REVOKED (2026-04-13)**
 
-*LLM 비용: trajectory llm_calls 카운터가 P0/P3 모두 0 (pre-existing issue, D-111). P3 추가분은 FetchPipeline(HTTP-only)이므로 LLM 비용 증가 미미.
+**무효화 사유**: 모든 P3 테스트가 `llm=None`/`fetch_pipeline=None`으로 실행 → deterministic fallback만 검증.
+실제 SEARCH→FETCH→PARSE(LLM) 통합 경로에서 0 claims 반환 문제 발견 (D-120).
+Phase gate 규칙 위반: 실 API로 LLM parse 경로 검증 없이 gate 통과.
 
 ---
 

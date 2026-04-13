@@ -1,6 +1,6 @@
 # Silver P2: Outer-Loop Remodel — Tasks
-> Last Updated: 2026-04-12
-> Status: ✅ Gate PASS (14/14 구현 + E2E 15 tests, 660 total)
+> Last Updated: 2026-04-13
+> Status: **REVOKED** — P3 Gate 무효화로 연쇄 무효 (P3 collect LLM parse 0 claims 문제 해결 후 재판정 필요)
 
 ## Summary
 
@@ -55,7 +55,11 @@
 | phase snapshot | `state/phase_{N}/` 존재 | phase_1/ 생성 확인 | PASS |
 | Total tests | ≥ 623 | 660 (645 + 15 E2E) | PASS |
 
-**Gate 판정**: **PASS** (9/9 항목 통과, 660 tests, 0 failures)
+**Gate 판정**: ~~PASS (9/9 항목 통과, 660 tests, 0 failures)~~ → **REVOKED (2026-04-13)**
+
+**무효화 사유**: P3 collect LLM parse 0 claims 문제(D-120)로 P3 Gate 무효화됨.
+P2 실 벤치 trial은 P3 파이프라인 위에서 동작하므로 결과 신뢰 불가.
+P3 문제 해결 → P3 재판정 → P2 실 벤치 재실행 → P2 재판정 순서 필요.
 
 ---
 
