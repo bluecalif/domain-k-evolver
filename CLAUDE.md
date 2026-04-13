@@ -90,3 +90,4 @@ python scripts/analyze_trajectory.py # 결과 분석
 - **entity_key 형식**: `{domain}:{category}:{slug}` (예: japan-travel:transport:jr-pass)
 - **Convention checks**: 5대 불변원칙 준수, Metrics 임계치 확인, Schema 정합성
 - **Phase Gate**: 합성 E2E만으로 gate 불가. 실 벤치 trial (real API, before/after metrics 비교) 필수
+- **완료 요약**: "무엇을 했는지" 뿐 아니라 **"그래서 어떤 효과/이점이 생겼는지"** 를 반드시 포함

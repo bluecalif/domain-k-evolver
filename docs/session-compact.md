@@ -46,10 +46,10 @@ P3 Gate 무효화 → P3 LLM parse 경로 수정 → P3/P2 Gate 재판정
 ## Remaining / TODO
 
 ### 즉시 작업: LLM parse 경로 검증 + 보강
-- [ ] `_parse_claims_llm` happy-path 단위 테스트 (mock LLM → valid JSON 반환)
-- [ ] collect_node LLM 통합 테스트 (llm + providers + fetch_pipeline 동시 전달)
-- [ ] snippet fallback 보강: fetch 실패 시 prompt에서 snippet 활용 강조
-- [ ] 이전 세션 디버그 로그 변경분 커밋 정리 (uncommitted 5 files)
+- [x] `_parse_claims_llm` happy-path 단위 테스트 (mock LLM → valid JSON 반환) — `ac756c1`
+- [x] collect_node LLM 통합 테스트 (llm + providers + fetch_pipeline 동시 전달) — `ac756c1`
+- [x] snippet fallback 보강: fetch 실패 시 prompt에서 snippet 활용 강조 — `ac756c1`
+- [x] 이전 세션 디버그 로그 변경분 커밋 정리 (uncommitted 5 files) — `b12545d`
 
 ### P3 Gate 재판정
 - [ ] P3 실 벤치 trial 재실행 (real API, LLM parse 경로 검증)

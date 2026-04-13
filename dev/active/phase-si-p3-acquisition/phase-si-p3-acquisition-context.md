@@ -1,6 +1,80 @@
 # Silver P3: Acquisition Expansion — Context
-> Last Updated: 2026-04-12
-> Status: Planning
+> Last Updated: 2026-04-13
+> Status: REVOKED (D-120 — LLM parse 0 claims)
+
+---
+
+## 0. Collect 파이프라인 실전 데이터 흐름
+
+> 이 섹션은 D-120 근본 원인 분석을 위해 2026-04-13 실 벤치 1 cycle 결과를 기반으로 작성.
+> **누구든 이 파이프라인의 실제 동작을 이해할 수 있도록** 가장 앞에 배치.
+
+### 전체 흐름 (3단계)
+
+```
+Gap("JR Pass 가격이 빈칸이다")
+         │
+    ┌────▼─────────────────────────────┐
+    │  STEP 1: SEARCH (Provider API)   │
+    │  Tavily/DDG에 쿼리 전송           │
+    │  → url + title + snippet 반환     │
+    │  snippet = 검색엔진 요약 (1~2문장) │
+    │  LLM 사용: ✗                      │
+    └────┬─────────────────────────────┘
+         │ SearchResult[] (보통 30건)
+    ┌────▼─────────────────────────────┐
+    │  STEP 2: FETCH (HTTP GET)        │
+    │  상위 N개 URL에 순수 HTTP 요청     │
+    │  → raw HTML body 반환 (최대 500KB)│
+    │  robots.txt 체크 + rate-limit     │
+    │  텍스트 추출 없음 — HTML 그대로    │
+    │  LLM 사용: ✗                      │
+    └────┬─────────────────────────────┘
+         │ FetchResult[] (body = raw HTML)
+    ┌────▼─────────────────────────────┐
+    │  STEP 3: PARSE (LLM)            │
+    │  LLM에게 전달:                    │
+    │   - snippet (Sources, 상위 5개)   │
+    │   - fetched_content[:3000]       │
+    │  → "factual claims를 JSON으로"    │
+    │  LLM 사용: ✓ (유일한 LLM 호출)    │
+    └────┬─────────────────────────────┘
+         │ Claim[] (구조화된 JSON)
+         ▼
+    integrate_node → KU 생성
+```
+
+### 실 벤치 데이터 (2026-04-13, 1 cycle)
+
+| GU | fetched_len | snippet 수 | LLM resp_len | claims | 결과 |
+|----|-------------|-----------|-------------|--------|------|
+| GU-0001 | 552,538 | 30/30 | 2 (`[]`) | 0 | **실패** |
+| GU-0002 | 552,538 | 30/30 | 2 (`[]`) | 0 | **실패** |
+| GU-0003 | 681,126 | 30/30 | 2 (`[]`) | 0 | **실패** |
+| GU-0004 | 552,538 | 30/30 | 2 (`[]`) | 0 | **실패** |
+| GU-0005 | 681,126 | 30/30 | 2 (`[]`) | 0 | **실패** |
+| GU-0006 | 552,538 | 30/30 | 2 (`[]`) | 0 | **실패** |
+| GU-0007 | 261,498 | 30/30 | 1,768 | 6 | 성공 |
+| GU-0008 | 161,959 | 30/30 | 1,697 | 6 | 성공 |
+| GU-0009 | 147,159 | 30/30 | 2,107 | 7 | 성공 |
+| GU-0010 | 147,159 | 30/30 | 2,137 | 7 | 성공 |
+
+### D-120 근본 원인 (확정)
+
+**이전 가설 (틀림)**: fetch body가 비어서 LLM이 claim을 못 뽑음.
+
+**실제 원인**: fetch body는 정상 수신(550KB+)되지만, **raw HTML 그대로** 저장됨.
+- `fetch_pipeline.py`에서 `raw.decode("utf-8")` → HTML 태그, CSS, JS 포함
+- `_build_parse_prompt()`에서 `fetched_content[:3000]` 절단 → **`<html><head><script>...` 쓰레기**
+- LLM이 이 HTML 쓰레기에서 factual claims를 못 뽑고 `[]` 반환
+- 상대적으로 **짧고 깨끗한 HTML**(~160KB)을 가진 사이트는 claims 추출 성공
+
+### 필요한 수정
+
+**핵심**: FETCH → PARSE 사이에 **HTML → plain text 변환 단계** 추가.
+- `BeautifulSoup`의 `get_text()` 또는 유사 lightweight 텍스트 추출
+- `<script>`, `<style>`, `<nav>` 등 노이즈 태그 제거
+- 변환 후 텍스트를 prompt에 전달 → LLM이 실제 콘텐츠 기반으로 claims 추출 가능
 
 ---
 

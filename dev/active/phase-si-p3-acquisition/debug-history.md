@@ -70,20 +70,31 @@ SEARCH=30, FETCH=3(ok=3)인데 LLM이 빈 배열 `[]` 반환.
 - P0 baseline(15c)에서는 LLM parse 정상 작동 (KU 13→127, 실제 데이터)
 - P3 provider+fetch 구조 도입 후 LLM parse 경로가 깨졌을 가능성
 
-**의심 원인 (실제 런타임)**:
-1. fetch body가 비어있음 — `fetched_bodies = []` → `fetched_content = ""`
-2. snippet만으로 LLM이 구체적 claims를 추출하지 못함 → `[]` 반환
-3. `extract_json(response.content)`이 빈 배열을 정상 반환 → 0 claims
-4. fallback 미발동 (ValueError/AttributeError가 아니므로)
+**이전 가설 (2026-04-13 초 — 틀림)**:
+1. ~~fetch body가 비어있음~~ → **실제로는 550KB+ 정상 수신**
+2. ~~snippet만으로 LLM이 추출 못함~~ → snippet 30/30 모두 존재
+3. `extract_json(response.content)`이 빈 배열을 정상 반환 → 0 claims ✓
+4. fallback 미발동 (ValueError/AttributeError가 아니므로) ✓
 
-**확인 필요**:
-- `src/adapters/providers/tavily_provider.py` — snippet 실제 내용 길이
-- `src/adapters/fetch_pipeline.py` — fetch body 실제 길이
-- `src/nodes/collect.py:_parse_claims_llm` — prompt 내용 + LLM 응답 내용
-- Orchestrator에서 collect_node 호출 시 `fetch_pipeline`/`llm` 전달 여부
+**확정 원인 (2026-04-13 실 벤치 1 cycle 진단)**:
 
-**수정 방향**:
-1. P3 테스트에 LLM parse 경로 통합 테스트 추가 (mock LLM + real-like fetch body)
-2. 실 API로 단일 GU SEARCH→FETCH→PARSE 수동 검증
-3. 문제 원인 특정 후 코드 수정
-4. 실 벤치 trial 재실행으로 gate 재판정
+실 벤치 trial `p3-20260413-llm-diag` (1 cycle, 10 GU) 결과:
+- **6/10 GU에서 0 claims** (GU-0001~0006)
+- **4/10 GU에서 정상** (GU-0007~0010, claims 6~7개)
+- 모든 GU에서 fetch_bodies=2~3, snippets=30/30 — 데이터 수집은 정상
+
+차이점: **fetched_len** (body 크기)
+- 실패 GU: 552K~681K → `fetched_content[:3000]`이 **raw HTML 태그 쓰레기**
+- 성공 GU: 147K~261K → HTML이 상대적으로 단순, 텍스트가 앞부분에 위치
+
+**근본 원인**: `fetch_pipeline.py`가 HTTP body를 **raw HTML 그대로** 저장.
+`<html><head><script>...` 포함된 3000자가 prompt에 들어가면 LLM이 `[]` 반환.
+
+**필요 수정**: FETCH → PARSE 사이에 **HTML → plain text 변환** 추가.
+- `BeautifulSoup.get_text()` 등으로 태그/스크립트 제거
+- 변환 후 텍스트를 prompt에 전달
+
+**관련 커밋/trial**:
+- `b12545d` — 디버그 로그 추가
+- `ac756c1` — _parse_claims_llm happy-path 테스트 + snippet fallback prompt 보강
+- `p3-20260413-llm-diag` — 진단 trial (1 cycle)
