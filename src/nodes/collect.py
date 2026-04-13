@@ -198,16 +198,23 @@ def _parse_claims_llm(
     llm: Any,
 ) -> list[dict]:
     """LLM 기반 Claim 파싱 + provenance 주입."""
+    gu_id = gu.get("gu_id", "?")
+
     # fetched content 결합
-    fetched_content = "\n".join(
-        fr.body for fr in fetch_results if fr.fetch_ok and fr.body
-    )
+    fetched_bodies = [fr.body for fr in fetch_results if fr.fetch_ok and fr.body]
+    fetched_content = "\n".join(fetched_bodies)
 
     # 레거시 형식으로 변환 (프롬프트 호환)
     raw_results = [
         {"url": sr.url, "title": sr.title, "snippet": sr.snippet}
         for sr in search_results
     ]
+
+    if not fetched_content.strip() and not any(sr.snippet for sr in search_results):
+        logger.info("parse[%s]: no content — fetch_ok=%d but bodies=%d, snippets=%d",
+                     gu_id, sum(1 for fr in fetch_results if fr.fetch_ok),
+                     len(fetched_bodies),
+                     sum(1 for sr in search_results if sr.snippet))
 
     prompt = _build_parse_prompt(gu, raw_results, fetched_content)
     try:
@@ -216,7 +223,11 @@ def _parse_claims_llm(
         claims = extract_json(response.content)
         if isinstance(claims, dict):
             claims = [claims]
-    except (ValueError, AttributeError):
+        if not claims:
+            logger.info("parse[%s]: LLM returned 0 claims (content_len=%d, snippets=%d)",
+                         gu_id, len(fetched_content), len(raw_results))
+    except (ValueError, AttributeError) as exc:
+        logger.info("parse[%s]: JSON extract failed (%s) → deterministic fallback", gu_id, exc)
         claims = _parse_claims_deterministic(gu, search_results, fetch_results)
         return claims
 
@@ -247,6 +258,8 @@ def _collect_single_gu(
     fetch_top_n: int = 3,
 ) -> list[dict]:
     """단일 GU에 대한 3단계 수집 (병렬 실행 단위)."""
+    gu_id = gu.get("gu_id", "?")
+
     # Phase 1: SEARCH
     search_results = _search_phase(
         gu, gu_queries, search_tool=search_tool,
@@ -255,12 +268,24 @@ def _collect_single_gu(
 
     # Phase 2: FETCH
     fetch_results = _fetch_phase(search_results, fetch_pipeline, fetch_top_n=fetch_top_n)
+    fetch_ok_count = sum(1 for fr in fetch_results if fr.fetch_ok)
+
+    if not search_results:
+        logger.debug("collect[%s]: SEARCH=0 results (queries=%d)", gu_id, len(gu_queries))
+    elif fetch_ok_count == 0:
+        logger.debug("collect[%s]: SEARCH=%d, FETCH=0 ok/%d total",
+                      gu_id, len(search_results), len(fetch_results))
 
     # Phase 3: PARSE
     if llm is not None:
         claims = _parse_claims_llm(gu, search_results, fetch_results, llm)
     else:
         claims = _parse_claims_deterministic(gu, search_results, fetch_results)
+
+    if not claims and search_results:
+        logger.info("collect[%s]: 0 claims despite SEARCH=%d FETCH=%d(ok=%d) queries=%s",
+                     gu_id, len(search_results), len(fetch_results), fetch_ok_count,
+                     gu_queries[:2])
 
     return claims
 
@@ -462,7 +487,7 @@ def _build_parse_prompt(
 {sources_text}
 
 ## Fetched Content (truncated)
-{fetched_content[:3000] if fetched_content.strip() else '(no content fetched)'}
+{fetched_content[:3000] if fetched_content.strip() else '(no content fetched — use the snippets from Sources above to extract claims)'}
 
 ## Output Format
 Return a JSON array. Each element MUST have these fields:
