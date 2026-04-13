@@ -97,11 +97,18 @@ def _fetch_phase(
     if fetch_pipeline is None:
         return []
 
+    # 구체적 URL 우선 fetch: path가 있는 URL > 홈페이지 (curated 홈페이지 후순위)
+    sorted_srs = sorted(
+        search_results,
+        key=lambda sr: len(urlparse(sr.url).path.strip("/")),
+        reverse=True,
+    )
+
     urls = []
     robots_blocked: list[FetchResult] = []
     seen: set[str] = set()
 
-    for sr in search_results:
+    for sr in sorted_srs:
         if not sr.url or sr.url in seen:
             continue
         seen.add(sr.url)
@@ -200,8 +207,9 @@ def _parse_claims_llm(
     """LLM 기반 Claim 파싱 + provenance 주입."""
     gu_id = gu.get("gu_id", "?")
 
-    # fetched content 결합
-    fetched_bodies = [fr.body for fr in fetch_results if fr.fetch_ok and fr.body]
+    # fetched content 결합 (HTML → plain text 변환)
+    from src.utils.html_strip import html_to_text
+    fetched_bodies = [html_to_text(fr.body) for fr in fetch_results if fr.fetch_ok and fr.body]
     fetched_content = "\n".join(fetched_bodies)
 
     # 레거시 형식으로 변환 (프롬프트 호환)
@@ -216,16 +224,19 @@ def _parse_claims_llm(
                      len(fetched_bodies),
                      sum(1 for sr in search_results if sr.snippet))
 
+    snippet_count = sum(1 for sr in search_results if sr.snippet)
+    logger.info("parse[%s]: LLM 호출 — bodies=%d, text_len=%d, snippets=%d/%d",
+                 gu_id, len(fetched_bodies), len(fetched_content), snippet_count, len(search_results))
+
     prompt = _build_parse_prompt(gu, raw_results, fetched_content)
     try:
         response = llm.invoke(prompt)
+        resp_text = response.content
         from src.utils.llm_parse import extract_json
-        claims = extract_json(response.content)
+        claims = extract_json(resp_text)
         if isinstance(claims, dict):
             claims = [claims]
-        if not claims:
-            logger.info("parse[%s]: LLM returned 0 claims (content_len=%d, snippets=%d)",
-                         gu_id, len(fetched_content), len(raw_results))
+        logger.info("parse[%s]: claims=%d (resp_len=%d)", gu_id, len(claims), len(resp_text))
     except (ValueError, AttributeError) as exc:
         logger.info("parse[%s]: JSON extract failed (%s) → deterministic fallback", gu_id, exc)
         claims = _parse_claims_deterministic(gu, search_results, fetch_results)
@@ -465,8 +476,18 @@ def _build_parse_prompt(
     entity_key = target.get("entity_key", "")
     field = target.get("field", "")
 
+    # snippet 품질순 정렬: 실질 snippet이 있는 결과 우선 (curated 메타 후순위)
+    sorted_results = sorted(
+        search_results,
+        key=lambda r: (
+            not r.get("snippet", "").startswith("Curated source:"),
+            len(r.get("snippet", "")),
+        ),
+        reverse=True,
+    )
+
     source_lines = []
-    for i, r in enumerate(search_results[:5], 1):
+    for i, r in enumerate(sorted_results[:5], 1):
         source_lines.append(
             f"  [{i}] {r.get('title', 'N/A')}\n"
             f"      URL: {r.get('url', '')}\n"
