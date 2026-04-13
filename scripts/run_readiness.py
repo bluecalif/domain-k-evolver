@@ -33,6 +33,7 @@ logger = logging.getLogger("run_readiness")
 
 def _run_benchmark(
     cycles: int, resume: bool, bench_root: str | None = None,
+    audit_interval: int | None = None,
 ) -> tuple[dict, list[dict]]:
     """N Cycle 벤치마크 실행 → (final_state, trajectory)."""
     from src.adapters.llm_adapter import create_llm
@@ -43,6 +44,7 @@ def _run_benchmark(
     config = EvolverConfig.from_env()
     config.validate_api_keys()
 
+    ai = audit_interval if audit_interval is not None else 5
     if bench_root:
         # Silver: --bench-root 직접 경로 사용
         orch_cfg = OrchestratorConfig(
@@ -51,7 +53,7 @@ def _run_benchmark(
             invariant_check=config.orchestrator.invariant_check,
             stop_on_convergence=False,
             plateau_window=0,
-            audit_interval=5,
+            audit_interval=ai,
             bench_domain=config.orchestrator.bench_domain,
             bench_path=config.orchestrator.bench_path,
             bench_root=bench_root,
@@ -65,7 +67,7 @@ def _run_benchmark(
             invariant_check=config.orchestrator.invariant_check,
             stop_on_convergence=False,
             plateau_window=0,
-            audit_interval=5,
+            audit_interval=ai,
             bench_domain=f"{config.orchestrator.bench_domain}-readiness",
             bench_path=config.orchestrator.bench_path,
         )
@@ -193,14 +195,16 @@ def main() -> None:
     parser.add_argument("--resume", action="store_true")
     parser.add_argument("--bench-root", type=str, default=None,
                         help="Silver trial 직접 경로 (예: bench/silver/japan-travel/p0-20260411-baseline)")
+    parser.add_argument("--audit-interval", type=int, default=None,
+                        help="audit_interval 오버라이드 (0=audit+remodel 비활성)")
     args = parser.parse_args()
 
     if args.evaluate_only:
         logger.info("Evaluate-only 모드: 기존 결과 로드")
         state, trajectory = _load_existing_results()
     else:
-        logger.info("벤치마크 실행: %d cycles", args.cycles)
-        state, trajectory = _run_benchmark(args.cycles, args.resume, args.bench_root)
+        logger.info("벤치마크 실행: %d cycles (audit_interval=%s)", args.cycles, args.audit_interval)
+        state, trajectory = _run_benchmark(args.cycles, args.resume, args.bench_root, args.audit_interval)
 
     # Gate 평가
     from src.utils.readiness_gate import evaluate_readiness

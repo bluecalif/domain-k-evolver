@@ -201,13 +201,15 @@ def mode_node(state: EvolverState) -> dict:
     # Mode 결정
     mode = "jump" if triggers else "normal"
 
-    # Cap 계산
+    # Cap 계산 (D-37: target_count 상한 적용)
+    NORMAL_TARGET_CAP = 10
+    JUMP_TARGET_CAP = 10
     if mode == "normal":
         cap = max(4, ceil(open_count * 0.2))
-        target_count = max(4, ceil(open_count * 0.4))
+        target_count = min(max(4, ceil(open_count * 0.4)), NORMAL_TARGET_CAP)
     else:
         cap = max(10, ceil(open_count * 0.6))
-        target_count = max(10, ceil(open_count * 0.5))
+        target_count = min(max(10, ceil(open_count * 0.5)), JUMP_TARGET_CAP)
 
     # Convergence Guard: 연속 2 Cycle Jump 감지
     convergence_warning = False
@@ -228,6 +230,11 @@ def mode_node(state: EvolverState) -> dict:
     explore_budget, exploit_budget = _compute_budget(
         target_count, mode, cycle_stage, audit_bias=audit_bias,
     )
+
+    import logging
+    _logger = logging.getLogger(__name__)
+    _logger.info("mode: %s | open=%d → target_count=%d (explore=%d, exploit=%d) triggers=%s",
+                 mode, open_count, target_count, explore_budget, exploit_budget, triggers or "none")
 
     mode_decision: dict[str, Any] = {
         "mode": mode,

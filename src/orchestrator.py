@@ -7,6 +7,7 @@ D-32: Orchestrator가 Graph 외부에서 사이클 관리.
 from __future__ import annotations
 
 import logging
+import time
 from pathlib import Path
 from typing import Any
 
@@ -98,17 +99,28 @@ class Orchestrator:
             orch_cfg.max_cycles,
         )
 
+        orch_t0 = time.monotonic()
         for cycle_num in range(1, orch_cfg.max_cycles + 1):
-            logger.info("=== Cycle %d 시작 ===", cycle_num)
+            cycle_t0 = time.monotonic()
+            ku_before = len(state.get("knowledge_units", []))
+            gu_before = len(state.get("gap_map", []))
+            logger.info("=== Cycle %d/%d 시작 (KU=%d, GU=%d) ===",
+                        cycle_num, orch_cfg.max_cycles, ku_before, gu_before)
 
+            t = time.monotonic()
             result = self._run_single_cycle(state, cycle_num)
+            graph_elapsed = time.monotonic() - t
             self.results.append(result)
 
             if result.error:
-                logger.error("Cycle %d 에러: %s", cycle_num, result.error)
+                logger.error("Cycle %d 에러 (%.1fs): %s", cycle_num, graph_elapsed, result.error)
                 break
 
             state = result.state
+            ku_after = len(state.get("knowledge_units", []))
+            gu_after = len(state.get("gap_map", []))
+            logger.info("  Graph 완료: %.1fs (KU %d→%d, GU %d→%d)",
+                        graph_elapsed, ku_before, ku_after, gu_before, gu_after)
 
             # Metrics 기록 (rollback 판정에 필요)
             self.logger.log(cycle_num, state)
@@ -122,13 +134,22 @@ class Orchestrator:
             self._maybe_rollback_policy(state, cycle_num)
 
             # Executive Audit (Phase 4) — patch 적용 포함
+            t = time.monotonic()
             self._maybe_run_audit(state, cycle_num, orch_cfg)
+            audit_elapsed = time.monotonic() - t
 
             # Remodel (P2) — audit 후 조건 충족 시 실행
+            t = time.monotonic()
             self._maybe_run_remodel(state, cycle_num, orch_cfg)
+            remodel_elapsed = time.monotonic() - t
 
             # 사이클 후 처리: save, snapshot
             self._post_cycle(state, cycle_num, orch_cfg)
+
+            cycle_elapsed = time.monotonic() - cycle_t0
+            total_elapsed = time.monotonic() - orch_t0
+            logger.info("  Cycle %d 완료: %.1fs (graph=%.1fs, audit=%.1fs, remodel=%.1fs) | 누적 %.1fs",
+                        cycle_num, cycle_elapsed, graph_elapsed, audit_elapsed, remodel_elapsed, total_elapsed)
 
             # Plateau 감지 (plateau_window=0이면 비활성)
             if self.plateau_detector is not None:

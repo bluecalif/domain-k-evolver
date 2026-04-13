@@ -200,6 +200,9 @@ def plan_node(
             f"Gap-driven 위반: {gu.get('gu_id')} is not in open GU set"
         )
 
+    import logging
+    _logger = logging.getLogger(__name__)
+
     if llm is not None:
         # LLM 호출
         prompt = _build_plan_prompt(
@@ -216,9 +219,15 @@ def plan_node(
             plan = _build_plan_from_targets(
                 explore_targets, exploit_targets, mode_decision,
             )
+            _logger.warning("plan: LLM parse failed → fallback (targets=%d)", len(all_targets))
     else:
         plan = _build_plan_from_targets(
             explore_targets, exploit_targets, mode_decision,
         )
+
+    tg = plan.get("target_gaps", [])
+    q = plan.get("queries", {})
+    no_query = [gid for gid in tg if not q.get(gid)]
+    _logger.info("plan: targets=%d, queries=%d, no_query=%d", len(tg), len(q), len(no_query))
 
     return {"current_plan": plan}
