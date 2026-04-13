@@ -55,10 +55,17 @@ src/            — LangGraph 자동화 코드 (구현 예정)
 ## Common Commands
 
 ```bash
-# /step-update after each step | /dev-docs to generate planning docs
-# /compact-and-go to compact session and continue
 python -m pytest                    # Run all tests
+python scripts/run_readiness.py     # 실 벤치 (유일한 실행 진입점)
+python scripts/analyze_trajectory.py # 결과 분석
 ```
+
+## Scripts Policy
+
+- **실행 스크립트는 `run_readiness.py` 단일 진입점.** 새 실행 스크립트 금지 — 옵션/플래그로 확장.
+- 비교·분석 스크립트(예: `run_p2_bench.py`, `analyze_trajectory.py`)는 허용 (API 미호출).
+- 새 스크립트 추가 시: 기존 스크립트로 불가능한 이유를 커밋 메시지에 명시.
+- `run_one_cycle.py`, `run_bench.py`는 **deprecated** — `run_readiness.py --cycles 1`로 대체.
 
 ## Bash Tool Rules
 

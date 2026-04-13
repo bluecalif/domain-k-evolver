@@ -1,220 +1,53 @@
-"""Real API N Cycle 벤치 실행 스크립트.
+"""DEPRECATED — use `python scripts/run_readiness.py --cycles N` instead.
 
-Usage:
-    set -a && source .env && set +a
-    python scripts/run_bench.py --cycles 3
+This script is kept only for backwards compatibility and delegates to run_readiness.py.
+See CLAUDE.md "Scripts Policy" for details.
+
+run_bench.py had its own graph.invoke loop without Orchestrator and without P3
+providers/fetch_pipeline — this caused the LLM parse 0-claims bug (D-120).
 """
 
 from __future__ import annotations
 
-import argparse
-import logging
+import subprocess
 import sys
+import warnings
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(ROOT))
-
-from dotenv import load_dotenv
-
-load_dotenv(ROOT / ".env")
-
-from src.adapters.llm_adapter import create_llm
-from src.adapters.search_adapter import create_search_tool
-from src.config import EvolverConfig, write_config_snapshot
-from src.graph import build_graph
-from src.utils.invariant_checker import check_invariants
-from src.utils.metrics_guard import check_metrics_guard
-from src.utils.metrics_logger import MetricsLogger
-from src.utils.plateau_detector import PlateauDetector
-from src.utils.state_io import load_state, save_state
-
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
-)
-logger = logging.getLogger("run_bench")
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Evolver N-Cycle Bench Run")
-    parser.add_argument("--cycles", type=int, default=3, help="Number of cycles to run")
-    parser.add_argument("--domain", type=str, default=None, help="Override bench domain")
-    parser.add_argument("--dry-run", action="store_true", help="Config 출력만 하고 실행하지 않음")
-    parser.add_argument("--resume", action="store_true", help="이전 auto 결과에서 이어서 실행")
-    parser.add_argument("--bench-root", type=str, default=None,
-                        help="Silver trial 직접 경로 (예: bench/silver/japan-travel/p0-20260411-baseline)")
-    args = parser.parse_args()
+    warnings.warn(
+        "run_bench.py is deprecated. Use: python scripts/run_readiness.py --cycles N",
+        DeprecationWarning,
+        stacklevel=2,
+    )
 
-    config = EvolverConfig.from_env()
-    config.validate_api_keys()
+    # Forward recognized args to run_readiness.py
+    cmd = [
+        sys.executable,
+        str(ROOT / "scripts" / "run_readiness.py"),
+    ]
 
-    if args.domain or args.bench_root:
-        # Override domain/bench-root (frozen dataclass → recreate)
-        from src.config import OrchestratorConfig
-        orch = OrchestratorConfig(
-            max_cycles=args.cycles,
-            snapshot_every=config.orchestrator.snapshot_every,
-            invariant_check=config.orchestrator.invariant_check,
-            stop_on_convergence=config.orchestrator.stop_on_convergence,
-            plateau_window=config.orchestrator.plateau_window,
-            bench_domain=args.domain or config.orchestrator.bench_domain,
-            bench_path=config.orchestrator.bench_path,
-            bench_root=args.bench_root or "",
-        )
-        from src.config import EvolverConfig as EC
-        config = EC(llm=config.llm, search=config.search, orchestrator=orch)
+    args = sys.argv[1:]
+    skip_next = False
+    for i, arg in enumerate(args):
+        if skip_next:
+            skip_next = False
+            continue
+        # --domain → not supported by run_readiness, drop with warning
+        if arg == "--domain":
+            warnings.warn("--domain is ignored in the deprecated path", stacklevel=2)
+            skip_next = True
+            continue
+        # --dry-run → --evaluate-only
+        if arg == "--dry-run":
+            cmd.append("--evaluate-only")
+            continue
+        cmd.append(arg)
 
-    logger.info("Config: model=%s, search=%s, cycles=%d, plateau_window=%d",
-                config.llm.model, config.search.provider, args.cycles,
-                config.orchestrator.plateau_window)
-
-    # State 로드
-    if config.orchestrator.bench_root:
-        domain_path = Path(config.orchestrator.bench_root)
-        output_path = domain_path
-    else:
-        domain_path = Path(config.orchestrator.bench_path) / config.orchestrator.bench_domain
-        output_path = domain_path.parent / f"{domain_path.name}-auto"
-
-    if args.resume and (output_path / "state").exists():
-        state = load_state(output_path)
-        logger.info("Resume: auto 결과에서 State 로드")
-    else:
-        state = load_state(domain_path)
-
-    # Silver trial: config snapshot 자동 작성 (bench_root 설정 시에만)
-    if config.orchestrator.bench_root:
-        try:
-            write_config_snapshot(
-                config,
-                output_path,
-                provider_list=[config.search.provider],
-                skeleton_path=domain_path / "state" / "domain-skeleton.json",
-                repo_dir=ROOT,
-            )
-        except OSError as e:
-            logger.warning("config snapshot 작성 실패: %s", e)
-    start_cycle = state.get("current_cycle", 1)
-    logger.info("State 로드: KU=%d, GU=%d, cycle=%d",
-                len(state.get("knowledge_units", [])),
-                len(state.get("gap_map", [])),
-                start_cycle)
-
-    if args.dry_run:
-        logger.info("--dry-run: 실행하지 않고 종료.")
-        return
-
-    # LLM + Search 생성
-    llm = create_llm(config.llm)
-    search_tool = create_search_tool(config.search)
-
-    # Graph 빌드
-    graph = build_graph(llm=llm, search_tool=search_tool)
-    logger.info("Graph 빌드 완료.")
-
-    # Metrics Logger + Plateau Detector
-    metrics_logger = MetricsLogger()
-    plateau_detector = PlateauDetector(window=config.orchestrator.plateau_window)
-    invariant_violations = 0
-
-    for i in range(args.cycles):
-        cycle_num = start_cycle + i
-        logger.info("=== Cycle %d 시작 ===", cycle_num)
-
-        # LLM/Search 카운터 리셋 (사이클별 추적)
-        prev_llm_calls = getattr(llm, "call_count", 0)
-        prev_search_calls = getattr(search_tool, "search_calls", 0)
-        prev_fetch_calls = getattr(search_tool, "fetch_calls", 0)
-
-        try:
-            state = graph.invoke(state, config={"recursion_limit": 50})
-        except Exception as e:
-            logger.error("Cycle %d 실패: %s", cycle_num, e)
-            break
-
-        # 사이클별 API 사용량
-        cycle_llm_calls = getattr(llm, "call_count", 0) - prev_llm_calls
-        cycle_search_calls = getattr(search_tool, "search_calls", 0) - prev_search_calls
-        cycle_fetch_calls = getattr(search_tool, "fetch_calls", 0) - prev_fetch_calls
-        cycle_llm_tokens = getattr(llm, "total_tokens", 0)
-
-        # Metrics 기록
-        metrics_logger.log(
-            cycle_num, state,
-            llm_calls=cycle_llm_calls,
-            llm_tokens=cycle_llm_tokens,
-            search_calls=cycle_search_calls,
-            fetch_calls=cycle_fetch_calls,
-        )
-
-        # 불변원칙 검증
-        inv_result = check_invariants(state)
-        if not inv_result.passed:
-            invariant_violations += 1
-            for v in inv_result.violations:
-                logger.warning("불변원칙 위반: %s", v)
-        for w in inv_result.warnings:
-            logger.info("경고: %s", w)
-
-        # 결과 요약
-        kus = state.get("knowledge_units", [])
-        gus = state.get("gap_map", [])
-        logger.info("Cycle %d 완료: KU=%d (active=%d, disputed=%d), GU=%d (open=%d, resolved=%d)",
-                     cycle_num,
-                     len(kus),
-                     sum(1 for k in kus if k.get("status") == "active"),
-                     sum(1 for k in kus if k.get("status") == "disputed"),
-                     len(gus),
-                     sum(1 for g in gus if g.get("status") == "open"),
-                     sum(1 for g in gus if g.get("status") == "resolved"))
-        logger.info("API: LLM=%d calls, Search=%d, Fetch=%d",
-                     cycle_llm_calls, cycle_search_calls, cycle_fetch_calls)
-
-        # 매 사이클 State 저장
-        save_state(state, output_path)
-
-        # Metrics Guard (warning-only)
-        guard = check_metrics_guard(state)
-        for gw in guard.warnings:
-            logger.warning("Metrics Guard: %s", gw)
-
-        # Plateau 감지
-        plateau_detector.record(cycle_num, state)
-        if plateau_detector.is_plateau():
-            logger.info("Plateau 감지: 최근 %d사이클 KU/GU 변화 없음 — 조기 종료.",
-                        config.orchestrator.plateau_window)
-            break
-
-        # 수렴 체크
-        critique = state.get("current_critique", {})
-        convergence = critique.get("convergence", {})
-        if convergence.get("converged"):
-            logger.info("수렴 조건 달성 — 조기 종료.")
-            break
-
-    # 최종 요약
-    summary = metrics_logger.summary()
-    logger.info("=" * 60)
-    logger.info("=== 벤치 실행 완료 ===")
-    logger.info("총 사이클: %d", summary.get("total_cycles", 0))
-    logger.info("KU 증가: %d", summary.get("ku_growth", 0))
-    logger.info("GU resolved: %d", summary.get("gu_resolved_total", 0))
-    logger.info("Jump cycles: %d", summary.get("jump_cycles", 0))
-    logger.info("불변원칙 위반: %d회", invariant_violations)
-    logger.info("총 LLM calls: %d (tokens: %d)",
-                summary.get("total_llm_calls", 0),
-                summary.get("total_llm_tokens", 0))
-    logger.info("총 Search calls: %d, Fetch calls: %d",
-                summary.get("total_search_calls", 0),
-                summary.get("total_fetch_calls", 0))
-
-    # Trajectory 저장
-    traj_path = output_path / "trajectory"
-    metrics_logger.save_json(traj_path / "trajectory.json")
-    metrics_logger.save_csv(traj_path / "trajectory.csv")
-    logger.info("Trajectory 저장: %s/", traj_path)
-    logger.info("State 저장: %s/state/", output_path)
+    sys.exit(subprocess.call(cmd))
 
 
 if __name__ == "__main__":
