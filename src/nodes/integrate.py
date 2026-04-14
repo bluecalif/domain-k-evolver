@@ -323,6 +323,14 @@ def integrate_node(
     rejected: list[dict] = []
     new_dynamic_gus: list[dict] = []
 
+    # parse_yield gap 조사 — GU resolve 성공/실패 분류 (D-126)
+    resolve_outcomes = {
+        "resolved": 0,
+        "no_source_gu_id": 0,
+        "invalid_result": 0,
+        "other": 0,
+    }
+
     for claim in claims:
         entity_key = _normalize_entity_key(claim.get("entity_key", ""))
         field = claim.get("field", "")
@@ -497,12 +505,21 @@ def integrate_node(
             claim["integration_result"] = "added"
 
         # GU 상태 업데이트 (resolved)
-        if source_gu_id and claim.get("integration_result") in ("added", "updated", "condition_split", "refreshed"):
+        _int_result = claim.get("integration_result")
+        _resolvable_results = ("added", "updated", "condition_split", "refreshed")
+        if _int_result not in _resolvable_results:
+            resolve_outcomes["invalid_result"] += 1
+        elif not source_gu_id:
+            resolve_outcomes["no_source_gu_id"] += 1
+        else:
+            _resolved = False
             for gu in gap_map:
                 if gu.get("gu_id") == source_gu_id and gu.get("status") == "open":
                     gu["status"] = "resolved"
                     gu["resolved_by"] = claim.get("claim_id", "")
+                    _resolved = True
                     break
+            resolve_outcomes["resolved" if _resolved else "other"] += 1
 
         # 동적 GU 발견 (Trigger A)
         if len(new_dynamic_gus) < dynamic_cap:
@@ -531,6 +548,19 @@ def integrate_node(
             )
 
     # Conflict-preserving: disputed KU 삭제 금지 (이 노드에서는 삭제 자체를 하지 않음)
+
+    total_claims = len(claims)
+    if total_claims > 0:
+        logger.info(
+            "integrate_result: claims=%d resolved=%d no_source_gu=%d "
+            "invalid_result=%d other=%d conv_rate=%.3f",
+            total_claims,
+            resolve_outcomes["resolved"],
+            resolve_outcomes["no_source_gu_id"],
+            resolve_outcomes["invalid_result"],
+            resolve_outcomes["other"],
+            resolve_outcomes["resolved"] / total_claims,
+        )
 
     return {
         "knowledge_units": kus,
