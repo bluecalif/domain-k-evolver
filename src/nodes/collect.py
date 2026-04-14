@@ -114,11 +114,14 @@ def _parse_claims_llm(
     """LLM snippet-only Claim 파싱."""
     gu_id = gu.get("gu_id", "?")
 
+    snippet_count = sum(1 for sr in search_results if sr.get("snippet"))
+
     if not any(sr.get("snippet") for sr in search_results):
         logger.info("parse[%s]: no snippets — skip LLM", gu_id)
+        logger.info("parse_yield: gu=%s snippets=%d claims=0 path=no_snippets",
+                    gu_id, snippet_count)
         return []
 
-    snippet_count = sum(1 for sr in search_results if sr.get("snippet"))
     logger.info("parse[%s]: LLM 호출 — snippets=%d/%d",
                  gu_id, snippet_count, len(search_results))
 
@@ -133,7 +136,10 @@ def _parse_claims_llm(
         logger.info("parse[%s]: claims=%d (resp_len=%d)", gu_id, len(claims), len(resp_text))
     except (ValueError, AttributeError) as exc:
         logger.info("parse[%s]: JSON extract failed (%s) → deterministic fallback", gu_id, exc)
-        return _parse_claims_deterministic(gu, search_results)
+        fb_claims = _parse_claims_deterministic(gu, search_results)
+        logger.info("parse_yield: gu=%s snippets=%d claims=%d path=fallback",
+                    gu_id, snippet_count, len(fb_claims))
+        return fb_claims
 
     for claim in claims:
         source_url = ""
@@ -142,6 +148,8 @@ def _parse_claims_llm(
             source_url = ev.get("url", "")
         claim["provenance"] = _build_provenance(source_url)
 
+    logger.info("parse_yield: gu=%s snippets=%d claims=%d path=llm",
+                gu_id, snippet_count, len(claims))
     return claims
 
 
@@ -221,6 +229,7 @@ def collect_node(
     all_claims: list[dict] = []
     total_gu_count = len(tasks)
     failed_gu_count = 0
+    per_gu_claims: list[int] = []
 
     if tasks:
         workers = min(max_workers, len(tasks))
@@ -236,6 +245,7 @@ def collect_node(
                 try:
                     claims = future.result(timeout=60)
                     all_claims.extend(claims)
+                    per_gu_claims.append(len(claims))
                     logger.info("collect: %s → %d claims", gu_id, len(claims))
                 except TimeoutError:
                     logger.warning("collect: %s timeout (60s)", gu_id)
@@ -245,6 +255,17 @@ def collect_node(
                     failed_gu_count += 1
 
     failure_rate = failed_gu_count / total_gu_count if total_gu_count > 0 else 0.0
+
+    if per_gu_claims:
+        zero_count = sum(1 for c in per_gu_claims if c == 0)
+        zero_ratio = zero_count / len(per_gu_claims)
+        avg_claims = sum(per_gu_claims) / len(per_gu_claims)
+        logger.info(
+            "parse_yield_summary: targets=%d completed=%d avg_claims=%.2f "
+            "zero_claims=%d zero_ratio=%.3f total_claims=%d",
+            total_gu_count, len(per_gu_claims), avg_claims,
+            zero_count, zero_ratio, sum(per_gu_claims),
+        )
 
     domain_ent = _domain_entropy(all_claims)
 
