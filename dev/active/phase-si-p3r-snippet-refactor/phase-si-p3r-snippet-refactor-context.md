@@ -50,10 +50,11 @@ Gap
   - `p3r-gate-trial/` — 5 cycle Gate 재판정
 
 ### domain-skeleton.json
-- `preferred_sources` 처리 방침:
-  - **옵션 A (추천)**: 필드 제거, Tavily 쿼리 hint 키워드로 대체
-  - **옵션 B**: 필드는 유지하되 collect.py에서 무시. 추후 재사용 여지
-- 최종 결정은 T6에서 실 스키마 확인 후
+- `preferred_sources` 처리 방침: **옵션 B 채택 (2026-04-14, T6)**
+  - 코드(`src/`) 및 스키마(`schemas/`)에서 `preferred_sources` 참조 grep = 0
+  - runtime 무시 상태 → Bronze read-only 원칙 유지 가능
+  - 필드는 `bench/japan-travel/state-snapshots/*/domain-skeleton.json`에 보존 (historical)
+  - 신규 도메인 skeleton 설계 시 `preferred_sources` 미포함 권장
 
 ### japan-travel-auto state
 - Phase 5 완료 시점의 구 state 보존(archive)

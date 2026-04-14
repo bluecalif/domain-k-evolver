@@ -1,7 +1,7 @@
 # SI-P3R: Tasks
 
 > Last Updated: 2026-04-14
-> Progress: 5/8 (63%)
+> Progress: 6/8 (75%)
 
 ## T1. 제거 — Provider/Fetch/HTML 모듈 `[M]` ✅
 - [x] `src/adapters/fetch_pipeline.py` 삭제
@@ -34,10 +34,10 @@
 - [x] integrate/dispute provenance 방어적 접근 확인
 - [x] 전체 테스트 green: **608 passed, 3 skipped** (이전 694 → 608, -86개는 삭제된 provider/fetch/html 테스트)
 
-## T6. Bench skeleton 정리 `[S]`
-- [ ] `bench/japan-travel/state-snapshots/cycle-0-snapshot/domain-skeleton.json` `preferred_sources` 필드 처리 방침 결정(제거 vs query-hint 재정의)
-- [ ] `bench/japan-travel-auto/` state: archive 또는 무시 문서화
-- [ ] `bench/silver/japan-travel/p3r-smoke/` 초기화
+## T6. Bench skeleton 정리 `[S]` ✅
+- [x] `preferred_sources` 처리: **옵션 B 채택** — 코드/스키마 참조 0건 확인, Bronze read-only 유지, 필드 historical 보존
+- [x] `bench/japan-travel-auto/` state: 구 provenance schema 혼재 → archive 처리 (P3R smoke부터는 clean root 사용)
+- [x] `bench/silver/japan-travel/p3r-smoke/` trial namespace 규칙 문서화 (T7에서 실제 생성)
 
 ## T7. Smoke Trial `[M]`
 - [ ] 1 cycle 실 벤치: `--bench-root bench/silver/japan-travel/p3r-smoke --cycles 1`
