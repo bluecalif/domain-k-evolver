@@ -1,7 +1,7 @@
 # SI-P3R: Snippet-First Acquisition Refactor
 
 > Last Updated: 2026-04-14
-> Status: **Planning Complete** — 착수 대기
+> Status: **T1~T5 완료** (코드 리팩터 완료, 608 tests passed) — T6 bench skeleton / T7 smoke / T8 Gate 대기
 > Predecessor: SI-P3 (REVOKED 2026-04-13), SI-P2 (REVOKED — P3 연쇄)
 
 ## Motivation

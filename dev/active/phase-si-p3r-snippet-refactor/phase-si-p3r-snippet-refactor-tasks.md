@@ -1,39 +1,38 @@
 # SI-P3R: Tasks
 
 > Last Updated: 2026-04-14
-> Progress: 0/8 (0%)
+> Progress: 5/8 (63%)
 
-## T1. 제거 — Provider/Fetch/HTML 모듈 `[M]`
-- [ ] `src/adapters/fetch_pipeline.py` 삭제
-- [ ] `src/utils/html_strip.py` 삭제
-- [ ] `src/adapters/providers/{base,ddg_provider,curated_provider}.py` 삭제
-- [ ] `tests/test_fetch_pipeline.py`, `tests/test_html_strip.py`, `tests/test_providers_*.py` 삭제
-- [ ] `pyproject.toml` beautifulsoup4 제거
-- [ ] import/참조 잔재 grep 후 정리
+## T1. 제거 — Provider/Fetch/HTML 모듈 `[M]` ✅
+- [x] `src/adapters/fetch_pipeline.py` 삭제
+- [x] `src/utils/html_strip.py` 삭제
+- [x] `src/adapters/providers/{base,ddg_provider,curated_provider,tavily_provider}.py` 삭제
+- [x] `tests/test_fetch_pipeline.py`, `tests/test_html_strip.py`, `tests/test_providers.py`, `tests/test_collect_p3.py` 삭제
+- [x] `pyproject.toml` beautifulsoup4 + ddg extras 제거
+- [x] import/참조 잔재 grep 후 정리 (잔재 0)
 
-## T2. Tavily search_tool 단순화 `[S]`
-- [ ] `src/adapters/providers/tavily_provider.py` → `src/adapters/search_tool.py` 로 이관
-- [ ] Protocol/trust_tier 제거, dict/SearchResult 최소화
-- [ ] 단위 테스트 재작성
+## T2. Tavily search_tool 단순화 `[S]` ✅
+- [x] `search_adapter.py` 에 snippet-only `TavilySearchAdapter` 단일화 (provider 계층 제거)
+- [x] `fetch()`, `create_providers()`, `TavilySearchAdapter.fetch_calls` 제거
+- [x] `SearchTool` Protocol 에서 `fetch` 제거, `MockSearchTool` 단순화
 
-## T3. collect.py 2단계화 `[L]`
-- [ ] `_fetch_phase` 삭제, `_collect_single_gu` 2단계(SEARCH→PARSE)로 축소
-- [ ] `_parse_claims_llm`: snippet 전용 prompt. `fetched_content` 파라미터 제거
-- [ ] `_build_parse_prompt`: `## Fetched Content` 섹션 제거, snippet 상위 N개만
-- [ ] provenance: `{provider, domain, retrieved_at, trust_tier}` 축소
-- [ ] `_provider_entropy` 제거, `_domain_entropy` 유지
-- [ ] `tests/test_collect_p3.py` 재작성 (fetch 제거)
+## T3. collect.py 2단계화 `[L]` ✅
+- [x] `_fetch_phase` 삭제, `_collect_single_gu` 2단계(SEARCH→PARSE)
+- [x] `_parse_claims_llm`: snippet 전용 prompt
+- [x] `_build_parse_prompt`: `## Fetched Content` 섹션 제거
+- [x] provenance 축소 `{provider, domain, retrieved_at, trust_tier}`
+- [x] `_provider_entropy` 제거, `_domain_entropy` 유지
 
-## T4. Config & Entry Point `[S]`
-- [ ] `src/config.py` SearchConfig: `tavily_max_results`만 유지
-- [ ] `scripts/run_readiness.py` L156-165: `providers=`/`fetch_pipeline=` 제거
-- [ ] deprecated script(run_one_cycle/run_bench) 호환성 최종 확인
+## T4. Config & Entry Point `[S]` ✅
+- [x] `src/config.py` SearchConfig: fetch 관련 필드 7개 제거 → 6필드만 유지
+- [x] `scripts/run_readiness.py`: providers/fetch_pipeline 제거
+- [x] `src/graph.py`, `src/orchestrator.py`: providers/fetch_pipeline 파라미터 제거
 
-## T5. 후속 Phase 참조 갱신 `[M]`
-- [ ] `src/nodes/audit.py`: `provider_entropy` 참조 제거
-- [ ] `src/utils/policy_manager.py`: `providers_used` → `provider` 단일 참조
-- [ ] `src/nodes/integrate.py`, `dispute_resolver.py`: provenance `.get()` 방어적 읽기 확인
-- [ ] Phase 3~5 관련 테스트 green 확인
+## T5. 후속 Phase 참조 갱신 `[M]` ✅
+- [x] `src/nodes/audit.py`: provider_entropy 미참조 확인
+- [x] `src/utils/policy_manager.py`: providers_used 미참조 확인 (src/ grep 0)
+- [x] integrate/dispute provenance 방어적 접근 확인
+- [x] 전체 테스트 green: **608 passed, 3 skipped** (이전 694 → 608, -86개는 삭제된 provider/fetch/html 테스트)
 
 ## T6. Bench skeleton 정리 `[S]`
 - [ ] `bench/japan-travel/state-snapshots/cycle-0-snapshot/domain-skeleton.json` `preferred_sources` 필드 처리 방침 결정(제거 vs query-hint 재정의)

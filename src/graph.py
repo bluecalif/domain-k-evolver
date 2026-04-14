@@ -130,23 +130,9 @@ def build_graph(
     llm: Any | None = None,
     search_tool: Any | None = None,
     hitl_response: dict | None = None,
-    providers: list | None = None,
-    fetch_pipeline: Any | None = None,
     search_config: Any | None = None,
 ) -> StateGraph:
-    """Evolver StateGraph 빌드 (Silver).
-
-    Args:
-        llm: LLM 인스턴스. None이면 결정론적 fallback.
-        search_tool: 레거시 검색 도구. providers 가 있으면 무시.
-        hitl_response: HITL 응답. None이면 자동 승인.
-        providers: P3 SearchProvider 리스트.
-        fetch_pipeline: P3 FetchPipeline 인스턴스.
-        search_config: P3 SearchConfig (fetch_top_n, k_per_provider 등).
-
-    Returns:
-        컴파일된 StateGraph.
-    """
+    """Evolver StateGraph 빌드 (SI-P3R: snippet-first 2-stage collect)."""
     graph = StateGraph(EvolverState)
 
     # -- Core pipeline nodes --
@@ -159,8 +145,6 @@ def build_graph(
             collect_node,
             search_tool=search_tool,
             llm=llm,
-            providers=providers,
-            fetch_pipeline=fetch_pipeline,
             search_config=search_config,
         ),
     )

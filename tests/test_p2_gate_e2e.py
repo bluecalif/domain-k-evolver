@@ -468,46 +468,16 @@ class TestGateC6TestCount:
 # ---------------------------------------------------------------------------
 
 class TestGateC7P3PostGate:
-    """P3 Post-Gate deferred: V-A1, V-B3, V-B3a, V-C56.
+    """SI-P3R: snippet-first 2단계 파이프라인 존재 확인."""
 
-    P3 개선사항이 P2 remodel 과정에서도 정상 동작하는지 확인.
-    """
+    def test_collect_node_exists(self):
+        from src.nodes.collect import collect_node  # noqa: F401
+        assert True
 
-    def test_v_a1_curated_preferred_sources(self):
-        """V-A1: Curated preferred_sources 설정이 존재하는지 확인."""
+    def test_search_config_provider(self):
         from src.config import SearchConfig
         cfg = SearchConfig()
-        # SearchConfig에 preferred_sources 또는 관련 설정이 존재
-        assert hasattr(cfg, "provider") or hasattr(cfg, "providers"), \
-            "SearchConfig에 provider 설정 없음"
-
-    def test_v_b3_fetch_pipeline_exists(self):
-        """V-B3: FetchPipeline 모듈이 존재하는지 확인."""
-        try:
-            from src.adapters.fetch_pipeline import FetchPipeline  # noqa: F401
-            assert True
-        except ImportError:
-            # FetchPipeline이 별도 모듈이 아닐 수 있음 — 대안 확인
-            from src.adapters import fetch_pipeline  # noqa: F401
-            assert True
-
-    def test_v_b3a_robots_filter(self):
-        """V-B3a: robots.txt 사전 필터링 로직이 존재하는지 확인."""
-        try:
-            from src.adapters.fetch_pipeline import FetchPipeline
-            fp = FetchPipeline.__new__(FetchPipeline)
-            assert hasattr(fp, "fetch_many"), \
-                "FetchPipeline에 fetch_many 메서드 없음"
-        except ImportError:
-            pytest.skip("FetchPipeline 미구현 — P3 범위 확인 필요")
-
-    def test_v_c56_collect_node_3stage(self):
-        """V-C56: collect_node가 SEARCH/FETCH/PARSE 3단계 분리인지 확인."""
-        try:
-            from src.nodes.collect import collect_node  # noqa: F401
-            assert True
-        except ImportError:
-            pytest.skip("collect_node 미구현")
+        assert cfg.provider == "tavily"
 
 
 # ---------------------------------------------------------------------------
