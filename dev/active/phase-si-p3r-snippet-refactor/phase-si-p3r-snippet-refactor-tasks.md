@@ -1,7 +1,7 @@
 # SI-P3R: Tasks
 
 > Last Updated: 2026-04-14
-> Progress: 6/8 (75%)
+> Progress: 7/8 (88%)
 
 ## T1. 제거 — Provider/Fetch/HTML 모듈 `[M]` ✅
 - [x] `src/adapters/fetch_pipeline.py` 삭제
@@ -39,11 +39,12 @@
 - [x] `bench/japan-travel-auto/` state: 구 provenance schema 혼재 → archive 처리 (P3R smoke부터는 clean root 사용)
 - [x] `bench/silver/japan-travel/p3r-smoke/` trial namespace 규칙 문서화 (T7에서 실제 생성)
 
-## T7. Smoke Trial `[M]`
-- [ ] 1 cycle 실 벤치: `--bench-root bench/silver/japan-travel/p3r-smoke --cycles 1`
-- [ ] 10/10 GU claims > 0 검증
-- [ ] 실행 시간 < 2분 검증
-- [ ] trajectory 분석 → Phase 5 baseline 대비 회귀 없음 확인
+## T7. Smoke Trial `[M]` ✅
+- [x] 1 cycle 실행 완료 (2026-04-14): `bench/silver/japan-travel/p3r-smoke/`
+- [x] 실행 시간 **88.3초** (목표 < 2분 ✅)
+- [x] KU 13→25 (+12), GU 28→54, **gu_resolved=10** → claims 생성 성공 (D-120 재발 없음)
+- [x] `collect_failure_rate=0.0`, evidence_rate=1.0, avg_confidence=0.86, conflict_rate=0.2 (건강)
+- [x] trajectory 저장 완료, readiness-report.json 기록
 
 ## T8. Gate Trial & 재판정 `[L]`
 - [ ] 5 cycle trial: `--bench-root bench/silver/japan-travel/p3r-gate-trial`
