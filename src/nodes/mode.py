@@ -201,15 +201,13 @@ def mode_node(state: EvolverState) -> dict:
     # Mode 결정
     mode = "jump" if triggers else "normal"
 
-    # Cap 계산 (D-37: target_count 상한 적용)
-    NORMAL_TARGET_CAP = 10
-    JUMP_TARGET_CAP = 10
+    # target_count 계산 (D-129: Phase 5 b122a23 복원 — cap 재도입 금지)
     if mode == "normal":
         cap = max(4, ceil(open_count * 0.2))
-        target_count = min(max(4, ceil(open_count * 0.4)), NORMAL_TARGET_CAP)
+        target_count = max(4, ceil(open_count * 0.4))
     else:
         cap = max(10, ceil(open_count * 0.6))
-        target_count = min(max(10, ceil(open_count * 0.5)), JUMP_TARGET_CAP)
+        target_count = max(10, ceil(open_count * 0.5))
 
     # Convergence Guard: 연속 2 Cycle Jump 감지
     convergence_warning = False

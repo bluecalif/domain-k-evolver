@@ -237,6 +237,67 @@ class TestModeNode:
         cap = result["current_mode"]["cap"]
         assert cap >= 4
 
+    def test_target_count_no_upper_cap_jump(self) -> None:
+        """D-129 regression guard: jump target_count = ceil(open*0.5), no upper cap.
+
+        b12545d 에서 재도입된 JUMP_TARGET_CAP=10 을 Phase 5(b122a23) 공식으로 복원.
+        open=67 기준 target_count=34 (10 아님) 이어야 함.
+        """
+        gap_map = [
+            {"status": "open", "target": {"entity_key": f"d:a:x{i}"}, "risk_level": "convenience"}
+            for i in range(67)
+        ]
+        state = {
+            "gap_map": gap_map,
+            "domain_skeleton": {
+                "axes": [{"name": "category", "anchors": ["a"], "required": True}],
+                "categories": [{"slug": "a"}],
+            },
+            "knowledge_units": [
+                {"status": "active", "entity_key": "d:a:y", "field": "f",
+                 "evidence_links": ["EU-1"], "confidence": 0.95,
+                 "axis_tags": {"category": "a"}},
+            ],
+            "current_cycle": 2,
+            "jump_history": [1],
+            "metrics": {"rates": {"staleness_risk": 50}},  # T7 → jump
+        }
+        result = mode_node(state)
+        md = result["current_mode"]
+        assert md["mode"] == "jump", f"expected jump, got {md['mode']}"
+        tc = md["explore_budget"] + md["exploit_budget"]
+        assert tc == 34, (
+            f"jump target_count regression: expected 34 (ceil(67*0.5)), got {tc}"
+        )
+
+    def test_target_count_no_upper_cap_normal(self) -> None:
+        """D-129 regression guard: normal target_count = ceil(open*0.4), no cap."""
+        gap_map = [
+            {"status": "open", "target": {"entity_key": f"d:a:x{i}"}, "risk_level": "convenience"}
+            for i in range(50)
+        ]
+        state = {
+            "gap_map": gap_map,
+            "domain_skeleton": {
+                "axes": [{"name": "category", "anchors": ["a"], "required": True}],
+                "categories": [{"slug": "a"}],
+            },
+            "knowledge_units": [
+                {"status": "active", "entity_key": "d:a:y", "field": "f",
+                 "evidence_links": ["EU-1", "EU-2"], "confidence": 0.95,
+                 "axis_tags": {"category": "a"}},
+            ],
+            "current_cycle": 1,
+            "jump_history": [],
+        }
+        result = mode_node(state)
+        md = result["current_mode"]
+        if md["mode"] == "normal":
+            tc = md["explore_budget"] + md["exploit_budget"]
+            assert tc == 20, (
+                f"normal target_count regression: expected 20 (ceil(50*0.4)), got {tc}"
+            )
+
 
 # ---------------------------------------------------------------------------
 # Stage E: Fix D — T7 Staleness Trigger (D-65)
