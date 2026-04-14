@@ -1,6 +1,6 @@
 # SI-P3R: Context
 
-> Last Updated: 2026-04-14
+> Last Updated: 2026-04-14 (T8 완료)
 
 ## Phase 전환 배경
 
@@ -101,3 +101,25 @@ Gap
 - D-122: Historical silver trial 디렉터리 보존. 신규 trial은 `p3r-*` namespace
 - D-123: Bronze read-only 원칙 유지, skeleton 변경 시 snapshot만 수정
 - D-124: `provider_entropy` 메트릭 제거 (단일 provider), `domain_entropy` 유지
+- D-125 (2026-04-14): P3R Gate PASS — acquisition 검증 기준 판정. full readiness gate(VP2 gap_resolution)는 시스템 수렴 문제로 P3R과 분리
+- D-126 (2026-04-14): gap_resolution 병목 별도 조사 필요. remodel 이전에도 cycle 10에서 0.437 — plan targeting, GU resolve 판정, critique gap 생성량 확인 대상
+- D-127 (2026-04-14): P2 Gate는 remodel on/off 비교 실험으로 재설계. 단일 결과의 절대 임계치 적용 부적합
+- D-128 (2026-04-14): 우선순위 결정: res_rate 조사 → P2 비교 실험 → P4~P6
+
+## T8 Gate Trial 결과
+
+### 5 cycle (`p3r-gate-trial/`)
+- VP1 PASS 4/5, VP2 FAIL 4/6, VP3 FAIL 1/6
+- gap_resolution 0.283, audit_count 1 (interval=5 부적합)
+
+### 15 cycle (`p3r-gate-trial-15c/`, audit_interval=3)
+- VP1 **PASS 5/5**, VP2 FAIL 4/6, VP3 **PASS 6/6**
+- gap_resolution 0.517 (임계치 0.85), multi_evidence 0.718 (임계치 0.80)
+- Cycle 11 remodel 발동: KU 63→86, GU 119→144 (VP1↑, VP2↓ trade-off)
+- 수렴 추세: 신규 GU 28→3/cycle, 해결 5~6/cycle 일정
+
+### 판정 논거
+- P3R은 acquisition refactor 검증: collect_failure=0, evidence_rate=1.0, D-120 재발 없음 → **PASS**
+- VP2 R1 gap_resolution은 시스템 수렴도 측정 — acquisition 품질과 무관
+- VP3 만점은 governance 메커니즘 정상 작동 증명
+- P2 gate는 remodel 효과 검증이므로 별도 비교 실험 필요

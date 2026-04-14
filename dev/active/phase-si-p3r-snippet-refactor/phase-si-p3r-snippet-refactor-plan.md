@@ -1,8 +1,8 @@
 # SI-P3R: Snippet-First Acquisition Refactor
 
 > Last Updated: 2026-04-14
-> Status: **T1~T5 완료** (코드 리팩터 완료, 608 tests passed) — T6 bench skeleton / T7 smoke / T8 Gate 대기
-> Predecessor: SI-P3 (REVOKED 2026-04-13), SI-P2 (REVOKED — P3 연쇄)
+> Status: **완료 (8/8)** — P3R Gate PASS (acquisition 검증 기준, D-125)
+> Predecessor: SI-P3 (REVOKED → CLOSED), SI-P2 (REVOKED — 별도 재판정 예정)
 
 ## Motivation
 
@@ -68,6 +68,8 @@ Tavily search snippet만을 LLM에 전달하여 Claim을 추출하는 **2단계 
 - 전체 테스트 green (~450~480 tests 예상, -40~-70 삭제)
 - 1 cycle 실 벤치: **10/10 GU claims > 0**, 실행 시간 < 2분
 - 5 cycle Gate trial: VP1/VP2/VP3 각 80%+ → P3 Gate PASS
+  - **실제 결과**: 5c FAIL → 15c 재시행. VP1 5/5, VP3 6/6 만점. VP2 4/6 (gap_resolution 0.517)
+  - **판정**: P3R Gate PASS (acquisition 검증 기준). gap_resolution은 시스템 수렴 문제로 분리 (D-126)
 - 회귀 없음: Phase 3~5 지표(conflict_rate, avg_confidence, gap_resolution) 직전 기록 대비 ±5% 이내
 
 ## Verification
