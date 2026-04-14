@@ -1,6 +1,6 @@
 # Project Overall Context
-> Last Updated: 2026-04-12
-> Status: Bronze 완료 (468 tests) → Silver P0 완료 (510 tests) → P1 완료 (544 tests) → **P3 완료** (599 tests, Gate PASS) → P2 착수 가능
+> Last Updated: 2026-04-14
+> Status: Bronze 완료 (468 tests) → Silver P0 완료 (510) → P1 완료 (544) → **SI-P3R 완료** (608 tests, Gate PASS, D-125) → **Gap-Res Investigation 착수** (D-126) → SI-P2 재판정 대기 (D-127)
 
 ## 1. 핵심 파일
 
@@ -49,10 +49,12 @@
 |-------|----------|-----------|
 | Silver P0 | `dev/active/phase-si-p0-foundation/` | ✅ **완료** (32/32, Gate PASS, 510 tests) |
 | Silver P1 | `dev/active/phase-si-p1-entity-resolution/` | ✅ **완료** (12/12, 544 tests, S4/S5/S6 pass) |
-| Silver P2 | `dev/active/phase-si-p2-remodel/` | P1 ✅ → **Planning** (dev-docs 생성 완료) |
-| Silver P3 | `dev/active/phase-si-p3-acquisition/` | ✅ **완료** (22/22, Gate PASS, 599 tests) |
-| Silver P4 | `dev/active/phase-si-p4-coverage/` | P2 + P3 |
-| Silver P5 | `dev/active/phase-si-p5-telemetry-dashboard/` | P3 + P4 |
+| Silver P2 | `dev/active/phase-si-p2-remodel/` | **REVOKED** → remodel on/off 비교 실험으로 재설계 (D-127) |
+| Silver P3 | `dev/active/phase-si-p3-acquisition/` | **REVOKED** (D-120, 2026-04-13) |
+| Silver P3R | `dev/active/phase-si-p3r-snippet-refactor/` | ✅ **완료** (8/8, Gate PASS, D-125, 608 tests) |
+| **Gap-Res Investigation** | `dev/active/phase-gap-resolution-investigation/` | **착수** (D-126) — Primary cap regression + Secondary LLM parse yield |
+| Silver P4 | `dev/active/phase-si-p4-coverage/` | 대기 (Gap-Res + P2 재판정 후) |
+| Silver P5 | `dev/active/phase-si-p5-telemetry-dashboard/` | P3R + P4 |
 | Silver P6 | `dev/active/phase-si-p6-multidomain/` | P1~P5 전부 (Silver exit gate) |
 
 ### Bronze 구현 파일 (현행)
@@ -178,6 +180,18 @@ class EvolverState(TypedDict):
 | D-97 (예정) | is_a depth limit = 5 — 순환 방지 | P1 |
 | D-98 (예정) | conflict_ledger = append-only (삭제 불가, status 변경만) — 감사 추적성 | P1 |
 | D-99 (예정) | dispute_queue = 휘발성, conflict_ledger = 영속 감사 로그 — 독립 구조 | P1 |
+| D-120 | P3/P2 Gate REVOKED — LLM parse 경로 미검증, 실 벤치 0 claims | P3/P2 |
+| D-121 | SI-P3 (3단계) 폐기 → SI-P3R (snippet-first 2단계)로 대체 | P3R |
+| D-122 | silver `p3-*` trial 디렉터리 historical evidence로 보존 | P3R |
+| D-123 | Bronze `bench/japan-travel/` read-only 유지 | P3R |
+| D-124 | provider_entropy 메트릭 제거 (Tavily 단일) | P3R |
+| D-125 | P3R Gate PASS = acquisition 검증 기준. full readiness gate와 분리 | P3R |
+| D-126 | gap_resolution 병목 별도 조사 (remodel 이전 0.437@10c) | Gap-Res |
+| D-127 | P2 Gate는 remodel on/off 비교 실험으로 재설계 | P2 재판정 |
+| D-128 | 우선순위: res_rate 조사 → P2 비교 → P4~P6 | 전체 |
+| D-129 (예정) | target_count cap은 Phase 5(`b122a23`)에서 의도적 제거 — 재도입 금지 | Gap-Res B1 |
+| D-130 (예정) | LLM parse 수율 대응 방향 — 본 Phase fix OR 별도 Phase | Gap-Res D2 |
+| D-131 (예정) | SI-P2 재판정 착수 조건 (Gap-Res 결과 기준) | Gap-Res D3 |
 
 ---
 

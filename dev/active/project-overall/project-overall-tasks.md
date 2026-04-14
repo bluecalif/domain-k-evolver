@@ -1,6 +1,6 @@
 # Project Overall Tasks
-> Last Updated: 2026-04-12
-> Status: Bronze 세대 완료 (85/85) · Silver P0 완료 (32) · P1 완료 (12) · P3 완료 (22) = 66/119
+> Last Updated: 2026-04-14
+> Status: Bronze 완료 (85/85) · Silver P0 (32) · P1 (12) · P3R (8) 완료 · P3/P2 REVOKED · **Gap-Res Investigation 착수 (0/12)**
 
 ## Summary
 
@@ -18,21 +18,28 @@
 | Phase 5 (Inner Loop Quality) | 23 | 23/23 ✅ | **468 tests, Gate #5 PASS** | `b122a23` |
 | **Bronze 합계** | **85** | **85/85** | — | — |
 
-### Silver 세대 (P0~P6 + X) — P0/P1/P2/P3 완료, P4 대기
+### Silver 세대 (P0~P6 + X)
 
 | Phase | Total | S | M | L | Done | Gate |
 |-------|-------|---|---|---|------|------|
 | P0 Foundation Hardening | 32 | 18 | 13 | 1 | **32/32** ✅ | PASS (VP1 5/5, VP2 5/6, VP3 5/6) |
 | P1 Entity Resolution | 12 | 5 | 7 | 0 | **12/12** ✅ | PASS (544 tests, S4/S5/S6) |
-| P2 Outer-Loop Remodel | 14 | 5 | 8 | 1 | **14/14** ✅ | PASS (660 tests, E2E 15) |
-| P3 Acquisition Expansion | 22 | 7 | 13 | 2 | **22/22** ✅ | PASS (599 tests, S8/S9) |
+| P2 Outer-Loop Remodel | 14 | 5 | 8 | 1 | — | **REVOKED** (D-127, 재판정 대기) |
+| P3 Acquisition Expansion | 22 | 7 | 13 | 2 | — | **REVOKED** (D-120) |
+| P3R Snippet-First Refactor | 8 | — | — | — | **8/8** ✅ | PASS (D-125, 608 tests) |
 | P4 Coverage Intelligence | 11 | 5 | 6 | 0 | 0/11 | 대기 |
 | P5 Telemetry & Dashboard | 14 | 3 | 10 | 1 | 0/14 | 대기 |
 | P6 Multi-Domain | 7 | 2 | 3 | 2 | 0/7 | 대기 |
 | X Cross-phase | 7 | 7 | 0 | 0 | 0/7 | — |
-| **Silver 합계** | **119** | — | — | — | **80/119** | — |
+| **Silver 합계** | **127** | — | — | — | **52/127** | — |
 
-**총계: Bronze 85 (완료) + Silver 119 (66 완료) = 204 tasks · 목표 테스트 수 ≥ 588 · 현재 608**
+### Investigation Phase (Gap-Resolution)
+
+| Phase | Total | S | M | Done | Status |
+|-------|-------|---|---|------|--------|
+| Gap-Res Investigation | 12 | 8 | 4 | 0/12 | 착수 (D-126) |
+
+**총계: Bronze 85 + Silver 127 + Investigation 12 = 224 tasks · 현재 테스트 608**
 
 참조 문서:
 - 단일 진실 소스: `docs/silver-masterplan-v2.md` §4 Phase 표
@@ -430,6 +437,34 @@
 
 ### P6-C. 검증 파일
 - [ ] **P6-C1** `test_multidomain/test_smoke_run.py` (S11) `[M]`
+
+---
+
+## Phase Gap-Res Investigation (12 tasks)
+
+> **목표**: SI-P3R Gate PASS 후 발견된 gap_resolution 병목 (0.517@15c, Bronze P5 0.909 대비) 원인 특정 + 수정
+> **Gate**: gap_resolution ≥ 0.85@15c, LLM 비용 ≤ baseline × 2.5, 608 테스트 유지
+> **상세**: `dev/active/phase-gap-resolution-investigation/` (plan/context/tasks/debug-history)
+
+### Stage A. 진단 로깅 + 기존 데이터 재분석
+- [ ] **GR-A1** `collect.py` parse_yield 로깅 `[S]`
+- [ ] **GR-A2** `integrate.py` integration_result 분포 로깅 `[S]`
+- [ ] **GR-A3** 기존 15c trial 정적 분석 스크립트 `[M]`
+
+### Stage B. Primary Fix (target_count cap 제거, D-129)
+- [ ] **GR-B1** `mode.py` target_count cap 제거 (Phase 5 복원) `[S]`
+- [ ] **GR-B2** `test_mode.py` target_count 공식 테스트 갱신 `[S]`
+- [ ] **GR-B3** 영향 받는 테스트 수정 `[M]`
+
+### Stage C. 재현 Trial + 효과 검증
+- [ ] **GR-C1** gap-res-fix-trial 생성 + 실행 `[M]`
+- [ ] **GR-C2** trajectory before/after 비교 `[M]`
+- [ ] **GR-C3** readiness-report 작성 `[S]`
+
+### Stage D. Secondary 대응 결정
+- [ ] **GR-D1** B2 가설 H1~H4 확증 `[S]`
+- [ ] **GR-D2** Secondary 수정안 결정 (본 Phase fix OR 별도 Phase) `[S]`
+- [ ] **GR-D3** Decision 문서화 + Phase 종결 (D-129~D-131) `[S]`
 
 ---
 
