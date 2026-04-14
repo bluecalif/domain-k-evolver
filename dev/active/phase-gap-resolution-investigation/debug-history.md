@@ -72,11 +72,44 @@
 
 ---
 
-## Pending Investigations
+### 2026-04-14 — Stage C 재현 Trial 결과 (B1 Fix + B2 가설 확증)
+
+**Trial**: `bench/silver/japan-travel/gap-res-fix-trial/` 15c, commit `9d9c8c5`
+
+**Primary 수정 효과 (D-129 확정)**
+- gap_resolution_rate: 0.517 → **0.990** (+91%)
+- gu_open final: 73 → **1** (−98.6%)
+- Gate PASS (VP1 5/5, VP2 5/6, VP3 5/6) — Bronze 기준 초과 달성
+- LLM 비용 ~1.5x 증가 (3x 예측 대비 낮음 — target 증가분 만큼 빠르게 수렴)
+
+**Secondary 가설 확증 (H1~H4)**
+- **H1 (LLM parse 수율 낮음) 기각**: parse_yield_summary 로그 avg_claims 3.5~5.0 per target, zero_ratio 대부분 0. LLM은 target당 안정적으로 3-5 claims 생성.
+- **H3 (source_gu_id 누락/변조) 완전 기각**: integrate_result 15 cycles 전체 `no_source_gu=0`. LLM의 prompt 준수율 100%.
+- **H2/H4**: 검증 불필요 (B1 fix만으로 수렴 달성)
+- **"52% conversion"의 실체**: snippet-first 구조상 target당 N claims fan-out. `resolved/claims` 기준은 구조적으로 낮을 수밖에 없으며, `resolved/targets` ≈ 90-100%로 실제 conversion 병목 없음.
+
+**결정 (D-130)**
+- Secondary fix 불필요 — 병목의 실체가 없음이 확인됨
+- 별도 Phase 이관도 불필요
+
+**교훈 (Lesson)**
+- **구조적 분모 오해의 함정**: `resolved/claims` 지표는 1:1 target→claim 가정 하에서만 유효. snippet-first(1:N fan-out)로 전환되면 분모 정의를 재검토해야 함.
+- **진단 로깅의 힘**: A1(parse_yield)+A2(integrate_result) 추가로 재현 trial 1회에 B1 확증 + B2 가설 기각 동시 달성 — API 비용 최소화
+
+---
+
+## Phase 종결 (2026-04-14)
+
+**전체 결과 요약**
+- Primary 병목 (B1): commit 1개로 해소, gap_resolution 0.517→0.99
+- Secondary 병목 (B2): 실체 없음 확인, 추가 작업 불필요
+- 관련 Decisions: D-126, D-129, D-130, D-131
+
+## Pending Investigations (완료)
 
 | ID | 주제 | Stage | Status |
 |----|------|-------|--------|
-| INV-1 | LLM parse yield rate 정량 측정 | A1, C2 | Planned |
-| INV-2 | integration_result 분포 | A2, C2 | Planned |
-| INV-3 | Primary fix 효과 정량화 | C1~C3 | Planned |
-| INV-4 | Secondary fix 범위 결정 | D1, D2 | Planned |
+| INV-1 | LLM parse yield rate 정량 측정 | A1, C2 | ✅ avg 3.5~5 per target (H1 기각) |
+| INV-2 | integration_result 분포 | A2, C2 | ✅ no_source_gu=0 (H3 완전 기각) |
+| INV-3 | Primary fix 효과 정량화 | C1~C3 | ✅ 0.517→0.99 확증 |
+| INV-4 | Secondary fix 범위 결정 | D1, D2 | ✅ Fix 불필요 (D-130) |

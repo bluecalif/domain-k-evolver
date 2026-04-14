@@ -189,9 +189,9 @@ class EvolverState(TypedDict):
 | D-126 | gap_resolution 병목 별도 조사 (remodel 이전 0.437@10c) | Gap-Res |
 | D-127 | P2 Gate는 remodel on/off 비교 실험으로 재설계 | P2 재판정 |
 | D-128 | 우선순위: res_rate 조사 → P2 비교 → P4~P6 | 전체 |
-| D-129 (예정) | target_count cap은 Phase 5(`b122a23`)에서 의도적 제거 — 재도입 금지 | Gap-Res B1 |
-| D-130 (예정) | LLM parse 수율 대응 방향 — 본 Phase fix OR 별도 Phase | Gap-Res D2 |
-| D-131 (예정) | SI-P2 재판정 착수 조건 (Gap-Res 결과 기준) | Gap-Res D3 |
+| D-129 | target_count cap은 Phase 5(`b122a23`)에서 의도적 제거 — 재도입 금지 | Gap-Res B1 `2a01197` |
+| D-130 | Secondary 병목 실체 없음 — `resolved/claims`는 snippet-first(1:N fan-out) 구조상 낮음, `resolved/targets` ≈ 90-100%. 추가 fix 불필요 | Gap-Res C+D |
+| D-131 | SI-P2 재판정 착수 조건: Gap-Res PASS (0.99) 달성 → P2 remodel on/off 비교 실험 착수 가능 | Gap-Res D |
 
 ---
 
