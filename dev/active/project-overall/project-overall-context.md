@@ -1,6 +1,6 @@
 # Project Overall Context
-> Last Updated: 2026-04-14
-> Status: Bronze 완료 (468 tests) → Silver P0 완료 (510) → P1 완료 (544) → **SI-P3R 완료** (608 tests, Gate PASS, D-125) → **Gap-Res Investigation 착수** (D-126) → SI-P2 재판정 대기 (D-127)
+> Last Updated: 2026-04-15
+> Status: Bronze 완료 (468 tests) → Silver P0 완료 (510) → P1 완료 (544) → **SI-P3R 완료** (608 tests, D-125) → **Gap-Res 완료** (610, D-129) → **SI-P2 Gate PASS** (613, D-132/133) → SI-P4 Planning
 
 ## 1. 핵심 파일
 
@@ -192,6 +192,9 @@ class EvolverState(TypedDict):
 | D-129 | target_count cap은 Phase 5(`b122a23`)에서 의도적 제거 — 재도입 금지 | Gap-Res B1 `2a01197` |
 | D-130 | Secondary 병목 실체 없음 — `resolved/claims`는 snippet-first(1:N fan-out) 구조상 낮음, `resolved/targets` ≈ 90-100%. 추가 fix 불필요 | Gap-Res C+D |
 | D-131 | SI-P2 재판정 착수 조건: Gap-Res PASS (0.99) 달성 → P2 remodel on/off 비교 실험 착수 가능 | Gap-Res D |
+| D-132 | Smart Remodel Criteria: has_critical → 3-way OR (audit_critical, growth_stagnation KU<5/3c, exploration_drought GU<30/5c) | P2 재판정 |
+| D-133 | merge min_overlap_count ≥ 2 필터 — 1-field overlap 과다 merge 방지 | P2 재판정 |
+| D-134 | Gini criteria는 P4 category management로 연기 | P2 → P4 |
 
 ---
 

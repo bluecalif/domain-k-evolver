@@ -1,0 +1,130 @@
+{
+  "gate_passed": true,
+  "verdict": "PASS",
+  "viewpoints": [
+    {
+      "viewpoint": "VP1_expansion_variability",
+      "passed": true,
+      "criteria": {
+        "R1_category_gini": {
+          "passed": true,
+          "value": 0.4276,
+          "threshold": 0.45,
+          "critical": true
+        },
+        "R2_blind_spot": {
+          "passed": true,
+          "value": 0.0,
+          "threshold": 0.4,
+          "critical": false
+        },
+        "R3_late_discovery": {
+          "passed": true,
+          "value": 26,
+          "threshold": 2,
+          "critical": false
+        },
+        "R4_field_gini": {
+          "passed": true,
+          "value": 0.4306,
+          "threshold": 0.45,
+          "critical": false
+        },
+        "R5_explore_yield": {
+          "passed": true,
+          "value": 0.9333,
+          "threshold": 0.2,
+          "critical": false
+        }
+      },
+      "score": "5/5"
+    },
+    {
+      "viewpoint": "VP2_completeness",
+      "passed": true,
+      "criteria": {
+        "R1_gap_resolution": {
+          "passed": true,
+          "value": 0.875,
+          "threshold": 0.85,
+          "critical": true
+        },
+        "R2_min_ku_per_cat": {
+          "passed": true,
+          "value": 5,
+          "threshold": 5,
+          "critical": true
+        },
+        "R3_multi_evidence": {
+          "passed": false,
+          "value": 0.651,
+          "threshold": 0.8,
+          "critical": false
+        },
+        "R4_avg_confidence": {
+          "passed": true,
+          "value": 0.8614,
+          "threshold": 0.82,
+          "critical": false
+        },
+        "R5_health_grade": {
+          "passed": true,
+          "value": 2.0,
+          "threshold": 1.4,
+          "critical": false
+        },
+        "R6_staleness": {
+          "passed": true,
+          "value": 0,
+          "threshold": 2,
+          "critical": false
+        }
+      },
+      "score": "5/6"
+    },
+    {
+      "viewpoint": "VP3_self_governance",
+      "passed": true,
+      "criteria": {
+        "R1_audit_count": {
+          "passed": true,
+          "value": 3,
+          "threshold": 2,
+          "critical": true
+        },
+        "R2_policy_changes": {
+          "passed": true,
+          "value": 1,
+          "threshold": 1,
+          "critical": true
+        },
+        "R3_threshold_adapt": {
+          "passed": true,
+          "value": 1,
+          "threshold": 1,
+          "critical": false
+        },
+        "R4_adapted_ratio": {
+          "passed": true,
+          "value": 14,
+          "threshold": 3,
+          "critical": false
+        },
+        "R5_rollback": {
+          "passed": true,
+          "value": 0,
+          "threshold": 0,
+          "critical": false
+        },
+        "R6_closed_loop": {
+          "passed": false,
+          "value": 0,
+          "threshold": 1,
+          "critical": false
+        }
+      },
+      "score": "5/6"
+    }
+  ],
+  "failed_viewpoints": []
+}

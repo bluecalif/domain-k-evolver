@@ -63,7 +63,8 @@ SI-P3R Gate PASS 후 발견된 gap_resolution_rate 병목 (0.517@15c) 원인 특
 
 ### 후속
 
-- [ ] SI-P4~P6
+- [ ] **SI-P4 Coverage Intelligence** — dev-docs 생성 완료 (17 tasks), Gini 통합 + Smart category addition 포함. 구현 착수 대기
+- [ ] SI-P5~P6
 - [ ] `bash.exe.stackdump` 삭제 또는 gitignore
 
 ### Out of scope (본 Phase에서 종결)

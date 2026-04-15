@@ -230,19 +230,23 @@ src/obs/          — 부재 (Silver P5 에서 telemetry + dashboard 신규)
 - **병렬 가능**: P1
 
 #### Silver P4. Coverage Intelligence
-- **Goal**: plan 이 novelty / overlap / deficit 근거로 target 선택
+- **Goal**: plan 이 novelty / overlap / deficit 근거로 target 선택 + **Gini 통합** + **Smart category addition**
 - **Scope**:
   - `src/utils/novelty.py` [NEW] — Jaccard / token / entity overlap
-  - `src/utils/coverage_map.py` [NEW] — axis × entity 그리드, deficit score
-  - `plan.py` reason_code (`deficit:...`, `plateau:novelty<...`, `audit:merge_pending`, `remodel:pending`, `seed:initial`)
-  - `critique.py` metric 기반 처방 (`overlap > 0.8` → jump)
+  - `src/utils/coverage_map.py` [NEW] — axis × entity 그리드, deficit score, **Gini tracking 통합**
+  - `plan.py` reason_code (`deficit:...`, `plateau:novelty<...`, `gini:category_imbalance`, `remodel:pending`, `seed:initial`)
+  - `critique.py` metric 기반 machine-readable 처방 (`overlap > 0.8` → jump, `gini > 0.45` → diversify)
   - `plateau_detector.py` novelty trigger
+  - `remodel.py` **category_addition** proposal type (보수적: ≥5 KU + LLM 판단 + 사이클당 1개 + HITL 승인)
+- **Expanded from masterplan**: D-134 이행 (Gini → coverage), smart category addition
 - **Gate (정량)**:
   - plan output 모든 target 이 reason_code 보유
   - 10 cycle 연속 run novelty 평균 ≥ 0.25
   - 인위적 plateau → audit/remodel trigger 발동
   - S7 full scenario pass
-- **Depends on**: P2 (remodel), P3 (provenance)
+  - category_addition 보수적 조건 테스트 pass
+- **Depends on**: P2 ✅ (remodel), P3R ✅ (provenance)
+- **Dev-docs**: `dev/active/phase-si-p4-coverage/` (17 tasks, S:7/M:8/L:1)
 
 #### Silver P5. Telemetry Contract & Dashboard
 - **Goal**: 운영자가 JSON 파일 없이 상태 파악·개입
@@ -312,11 +316,11 @@ P0 ✅ ── P1 ✅ ── P3R ── P2(재판정) ── P4 ── P5 ── 
 |-------|------|-------|--------|
 | Silver P0 | Foundation Hardening | 32 (A:6 + B:9 + C:8 + D:3 + X:6) | ✅ Complete (Gate PASS) |
 | Silver P1 | Entity Resolution & State Safety | 12 (A:4 + B:4 + C:4) | ✅ Complete (544 tests, S4/S5/S6 pass) |
-| Silver P2 | Outer-Loop Remodel 완결 | 14 (A:4 + B:4 + C:6) | **REVOKED** — P3R 후 재판정 |
+| Silver P2 | Outer-Loop Remodel 완결 | 14 (A:4 + B:4 + C:6) | ✅ **Gate PASS** (D-132/133, 613 tests) |
 | Silver P3 | Acquisition Expansion (3단계) | 22 (A:5 + B:6 + C:6 + D:5) | **REVOKED** (D-120, 2026-04-13) |
 | Silver P3R | Snippet-First Refactor | 8 (T1~T8) | ✅ Complete (Gate PASS, D-125) |
-| Gap-Res Investigation | Target cap regression + LLM parse yield | 12 (A:3 + B:3 + C:3 + D:3) | 착수 |
-| Silver P4 | Coverage Intelligence | 11 (A:3 + B:4 + C:4) | 대기 |
+| Gap-Res Investigation | Target cap regression + LLM parse yield | 12 (A:3 + B:3 + C:3 + D:3) | ✅ 완료 (D-129, 610 tests) |
+| Silver P4 | Coverage Intelligence | 17 (A:5 + B:4 + C:3 + D:5) | **Planning** |
 | Silver P5 | Telemetry Contract & Dashboard | 14 (A:5 + B:5 + C:4) | 대기 |
 | Silver P6 | Multi-Domain Validation | 7 (A:3 + B:3 + C:1) | 대기 |
 | Silver X | Cross-phase 제어 | 7 | 대기 |

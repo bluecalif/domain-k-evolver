@@ -24,10 +24,10 @@
 |-------|-------|---|---|---|------|------|
 | P0 Foundation Hardening | 32 | 18 | 13 | 1 | **32/32** ✅ | PASS (VP1 5/5, VP2 5/6, VP3 5/6) |
 | P1 Entity Resolution | 12 | 5 | 7 | 0 | **12/12** ✅ | PASS (544 tests, S4/S5/S6) |
-| P2 Outer-Loop Remodel | 14 | 5 | 8 | 1 | — | **REVOKED** (D-127, 재판정 대기) |
+| P2 Outer-Loop Remodel | 14 | 5 | 8 | 1 | **14/14** ✅ | **Gate PASS** (D-132/133, 613 tests) |
 | P3 Acquisition Expansion | 22 | 7 | 13 | 2 | — | **REVOKED** (D-120) |
 | P3R Snippet-First Refactor | 8 | — | — | — | **8/8** ✅ | PASS (D-125, 608 tests) |
-| P4 Coverage Intelligence | 11 | 5 | 6 | 0 | 0/11 | 대기 |
+| P4 Coverage Intelligence | 17 | 7 | 8 | 1 | 0/17 | **Planning** |
 | P5 Telemetry & Dashboard | 14 | 3 | 10 | 1 | 0/14 | 대기 |
 | P6 Multi-Domain | 7 | 2 | 3 | 2 | 0/7 | 대기 |
 | X Cross-phase | 7 | 7 | 0 | 0 | 0/7 | — |
@@ -367,27 +367,36 @@
 
 ---
 
-## Phase P4: Coverage Intelligence (11 tasks)
+## Phase P4: Coverage Intelligence (17 tasks)
 
-> **목표**: novelty/coverage_map primitives + reason_code 체계 + plateau 고도화
-> **Gate**: plan 100% reason_code, 10 cycle novelty 평균 ≥ 0.25, 인위 plateau → audit/remodel trigger, S7 pass
+> **목표**: novelty/coverage_map primitives + reason_code 체계 + plateau 고도화 + **Gini 통합** (D-134) + **Smart category addition**
+> **Gate**: plan 100% reason_code, 10c novelty ≥ 0.25, plateau → trigger, S7 pass, category_addition 보수적 조건
+> **Dev-docs**: `dev/active/phase-si-p4-coverage/`
 
-### P4-A. Metrics primitives
+### P4-A. Metrics Primitives + Gini 통합
 - [ ] **P4-A1** `novelty.py` (Jaccard/token/entity overlap) `[M]`
-- [ ] **P4-A2** `coverage_map.py` (axis/bucket/deficit) `[M]`
-- [ ] **P4-A3** `EvolverState.novelty_history` + `coverage_map` `[S]`
+- [ ] **P4-A2** `coverage_map.py` (axis/bucket/deficit + Gini tracking) `[M]`
+- [ ] **P4-A3** `EvolverState` novelty/coverage 채움 로직 (orchestrator) `[S]`
+- [ ] **P4-A4** `plateau_detector.py` novelty 확장 (< 0.1 × 5c) `[M]`
+- [ ] **P4-A5** Gini → deficit 반영 (가중 0.3) `[M]`
 
-### P4-B. Plan/Critique/Plateau 통합
-- [ ] **P4-B1** `plan.py` target 에 `reason_code` enum `[M]`
-- [ ] **P4-B2** `critique.py` machine-readable rule `[M]`
-- [ ] **P4-B3** `plateau_detector.py` novelty-based trigger `[M]`
-- [ ] **P4-B4** remodel_pending → plan reason_code 영향 `[S]`
+### P4-B. Plan/Critique 통합
+- [ ] **P4-B1** `plan.py` reason_code enum + 모든 target 코드 부여 `[M]`
+- [ ] **P4-B2** `critique.py` machine-readable 처방 규칙 `[M]`
+- [ ] **P4-B3** remodel_pending → plan reason_code 영향 `[S]`
+- [ ] **P4-B4** Gini 불균형 → plan target 우선순위 `[S]`
 
-### P4-C. 검증
-- [ ] **P4-C1** novelty 단위 테스트 `[S]`
-- [ ] **P4-C2** reason-code 생성 테스트 (5 enum) `[S]`
-- [ ] **P4-C3** S7 full scenario `[M]`
-- [ ] **P4-C4** novelty/overlap telemetry 노출 `[S]`
+### P4-C. Smart Category Addition
+- [ ] **P4-C1** `remodel.py` category_addition proposal type `[L]`
+- [ ] **P4-C2** 보수적 트리거 (≥5 KU + LLM 판단 + 1/cycle) `[M]`
+- [ ] **P4-C3** HITL-R category_addition 연동 + skeleton 반영 `[M]`
+
+### P4-D. 검증
+- [ ] **P4-D1** novelty 단위 테스트 `[S]`
+- [ ] **P4-D2** coverage_map + Gini 통합 테스트 `[S]`
+- [ ] **P4-D3** reason_code 생성 테스트 (모든 enum) `[S]`
+- [ ] **P4-D4** S7 full scenario (plateau → audit → remodel → category) `[M]`
+- [ ] **P4-D5** category_addition 보수적 조건 테스트 `[S]`
 
 ---
 
