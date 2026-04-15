@@ -24,6 +24,7 @@ from src.utils.metrics_logger import MetricsLogger
 from src.utils.external_novelty import compute_external_novelty
 from src.utils.novelty import compute_novelty
 from src.utils.reach_ledger import build_ledger_snapshot
+from src.nodes.exploration_pivot import run_exploration_pivot
 from src.nodes.universe_probe import (
     gather_evidence,
     register_validated,
@@ -153,6 +154,9 @@ class Orchestrator:
 
             # Universe Probe (Stage E) — audit 후, remodel 전
             self._maybe_run_universe_probe(state, cycle_num)
+
+            # Exploration Pivot (Stage E) — novelty+reach 정체 시 targets 치환
+            self._maybe_run_exploration_pivot(state, cycle_num)
 
             # Remodel (P2) — audit 후 조건 충족 시 실행
             t = time.monotonic()
@@ -314,6 +318,36 @@ class Orchestrator:
             )
         else:
             logger.info("Universe probe: cycle=%d, 검증 통과 proposal 없음", cycle_num)
+
+    def _maybe_run_exploration_pivot(
+        self,
+        state: EvolverState,
+        cycle_num: int,
+    ) -> None:
+        """exploration_pivot 트리거 조건 확인 + query 치환 (Stage E).
+
+        novelty + reach 동시 정체 시 LLM query rewriter 로 이번 cycle targets 치환.
+        """
+        result = run_exploration_pivot(
+            state, self._llm, self.config, self._cost_guard, cycle=cycle_num,
+        )
+        if result["status"] != "ok":
+            return
+
+        # pivot history 기록
+        pivot_history = list(state.get("pivot_history") or [])
+        pivot_history.append({
+            "cycle": cycle_num,
+            "variants": len(result["variants"]),
+            "candidate_targets": len(result["candidate_targets"]),
+            "reason": result["reason"],
+        })
+        state["pivot_history"] = pivot_history
+
+        logger.info(
+            "Exploration pivot 실행: cycle=%d, variants=%d, candidate_targets=%d",
+            cycle_num, len(result["variants"]), len(result["candidate_targets"]),
+        )
 
     def _maybe_run_audit(
         self,
