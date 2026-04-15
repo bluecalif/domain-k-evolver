@@ -48,6 +48,9 @@ _OPTIONAL_LIST_FILES: dict[str, str] = {
     "conflict-ledger.json": "conflict_ledger",
 }
 
+# SI-P4 Stage E: external anchor state (하나의 파일에 history + 누적 키 병합)
+_EXTERNAL_ANCHOR_FILE = "external-anchor.json"
+
 
 def _read_json(path: Path) -> dict | list:
     with open(path, encoding="utf-8") as f:
@@ -100,6 +103,19 @@ def load_state(domain_path: str | Path) -> EvolverState:
 
     cycle = data.get("metrics", {}).get("cycle", 0)
 
+    # SI-P4 Stage E: external-anchor.json 로드 (부재 시 빈 값)
+    ext_path = state_dir / _EXTERNAL_ANCHOR_FILE
+    ext_history: list[float] = []
+    ext_keys: list[str] = []
+    if ext_path.exists():
+        try:
+            ext_data = _read_json(ext_path)
+            if isinstance(ext_data, dict):
+                ext_history = list(ext_data.get("novelty_history") or [])
+                ext_keys = list(ext_data.get("observation_keys") or [])
+        except (json.JSONDecodeError, UnicodeDecodeError):
+            logger.warning("external-anchor 파싱 실패, 빈 값 사용: %s", ext_path)
+
     state: EvolverState = {
         **data,
         "current_cycle": cycle,
@@ -116,6 +132,8 @@ def load_state(domain_path: str | Path) -> EvolverState:
         "remodel_report": None,
         "coverage_map": {},
         "novelty_history": [],
+        "external_novelty_history": ext_history,
+        "external_observation_keys": ext_keys,
     }
     return state
 
@@ -195,6 +213,18 @@ def save_state(state: EvolverState, domain_path: str | Path) -> None:
                 shutil.copy2(target, bak_path)
             _write_json(target, data)
 
+    # SI-P4 Stage E: external-anchor.json 저장 (history 또는 keys 가 있을 때만)
+    ext_history = state.get("external_novelty_history") or []
+    ext_keys = state.get("external_observation_keys") or []
+    if ext_history or ext_keys:
+        target = state_dir / _EXTERNAL_ANCHOR_FILE
+        if target.exists():
+            shutil.copy2(target, target.with_suffix(target.suffix + ".bak"))
+        _write_json(target, {
+            "novelty_history": list(ext_history),
+            "observation_keys": list(ext_keys),
+        })
+
 
 def snapshot_state(domain_path: str | Path, cycle: int) -> Path:
     """state/ → state-snapshots/cycle-{n}-snapshot/ 스냅샷 복사.
@@ -219,7 +249,7 @@ def snapshot_state(domain_path: str | Path, cycle: int) -> Path:
 
     snapshot_dir.mkdir(parents=True, exist_ok=True)
 
-    for filename in list(_FILE_MAP) + list(_OPTIONAL_LIST_FILES):
+    for filename in list(_FILE_MAP) + list(_OPTIONAL_LIST_FILES) + [_EXTERNAL_ANCHOR_FILE]:
         src = state_dir / filename
         if src.exists():
             shutil.copy2(src, snapshot_dir / filename)
@@ -252,7 +282,7 @@ def snapshot_phase(domain_path: str | Path, phase_number: int) -> Path:
 
     phase_dir.mkdir(parents=True, exist_ok=True)
 
-    for filename in list(_FILE_MAP) + list(_OPTIONAL_LIST_FILES):
+    for filename in list(_FILE_MAP) + list(_OPTIONAL_LIST_FILES) + [_EXTERNAL_ANCHOR_FILE]:
         src = state_dir / filename
         if src.exists():
             shutil.copy2(src, phase_dir / filename)

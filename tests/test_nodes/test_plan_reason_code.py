@@ -109,6 +109,73 @@ class TestAssignReasonCode:
         assert code == "seed:initial"
 
 
+class TestExternalAnchorReasonCodes:
+    """SI-P4 Stage E / E5-1: external_novelty / universe_probe / reach_diversity reason codes."""
+
+    def test_external_novelty_stagnation(self):
+        """external_novelty_history < 0.1 × 5c → external_novelty:stagnation(avg=...)."""
+        gu = _make_gu("GU-1", "d:cat:a", "price")
+        ext_hist = [0.08, 0.05, 0.09, 0.02, 0.07]
+        code = _assign_reason_code(
+            gu, None, None, False, 5, external_novelty_history=ext_hist,
+        )
+        assert code.startswith("external_novelty:stagnation")
+        assert "avg=" in code
+
+    def test_external_novelty_not_stagnant_falls_through(self):
+        """external_novelty 중 하나라도 ≥ 0.1 → stagnation 아님, 다른 reason 사용."""
+        gu = _make_gu("GU-1", "d:cat:a", "price")
+        ext_hist = [0.08, 0.05, 0.15, 0.02, 0.07]  # 0.15 하나로 인해 not stagnation
+        code = _assign_reason_code(
+            gu, None, None, False, 5, external_novelty_history=ext_hist,
+        )
+        assert not code.startswith("external_novelty")
+        assert code == "seed:initial"
+
+    def test_universe_probe_candidate(self):
+        """trigger_source 에 universe_probe → universe_probe:candidate."""
+        gu = _make_gu("GU-1", "d:candidate:new", "note", trigger_source="universe_probe:llm_survey")
+        code = _assign_reason_code(gu, None, None, False, 5)
+        assert code == "universe_probe:candidate"
+
+    def test_reach_diversity_degraded(self):
+        """trigger_source 에 reach_ledger → reach_diversity:degraded."""
+        gu = _make_gu("GU-1", "d:cat:a", "price", trigger_source="reach_ledger:domain_plateau")
+        code = _assign_reason_code(gu, None, None, False, 5)
+        assert code == "reach_diversity:degraded"
+
+    def test_external_novelty_overrides_deficit(self):
+        """external_novelty:stagnation 이 deficit 보다 우선."""
+        gu = _make_gu("GU-1", "d:food:ramen", "price")
+        cm = _make_coverage_map({
+            "food": {"ku_count": 1, "deficit_score": 0.9, "field_coverage": {}},
+        })
+        ext_hist = [0.01, 0.02, 0.03, 0.04, 0.05]
+        code = _assign_reason_code(
+            gu, cm, None, False, 5, external_novelty_history=ext_hist,
+        )
+        assert code.startswith("external_novelty:stagnation")
+
+    def test_universe_probe_overrides_gini(self):
+        """universe_probe:candidate 가 gini 보다 우선."""
+        gu = _make_gu("GU-1", "d:candidate:new", "note", trigger_source="universe_probe:xyz")
+        cm = _make_coverage_map(
+            {"candidate": {"ku_count": 2, "deficit_score": 0.3, "field_coverage": {"note": 2}}},
+            gini=0.55,
+        )
+        code = _assign_reason_code(gu, cm, None, False, 5)
+        assert code == "universe_probe:candidate"
+
+    def test_short_external_history_does_not_trigger(self):
+        """5c 미만 history → stagnation 미발동."""
+        gu = _make_gu("GU-1", "d:cat:a", "price")
+        ext_hist = [0.01, 0.02, 0.03]  # only 3 cycles
+        code = _assign_reason_code(
+            gu, None, None, False, 5, external_novelty_history=ext_hist,
+        )
+        assert not code.startswith("external_novelty")
+
+
 class TestBoostDeficitCategories:
     """_boost_deficit_categories Gini 우선순위 테스트."""
 

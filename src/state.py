@@ -226,3 +226,5 @@ class EvolverState(TypedDict, total=False):
     remodel_report: dict | None   # P2: 현재 pending RemodelReport (HITL-R 전달용)
     coverage_map: dict            # P4: 축 × 엔티티 그리드
     novelty_history: list[float]  # P4: cycle 별 novelty 점수
+    external_novelty_history: list[float]  # SI-P4 Stage E: cycle 별 external novelty
+    external_observation_keys: list[str]   # SI-P4 Stage E: 누적 (entity_key|field) 관찰 키

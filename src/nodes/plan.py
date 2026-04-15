@@ -20,6 +20,10 @@ _RISK_ORDER = {"safety": 0, "financial": 1, "policy": 2, "convenience": 3, "info
 DEFICIT_THRESHOLD = 0.5     # deficit_score 초과 시 deficit reason
 GINI_THRESHOLD = 0.45       # Gini 임계치
 
+# --- SI-P4 Stage E: External Anchor reason_code 임계치 ---
+EXTERNAL_NOVELTY_STAGNATION_THRESHOLD = 0.1   # 5c 연속 < 0.1 → stagnation
+EXTERNAL_NOVELTY_STAGNATION_WINDOW = 5
+
 
 def _assign_reason_code(
     gu: dict,
@@ -27,15 +31,36 @@ def _assign_reason_code(
     novelty_history: list[float] | None,
     has_remodel_pending: bool,
     cycle: int,
+    *,
+    external_novelty_history: list[float] | None = None,
 ) -> str:
-    """GU 에 reason_code 부여 (P4-B1).
+    """GU 에 reason_code 부여 (P4-B1 + SI-P4 Stage E).
 
-    우선순위: deficit > gini > plateau > remodel > seed.
+    우선순위: external_novelty > universe_probe > reach_diversity >
+              deficit > gini > plateau > remodel > audit > seed.
     """
     entity_key = gu.get("target", {}).get("entity_key", "")
     parts = entity_key.split(":")
     category = parts[1] if len(parts) >= 3 else ""
     field = gu.get("target", {}).get("field", "")
+
+    # SI-P4 Stage E — External Anchor 계열 (최상위 우선순위)
+
+    # 0a. external_novelty:stagnation — 누적 history 신호 (cycle-level, 모든 target 에 적용)
+    if external_novelty_history and len(external_novelty_history) >= EXTERNAL_NOVELTY_STAGNATION_WINDOW:
+        recent = external_novelty_history[-EXTERNAL_NOVELTY_STAGNATION_WINDOW:]
+        if all(n < EXTERNAL_NOVELTY_STAGNATION_THRESHOLD for n in recent):
+            avg = sum(recent) / len(recent)
+            return f"external_novelty:stagnation(avg={avg:.2f})"
+
+    # 0b. universe_probe:candidate — universe_probe 가 제안한 candidate target
+    trigger_src = gu.get("trigger_source", "") or ""
+    if "universe_probe" in trigger_src:
+        return "universe_probe:candidate"
+
+    # 0c. reach_diversity:degraded — reach_ledger 기반 domain 다양성 확장 target
+    if "reach_ledger" in trigger_src or "reach_diversity" in trigger_src:
+        return "reach_diversity:degraded"
 
     # 1. deficit:category 또는 deficit:field
     if coverage_map and category:
@@ -286,6 +311,7 @@ def plan_node(
     policies = state.get("policies", {})
     coverage_map = state.get("coverage_map")
     novelty_history = state.get("novelty_history")
+    external_novelty_history = state.get("external_novelty_history")
     cycle = state.get("current_cycle", 0)
 
     # P4-B3: remodel pending 확인
@@ -351,6 +377,7 @@ def plan_node(
         if gu:
             reason_codes[gu_id] = _assign_reason_code(
                 gu, coverage_map, novelty_history, has_remodel_pending, cycle,
+                external_novelty_history=external_novelty_history,
             )
         else:
             reason_codes[gu_id] = "seed:initial"

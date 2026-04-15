@@ -92,12 +92,42 @@ class OrchestratorConfig:
 
 
 @dataclass(frozen=True)
+class ExternalAnchorConfig:
+    """SI-P4 Stage E: External Anchor 예산 + kill-switch 설정.
+
+    Stage E 는 universe_probe + exploration_pivot 로 외부 추론을 도입.
+    예산 초과 시 kill-switch 가 발동하여 Stage E 만 skip, core loop 는 지속.
+    """
+
+    enabled: bool = False  # 기본 off — 명시적 활성화 필요
+    probe_interval_cycles: int = 5  # universe_probe 주기 (cycle N마다)
+    llm_budget_per_run: int = 3  # 15c bench 당 Stage E 전용 LLM call 상한
+    tavily_budget_per_run: int = 9  # 15c bench 당 Stage E 전용 Tavily query 상한
+    pivot_min_plateau_cycles: int = 5  # exploration_pivot 발동 최소 plateau 길이
+    candidate_promotion_min_confidence: float = 0.6  # universe_probe candidate → HITL-R 최소 신뢰도
+
+    @classmethod
+    def from_env(cls) -> ExternalAnchorConfig:
+        return cls(
+            enabled=os.environ.get("EVOLVER_EXTERNAL_ANCHOR_ENABLED", "false").lower() == "true",
+            probe_interval_cycles=int(os.environ.get("EVOLVER_PROBE_INTERVAL_CYCLES", "5")),
+            llm_budget_per_run=int(os.environ.get("EVOLVER_STAGE_E_LLM_BUDGET", "3")),
+            tavily_budget_per_run=int(os.environ.get("EVOLVER_STAGE_E_TAVILY_BUDGET", "9")),
+            pivot_min_plateau_cycles=int(os.environ.get("EVOLVER_PIVOT_MIN_PLATEAU", "5")),
+            candidate_promotion_min_confidence=float(
+                os.environ.get("EVOLVER_CANDIDATE_MIN_CONFIDENCE", "0.6")
+            ),
+        )
+
+
+@dataclass(frozen=True)
 class EvolverConfig:
     """전체 설정 통합."""
 
     llm: LLMConfig = field(default_factory=LLMConfig)
     search: SearchConfig = field(default_factory=SearchConfig)
     orchestrator: OrchestratorConfig = field(default_factory=OrchestratorConfig)
+    external_anchor: ExternalAnchorConfig = field(default_factory=ExternalAnchorConfig)
 
     @classmethod
     def from_env(cls) -> EvolverConfig:
@@ -105,6 +135,7 @@ class EvolverConfig:
             llm=LLMConfig.from_env(),
             search=SearchConfig.from_env(),
             orchestrator=OrchestratorConfig.from_env(),
+            external_anchor=ExternalAnchorConfig.from_env(),
         )
 
     def validate_api_keys(self) -> None:
@@ -198,6 +229,7 @@ def write_config_snapshot(
         "llm": _redact(dataclasses.asdict(config.llm)),
         "search": _redact(dataclasses.asdict(config.search)),
         "orchestrator": dataclasses.asdict(config.orchestrator),
+        "external_anchor": dataclasses.asdict(config.external_anchor),
         "providers": list(provider_list),
         "skeleton_path": skeleton_ref,
         "skeleton_sha256": skeleton_sha256,

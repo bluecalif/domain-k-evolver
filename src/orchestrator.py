@@ -20,6 +20,7 @@ from src.state import EvolverState
 from src.utils.coverage_map import build_coverage_map
 from src.utils.metrics_guard import check_metrics_guard
 from src.utils.metrics_logger import MetricsLogger
+from src.utils.external_novelty import compute_external_novelty
 from src.utils.novelty import compute_novelty
 from src.utils.plateau_detector import PlateauDetector
 from src.utils.policy_manager import apply_patches, rollback, should_rollback
@@ -215,6 +216,14 @@ class Orchestrator:
         state["novelty_history"] = novelty_history
         self._prev_kus = [dict(ku) for ku in curr_kus]  # 다음 cycle 용 스냅샷
 
+        # SI-P4 Stage E: external_novelty — 누적 history 대비 신규 (entity_key, field) 비율
+        prev_keys = state.get("external_observation_keys") or []
+        ext_score, new_keys = compute_external_novelty(curr_kus, prev_keys)
+        ext_history = list(state.get("external_novelty_history") or [])
+        ext_history.append(ext_score)
+        state["external_novelty_history"] = ext_history
+        state["external_observation_keys"] = sorted(set(prev_keys) | new_keys)
+
         # Coverage map 갱신
         skeleton = state.get("domain_skeleton", {})
         coverage = build_coverage_map(state, skeleton)
@@ -222,8 +231,9 @@ class Orchestrator:
 
         summary = coverage.get("summary", {})
         logger.info(
-            "  Novelty=%.3f, cat_gini=%.3f, field_gini=%.3f",
+            "  Novelty=%.3f, ext_novelty=%.3f, cat_gini=%.3f, field_gini=%.3f",
             novelty,
+            ext_score,
             summary.get("category_gini", 0),
             summary.get("field_gini", 0),
         )
