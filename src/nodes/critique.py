@@ -269,6 +269,90 @@ def _generate_balance_gus(
     return new_gus
 
 
+def _generate_machine_rules(
+    state: dict,
+    rates: dict,
+    deficits: dict,
+) -> list[dict]:
+    """P4-B2: metric 기반 machine-readable 처방 규칙 생성.
+
+    각 규칙: {rule, condition, action, target, value}.
+    """
+    rules: list[dict] = []
+    coverage_map = state.get("coverage_map") or {}
+    novelty_history = state.get("novelty_history") or []
+    summary = coverage_map.get("summary", {})
+
+    # 1. coverage_deficit > 0.5 → explore
+    for axis, deficit in deficits.items():
+        if deficit > 0.5:
+            rules.append({
+                "rule": f"coverage_deficit>{0.5}",
+                "condition": f"axis={axis}, deficit={deficit:.2f}",
+                "action": "explore",
+                "target_axis": axis,
+                "value": round(deficit, 4),
+            })
+
+    # 2. category_gini > 0.45 → diversify
+    cat_gini = summary.get("category_gini", 0)
+    if cat_gini > 0.45:
+        rules.append({
+            "rule": "category_gini>0.45",
+            "condition": f"gini={cat_gini:.3f}",
+            "action": "diversify",
+            "target": "category_balance",
+            "value": round(cat_gini, 4),
+        })
+
+    # 3. field_gini > 0.45 → diversify_fields
+    field_gini = summary.get("field_gini", 0)
+    if field_gini > 0.45:
+        rules.append({
+            "rule": "field_gini>0.45",
+            "condition": f"gini={field_gini:.3f}",
+            "action": "diversify_fields",
+            "target": "field_balance",
+            "value": round(field_gini, 4),
+        })
+
+    # 4. novelty < 0.1 (최근 3c 평균) → jump
+    if len(novelty_history) >= 3:
+        recent_avg = sum(novelty_history[-3:]) / 3
+        if recent_avg < 0.1:
+            rules.append({
+                "rule": "novelty_avg<0.1",
+                "condition": f"avg_3c={recent_avg:.3f}",
+                "action": "jump",
+                "target": "exploration_strategy",
+                "value": round(recent_avg, 4),
+            })
+
+    # 5. conflict_rate > 0.10 → resolve_conflicts
+    cr = rates.get("conflict_rate", 0)
+    if cr > 0.10:
+        rules.append({
+            "rule": "conflict_rate>0.10",
+            "condition": f"rate={cr:.3f}",
+            "action": "resolve_conflicts",
+            "target": "dispute_resolution",
+            "value": round(cr, 4),
+        })
+
+    # 6. evidence_rate < 0.90 → collect_evidence
+    er = rates.get("evidence_rate", 1.0)
+    if er < 0.90:
+        rules.append({
+            "rule": "evidence_rate<0.90",
+            "condition": f"rate={er:.3f}",
+            "action": "collect_evidence",
+            "target": "evidence_gaps",
+            "value": round(er, 4),
+        })
+
+    return rules
+
+
 CONFLICT_RATE_THRESHOLD = 0.15  # D-43: C6 수렴 조건 임계치
 
 
@@ -474,11 +558,15 @@ def critique_node(
         "delta_from_prev_cycle": delta,
     }
 
+    # P4-B2: Machine-readable 처방 규칙 생성
+    machine_rules = _generate_machine_rules(state, rates, deficits)
+
     # Critique Report
     critique_report = {
         "cycle": cycle,
         "health": health,
         "prescriptions": prescriptions,
+        "machine_rules": machine_rules,
         "convergence": convergence,
         "deficit_ratios": deficits,
     }

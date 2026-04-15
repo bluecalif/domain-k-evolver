@@ -2,6 +2,8 @@
 
 Gap Map + Mode → LLM 호출 → Collection Plan.
 design-v2 §7 기반.
+
+P4 확장: reason_code 체계 + Gini/coverage 기반 우선순위.
 """
 
 from __future__ import annotations
@@ -13,6 +15,102 @@ from src.state import EvolverState
 # --- 우선순위 정렬 키 ---
 _UTILITY_ORDER = {"critical": 0, "high": 1, "medium": 2, "low": 3}
 _RISK_ORDER = {"safety": 0, "financial": 1, "policy": 2, "convenience": 3, "informational": 4}
+
+# --- P4: Reason Code 상수 ---
+DEFICIT_THRESHOLD = 0.5     # deficit_score 초과 시 deficit reason
+GINI_THRESHOLD = 0.45       # Gini 임계치
+
+
+def _assign_reason_code(
+    gu: dict,
+    coverage_map: dict | None,
+    novelty_history: list[float] | None,
+    has_remodel_pending: bool,
+    cycle: int,
+) -> str:
+    """GU 에 reason_code 부여 (P4-B1).
+
+    우선순위: deficit > gini > plateau > remodel > seed.
+    """
+    entity_key = gu.get("target", {}).get("entity_key", "")
+    parts = entity_key.split(":")
+    category = parts[1] if len(parts) >= 3 else ""
+    field = gu.get("target", {}).get("field", "")
+
+    # 1. deficit:category 또는 deficit:field
+    if coverage_map and category:
+        cat_info = coverage_map.get(category)
+        if cat_info and isinstance(cat_info, dict) and "deficit_score" in cat_info:
+            if cat_info["deficit_score"] > DEFICIT_THRESHOLD:
+                return f"deficit:category={category}"
+            # field-level deficit (해당 카테고리에서 field 미존재)
+            fc = cat_info.get("field_coverage", {})
+            if field and field not in fc:
+                return f"deficit:field={field}"
+
+    # 2. gini:category_imbalance 또는 gini:field_imbalance
+    if coverage_map:
+        summary = coverage_map.get("summary", {})
+        cat_gini = summary.get("category_gini", 0)
+        field_gini = summary.get("field_gini", 0)
+        if cat_gini > GINI_THRESHOLD and category:
+            cat_info = coverage_map.get(category)
+            if cat_info and isinstance(cat_info, dict):
+                if cat_info.get("ku_count", 0) < 5:
+                    return "gini:category_imbalance"
+        if field_gini > GINI_THRESHOLD:
+            return "gini:field_imbalance"
+
+    # 3. plateau:novelty
+    if novelty_history and len(novelty_history) >= 5:
+        recent = novelty_history[-5:]
+        if all(n < 0.1 for n in recent):
+            avg = sum(recent) / len(recent)
+            return f"plateau:novelty<0.1(avg={avg:.2f})"
+
+    # 4. remodel:pending
+    if has_remodel_pending:
+        return "remodel:pending"
+
+    # 5. audit trigger
+    trigger = gu.get("trigger", "")
+    if trigger and "audit" in trigger.lower():
+        return "audit:merge_pending"
+
+    # 6. fallback
+    if cycle == 0:
+        return "seed:initial"
+
+    return "seed:initial"
+
+
+def _boost_deficit_categories(
+    open_gus: list[dict],
+    coverage_map: dict | None,
+) -> list[dict]:
+    """Gini 불균형 시 소수 카테고리 GU 우선 (P4-B4)."""
+    if not coverage_map:
+        return open_gus
+
+    summary = coverage_map.get("summary", {})
+    if summary.get("category_gini", 0) <= GINI_THRESHOLD:
+        return open_gus
+
+    # deficit 높은 카테고리 GU를 앞으로
+    def deficit_key(gu: dict) -> float:
+        ek = gu.get("target", {}).get("entity_key", "")
+        parts = ek.split(":")
+        cat = parts[1] if len(parts) >= 3 else ""
+        cat_info = coverage_map.get(cat)
+        if cat_info and isinstance(cat_info, dict):
+            return -cat_info.get("deficit_score", 0)  # 높은 deficit = 낮은 정렬값
+        return 0
+
+    return sorted(open_gus, key=lambda g: (
+        deficit_key(g),
+        _UTILITY_ORDER.get(g.get("expected_utility", "low"), 99),
+        _RISK_ORDER.get(g.get("risk_level", "informational"), 99),
+    ))
 
 
 def _select_targets(
@@ -186,10 +284,29 @@ def plan_node(
     critique = state.get("current_critique")
     skeleton = state.get("domain_skeleton", {})
     policies = state.get("policies", {})
+    coverage_map = state.get("coverage_map")
+    novelty_history = state.get("novelty_history")
+    cycle = state.get("current_cycle", 0)
+
+    # P4-B3: remodel pending 확인
+    remodel_report = state.get("remodel_report")
+    has_remodel_pending = bool(
+        remodel_report
+        and remodel_report.get("approval", {}).get("status") == "pending"
+    )
+
+    # P4-B4: Gini 불균형 시 소수 카테고리 우선
+    # _select_targets 내부에서 정렬 전 적용
+    open_gus_for_boost = [gu for gu in gap_map if gu.get("status") == "open"]
+    boosted = _boost_deficit_categories(open_gus_for_boost, coverage_map)
+    # boost 결과를 gap_map 순서에 반영 (open GU 순서만 변경)
+    boosted_ids = [gu.get("gu_id") for gu in boosted]
+    non_open = [gu for gu in gap_map if gu.get("status") != "open"]
+    gap_map_ordered = boosted + non_open
 
     # Target 선정
     explore_targets, exploit_targets = _select_targets(
-        gap_map, mode_decision, axis_coverage,
+        gap_map_ordered, mode_decision, axis_coverage,
     )
 
     # 불변원칙 검증: Plan.target_gaps ⊆ G.open
@@ -225,9 +342,29 @@ def plan_node(
             explore_targets, exploit_targets, mode_decision,
         )
 
+    # P4-B1: reason_code 부여 (모든 target 에 필수)
+    all_target_gus = explore_targets + exploit_targets
+    gu_by_id = {gu.get("gu_id"): gu for gu in all_target_gus}
+    reason_codes: dict[str, str] = {}
+    for gu_id in plan.get("target_gaps", []):
+        gu = gu_by_id.get(gu_id)
+        if gu:
+            reason_codes[gu_id] = _assign_reason_code(
+                gu, coverage_map, novelty_history, has_remodel_pending, cycle,
+            )
+        else:
+            reason_codes[gu_id] = "seed:initial"
+    plan["reason_codes"] = reason_codes
+
+    # P4-B3: remodel pending → target count 감소
+    if has_remodel_pending:
+        plan["remodel_pending_note"] = "remodel 대기 중 — target 보수화 권장"
+
     tg = plan.get("target_gaps", [])
     q = plan.get("queries", {})
     no_query = [gid for gid in tg if not q.get(gid)]
-    _logger.info("plan: targets=%d, queries=%d, no_query=%d", len(tg), len(q), len(no_query))
+    rc = plan.get("reason_codes", {})
+    _logger.info("plan: targets=%d, queries=%d, no_query=%d, reason_codes=%d",
+                 len(tg), len(q), len(no_query), len(rc))
 
     return {"current_plan": plan}
