@@ -1,6 +1,6 @@
 # Silver P2: Outer-Loop Remodel 완결
-> Last Updated: 2026-04-13
-> Status: **REVOKED** — P3 Gate 무효화로 인한 연쇄 무효 (P2 실 벤치 trial 결과 신뢰 불가)
+> Last Updated: 2026-04-15
+> Status: **Gate PASS** — Smart Remodel Criteria + merge 과다 수정 + 실 벤치 PASS (2026-04-15)
 
 ## 1. Summary (개요)
 

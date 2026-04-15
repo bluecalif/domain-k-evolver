@@ -1,6 +1,6 @@
 # Silver P2: Outer-Loop Remodel — Context
-> Last Updated: 2026-04-12
-> Status: 구현 완료 (14/14), Gate 대기
+> Last Updated: 2026-04-15
+> Status: **Gate PASS** (14/14 구현 + Smart Criteria + merge 수정 + 실 벤치 PASS)
 
 ## 1. 핵심 파일
 
@@ -71,9 +71,12 @@
 | (기존) D-48 | Orchestrator 순서 = metrics log → rollback → audit → save | Phase 4 |
 | (기존) D-72 | HITL 축소 — HITL-S/R/D/E 4세트 | P0 |
 | (신규) | remodel은 audit 4 분석함수 결과를 **소비만**, 중복 분석 금지 | masterplan §6 P2-A1 verbatim |
-| (신규) | remodel 경로 조건: `cycle > 0 and cycle % 10 == 0 and audit.has_critical` | masterplan §6 P2-B1 |
+| (신규) | remodel 경로 조건: `cycle > 0 and cycle % 10 == 0 and audit.has_critical` | masterplan §6 P2-B1 (초기) |
 | (신규) | HITL-R rejected → state 변경 없음, rollback_payload 검증만 | masterplan §6 P2-B4 |
 | (신규) | phase_number bump = +1 per approved remodel | P2-A3 |
+| D-132 | Smart Remodel Criteria: has_critical → 3-way OR (audit_critical, growth_stagnation, exploration_drought) | 15c 실 벤치에서 remodel 미발동 → criteria 확장 필요 |
+| D-133 | merge min_overlap_count ≥ 2 필터 | 1-field overlap으로 67개 과다 merge 방지 |
+| D-134 | Gini criteria는 P4 category management로 연기 | P2 범위 밖, category addition과 함께 설계 |
 
 ---
 

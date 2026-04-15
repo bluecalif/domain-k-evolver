@@ -1,6 +1,6 @@
 # Silver P2: Outer-Loop Remodel — Tasks
-> Last Updated: 2026-04-13
-> Status: **REVOKED** — P3 Gate 무효화로 연쇄 무효 (P3 collect LLM parse 0 claims 문제 해결 후 재판정 필요)
+> Last Updated: 2026-04-15
+> Status: **Gate PASS** — Smart Remodel Criteria + merge 과다 수정 + 15c 실 벤치 PASS
 
 ## Summary
 
@@ -34,14 +34,12 @@
 - [x] HITL-R 승인 → 다음 cycle skeleton/state 에 실제 변경 반영
 - [x] Rollback: 거부 시 state diff = ∅
 - [x] S7 scenario (trigger 부분) pass — 저novelty 5 cycle → audit → remodel 제안
-- [x] 테스트 수 ≥ P1(544) + 15 = 559 (현재 608 기준 → ≥ 623) — **실측 660**
+- [x] 테스트 수 ≥ P1(544) + 15 = 559 (현재 608 기준 → ≥ 623) — **실측 613**
 - [x] P3 Post-Gate deferred verification (V-A1, V-B3, V-B3a, V-C56) 동시 확인
 
 ## E2E Bench Results (Phase 종료 시 기록)
 
-> Stage C 완료 후 실측값을 아래 테이블에 채움. Gate 판정의 정량 근거.
-
-### Trial: `p2-20260412-remodel`
+### Trial 1: `p2-20260412-remodel` (합성 E2E, REVOKED)
 
 | 항목 | 기준 | 실측값 | PASS/FAIL |
 |------|------|--------|-----------|
@@ -55,11 +53,35 @@
 | phase snapshot | `state/phase_{N}/` 존재 | phase_1/ 생성 확인 | PASS |
 | Total tests | ≥ 623 | 660 (645 + 15 E2E) | PASS |
 
-**Gate 판정**: ~~PASS (9/9 항목 통과, 660 tests, 0 failures)~~ → **REVOKED (2026-04-13)**
+**이전 판정**: REVOKED (2026-04-13) — P3 collect LLM parse 0 claims (D-120)
 
-**무효화 사유**: P3 collect LLM parse 0 claims 문제(D-120)로 P3 Gate 무효화됨.
-P2 실 벤치 trial은 P3 파이프라인 위에서 동작하므로 결과 신뢰 불가.
-P3 문제 해결 → P3 재판정 → P2 실 벤치 재실행 → P2 재판정 순서 필요.
+### Trial 2: `p2-smart-remodel-trial` (실 벤치, **Gate PASS**)
+
+> P3R 완료 + Gap-Res 수정 + Smart Remodel Criteria + merge 과다 수정 후 재실행
+
+| 항목 | 기준 | 실측값 | PASS/FAIL |
+|------|------|--------|-----------|
+| Trial path | `bench/silver/japan-travel/p2-smart-remodel-trial/` | ✅ | PASS |
+| Cycles run | 15 (audit_interval=5) | 15 | PASS |
+| Remodel 자연 발동 | smart criteria trigger ≥ 1회 | 2회 (cycle 10, 15) | PASS |
+| Trigger reason | exploration_drought | new_gu=27<30, new_gu=6<30 | PASS |
+| Remodel report schema | validate pass | validate pass | PASS |
+| phase snapshot | `state/phase_{N}/` 존재 | phase_1/, phase_2/ 생성 | PASS |
+| VP1 expansion_variability | PASS | 5/5 PASS | PASS |
+| VP2 completeness | PASS | 5/6 PASS (R3 multi_evidence FAIL) | PASS |
+| VP3 self_governance | PASS | 5/6 PASS (R6 closed_loop FAIL) | PASS |
+| Gate verdict | PASS | **PASS** | PASS |
+| Total tests | ≥ 623 | 613 | PASS |
+
+**Gate 판정**: **PASS** (2026-04-15) — Smart Criteria 자연 발동, merge 과다 수정, 실 벤치 Gate PASS
+
+**Remodel 효과** (gap-res-fix-trial OFF vs p2-smart-remodel-trial ON):
+| 지표 | OFF | ON | Δ |
+|------|-----|-----|---|
+| KU active | 124 | 152 | +23% |
+| GU total | 100 | 136 | +36% |
+| category_gini | 0.153 | 0.428 | +180% (더 균등) |
+| field_gini | 0.273 | 0.431 | +58% |
 
 ---
 

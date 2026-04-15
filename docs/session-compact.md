@@ -55,15 +55,15 @@ SI-P3R Gate PASS 후 발견된 gap_resolution_rate 병목 (0.517@15c) 원인 특
 
 ### 즉시 다음 단계
 
-- [ ] **SI-P2 remodel on/off 비교 실험 착수** (D-127, D-131)
-  - Phase 목표: remodel 노드 on/off로 gap_resolution·quality 지표 차이 측정
-  - dev-docs 생성: `dev/active/phase-si-p2-remodel/` 확인 (기존) 또는 갱신
-  - 비교 trial 2개: `p2-remodel-on-trial-15c` vs `p2-remodel-off-trial-15c` 계획
-  - API 비용 사전 확인 필수
+- [x] **SI-P2 remodel on/off 비교 실험** (D-127, D-131) — **Gate PASS** (2026-04-15)
+  - Smart Remodel Criteria 구현 (D-132): 3-way OR (growth_stagnation, exploration_drought, audit_critical)
+  - Merge 과다 수정 (D-133): min_overlap_count ≥ 2
+  - 15c trial: remodel cycle 10/15 자연 발동, category_gini +180%, KU +23%
+  - Gini criteria → P4 연기 (D-134)
 
 ### 후속
 
-- [ ] SI-P4~P6 (P2 완료 후)
+- [ ] SI-P4~P6
 - [ ] `bash.exe.stackdump` 삭제 또는 gitignore
 
 ### Out of scope (본 Phase에서 종결)
@@ -76,6 +76,9 @@ SI-P3R Gate PASS 후 발견된 gap_resolution_rate 병목 (0.517@15c) 원인 특
 - **D-129 (확정)**: `target_count` cap은 Phase 5 (`b122a23`)에서 의도적 제거 — 재도입 금지. commit `2a01197`에서 Phase 5 공식 복원 + regression guard 테스트 추가
 - **D-130 (확정)**: Secondary "52% conversion" 병목 실체 없음. snippet-first(1:N fan-out) 구조상 `resolved/claims` 분모가 구조적으로 낮음. `resolved/targets` ≈ 90-100%가 실제 지표. 추가 fix 불필요
 - **D-131 (확정)**: Gap-Res PASS (0.99) 달성 → SI-P2 remodel on/off 비교 실험 착수 가능
+- **D-132**: Smart Remodel Criteria — has_critical → 3-way OR (audit_critical, growth_stagnation KU<5/3c, exploration_drought GU<30/5c)
+- **D-133**: merge min_overlap_count ≥ 2 필터 — 1-field overlap 과다 merge 방지
+- **D-134**: Gini criteria는 P4 category management로 연기
 
 ### 가설 판정 요약 (B2)
 - H1 (LLM parse 수율 낮음) → **기각**: parse_yield 로그 avg 3.5-5 claims/target 일관
