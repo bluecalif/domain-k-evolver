@@ -17,11 +17,19 @@ from src.nodes.audit import run_audit
 from src.nodes.hitl_gate import hitl_gate_node
 from src.nodes.remodel import run_remodel
 from src.state import EvolverState
+from src.utils.cost_guard import CostGuard
 from src.utils.coverage_map import build_coverage_map
 from src.utils.metrics_guard import check_metrics_guard
 from src.utils.metrics_logger import MetricsLogger
 from src.utils.external_novelty import compute_external_novelty
 from src.utils.novelty import compute_novelty
+from src.nodes.universe_probe import (
+    gather_evidence,
+    register_validated,
+    run_universe_probe,
+    should_run_universe_probe,
+    validate_proposals,
+)
 from src.utils.plateau_detector import PlateauDetector
 from src.utils.policy_manager import apply_patches, rollback, should_rollback
 from src.utils.state_io import load_state, save_state, snapshot_phase, snapshot_state
@@ -73,6 +81,7 @@ class Orchestrator:
         self._patch_applied_cycle: int = 0  # patch 적용 cycle
         self._hitl_response: dict | None = None  # HITL 응답 (테스트용 주입)
         self._prev_kus: list[dict] = []  # novelty 계산용 이전 cycle KU 스냅샷
+        self._cost_guard = CostGuard(self.config.external_anchor)  # Stage E 예산 가드
 
     @property
     def _domain_path(self) -> Path:
@@ -140,6 +149,9 @@ class Orchestrator:
             t = time.monotonic()
             self._maybe_run_audit(state, cycle_num, orch_cfg)
             audit_elapsed = time.monotonic() - t
+
+            # Universe Probe (Stage E) — audit 후, remodel 전
+            self._maybe_run_universe_probe(state, cycle_num)
 
             # Remodel (P2) — audit 후 조건 충족 시 실행
             t = time.monotonic()
@@ -237,6 +249,62 @@ class Orchestrator:
             summary.get("category_gini", 0),
             summary.get("field_gini", 0),
         )
+
+    def _maybe_run_universe_probe(
+        self,
+        state: EvolverState,
+        cycle_num: int,
+    ) -> None:
+        """universe_probe 트리거 조건 확인 + 3-step pipeline 실행 (Stage E).
+
+        audit → **probe** → remodel 순서.
+        """
+        should_run, reason = should_run_universe_probe(state, self.config)
+        if not should_run:
+            return
+
+        logger.info("Universe probe 트리거: cycle=%d, reason=%s", cycle_num, reason)
+
+        # Step 1: LLM survey
+        survey = run_universe_probe(
+            state, self._llm, self.config, self._cost_guard, cycle=cycle_num,
+        )
+        if survey["status"] != "ok" or not survey["proposals"]:
+            logger.info(
+                "Universe probe 종료: status=%s, proposals=%d",
+                survey["status"], len(survey.get("proposals", [])),
+            )
+            return
+
+        # Step 2: Tavily evidence
+        if self._search_tool is not None:
+            domain = state.get("domain_skeleton", {}).get("domain", "unknown")
+            evidenced, _ = gather_evidence(
+                survey["proposals"], self._search_tool, self._cost_guard, domain,
+            )
+        else:
+            evidenced = survey["proposals"]
+            logger.warning("Universe probe: search_tool 없음, evidence 수집 skip")
+
+        # Step 3: LLM validation + skeleton 등록
+        if self._llm is not None:
+            min_conf = self.config.external_anchor.candidate_promotion_min_confidence
+            validated, _ = validate_proposals(
+                evidenced, self._llm, self._cost_guard, min_confidence=min_conf,
+            )
+        else:
+            validated = []
+
+        if validated:
+            skeleton = state.get("domain_skeleton", {})
+            registered, errors = register_validated(validated, skeleton)
+            state["domain_skeleton"] = skeleton
+            logger.info(
+                "Universe probe 완료: cycle=%d, registered=%d, errors=%d",
+                cycle_num, len(registered), len(errors),
+            )
+        else:
+            logger.info("Universe probe: cycle=%d, 검증 통과 proposal 없음", cycle_num)
 
     def _maybe_run_audit(
         self,

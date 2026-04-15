@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from src.config import EvolverConfig, OrchestratorConfig
+from src.config import EvolverConfig, ExternalAnchorConfig, OrchestratorConfig
 from src.orchestrator import CycleResult, Orchestrator
 from src.utils.state_io import load_state, save_state
 
@@ -509,3 +509,135 @@ class TestOrchestrator:
         snap2 = domain_path / "state-snapshots" / "cycle-2-snapshot"
         assert snap1.exists()
         assert snap2.exists()
+
+
+class TestUniverseProbeIntegration:
+    """E2-4: Orchestrator 에 universe_probe 노드 통합 테스트."""
+
+    def test_probe_triggered_at_periodic_cycle(self, tmp_path):
+        """probe_interval_cycles 주기에 probe 실행."""
+        import json as _json
+        from unittest.mock import MagicMock
+
+        bench_base = _setup_bench(tmp_path)
+        ea = ExternalAnchorConfig(
+            enabled=True, probe_interval_cycles=5,
+            llm_budget_per_run=10, tavily_budget_per_run=10,
+        )
+        cfg = EvolverConfig(
+            orchestrator=OrchestratorConfig(
+                max_cycles=5,
+                audit_interval=0,
+                plateau_window=0,
+                bench_path=str(bench_base / "bench"),
+                bench_domain="test-domain",
+                stop_on_convergence=False,
+            ),
+            external_anchor=ea,
+        )
+
+        # LLM mock: survey → 1 proposal, validator → pass
+        call_idx = [0]
+        def _llm_side_effect(prompt):
+            call_idx[0] += 1
+            resp = MagicMock()
+            if "domain-knowledge auditor" in prompt:
+                resp.content = _json.dumps({"proposals": [
+                    {"slug": "accessibility", "name": "Accessibility",
+                     "rationale": "important", "expected_source": "web",
+                     "type": "NEW_CATEGORY"},
+                ]})
+            elif "validate" in prompt.lower():
+                resp.content = _json.dumps({
+                    "exists": True, "confidence": 0.9,
+                    "source_diversity": 3, "sample_entity_names": ["a"],
+                })
+            else:
+                resp.content = _json.dumps({})
+            return resp
+
+        mock_llm = MagicMock()
+        mock_llm.invoke.side_effect = _llm_side_effect
+
+        mock_search = MagicMock()
+        mock_search.search.return_value = [
+            {"url": "https://ex.com", "title": "T", "snippet": "S"},
+        ]
+
+        orch = Orchestrator(cfg, llm=mock_llm, search_tool=mock_search)
+
+        state = _make_minimal_state()
+
+        def mock_run(s, c):
+            s["current_cycle"] = c
+            return CycleResult(cycle=c, state=s)
+
+        orch._run_single_cycle = mock_run
+        orch.run(initial_state=state)
+
+        final = orch.results[-1].state
+        # cycle 5 에서 probe 실행 → candidate 등록
+        candidates = final.get("domain_skeleton", {}).get("candidate_categories", [])
+        assert len(candidates) >= 1
+        assert candidates[0]["slug"] == "accessibility"
+        assert candidates[0]["status"] == "validated"
+
+    def test_probe_not_triggered_at_non_periodic_cycle(self, tmp_path):
+        """probe_interval 미달 cycle 에서는 probe 미실행."""
+        bench_base = _setup_bench(tmp_path)
+        ea = ExternalAnchorConfig(
+            enabled=True, probe_interval_cycles=5,
+            llm_budget_per_run=10, tavily_budget_per_run=10,
+        )
+        cfg = EvolverConfig(
+            orchestrator=OrchestratorConfig(
+                max_cycles=3,  # cycle 1~3, 5에 미달
+                audit_interval=0,
+                plateau_window=0,
+                bench_path=str(bench_base / "bench"),
+                bench_domain="test-domain",
+                stop_on_convergence=False,
+            ),
+            external_anchor=ea,
+        )
+        orch = Orchestrator(cfg)
+        state = _make_minimal_state()
+
+        def mock_run(s, c):
+            s["current_cycle"] = c
+            return CycleResult(cycle=c, state=s)
+
+        orch._run_single_cycle = mock_run
+        orch.run(initial_state=state)
+
+        final = orch.results[-1].state
+        candidates = final.get("domain_skeleton", {}).get("candidate_categories", [])
+        assert len(candidates) == 0
+
+    def test_probe_disabled_skips(self, tmp_path):
+        """external_anchor disabled → probe 전혀 실행 안 함."""
+        bench_base = _setup_bench(tmp_path)
+        ea = ExternalAnchorConfig(enabled=False)
+        cfg = EvolverConfig(
+            orchestrator=OrchestratorConfig(
+                max_cycles=5,
+                audit_interval=0,
+                plateau_window=0,
+                bench_path=str(bench_base / "bench"),
+                bench_domain="test-domain",
+                stop_on_convergence=False,
+            ),
+            external_anchor=ea,
+        )
+        orch = Orchestrator(cfg)
+        state = _make_minimal_state()
+
+        def mock_run(s, c):
+            s["current_cycle"] = c
+            return CycleResult(cycle=c, state=s)
+
+        orch._run_single_cycle = mock_run
+        orch.run(initial_state=state)
+
+        assert orch._cost_guard.usage.llm_calls == 0
+        assert orch._cost_guard.usage.tavily_queries == 0

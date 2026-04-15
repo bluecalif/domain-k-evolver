@@ -6,84 +6,94 @@
 ## Goal
 
 SI-P4 Coverage Intelligence — Stage E (External Anchor) 순차 구현.
-이번 세션에서 E0-2 ~ E5 완료. 다음 차례는 E2 (universe_probe).
+이번 세션: **Task #8 (E2) 착수** — E2-1 skeleton tiered ✅ + E2-2 universe_probe LLM survey ✅.
+다음 차례: E2-3 (broad Tavily probe) 또는 E2-4 (evidence validator).
 
 계획: `C:\Users\User\.claude\plans\lovely-imagining-popcorn.md` (29-task 4-계층 스펙트럼).
+Phase tasks: `dev/active/phase-si-p4-coverage/si-p4-coverage-tasks.md`.
 
 ## Completed
 
 ### 누적 (이전 세션까지)
 - [x] Stage A~D 완료, Internal Foundation Gate PASS (D-135)
-- [x] dev-docs 동기화 완료, mission-alignment critique + external-anchor plan
-- [x] **Task #1 (P4-R)**: Scope reframe commit `f69fd01` + bench `ee67104`
-- [x] **Task #2 (E0-1)**: Stage E budget + kill-switch (`ExternalAnchorConfig`, `cost_guard.py`, 8 tests)
+- [x] Task #1~#7: Scope reframe / cost_guard / reach-axes survey / external_novelty / state 영속화 / plan reason_code
+- [x] **Checkpoint commit `df219e5`**: `[si-p4] Stage E E0-2/E1/E5: external_novelty + state 영속화 + reason_code 통합` (12 files, 690 tests)
 
-### 이번 세션
-- [x] **Task #3 (E0-2)**: Reach axes 실측 조사 → `dev/active/phase-si-p4-coverage/reach-axes-survey.md`
-  - 채택: `publisher_domain` (primary, 100% 추출 via `provenance.domain`), `tld` (secondary proxy)
-  - 이월: `published_date` (E3 에서 Tavily adapter 확장 후 실측)
-  - 기각: `language` (dep 비용 대비 diversity 낮음), `author` (fetch 재도입 D-121 위반)
-- [x] **Task #4 (E1-1)**: `src/utils/external_novelty.py` 신규
-  - `compute_external_novelty(items, history) → (score, new_keys)`
-  - `extract_observation_keys`, `claim_value_hash` 보조 함수
-  - granularity = `(entity_key, field)` (D-138)
-- [x] **Task #5 (E1-2/3)**: orchestrator + state_io 통합
-  - `state.py`: `external_novelty_history: list[float]`, `external_observation_keys: list[str]` 필드 추가
-  - `state_io.py`: `external-anchor.json` optional 파일 load/save + snapshot_state/phase 포함
-  - `orchestrator.py`: `_update_novelty_and_coverage` 에서 external_novelty 계산/누적/로그
-  - **게이팅 없음** (tracking cost 0, Stage E disabled 여도 before/after 비교 가능)
-- [x] **Task #6 (E1-4)**: `tests/test_utils/test_external_novelty.py` — 6 tests (완전새/중복/부분/빈/필드누락/해시안정성)
-- [x] **Task #7 (E5-1/2)**: `plan.py` reason_code +3 + 우선순위 재조정
-  - 신규: `external_novelty:stagnation(avg=...)`, `universe_probe:candidate`, `reach_diversity:degraded`
-  - 임계치: `EXTERNAL_NOVELTY_STAGNATION_THRESHOLD=0.1`, `_WINDOW=5`
-  - 우선순위: **external_novelty > universe_probe > reach_diversity > deficit > gini > plateau > remodel > audit > seed**
-  - 테스트 +7개 (stagnation 발동/비발동, override, 짧은 history 등)
+### 이번 세션 (Task #8 진행)
+- [x] **E2-1 skeleton tiered** — `src/utils/skeleton_tiers.py` 신규
+  - `TIER_ACTIVE` / `TIER_CANDIDATE` 상수
+  - `get_active_categories / get_candidate_categories / get_active_category_slugs / get_candidate_category_slugs`
+  - `find_category(slug) → (tier, entry) | None`
+  - `add_candidate_category` — schema 검증 (`slug, name, rationale, type, proposed_at_cycle`), slug collision 검사 (active/candidate)
+  - `promote_candidate` — HITL-R 승인 경로 (candidate → active)
+  - `reject_candidate`
+  - **Candidate entry schema**: `{slug, name, rationale, expected_source, type: NEW_CATEGORY|NEW_AXIS, proposed_at_cycle, status: pending_validation|validated|promoted|rejected, evidence}`
+  - **불변 준수 (D-139)**: 기존 `skeleton.get("categories", [])` 호출 경로 변경 없음 — candidate 는 별도 field 로 분리
+- [x] **E2-1 tests** — `tests/test_utils/test_skeleton_tiers.py` (10 tests, all PASS)
+- [x] **E2-2 universe_probe LLM survey** — `src/nodes/universe_probe.py` 신규
+  - `run_universe_probe(state, llm, config, cost_guard, cycle=None) → dict`
+  - Returns `{status: ok|skipped|error, reason, proposals, rejected, cycle}`
+  - `UNIVERSE_PROBE_PROMPT` 상수 (plan Prompt 2 verbatim)
+  - Skip 조건: `external_anchor.enabled=False` or `cost_guard.allow("universe_probe", llm=1)=False`
+  - Filter: missing_slug / invalid_type / collision_active / collision_candidate / duplicate_in_batch / not_a_dict
+  - Accepted proposal 에 `proposed_at_cycle`, `status="pending_validation"`, `evidence=None` 자동 주입
+  - `_ku_count_by_category`, `_top_entities`, `_build_prompt`, `_validate_and_filter_proposals` 보조
+  - LLM 호출 실패 시 `status="error"` + `cost_guard.record` (실 호출 시도되었으므로)
+- [x] **E2-2 tests** — `tests/test_nodes/test_universe_probe.py` (12 tests, all PASS)
+  - disabled/budget_exceeded skip, happy path, collision (active/candidate), invalid_type, duplicate_in_batch, LLM error, malformed JSON, proposals_not_list, slug 정규화 (lowercase+strip), non-dict filter
+
+### 테스트 수
+- Pre-session: 690 passed
+- Post-session (skeleton_tiers 10 + universe_probe 12 = +22): **712 passed 예상**
+  (확인 필요: 마지막 full suite 실행 `python -m pytest` 는 사용자가 interrupt 함)
 
 ## Current State
 
-- Branch: `main`. Stage E 구현: E0-1 ✅ E0-2 ✅ E1 ✅ E5 ✅. 다음은 **E2 (universe_probe)**.
-- 테스트 수: **690 passed, 3 skipped** (677 → +13: cost_guard 8 포함 누적)
-- Internal Foundation Gate PASS. VP4 는 Stage E 완료 후 판정.
-- **Uncommitted 상태**. 이번 세션 커밋 안 함.
+- Branch: `main`. 마지막 commit `df219e5` (Stage E E0-2/E1/E5).
+- **Uncommitted**: 이번 세션 변경 (E2-1 + E2-2) 아직 commit 안 함.
+- Stage E 진행: E0-1 ✅ E0-2 ✅ E1 ✅ E5 ✅ **E2-1 ✅ E2-2 ✅** → 다음 E2-3 or E2-4.
 
-### Changed Files (이번 세션)
+### Changed Files (이번 세션, uncommitted)
 
-- `src/utils/external_novelty.py` (신규) — compute_external_novelty, extract_observation_keys, claim_value_hash
-- `tests/test_utils/test_external_novelty.py` (신규) — 6 tests
-- `src/state.py` — EvolverState 에 `external_novelty_history`, `external_observation_keys` 필드
-- `src/utils/state_io.py` — `external-anchor.json` (load/save/snapshot_state/snapshot_phase)
-- `src/orchestrator.py` — `compute_external_novelty` import + `_update_novelty_and_coverage` 안에 external tracking + 로그 `ext_novelty=%.3f`
-- `src/nodes/plan.py` — `_assign_reason_code` 에 external_novelty/universe_probe/reach_diversity 블록 (최상위 우선순위), `plan_node` 가 external_novelty_history 전달, 임계치 상수 추가
-- `tests/test_nodes/test_plan_reason_code.py` — `TestExternalAnchorReasonCodes` 클래스 +7 tests
-- `dev/active/phase-si-p4-coverage/reach-axes-survey.md` (신규)
-- (이전 세션) `src/config.py`, `src/utils/cost_guard.py`, `tests/test_utils/test_cost_guard.py`
+- `src/utils/skeleton_tiers.py` (신규) — tiered skeleton helpers
+- `tests/test_utils/test_skeleton_tiers.py` (신규) — 10 tests
+- `src/nodes/universe_probe.py` (신규) — LLM survey 노드
+- `tests/test_nodes/test_universe_probe.py` (신규) — 12 tests
+
+### Untracked (이전 세션부터 남은)
+- `bash.exe.stackdump` — stray 파일 (무시)
 
 ## Remaining / TODO
 
-### 즉시 다음
-- [ ] **Checkpoint commit** — E0-2 / E1 / E5 번들 (또는 E2 완료 후 한 번에 할지 사용자 결정)
-- [ ] **Task #8 (E2-1~5)**: `src/nodes/universe_probe.py` 신규 + skeleton tiered (`candidate_categories` 필드 도입) + LLM survey + broad Tavily probe + HITL-R 연동 → category_addition 선제형 경로
-  - E2-1 skeleton tiered 구조 (candidate_categories 필드)
-  - E2-2 universe_probe 노드 (LLM survey)
-  - E2-3 broad Tavily probe (budget guard)
-  - E2-4 evidence → candidate_promotion (HITL-R 승인 전 active 아님, D-139)
-  - E2-5 단위 테스트
+### 즉시 다음 (Task #8 = E2 계속)
+session-compact 내부 번호 기준:
+- [x] E2-1 skeleton tiered (candidate_categories 필드)
+- [x] E2-2 universe_probe 노드 (LLM survey)
+- [ ] **E2-3 broad Tavily probe** (budget guard) — 각 proposal 에 대해 Tavily query 발행, evidence snippets 수집
+- [ ] **E2-4 evidence validator + candidate_promotion** — LLM validator (Prompt 3), 통과 proposal 을 `add_candidate_category` 로 skeleton 에 등록 (HITL-R 대기 상태, D-139)
+- [ ] **E2-5 통합 테스트** + budget kill-switch 테스트
 
-### Stage E 잔여 (Task 미생성)
-- E3 reach_ledger (4 tasks) — publisher_domain/tld 축 누적, `distinct_domains_per_100ku` API
-- E4 exploration_pivot (3 tasks) — LLM query rewriter, plateau_detector 확장, graph edge
-- E6 cost_guard wire-up (3 tasks) — orchestrator/노드에 guard.allow/record 삽입
-- E7 validation (3 tasks) — synthetic injection + regression bench
-- E8 VP4 gate 추가 + 판정 commit (3 tasks)
+### Phase tasks 파일 기준 매핑 (si-p4-coverage-tasks.md)
+- [ ] E2-1 universe_probe.py (LLM + Tavily + validator 3-step) `[L]` — 부분 진행 중 (LLM survey 부분만 완료)
+- [ ] E2-2 tiered skeleton — **완료** (session-compact 번호로는 E2-1)
+- [ ] E2-3 트리거 조건 (cycle N 주기 or external_novelty<0.15×3c)
+- [ ] E2-4 graph.py universe_probe 노드 삽입
+- [ ] E2-5 통합 테스트 5개 + budget kill-switch
+
+### Stage E 잔여
+- E3 reach_ledger (4 tasks)
+- E4 exploration_pivot (3 tasks)
+- E6 cost_guard wire-up (3 tasks)
+- E7 validation (3 tasks)
+- E8 VP4 gate + 판정 commit (3 tasks)
 
 ## Key Decisions
 
-- **D-138 재확인**: external_novelty granularity = `(entity_key, field)` 튜플. `claim_value_hash` 는 향후 disambiguation 보조 (v1 score 에 미사용).
-- **E1 tracking 항상 on**: `ExternalAnchorConfig.enabled` 게이팅 없이 external_novelty tracking 수행. 이유: cost 0, before/after 비교용 데이터 수집. 게이팅은 *actions* (probe/pivot) 에만 적용.
-- **State 영속화**: 별도 파일 `external-anchor.json = {novelty_history, observation_keys}` 로 분리 (metrics.json 오염 회피, migration-safe).
-- **관찰 키 저장 형식**: `sorted(set(prev_keys) | new_keys)` 결정론적, `"entity_key|field"` 스트링.
-- **Reason code 우선순위**: external_novelty 계열이 deficit/gini 보다 *위*. 이유: cycle-level 외부 신호가 category-level 국소 신호보다 근본 원인에 가까움.
-- **universe_probe/reach_diversity 라우팅**: GU 의 `trigger_source` 문자열 match 로 판정. E2/E3 가 populate.
+- **D-139 재확인**: candidate_categories 는 HITL-R 승인 전 active 아님. 기존 `skeleton.get("categories", [])` 경로는 불변. promotion 은 `promote_candidate` 만 경유.
+- **universe_probe 책임 분리**: E2-2 (이 세션) = **survey 생성만**. Tavily probe / validator / skeleton 등록은 E2-3/E2-4 의 책임. 현재 노드는 proposal 을 생성하되 skeleton 에 쓰지 않음 — caller 가 이후 단계에서 `add_candidate_category` 호출.
+- **cost_guard 기록 규칙**: LLM 호출을 *시도* 하면 `record` (성공/실패 무관). `allow=False` 면 호출 안 하므로 record 도 안 함.
+- **Slug 정규화**: `strip().lower()`. LLM 이 공백/대문자로 반환해도 일관된 키로 저장.
+- **Rejection reason 명시**: `_reject_reason` 필드로 디버깅/로그 추적 가능 (`collision_active`, `collision_candidate`, `duplicate_in_batch`, `invalid_type:{v}`, `missing_slug`, `not_a_dict`).
 
 ## Context
 
@@ -91,44 +101,54 @@ SI-P4 Coverage Intelligence — Stage E (External Anchor) 순차 구현.
 
 ### 핵심 참조 파일
 
-- 상위 계획: `C:\Users\User\.claude\plans\lovely-imagining-popcorn.md` (29 tasks, 4-계층 스펙트럼, 다이어그램, 프롬프트 템플릿)
-- Phase tasks: `dev/active/phase-si-p4-coverage/si-p4-coverage-tasks.md` (E0-E8 체크리스트)
-- Phase context: `dev/active/phase-si-p4-coverage/si-p4-coverage-context.md` (D-135~139)
-- Reach axes 조사: `dev/active/phase-si-p4-coverage/reach-axes-survey.md` (E3 에서 참조)
+- 상위 계획: `C:\Users\User\.claude\plans\lovely-imagining-popcorn.md`
+  - Prompt 2 (universe_probe): 라인 306-341
+  - Prompt 3 (evidence validator, E2-3/E2-4 용): 라인 343-363
+- Phase tasks: `dev/active/phase-si-p4-coverage/si-p4-coverage-tasks.md` (E2 체크리스트 라인 182-188)
+- Phase context: `dev/active/phase-si-p4-coverage/si-p4-coverage-context.md`
+- Reach axes 조사: `dev/active/phase-si-p4-coverage/reach-axes-survey.md`
 
-### 코드 베이스 핵심
+### 코드 베이스 핵심 (Stage E)
 
-- 기 구현 (Stage E): `src/utils/cost_guard.py`, `src/utils/external_novelty.py`
-- 기존 재사용: `src/nodes/remodel.py:230-282` (gap_rule 로직, 수정 금지), `src/orchestrator.py:505-546` (gap_rule 적용)
-- 내부 novelty (유지): `src/utils/novelty.py`
-- 다음 신규: `src/utils/reach_ledger.py` (E3), `src/nodes/universe_probe.py` (E2), `src/nodes/exploration_pivot.py` (E4)
-- Plan reason_code: `src/nodes/plan.py:_assign_reason_code` (external 계열 최상위)
-- Tavily 응답 구조: `src/adapters/search_adapter.py:73-78` 는 `{url, title, snippet}` 만 유지. E3 에서 `published_date` 보존 옵션 검토.
+- `src/utils/cost_guard.py` — `CostGuard.allow(op, llm=, tavily=) → bool`, `record(op, llm=, tavily=)`
+- `src/utils/external_novelty.py` — `compute_external_novelty`, `extract_observation_keys`
+- `src/utils/skeleton_tiers.py` ✨ — active/candidate 분리 helpers
+- `src/nodes/universe_probe.py` ✨ — LLM survey (proposal 생성만)
+- `src/config.py:ExternalAnchorConfig` — `enabled`, `probe_interval_cycles`, `llm_budget_per_run`, `tavily_budget_per_run`, `candidate_promotion_min_confidence`
+- `src/utils/llm_parse.py:extract_json` — markdown fence 제거 + JSON 파싱
+
+### 다음 (E2-3) 구현 가이드
+
+1. `src/adapters/search_adapter.py` — 이미 Tavily client 존재. `search(query) → [{url, title, snippet}]` 형태 재사용.
+2. 각 accepted proposal 마다:
+   - `cost_guard.allow("universe_probe_validator", tavily=1)` 체크
+   - Query 생성: proposal.name + domain + "overview" 정도
+   - Tavily 호출, top-5 snippets 수집
+   - Proposal 에 `evidence.snippets = [...]` 주입
+3. Tavily 예산 초과 시 해당 proposal skip (전체 probe 는 유지).
+4. E2-4 (validator) 에서 LLM call 2회째로 snippets 를 `{exists, confidence, source_diversity}` 검증.
 
 ### 제약/주의
 
-- API 비용 발생 작업 신중 (memory rule). 실 벤치는 Stage E 전체 완성 후 한 번에.
+- API 비용 발생 작업 신중 (memory rule). 실 벤치는 Stage E 전체 완성 후.
 - Phase Gate = 합성 E2E + 실 벤치 trial 비교 필수.
-- VP4_exploration_reach 기준: external_novelty avg ≥ 0.25, distinct_domains_per_100ku ≥ 15, universe_probe proposals ≥ 2/15c, exploration_pivot triggered ≥ 1, category_addition via universe_probe ≥ 1.
-- 전체 테스트 ≥ 700 목표 (현재 690).
-- Legacy bench `bench/japan-travel/` read-only (D-123).
+- VP4 기준: external_novelty avg ≥ 0.25, distinct_domains_per_100ku ≥ 15, universe_probe proposals ≥ 2/15c, exploration_pivot ≥ 1, category_addition via universe_probe ≥ 1.
+- 전체 테스트 목표 ≥ 700 (현재 700+ 이미 달성, 정확한 수치는 full suite 재실행 필요).
 
 ### 작업 흐름
 
-E0-1 ✅ → E0-2 ✅ → E1 ✅ → **E5 ✅** → **E2 (다음)** → E3 → E4 → E6 → E7 → E8
+E0-1 ✅ → E0-2 ✅ → E1 ✅ → E5 ✅ → **E2-1 ✅ E2-2 ✅** → **E2-3 (다음)** → E2-4 → E2-5 → E3 → E4 → E6 → E7 → E8
 
 ## Next Action
 
-**우선: 사용자에게 checkpoint commit 여부 확인.** 이번 세션 변경이 누적 상당 (8개 파일, 13 신규 테스트) — 사용자 반응 "ok/go" 흐름상 아직 commit 승인 없음.
+**우선: 사용자 interrupt 로 full-suite 재확인 필요.**
 
-사용자가 commit 원하면:
-1. 메시지: `[si-p4] Stage E E0-2/E1/E5: external_novelty + state 영속화 + reason_code 통합`
-2. 스테이징: 위 "Changed Files" 8개 + `docs/session-compact.md`
+1. `python -m pytest 2>&1 | tail -5` 로 regression 없는지 검증 (690 → 712 예상).
+2. 그 후 사용자 결정:
+   - **Option A**: E2-1 + E2-2 checkpoint commit (권장 — E2 submodule 단위 커밋)
+     - 메시지: `[si-p4] Stage E E2-1/E2-2: tiered skeleton + universe_probe LLM survey`
+     - 스테이징: 4 신규 파일
+   - **Option B**: E2-3 (Tavily probe) 계속 진행 후 bundle commit
+3. E2-3 착수 시: `src/adapters/search_adapter.py` 확인 → `universe_probe.py` 에 `_gather_evidence(proposals, search_client, cost_guard)` 함수 추가 → 기존 `run_universe_probe` 확장 (survey + evidence 단계 모두 실행) 또는 별도 함수 분리.
 
-사용자가 E2 계속 원하면 **Task #8 (E2-1 skeleton tiered)** 시작:
-1. `domain-skeleton.json` schema 에 `candidate_categories` 필드 추가 (tier: "active" vs "candidate")
-2. `src/nodes/universe_probe.py` 신규 — LLM survey prompt 는 plan 파일 라인 ~280-295 참조
-3. D-139: candidate 는 HITL-R 승인 전 active 아님
-4. 단위 테스트 ≥5 추가 목표
-
-commit 승인 없이 E2 진행 시, E2 완료 후 한 번에 bundle commit 하는 것을 제안.
+사용자 마지막 지시: `/compact-and-go` — 이 파일 저장 후 `/clear` 대기.
