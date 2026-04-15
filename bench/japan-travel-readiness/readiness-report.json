@@ -1,6 +1,6 @@
 {
-  "gate_passed": true,
-  "verdict": "PASS",
+  "gate_passed": false,
+  "verdict": "FAIL",
   "viewpoints": [
     {
       "viewpoint": "VP1_expansion_variability",
@@ -8,7 +8,7 @@
       "criteria": {
         "R1_category_gini": {
           "passed": true,
-          "value": 0.2841,
+          "value": 0.1996,
           "threshold": 0.45,
           "critical": true
         },
@@ -26,7 +26,7 @@
         },
         "R4_field_gini": {
           "passed": true,
-          "value": 0.2765,
+          "value": 0.2679,
           "threshold": 0.45,
           "critical": false
         },
@@ -41,35 +41,35 @@
     },
     {
       "viewpoint": "VP2_completeness",
-      "passed": true,
+      "passed": false,
       "criteria": {
         "R1_gap_resolution": {
-          "passed": true,
-          "value": 0.9091,
+          "passed": false,
+          "value": 0.7886,
           "threshold": 0.85,
           "critical": true
         },
         "R2_min_ku_per_cat": {
           "passed": true,
-          "value": 6,
+          "value": 9,
           "threshold": 5,
           "critical": true
         },
         "R3_multi_evidence": {
-          "passed": true,
-          "value": 0.8017,
+          "passed": false,
+          "value": 0.7434,
           "threshold": 0.8,
           "critical": false
         },
         "R4_avg_confidence": {
           "passed": true,
-          "value": 0.8219,
+          "value": 0.8519,
           "threshold": 0.82,
           "critical": false
         },
         "R5_health_grade": {
           "passed": true,
-          "value": 1.8,
+          "value": 2.0,
           "threshold": 1.4,
           "critical": false
         },
@@ -80,7 +80,7 @@
           "critical": false
         }
       },
-      "score": "6/6"
+      "score": "4/6"
     },
     {
       "viewpoint": "VP3_self_governance",
@@ -126,5 +126,7 @@
       "score": "5/6"
     }
   ],
-  "failed_viewpoints": []
+  "failed_viewpoints": [
+    "VP2_completeness"
+  ]
 }

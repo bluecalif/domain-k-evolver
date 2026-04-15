@@ -188,6 +188,91 @@
       "description": "결제수단 사용처"
     }
   ],
+  "preferred_sources": [
+    {
+      "url": "https://www.japan-guide.com",
+      "title": "Japan Guide",
+      "categories": [
+        "transport",
+        "accommodation",
+        "attraction",
+        "dining",
+        "pass-ticket"
+      ],
+      "axis_tags": {}
+    },
+    {
+      "url": "https://www.jnto.go.jp/en/",
+      "title": "Japan National Tourism Organization",
+      "categories": [
+        "attraction",
+        "regulation",
+        "transport"
+      ],
+      "axis_tags": {}
+    },
+    {
+      "url": "https://www.japan.travel/en/",
+      "title": "Travel Japan (JNTO)",
+      "categories": [
+        "attraction",
+        "dining",
+        "accommodation"
+      ],
+      "axis_tags": {}
+    },
+    {
+      "url": "https://www.japanrailpass.net/en/",
+      "title": "Japan Rail Pass",
+      "categories": [
+        "pass-ticket",
+        "transport"
+      ],
+      "axis_tags": {}
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Tourism_in_Japan",
+      "title": "Wikipedia - Tourism in Japan",
+      "categories": [
+        "transport",
+        "attraction",
+        "regulation",
+        "payment"
+      ],
+      "axis_tags": {}
+    },
+    {
+      "url": "https://tokyocheapo.com",
+      "title": "Tokyo Cheapo",
+      "categories": [
+        "pass-ticket",
+        "payment",
+        "connectivity",
+        "dining"
+      ],
+      "axis_tags": {}
+    },
+    {
+      "url": "https://matcha-jp.com/en/",
+      "title": "MATCHA - Japan Travel",
+      "categories": [
+        "attraction",
+        "dining",
+        "accommodation",
+        "transport"
+      ],
+      "axis_tags": {}
+    },
+    {
+      "url": "https://www.timeout.com/tokyo",
+      "title": "Time Out Tokyo",
+      "categories": [
+        "attraction",
+        "dining"
+      ],
+      "axis_tags": {}
+    }
+  ],
   "canonical_key_rule": {
     "format": "japan-travel:{category}:{slug}",
     "slug_rules": "영문 소문자, 하이픈 구분, 공식 영문 명칭 기반"

@@ -6,14 +6,14 @@
     "personal": 0.4
   },
   "ttl_defaults": {
-    "price": 180,
-    "policy": 135,
-    "regulation": 90,
-    "hours": 90,
+    "price": 270,
+    "policy": 202,
+    "regulation": 135,
+    "hours": 135,
     "how_to_use": 365,
-    "location": 730,
-    "etiquette": 730,
-    "tips": 730
+    "location": 365,
+    "etiquette": 365,
+    "tips": 365
   },
   "cross_validation": {
     "safety": {
@@ -56,7 +56,7 @@
       "patches_applied": [
         "PP-001"
       ],
-      "timestamp": "2026-03-09T03:25:22.370412+00:00"
+      "timestamp": "2026-04-15T08:34:38.476749+00:00"
     }
   ]
 }
