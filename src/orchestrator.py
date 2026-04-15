@@ -17,8 +17,10 @@ from src.nodes.audit import run_audit
 from src.nodes.hitl_gate import hitl_gate_node
 from src.nodes.remodel import run_remodel
 from src.state import EvolverState
+from src.utils.coverage_map import build_coverage_map
 from src.utils.metrics_guard import check_metrics_guard
 from src.utils.metrics_logger import MetricsLogger
+from src.utils.novelty import compute_novelty
 from src.utils.plateau_detector import PlateauDetector
 from src.utils.policy_manager import apply_patches, rollback, should_rollback
 from src.utils.state_io import load_state, save_state, snapshot_phase, snapshot_state
@@ -69,6 +71,7 @@ class Orchestrator:
         self._pre_patch_policies: dict | None = None  # 롤백용 백업
         self._patch_applied_cycle: int = 0  # patch 적용 cycle
         self._hitl_response: dict | None = None  # HITL 응답 (테스트용 주입)
+        self._prev_kus: list[dict] = []  # novelty 계산용 이전 cycle KU 스냅샷
 
     @property
     def _domain_path(self) -> Path:
@@ -121,6 +124,9 @@ class Orchestrator:
             # Metrics 기록 (rollback 판정에 필요)
             self.logger.log(cycle_num, state)
 
+            # Novelty + Coverage Map 갱신 (P4)
+            self._update_novelty_and_coverage(state)
+
             # Metrics Guard (warning-only)
             guard = check_metrics_guard(state)
             for w in guard.warnings:
@@ -148,13 +154,13 @@ class Orchestrator:
                         cycle_num, cycle_elapsed, graph_elapsed, audit_elapsed, remodel_elapsed, total_elapsed)
 
             # Plateau 감지 (plateau_window=0이면 비활성)
+            # 주의: KU/GU plateau 만 조기 종료 트리거. novelty plateau 는 audit/remodel 트리거 (Stage B).
             if self.plateau_detector is not None:
                 self.plateau_detector.record(cycle_num, state)
                 if self.plateau_detector.is_plateau():
                     reason = self.plateau_detector.plateau_reason()
                     logger.info(
-                        "Plateau 감지: 최근 %d사이클 KU/GU 변화 없음 (%s). 조기 종료.",
-                        orch_cfg.plateau_window,
+                        "Plateau 감지: %s. 조기 종료.",
                         reason,
                     )
                     break
@@ -197,6 +203,30 @@ class Orchestrator:
                 state=state,
                 error=str(e),
             )
+
+    def _update_novelty_and_coverage(self, state: EvolverState) -> None:
+        """Novelty score + Coverage map 갱신 (P4-A3)."""
+        curr_kus = state.get("knowledge_units", [])
+
+        # Novelty 계산
+        novelty = compute_novelty(self._prev_kus, curr_kus)
+        novelty_history = list(state.get("novelty_history") or [])
+        novelty_history.append(novelty)
+        state["novelty_history"] = novelty_history
+        self._prev_kus = [dict(ku) for ku in curr_kus]  # 다음 cycle 용 스냅샷
+
+        # Coverage map 갱신
+        skeleton = state.get("domain_skeleton", {})
+        coverage = build_coverage_map(state, skeleton)
+        state["coverage_map"] = coverage
+
+        summary = coverage.get("summary", {})
+        logger.info(
+            "  Novelty=%.3f, cat_gini=%.3f, field_gini=%.3f",
+            novelty,
+            summary.get("category_gini", 0),
+            summary.get("field_gini", 0),
+        )
 
     def _maybe_run_audit(
         self,
