@@ -23,6 +23,7 @@ from src.utils.metrics_guard import check_metrics_guard
 from src.utils.metrics_logger import MetricsLogger
 from src.utils.external_novelty import compute_external_novelty
 from src.utils.novelty import compute_novelty
+from src.utils.reach_ledger import build_ledger_snapshot
 from src.nodes.universe_probe import (
     gather_evidence,
     register_validated,
@@ -236,6 +237,13 @@ class Orchestrator:
         state["external_novelty_history"] = ext_history
         state["external_observation_keys"] = sorted(set(prev_keys) | new_keys)
 
+        # Reach diversity ledger (E3)
+        cycle = state.get("current_cycle", 0)
+        reach_snap = build_ledger_snapshot(curr_kus, cycle)
+        reach_history = list(state.get("reach_history") or [])
+        reach_history.append(reach_snap)
+        state["reach_history"] = reach_history
+
         # Coverage map 갱신
         skeleton = state.get("domain_skeleton", {})
         coverage = build_coverage_map(state, skeleton)
@@ -243,11 +251,12 @@ class Orchestrator:
 
         summary = coverage.get("summary", {})
         logger.info(
-            "  Novelty=%.3f, ext_novelty=%.3f, cat_gini=%.3f, field_gini=%.3f",
+            "  Novelty=%.3f, ext_novelty=%.3f, cat_gini=%.3f, field_gini=%.3f, domains/100ku=%.1f",
             novelty,
             ext_score,
             summary.get("category_gini", 0),
             summary.get("field_gini", 0),
+            reach_snap.get("domains_per_100ku", 0),
         )
 
     def _maybe_run_universe_probe(
