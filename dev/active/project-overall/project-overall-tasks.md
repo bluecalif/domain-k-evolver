@@ -27,7 +27,7 @@
 | P2 Outer-Loop Remodel | 14 | 5 | 8 | 1 | **14/14** ✅ | **Gate PASS** (D-132/133, 613 tests) |
 | P3 Acquisition Expansion | 22 | 7 | 13 | 2 | — | **REVOKED** (D-120) |
 | P3R Snippet-First Refactor | 8 | — | — | — | **8/8** ✅ | PASS (D-125, 608 tests) |
-| P4 Coverage Intelligence | 17 | 7 | 8 | 1 | 0/17 | **Planning** |
+| P4 Coverage Intelligence | **46** | 27 | 15 | 3 | **17/46** | **A~D Complete · Stage E Planning** |
 | P5 Telemetry & Dashboard | 14 | 3 | 10 | 1 | 0/14 | 대기 |
 | P6 Multi-Domain | 7 | 2 | 3 | 2 | 0/7 | 대기 |
 | X Cross-phase | 7 | 7 | 0 | 0 | 0/7 | — |
@@ -37,9 +37,9 @@
 
 | Phase | Total | S | M | Done | Status |
 |-------|-------|---|---|------|--------|
-| Gap-Res Investigation | 12 | 8 | 4 | 0/12 | 착수 (D-126) |
+| Gap-Res Investigation | 12 | 8 | 4 | 12/12 | 완료 (D-131) |
 
-**총계: Bronze 85 + Silver 127 + Investigation 12 = 224 tasks · 현재 테스트 608**
+**총계: Bronze 85 + Silver (P4 46 포함) 156 + Investigation 12 = 253 tasks · 현재 테스트 669**
 
 참조 문서:
 - 단일 진실 소스: `docs/silver-masterplan-v2.md` §4 Phase 표
@@ -367,36 +367,90 @@
 
 ---
 
-## Phase P4: Coverage Intelligence (17 tasks)
+## Phase P4: Coverage Intelligence (46 tasks: A~D Complete 17/17 · Stage E Planning 0/29)
 
-> **목표**: novelty/coverage_map primitives + reason_code 체계 + plateau 고도화 + **Gini 통합** (D-134) + **Smart category addition**
-> **Gate**: plan 100% reason_code, 10c novelty ≥ 0.25, plateau → trigger, S7 pass, category_addition 보수적 조건
+> **목표**: Internal Foundation (A~D) — novelty/coverage_map/reason_code/Gini/Smart category addition + External Anchor (E) — history-aware external_novelty + universe_probe + reach_ledger + exploration_pivot
+> **Gate**: Stage A~D PASS (669 tests), Stage E 추가 예정 (VP4_exploration_reach)
 > **Dev-docs**: `dev/active/phase-si-p4-coverage/`
+> **배경**: `mission-alignment-critique.md`, `mission-alignment-opinion.md`, `external-anchor-improvement-plan.md`
 
-### P4-A. Metrics Primitives + Gini 통합
-- [ ] **P4-A1** `novelty.py` (Jaccard/token/entity overlap) `[M]`
-- [ ] **P4-A2** `coverage_map.py` (axis/bucket/deficit + Gini tracking) `[M]`
-- [ ] **P4-A3** `EvolverState` novelty/coverage 채움 로직 (orchestrator) `[S]`
-- [ ] **P4-A4** `plateau_detector.py` novelty 확장 (< 0.1 × 5c) `[M]`
-- [ ] **P4-A5** Gini → deficit 반영 (가중 0.3) `[M]`
+### P4-A. Metrics Primitives + Gini 통합 ✅
+- [x] **P4-A1** `novelty.py` (Jaccard/token/entity overlap) `[M]` — `5e9d422`
+- [x] **P4-A2** `coverage_map.py` (axis/bucket/deficit + Gini tracking) `[M]` — `5e9d422`
+- [x] **P4-A3** `EvolverState` novelty/coverage 채움 로직 (orchestrator) `[S]` — `5e9d422`
+- [x] **P4-A4** `plateau_detector.py` novelty 확장 (< 0.1 × 5c) `[M]` — `5e9d422`
+- [x] **P4-A5** Gini → deficit 반영 (가중 0.3) `[M]` — `5e9d422`
 
-### P4-B. Plan/Critique 통합
-- [ ] **P4-B1** `plan.py` reason_code enum + 모든 target 코드 부여 `[M]`
-- [ ] **P4-B2** `critique.py` machine-readable 처방 규칙 `[M]`
-- [ ] **P4-B3** remodel_pending → plan reason_code 영향 `[S]`
-- [ ] **P4-B4** Gini 불균형 → plan target 우선순위 `[S]`
+### P4-B. Plan/Critique 통합 ✅
+- [x] **P4-B1** `plan.py` reason_code enum + 모든 target 코드 부여 `[M]` — `e4f04b4`
+- [x] **P4-B2** `critique.py` machine-readable 처방 규칙 `[M]` — `e4f04b4`
+- [x] **P4-B3** remodel_pending → plan reason_code 영향 `[S]` — `e4f04b4`
+- [x] **P4-B4** Gini 불균형 → plan target 우선순위 `[S]` — `e4f04b4`
 
-### P4-C. Smart Category Addition
-- [ ] **P4-C1** `remodel.py` category_addition proposal type `[L]`
-- [ ] **P4-C2** 보수적 트리거 (≥5 KU + LLM 판단 + 1/cycle) `[M]`
-- [ ] **P4-C3** HITL-R category_addition 연동 + skeleton 반영 `[M]`
+### P4-C. Smart Category Addition ✅
+- [x] **P4-C1** `remodel.py` category_addition proposal type `[L]` — `ceb7559`
+- [x] **P4-C2** 보수적 트리거 (≥5 KU + LLM 판단 + 1/cycle) `[M]` — `ceb7559`
+- [x] **P4-C3** HITL-R category_addition 연동 + skeleton 반영 `[M]` — `ceb7559`
 
-### P4-D. 검증
-- [ ] **P4-D1** novelty 단위 테스트 `[S]`
-- [ ] **P4-D2** coverage_map + Gini 통합 테스트 `[S]`
-- [ ] **P4-D3** reason_code 생성 테스트 (모든 enum) `[S]`
-- [ ] **P4-D4** S7 full scenario (plateau → audit → remodel → category) `[M]`
-- [ ] **P4-D5** category_addition 보수적 조건 테스트 `[S]`
+### P4-D. 검증 ✅
+- [x] **P4-D1** novelty 단위 테스트 `[S]` — `5e9d422`
+- [x] **P4-D2** coverage_map + Gini 통합 테스트 `[S]` — `5e9d422`
+- [x] **P4-D3** reason_code 생성 테스트 (모든 enum) `[S]` — `e4f04b4`
+- [x] **P4-D4** S7 full scenario (plateau → audit → remodel → category) `[M]` — `273b961`
+- [x] **P4-D5** category_addition 보수적 조건 테스트 `[S]` — `ceb7559`
+
+### P4-R. Scope Reframe (즉시)
+- [ ] **P4-R1** readiness-report.json 에 reframe 근거 + Internal Foundation PASS `[S]`
+- [ ] **P4-R2** commit: `[si-p4] Scope reframe (D-135)` `[S]`
+
+### P4-E. Stage E: External Anchor (신규 29 tasks)
+
+#### E0. 예산 & 축 실측 (선행)
+- [ ] **E0-1** Stage E API 예산 + kill-switch 스펙 `[S]`
+- [ ] **E0-2** Tavily snippet reach 축 추출 가능성 실측 `[S]`
+
+#### E1. External Novelty Metric
+- [ ] **E1-1** `src/utils/external_novelty.py` 신규 (entity_key+field, claim-hash 보조) `[M]`
+- [ ] **E1-2** `orchestrator.py` `external_novelty_history` append `[S]`
+- [ ] **E1-3** `state_io.py` 새 필드 save/load `[S]`
+- [ ] **E1-4** 단위 테스트 6개 `[S]`
+
+#### E2. Universe Probe + Tiered Skeleton
+- [ ] **E2-1** `src/nodes/universe_probe.py` 신규 (LLM survey + Tavily + validator) `[L]`
+- [ ] **E2-2** tiered skeleton (candidate vs active) `[M]`
+- [ ] **E2-3** 트리거 조건 (cycle N 주기 or ext_novelty 낮음) `[S]`
+- [ ] **E2-4** `graph.py` 노드 삽입 `[S]`
+- [ ] **E2-5** 통합 테스트 5개 + kill-switch `[M]`
+
+#### E3. Reach Diversity Ledger
+- [ ] **E3-1** `src/utils/reach_ledger.py` 신규 `[M]`
+- [ ] **E3-2** `orchestrator.py` ledger 업데이트 `[S]`
+- [ ] **E3-3** normalization (`diversity_per_100ku`) `[S]`
+- [ ] **E3-4** `is_reach_degraded()` + 테스트 8개 `[S]`
+
+#### E4. Exploration Pivot Node
+- [ ] **E4-1** `src/nodes/exploration_pivot.py` 신규 (query_rewrite + candidate_axis_probe) `[L]`
+- [ ] **E4-2** `plateau_detector.py` L3/L5 경로 분기 `[M]`
+- [ ] **E4-3** `graph.py` edge + 통합 테스트 4개 `[M]`
+
+#### E5. Planning Integration
+- [ ] **E5-1** `plan.py` reason_code +3 + 우선순위 재조정 `[S]`
+- [ ] **E5-2** reason_code 테스트 확장 `[S]`
+
+#### E6. Cost Guard & Safety
+- [ ] **E6-1** `src/utils/cost_guard.py` 신규 `[S]`
+- [ ] **E6-2** `config.py` external_anchor 필드 `[S]`
+- [ ] **E6-3** budget 초과 skip 테스트 `[S]`
+
+#### E7. Validation
+- [ ] **E7-1** Synthetic injection 테스트 `[M]`
+- [ ] **E7-2** Stage-E-on/off 15c 비교 bench `[M]`
+- [ ] **E7-3** `bench/japan-travel-external-anchor/` + 리포트 `[S]`
+
+#### E8. Stage E Gate
+- [ ] **E8-1** `readiness_gate.py` VP4_exploration_reach `[S]`
+- [ ] **E8-2** VP4 실측 + readiness-report 갱신 `[S]`
+- [ ] **E8-3** Gate 판정 commit `[S]`
 
 ---
 

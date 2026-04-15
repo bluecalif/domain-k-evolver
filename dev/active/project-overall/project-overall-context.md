@@ -1,6 +1,6 @@
 # Project Overall Context
 > Last Updated: 2026-04-15
-> Status: Bronze 완료 (468 tests) → Silver P0 완료 (510) → P1 완료 (544) → **SI-P3R 완료** (608 tests, D-125) → **Gap-Res 완료** (610, D-129) → **SI-P2 Gate PASS** (613, D-132/133) → SI-P4 Planning
+> Status: Bronze 완료 (468) → SI-P0 완료 (510) → P1 완료 (544) → P3R 완료 (608, D-125) → Gap-Res 완료 (610, D-129) → P2 PASS (613, D-132/133) → **SI-P4 Stage A~D 완료 (669, D-135 reframe) · Stage E Planning**
 
 ## 1. 핵심 파일
 
@@ -53,7 +53,7 @@
 | Silver P3 | `dev/active/phase-si-p3-acquisition/` | **REVOKED** (D-120, 2026-04-13) |
 | Silver P3R | `dev/active/phase-si-p3r-snippet-refactor/` | ✅ **완료** (8/8, Gate PASS, D-125, 608 tests) |
 | **Gap-Res Investigation** | `dev/active/phase-gap-resolution-investigation/` | **착수** (D-126) — Primary cap regression + Secondary LLM parse yield |
-| Silver P4 | `dev/active/phase-si-p4-coverage/` | 대기 (Gap-Res + P2 재판정 후) |
+| Silver P4 | `dev/active/phase-si-p4-coverage/` | **Stage A~D 완료 (17/17, 669 tests)** · Stage E Planning (29 tasks) |
 | Silver P5 | `dev/active/phase-si-p5-telemetry-dashboard/` | P3R + P4 |
 | Silver P6 | `dev/active/phase-si-p6-multidomain/` | P1~P5 전부 (Silver exit gate) |
 
@@ -87,7 +87,9 @@
 | `src/nodes/remodel.py` | P2 |
 | `src/adapters/providers/{base,tavily,ddg,curated}_provider.py` | P3 |
 | `src/adapters/fetch_pipeline.py` | P3 |
-| `src/utils/novelty.py`, `src/utils/coverage_map.py` | P4 |
+| `src/utils/novelty.py`, `src/utils/coverage_map.py` | P4 Stage A (✅ 완료) |
+| `src/utils/external_novelty.py`, `src/utils/reach_ledger.py`, `src/utils/cost_guard.py` | P4 Stage E (신규) |
+| `src/nodes/universe_probe.py`, `src/nodes/exploration_pivot.py` | P4 Stage E (신규) |
 | `src/obs/telemetry.py`, `src/obs/dashboard/` | P5 |
 
 ### 벤치 데이터
@@ -195,6 +197,11 @@ class EvolverState(TypedDict):
 | D-132 | Smart Remodel Criteria: has_critical → 3-way OR (audit_critical, growth_stagnation KU<5/3c, exploration_drought GU<30/5c) | P2 재판정 |
 | D-133 | merge min_overlap_count ≥ 2 필터 — 1-field overlap 과다 merge 방지 | P2 재판정 |
 | D-134 | Gini criteria는 P4 category management로 연기 | P2 → P4 |
+| D-135 | P4 scope reframe — Internal Foundation(A~D) PASS + External Anchor(Stage E) 분리. novelty 0.127 은 cycle-diff 수렴 신호로 재해석 (L3 gap_rule 의 category_gini 0.37→0.20 + 신규 KU 로 미션 기여 입증). Stage E 는 skeleton 외부 미탐 해결 | P4 |
+| D-136 | gap_rule(L3) + exploration_pivot(L5) 상보 관계 — 4-계층 메커니즘 스펙트럼(L1 재배열 / L2 meta / L3 내부 축 증폭 / L4 skeleton 확장 / L5 외부 전략). 중복 아닌 보완 | P4 Stage E |
+| D-137 | Universe probe → tiered skeleton (candidate vs active). candidate 는 통계만 유지, active 승격 시에만 HITL-R. HITL 루프 지연 회피 | P4 Stage E |
+| D-138 | Exploration pivot 1 cycle 지속 + gap_rule 우선. 동일 cycle 내 L3(GU 생성→다음 cycle) + L5(이번 cycle targets 치환) 중복 발동 금지 | P4 Stage E |
+| D-139 | Semi-front 진입 조건 = Stage E Gate PASS. Internal-only 판정만으로 UI 에 "수렴" 표시 시 사용자 기만 | P4 Stage E → semi-front |
 
 ---
 

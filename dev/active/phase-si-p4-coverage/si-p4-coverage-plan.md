@@ -1,6 +1,17 @@
 # Silver P4: Coverage Intelligence
 > Last Updated: 2026-04-15
-> Status: **Planning**
+> Status: **Stage A~D Complete (17/17, 669 tests) · Stage E External Anchor Planning (29 tasks)**
+
+## 0. Scope Reframe (2026-04-15)
+
+P4 는 미션 재검토 후 2 층으로 분할:
+
+- **Internal Coverage Foundation (Stage A~D)** — 완료. skeleton 내부 deficit/Gini/reason_code 체계.
+  - Gate: reason_code 100% PASS, coverage+Gini PASS, category_addition 보수성 PASS, S7 PASS, tests 669 ≥ 628 PASS
+  - novelty 0.127 은 cycle-diff 수렴 신호로 재해석 (L3 gap_rule 의 실측 효과로 미션 기여 입증: category_gini 0.37→0.20 + 신규 KU)
+- **External Anchor (Stage E)** — 신규. skeleton 외부 미개척 영역 탐지 + 쿼리 피벗.
+  - 근거 문서: `dev/active/phase-si-p4-coverage/mission-alignment-critique.md`, `mission-alignment-opinion.md`, `external-anchor-improvement-plan.md`, `C:\Users\User\.claude\plans\lovely-imagining-popcorn.md`
+  - Semi-front 진입 조건 = Stage E Gate PASS.
 
 ## 1. Summary (개요)
 
@@ -179,3 +190,66 @@ P4 완료 후:
 | coverage_map deficit 계산 + Gini 통합 | 테스트 pass |
 | category_addition 보수적 조건 (미달 시 미제안) | 테스트 pass |
 | 테스트 수 | ≥ 628 (613 + 15) |
+
+---
+
+## 8. Stage E: External Anchor (신규, 29 tasks)
+
+### 8.1 목적
+
+"**gap_rule(L3) 은 skeleton 내부 축 증폭, exploration_pivot(L5) 은 skeleton 외부 쿼리 피벗**" — 두 메커니즘을 상보 관계로 배치해 미션 정렬(우주 대비 KU 확장 + 분포 다양성)을 달성.
+
+### 8.2 4-계층 메커니즘 스펙트럼
+
+| L | 메커니즘 | Scope | 트리거 | 산출 |
+|---|---|---|---|---|
+| L1 | remodel merge/split/reclassify/alias | 내부 재배열 | conflict/dup | 기존 KU 재조직 |
+| L2 | remodel source_policy | 수집 meta | yield_decline | TTL/trust 조정 |
+| **L3** | **remodel gap_rule** | **skeleton 내 미개발 축 증폭** | **audit coverage_gap critical** | **신규 GU → 새 KU** |
+| L4a | remodel category_addition (반응형) | skeleton 확장 | ≥5 KU 패턴 | 새 category |
+| **L4b** | **universe_probe → candidate skeleton** | **skeleton 선제 확장** | **cycle N 주기 또는 ext_novelty 낮음** | **candidate_categories** |
+| **L5** | **exploration_pivot** | **skeleton 외부 전략 변경** | **ext_novelty < 0.1 × 5c + reach 정체** | **새 쿼리/시간축** |
+
+### 8.3 트리거 우선순위
+
+1. audit `coverage_gap critical` → **gap_rule (L3)** 먼저
+2. universe_probe evidence ≥ threshold → category_addition via HITL-R
+3. ext_novelty low + reach_degraded → **exploration_pivot (L5)**
+
+동일 cycle 내 L3 + L5 동시 target 주입 금지. L3 는 GU 생성 → 다음 cycle 영향. L5 는 이번 cycle targets 치환.
+
+### 8.4 Stage E Sub-stages
+
+- **E0** 예산 & 축 실측 (2 tasks, 선행)
+- **E1** external_novelty metric (4 tasks)
+- **E2** universe_probe + tiered skeleton (5 tasks)
+- **E3** reach_ledger (4 tasks)
+- **E4** exploration_pivot node (3 tasks)
+- **E5** planning reason_code 확장 (2 tasks)
+- **E6** cost_guard + kill-switch (3 tasks)
+- **E7** validation: synthetic injection + bench 비교 (3 tasks)
+- **E8** Gate VP4 추가 + 판정 (3 tasks)
+
+### 8.5 Stage E Gate (VP4)
+
+| 기준 | 임계치 |
+|---|---|
+| external_novelty avg | ≥ 0.25 (새 정의) |
+| distinct_domains_per_100ku | ≥ 15 (실측 후 조정) |
+| universe_probe proposals | ≥ 2 per 15c |
+| exploration_pivot triggered | ≥ 1 (plateau 시) |
+| category_addition via universe_probe | ≥ 1 |
+
+VP1~VP4 모두 PASS 시 **Mission-Aligned PASS** → semi-front 진입.
+
+### 8.6 주요 리스크 (Stage E)
+
+| ID | 리스크 | 완화 |
+|---|---|---|
+| R-E1 | universe_probe 비용 폭발 | E0 예산 상한 + kill-switch |
+| R-E2 | candidate → active 자동 승격 오염 | HITL-R 필수, tiered skeleton |
+| R-E3 | ext_novelty 측정 환상 | E7-1 synthetic injection 검증 |
+| R-E4 | reach 축 확보 실패 | E0 선행 조사 |
+| R-E5 | exploration_pivot 이 core loop 교란 | 1 cycle 지속 + gap_rule 우선 |
+| R-E7 | L3 + L5 중복 발동 target 폭주 | 우선순위 규칙 + 동시 발동 금지 |
+| R-E8 | universe_probe candidate × gap_rule category 충돌 | candidate → HITL → active 승격 후에만 L3 대상화 |

@@ -20,9 +20,12 @@ SI-P3R 완료 (2026-04-14, D-125)
    │      - Stage C: 재현 trial + 효과 검증
    │      - Stage D: Secondary 대응 결정 (D-129~D-131)
    │
-   ▼  Silver P2 재판정 (remodel on/off 비교 실험, D-127)
+   ▼  Silver P2 재판정 (remodel on/off 비교 실험, D-127) ✅ Gate PASS (D-132/133)
    │
    ▼  Silver P4 (Coverage Intelligence)
+   │      - Stage A~D: Internal Foundation (완료, 17/17, 669 tests)
+   │      - Stage E: External Anchor (Planning, 29 tasks) ← 미션 정렬 (D-135)
+   │                  Semi-front 진입 조건 = Stage E Gate PASS (D-139)
    │
    ▼  Silver P5 (Telemetry & Dashboard)
    │

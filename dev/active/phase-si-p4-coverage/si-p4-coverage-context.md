@@ -1,6 +1,6 @@
 # Silver P4: Coverage Intelligence — Context
 > Last Updated: 2026-04-15
-> Status: **Planning**
+> Status: **Stage A~D Complete · Stage E Planning**
 
 ## 1. 핵심 파일
 
@@ -117,3 +117,79 @@
 ### 인코딩
 - JSON read/write: `encoding='utf-8'` explicit
 - 커밋: `[si-p4] Step X.Y: 설명`
+
+---
+
+## 5. Stage E: External Anchor 추가 컨텍스트
+
+### 5.1 신규 파일 (Stage E)
+
+| 파일 | 역할 | 참조 재사용 |
+|---|---|---|
+| `src/utils/external_novelty.py` | 누적 이력 대비 novelty 측정 (entity_key+field+claim-hash) | 기존 `novelty.py` 는 cycle-diff 유지 |
+| `src/utils/reach_ledger.py` | distinct_domains/languages/time-range 누적 집계 | `readiness_gate._gini_coefficient` normalization |
+| `src/utils/cost_guard.py` | Stage E 기능별 per-cycle/per-run budget + kill-switch | — |
+| `src/nodes/universe_probe.py` | LLM survey + broad Tavily → candidate_categories 제안 | `remodel.py` category_addition 경로 |
+| `src/nodes/exploration_pivot.py` | LLM query rewriter + candidate axis probe (1 cycle 치환) | `plateau_detector.py` 조건 확장 |
+
+### 5.2 수정 파일 (Stage E)
+
+| 파일 | 변경 |
+|---|---|
+| `src/nodes/remodel.py` | category_addition 이 universe_probe evidence 도 입력으로 받도록 확장 |
+| `src/nodes/plan.py` | reason_code 3종 추가 (external_novelty/universe_probe/reach_diversity), 우선순위 재조정 |
+| `src/utils/plateau_detector.py` | external_novelty + reach_degraded 조건 통합 |
+| `src/utils/readiness_gate.py` | VP4_exploration_reach 추가 |
+| `src/graph.py` | universe_probe + exploration_pivot 노드 삽입 |
+| `src/config.py` | `external_anchor_enabled`, `probe_interval_cycles`, budget 필드 |
+| `src/state.py` | `external_novelty_history`, `reach_ledger`, `candidate_categories` 필드 |
+
+### 5.3 Stage E 데이터 인터페이스
+
+| 데이터 | 출력 대상 | 형태 |
+|---|---|---|
+| external_novelty | `state.external_novelty_history` | `float` (0~1) |
+| reach_ledger | `state.reach_ledger` | `{distinct_domains, distinct_languages, time_range_bins, per_cycle_delta}` |
+| candidate_categories | `state.skeleton.candidate_categories` | `list[{slug, name, rationale, evidence_count, confidence}]` |
+| universe_probe_report | `state.universe_probe_history[-1]` | `{proposals, validated, cost}` |
+| pivot_reason | `state.pivot_reason_code` | 1 cycle 용 `plateau:exploration_pivot` |
+
+### 5.4 신규 Reason Code (Stage E 추가분)
+
+| code | 발동 조건 |
+|---|---|
+| `external_novelty:deficit` | history_novelty < 0.2 |
+| `universe_probe:missing_category={slug}` | candidate_categories evidence 검증 통과 |
+| `reach_diversity:low={axis}` | reach_ledger axis 정체 |
+| `plateau:exploration_pivot` | pivot node 활성 시 1 cycle 용 |
+
+### 5.5 우선순위 재조정
+
+**변경 전 (Stage A~D)**: `deficit > gini > plateau > audit > seed`
+
+**변경 후 (Stage E)**: `external_novelty > deficit > gini > plateau > audit > seed`
+
+근거: 외부 미탐 신호가 내부 균형 신호보다 우선. 단 **L3 gap_rule (audit coverage_gap critical) 은 우선순위와 별도로 항상 먼저 consume** (별도 경로).
+
+### 5.6 주요 결정사항 (Stage E 추가)
+
+| # | 결정 | 근거 |
+|---|---|---|
+| D-135 | P4 scope reframe — Internal Foundation PASS + External Anchor 분리 | novelty 0.127 은 L3 gap_rule 효과로 미션 기여 이미 입증. Stage E 는 skeleton 외부 미탐 해결 |
+| D-136 | gap_rule(L3) + exploration_pivot(L5) 상보 관계 (4-계층 스펙트럼) | L3 은 내부 축 증폭, L5 는 외부 쿼리 피벗. 중복 아닌 보완. |
+| D-137 | Universe probe → tiered skeleton (candidate vs active) | HITL 루프 지연 회피 + skeleton 오염 방지. active 승격만 HITL-R. |
+| D-138 | Exploration pivot 1 cycle 지속 + gap_rule 우선 | core loop 교란 최소화. L3 가 이번 cycle consume 한 경우 L5 skip. |
+| D-139 | Semi-front 진입 조건 = Stage E Gate PASS | Stage A~D만으로는 UI 에서 "수렴" 주장이 사용자 기만 |
+
+### 5.7 검증 방법 (Stage E 전용)
+
+- **E7-1 Synthetic Injection**: skeleton 에 없는 fixture 카테고리 삽입 → universe_probe 가 표면화하는지 측정 (ground truth 비교)
+- **E7-2 Regression bench**: japan-travel 15c 를 Stage-E-on/off 양쪽 실행 → external_novelty / distinct_domains / candidate 제안 수 비교
+
+### 5.8 Stage E 컨벤션 체크
+
+- [ ] **Gap-driven**: external_novelty 낮음도 gap 의 한 형태로 reason_code 반영
+- [ ] **Claim→KU**: candidate skeleton 은 KU 영향 없음 (active 승격 시에만)
+- [ ] **Evidence-first**: universe_probe 제안은 broad Tavily evidence validator 통과 필수
+- [ ] **Conflict-preserving**: exploration_pivot 은 targets 만 치환, 기존 KU 불변
+- [ ] **Prescription-compiled**: critique machine_rule 에 external_novelty 하한 포함
