@@ -320,14 +320,20 @@ class TestRunRemodel:
             {"ku_id": "KU-0001", "entity_key": "japan-travel:transport:a",
              "field": "price", "value": "100", "status": "active",
              "evidence_links": ["EU-0001"], "confidence": 0.8},
+            {"ku_id": "KU-0011", "entity_key": "japan-travel:transport:a",
+             "field": "duration", "value": "2h", "status": "active",
+             "evidence_links": ["EU-0011"], "confidence": 0.8},
             {"ku_id": "KU-0002", "entity_key": "japan-travel:transport:b",
              "field": "price", "value": "100", "status": "active",
              "evidence_links": ["EU-0002"], "confidence": 0.8},
+            {"ku_id": "KU-0012", "entity_key": "japan-travel:transport:b",
+             "field": "duration", "value": "2h", "status": "active",
+             "evidence_links": ["EU-0012"], "confidence": 0.8},
         ]
         state = _make_state(kus=kus)
         audit = _make_audit_report(findings=[])
         report = run_remodel(state, audit)
-        # 1 field 각각이므로 overlap = 1/1 = 100% → merge
+        # 2 field 겹침 (price+duration) → overlap ≥ 2 → merge
         merges = [p for p in report["proposals"] if p["type"] == "merge"]
         assert len(merges) >= 1
 
@@ -336,9 +342,15 @@ class TestRunRemodel:
             {"ku_id": "KU-0001", "entity_key": "japan-travel:transport:a",
              "field": "price", "value": "100", "status": "active",
              "evidence_links": ["EU-0001"], "confidence": 0.8},
+            {"ku_id": "KU-0011", "entity_key": "japan-travel:transport:a",
+             "field": "duration", "value": "2h", "status": "active",
+             "evidence_links": ["EU-0011"], "confidence": 0.8},
             {"ku_id": "KU-0002", "entity_key": "japan-travel:transport:b",
              "field": "price", "value": "100", "status": "active",
              "evidence_links": ["EU-0002"], "confidence": 0.8},
+            {"ku_id": "KU-0012", "entity_key": "japan-travel:transport:b",
+             "field": "duration", "value": "2h", "status": "active",
+             "evidence_links": ["EU-0012"], "confidence": 0.8},
         ]
         state = _make_state(kus=kus)
         audit = _make_audit_report()
@@ -617,9 +629,21 @@ class TestOrchestratorRemodel:
                     "observed_at": "2026-04-12",
                 },
                 {
+                    "ku_id": "KU-0003", "entity_key": "japan-travel:transport:item-01",
+                    "field": "duration", "value": "2h", "status": "active",
+                    "evidence_links": ["EU-0003"], "confidence": 0.85,
+                    "observed_at": "2026-04-12",
+                },
+                {
                     "ku_id": "KU-0002", "entity_key": "japan-travel:transport:item-02",
                     "field": "price", "value": "1000", "status": "active",
                     "evidence_links": ["EU-0002"], "confidence": 0.85,
+                    "observed_at": "2026-04-12",
+                },
+                {
+                    "ku_id": "KU-0004", "entity_key": "japan-travel:transport:item-02",
+                    "field": "duration", "value": "2h", "status": "active",
+                    "evidence_links": ["EU-0004"], "confidence": 0.85,
                     "observed_at": "2026-04-12",
                 },
             ],

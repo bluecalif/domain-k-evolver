@@ -24,6 +24,9 @@ logger = logging.getLogger(__name__)
 # merge 제안 트리거 임계치: entity 중복률
 _MERGE_OVERLAP_THRESHOLD = 0.30
 
+# merge 제안 최소 overlap field-value 수 (1개 겹침만으로는 merge 안 함)
+_MERGE_MIN_OVERLAP_COUNT = 2
+
 # split 제안 트리거: 한 entity에 상반 axis_tag 수
 _SPLIT_CONFLICTING_AXES_MIN = 2
 
@@ -93,7 +96,8 @@ def _propose_merges(
                 total = len(fields_a | fields_b)
                 overlap_ratio = overlap / total if total > 0 else 0.0
 
-                if overlap_ratio >= _MERGE_OVERLAP_THRESHOLD:
+                if (overlap_ratio >= _MERGE_OVERLAP_THRESHOLD
+                        and overlap >= _MERGE_MIN_OVERLAP_COUNT):
                     # canonical = 더 많은 KU 를 가진 쪽
                     canonical = ek_a if len(fields_a) >= len(fields_b) else ek_b
                     proposals.append({
