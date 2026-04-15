@@ -728,6 +728,122 @@ class TestOrchestratorRemodel:
         assert state["phase_number"] == 0  # 변경 없음
 
 
+    def test_remodel_triggers_on_growth_stagnation(self, tmp_path):
+        """KU 순증 < 5/cycle (3c avg) → smart criteria로 remodel 발동."""
+        from src.config import EvolverConfig, OrchestratorConfig
+        from src.orchestrator import Orchestrator
+
+        domain_path = tmp_path / "test-domain"
+        state_dir = domain_path / "state"
+        state_dir.mkdir(parents=True)
+        for fname in ("knowledge-units.json", "gap-map.json", "domain-skeleton.json",
+                       "metrics.json", "policies.json"):
+            (state_dir / fname).write_text("{}", encoding="utf-8")
+
+        cfg = EvolverConfig(
+            orchestrator=OrchestratorConfig(
+                audit_interval=5,
+                bench_root=str(domain_path),
+            ),
+        )
+        orch = Orchestrator(cfg)
+        state = self._make_orch_state(cycle=5)
+        # warning only (not critical) — 기존 기준으론 스킵
+        state["audit_history"][0]["findings"][0]["severity"] = "warning"
+
+        # 4 entries: cycle 2~5, ku_active 거의 변화 없음 (성장 정체)
+        for c in range(2, 6):
+            orch.logger.entries.append({
+                "cycle": c, "ku_active": 20 + c, "ku_total": 25 + c,
+                "gu_total": 50 + c * 10, "gu_open": 30 + c * 5,
+                "gu_resolved": 10, "ku_disputed": 0,
+                "evidence_rate": 0.8, "multi_evidence_rate": 0.5,
+                "conflict_rate": 0.0, "avg_confidence": 0.8,
+                "gap_resolution_rate": 0.5, "staleness_risk": 0,
+                "mode": "normal", "collect_failure_rate": 0.0,
+                "llm_calls": 10, "llm_tokens": 5000,
+                "search_calls": 5, "fetch_calls": 0,
+            })
+
+        orch._maybe_run_remodel(state, 5, cfg.orchestrator)
+        # growth stagnation → remodel 발동 → phase bump
+        assert state["phase_number"] == 1
+        assert "growth_stagnation" in state["remodel_report"].get("trigger_reason", "")
+
+    def test_remodel_triggers_on_exploration_drought(self, tmp_path):
+        """신규 GU open < 30/5c → smart criteria로 remodel 발동."""
+        from src.config import EvolverConfig, OrchestratorConfig
+        from src.orchestrator import Orchestrator
+
+        domain_path = tmp_path / "test-domain"
+        state_dir = domain_path / "state"
+        state_dir.mkdir(parents=True)
+        for fname in ("knowledge-units.json", "gap-map.json", "domain-skeleton.json",
+                       "metrics.json", "policies.json"):
+            (state_dir / fname).write_text("{}", encoding="utf-8")
+
+        cfg = EvolverConfig(
+            orchestrator=OrchestratorConfig(
+                audit_interval=5,
+                bench_root=str(domain_path),
+            ),
+        )
+        orch = Orchestrator(cfg)
+        state = self._make_orch_state(cycle=10)
+        state["audit_history"][0]["findings"][0]["severity"] = "warning"
+
+        # 6 entries: cycle 5~10, gu_total 거의 변화 없음 (탐색 고갈)
+        for c in range(5, 11):
+            orch.logger.entries.append({
+                "cycle": c, "ku_active": 50 + c * 5, "ku_total": 60 + c * 5,
+                "gu_total": 100 + (c - 5) * 3,  # 5c 동안 +15 < 30
+                "gu_open": 20, "gu_resolved": 80,
+                "ku_disputed": 0,
+                "evidence_rate": 0.8, "multi_evidence_rate": 0.5,
+                "conflict_rate": 0.0, "avg_confidence": 0.8,
+                "gap_resolution_rate": 0.5, "staleness_risk": 0,
+                "mode": "normal", "collect_failure_rate": 0.0,
+                "llm_calls": 10, "llm_tokens": 5000,
+                "search_calls": 5, "fetch_calls": 0,
+            })
+
+        orch._maybe_run_remodel(state, 10, cfg.orchestrator)
+        assert state["phase_number"] == 1
+        assert "exploration_drought" in state["remodel_report"].get("trigger_reason", "")
+
+    def test_remodel_skips_when_healthy(self, tmp_path):
+        """성장·탐색 건강 + warning only → remodel 스킵."""
+        from src.config import EvolverConfig, OrchestratorConfig
+        from src.orchestrator import Orchestrator
+
+        cfg = EvolverConfig(
+            orchestrator=OrchestratorConfig(
+                audit_interval=5,
+                bench_root=str(tmp_path),
+            ),
+        )
+        orch = Orchestrator(cfg)
+        state = self._make_orch_state(cycle=5)
+        state["audit_history"][0]["findings"][0]["severity"] = "warning"
+
+        # 4 entries: 건강한 성장 + 탐색
+        for c in range(2, 6):
+            orch.logger.entries.append({
+                "cycle": c, "ku_active": 20 + c * 10, "ku_total": 25 + c * 10,
+                "gu_total": 50 + c * 20, "gu_open": 30 + c * 10,
+                "gu_resolved": 10, "ku_disputed": 0,
+                "evidence_rate": 0.8, "multi_evidence_rate": 0.5,
+                "conflict_rate": 0.0, "avg_confidence": 0.8,
+                "gap_resolution_rate": 0.5, "staleness_risk": 0,
+                "mode": "normal", "collect_failure_rate": 0.0,
+                "llm_calls": 10, "llm_tokens": 5000,
+                "search_calls": 5, "fetch_calls": 0,
+            })
+
+        orch._maybe_run_remodel(state, 5, cfg.orchestrator)
+        assert state["phase_number"] == 0  # 변경 없음
+
+
 # ---------------------------------------------------------------------------
 # P2-B3: Phase transition (merge/split/reclassify 적용)
 # ---------------------------------------------------------------------------

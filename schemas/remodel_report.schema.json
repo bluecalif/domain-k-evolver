@@ -52,6 +52,10 @@
     },
     "approval": {
       "$ref": "#/$defs/approval"
+    },
+    "trigger_reason": {
+      "type": "string",
+      "description": "Smart Remodel Criteria 트리거 이유 (audit_critical, growth_stagnation, exploration_drought 조합)"
     }
   },
   "additionalProperties": false,

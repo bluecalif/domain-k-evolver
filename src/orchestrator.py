@@ -287,6 +287,57 @@ class Orchestrator:
 
         self._pre_patch_policies = None
 
+    # Smart Remodel Criteria 임계치
+    GROWTH_STAGNATION_THRESHOLD = 5    # KU 순증 하한 (per cycle, 3c 평균)
+    GROWTH_STAGNATION_WINDOW = 3       # 최근 N cycle 평균
+    EXPLORATION_DROUGHT_THRESHOLD = 30  # 신규 GU open 하한 (누적)
+    EXPLORATION_DROUGHT_WINDOW = 5     # 최근 N cycle 누적
+
+    def _should_remodel(self, state: EvolverState, cycle_num: int) -> tuple[bool, str]:
+        """Smart Remodel 조건 판정 — 3가지 OR.
+
+        Returns:
+            (should_run, reason) 튜플.
+        """
+        reasons: list[str] = []
+
+        # ③ 기존: audit critical finding
+        audit_history = state.get("audit_history") or []
+        if audit_history:
+            findings = audit_history[-1].get("findings", [])
+            if any(f.get("severity") == "critical" for f in findings):
+                reasons.append("audit_critical")
+
+        entries = self.logger.entries
+        n = len(entries)
+
+        # ① Growth Stagnation: 최근 3 cycle KU 순증 평균 < 5
+        w1 = self.GROWTH_STAGNATION_WINDOW
+        if n >= w1 + 1:
+            recent = entries[-(w1):]
+            before_entry = entries[-(w1 + 1)]
+            total_growth = recent[-1]["ku_active"] - before_entry["ku_active"]
+            avg_growth = total_growth / w1
+            if avg_growth < self.GROWTH_STAGNATION_THRESHOLD:
+                reasons.append(f"growth_stagnation(avg={avg_growth:.1f}<{self.GROWTH_STAGNATION_THRESHOLD})")
+
+        # ② Exploration Drought: 최근 5 cycle 신규 GU open 누적 < 30
+        w2 = self.EXPLORATION_DROUGHT_WINDOW
+        if n >= w2 + 1:
+            recent = entries[-(w2):]
+            before_entry = entries[-(w2 + 1)]
+            # gu_total 증가 = 신규 GU 생성 수 (open + resolved 포함)
+            new_gu = recent[-1]["gu_total"] - before_entry["gu_total"]
+            if new_gu < self.EXPLORATION_DROUGHT_THRESHOLD:
+                reasons.append(f"exploration_drought(new_gu={new_gu}<{self.EXPLORATION_DROUGHT_THRESHOLD})")
+
+        if reasons:
+            reason_str = " | ".join(reasons)
+            logger.info("Remodel 트리거: cycle=%d, reasons=[%s]", cycle_num, reason_str)
+            return True, reason_str
+
+        return False, ""
+
     def _maybe_run_remodel(
         self,
         state: EvolverState,
@@ -295,8 +346,9 @@ class Orchestrator:
     ) -> None:
         """Remodel 조건 확인 + 실행 (P2).
 
-        조건: cycle > 0 AND cycle % remodel_interval == 0 AND audit.has_critical.
-        remodel_interval 은 audit_interval 과 동일 (기본 10).
+        Smart Criteria: cycle % remodel_interval == 0 AND
+        (audit_critical OR growth_stagnation OR exploration_drought).
+        remodel_interval 기본값 = audit_interval.
         """
         remodel_interval = getattr(cfg, "remodel_interval", cfg.audit_interval)
         if remodel_interval <= 0:
@@ -304,20 +356,22 @@ class Orchestrator:
         if cycle_num <= 0 or cycle_num % remodel_interval != 0:
             return
 
-        # 최신 audit 에 critical finding 이 있는지 확인
+        # audit_history 없으면 최소 audit 1회 필요
         audit_history = state.get("audit_history") or []
         if not audit_history:
             return
 
-        latest_audit = audit_history[-1]
-        findings = latest_audit.get("findings", [])
-        has_critical = any(f.get("severity") == "critical" for f in findings)
-        if not has_critical:
-            logger.info("Remodel 스킵: cycle=%d, critical finding 없음", cycle_num)
+        # Smart Criteria 판정
+        should_run, reason = self._should_remodel(state, cycle_num)
+        if not should_run:
+            logger.info("Remodel 스킵: cycle=%d, smart criteria 미충족", cycle_num)
             return
+
+        latest_audit = audit_history[-1]
 
         # Remodel report 생성
         report = run_remodel(state, latest_audit)
+        report["trigger_reason"] = reason
         state["remodel_report"] = report
 
         if not report.get("proposals"):

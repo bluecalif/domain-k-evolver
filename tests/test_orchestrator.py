@@ -440,6 +440,14 @@ class TestOrchestrator:
         state["policies"]["ttl_defaults"] = {"price": 180}
 
         def mock_run(s, c):
+            # cycle마다 KU 충분히 추가하여 growth stagnation 방지 (smart remodel criteria)
+            for i in range(10):
+                s["knowledge_units"].append({
+                    "ku_id": f"KU-mock-{c}-{i}", "entity_key": f"test:cat:item-{c}-{i}",
+                    "field": "info", "value": f"v{c}", "observed_at": "2026-01-01",
+                    "validity": {"ttl_days": 365}, "evidence_links": [f"EU-{c}-{i}"],
+                    "confidence": 0.9, "status": "active",
+                })
             return CycleResult(cycle=c, state=s)
 
         orch._run_single_cycle = mock_run
