@@ -546,6 +546,27 @@ class Orchestrator:
                         state["gap_map"] = gap_map
                 applied_count += 1
 
+            elif p_type == "category_addition":
+                # P4-C3: 새 카테고리를 skeleton categories 에 추가
+                new_cat = params.get("new_category", {})
+                if new_cat and new_cat.get("slug"):
+                    existing_slugs = {
+                        c["slug"] for c in skeleton.get("categories", [])
+                    }
+                    if new_cat["slug"] not in existing_slugs:
+                        cats = list(skeleton.get("categories", []))
+                        cats.append({
+                            "slug": new_cat["slug"],
+                            "name": new_cat.get("name", new_cat["slug"]),
+                        })
+                        skeleton["categories"] = cats
+                        logger.info(
+                            "Category 추가: '%s' (evidence=%d KUs)",
+                            new_cat["slug"],
+                            params.get("evidence_ku_count", 0),
+                        )
+                applied_count += 1
+
             elif p_type == "alias_canonicalize":
                 # 의도적 defer — entity_resolver가 ingestion 시 처리
                 applied_count += 1

@@ -1,4 +1,4 @@
-"""remodel_node -- Outer-Loop Remodel (Silver P2-A1).
+"""remodel_node -- Outer-Loop Remodel (Silver P2-A1, P4-C1).
 
 audit 결과(findings)를 소비하여 skeleton/state 구조 변경 제안(RemodelReport)을 생성한다.
 중복 분석은 하지 않으며, audit의 4 분석함수 출력만 소비한다.
@@ -10,6 +10,7 @@ audit 결과(findings)를 소비하여 skeleton/state 구조 변경 제안(Remod
 - alias_canonicalize: alias 정리 제안
 - source_policy: 출처 정책 변경 제안
 - gap_rule: gap 규칙 변경 제안
+- category_addition: 새 카테고리 추가 제안 (P4-C1, 보수적)
 """
 
 from __future__ import annotations
@@ -29,6 +30,10 @@ _MERGE_MIN_OVERLAP_COUNT = 2
 
 # split 제안 트리거: 한 entity에 상반 axis_tag 수
 _SPLIT_CONFLICTING_AXES_MIN = 2
+
+# P4-C2: category_addition 보수적 조건
+_CATEGORY_ADDITION_MIN_KUS = 5      # 최소 증거 KU 수
+_CATEGORY_ADDITION_MAX_PER_CYCLE = 1  # 사이클당 최대 추가 제안 수
 
 # report_id 카운터 (단일 프로세스 내)
 _report_counter = 0
@@ -277,6 +282,74 @@ def _propose_from_audit_findings(
     return proposals
 
 
+def _propose_category_additions(
+    knowledge_units: list[dict],
+    skeleton: dict,
+    coverage_map: dict | None = None,
+) -> list[dict]:
+    """기존 카테고리에 속하지 않는 KU 패턴 → 새 카테고리 추가 제안 (P4-C1/C2).
+
+    보수적 조건:
+    1. ≥ _CATEGORY_ADDITION_MIN_KUS 개 KU 가 미등록 카테고리 참조
+    2. 사이클당 최대 _CATEGORY_ADDITION_MAX_PER_CYCLE 개
+    3. 이미 reclassify 대상인 entity 는 제외 (reclassify 우선)
+    """
+    proposals: list[dict] = []
+    valid_cats = {c["slug"] for c in skeleton.get("categories", [])}
+    if not valid_cats:
+        return proposals
+
+    # 미등록 카테고리별 KU 수집
+    unknown_cat_kus: dict[str, list[str]] = defaultdict(list)
+    for ku in knowledge_units:
+        if ku.get("status") not in ("active", "disputed"):
+            continue
+        ek = ku.get("entity_key", "")
+        parts = ek.split(":")
+        cat = parts[1] if len(parts) >= 3 else ""
+        if cat and cat not in valid_cats:
+            unknown_cat_kus[cat].append(ku.get("ku_id", ek))
+
+    # 보수적 필터: 최소 KU 수 충족하는 카테고리만
+    candidates = [
+        (cat, ku_ids)
+        for cat, ku_ids in unknown_cat_kus.items()
+        if len(ku_ids) >= _CATEGORY_ADDITION_MIN_KUS
+    ]
+
+    # KU 수 내림차순 정렬, 사이클당 1개 제한
+    candidates.sort(key=lambda x: len(x[1]), reverse=True)
+    candidates = candidates[:_CATEGORY_ADDITION_MAX_PER_CYCLE]
+
+    for cat, ku_ids in candidates:
+        # 대표 entity_key 에서 도메인 추출
+        domain = skeleton.get("domain", "unknown")
+
+        proposals.append({
+            "type": "category_addition",
+            "rationale": (
+                f"{len(ku_ids)} KU 가 미등록 카테고리 '{cat}' 참조 "
+                f"(최소 {_CATEGORY_ADDITION_MIN_KUS}개 이상 → 카테고리 추가 제안)"
+            ),
+            "target_entities": [f"{domain}:{cat}:*"],
+            "params": {
+                "new_category": {
+                    "slug": cat,
+                    "name": cat.replace("-", " ").replace("_", " ").title(),
+                },
+                "evidence_ku_count": len(ku_ids),
+                "evidence_ku_ids": ku_ids[:10],  # 상위 10개만 기록
+            },
+            "expected_delta": {
+                "metric": "category_count",
+                "before": len(valid_cats),
+                "after": len(valid_cats) + 1,
+            },
+        })
+
+    return proposals
+
+
 def _build_rollback_payload(
     state: dict,
     proposals: list[dict],
@@ -336,6 +409,10 @@ def run_remodel(
 
     # source_policy / gap_rule: audit findings 기반
     proposals.extend(_propose_from_audit_findings(findings, policies))
+
+    # P4-C1: category_addition (보수적)
+    coverage_map = state.get("coverage_map")
+    proposals.extend(_propose_category_additions(kus, skeleton, coverage_map))
 
     # --- rollback payload ---
     rollback_payload = _build_rollback_payload(state, proposals)

@@ -72,7 +72,8 @@
             "reclassify",
             "alias_canonicalize",
             "source_policy",
-            "gap_rule"
+            "gap_rule",
+            "category_addition"
           ],
           "description": "제안 유형"
         },
