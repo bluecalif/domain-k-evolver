@@ -641,3 +641,127 @@ class TestUniverseProbeIntegration:
 
         assert orch._cost_guard.usage.llm_calls == 0
         assert orch._cost_guard.usage.tavily_queries == 0
+
+
+class TestStageEKillSwitchIntegration:
+    """E6-3: budget 초과 시 Stage E (universe_probe + exploration_pivot) 모두 skip
+    + core loop 정상 동작 확인."""
+
+    def test_pre_killed_skips_all_stage_e_nodes(self, tmp_path):
+        """kill-switch 강제 발동 상태 → 두 Stage E 노드 모두 skip,
+        LLM/Tavily 호출 0회, core loop 5c 정상 완수."""
+        from unittest.mock import MagicMock
+
+        bench_base = _setup_bench(tmp_path)
+        ea = ExternalAnchorConfig(
+            enabled=True, probe_interval_cycles=5,
+            llm_budget_per_run=10, tavily_budget_per_run=10,
+        )
+        cfg = EvolverConfig(
+            orchestrator=OrchestratorConfig(
+                max_cycles=5,
+                audit_interval=0,
+                plateau_window=0,
+                bench_path=str(bench_base / "bench"),
+                bench_domain="test-domain",
+                stop_on_convergence=False,
+            ),
+            external_anchor=ea,
+        )
+
+        mock_llm = MagicMock()
+        mock_search = MagicMock()
+
+        orch = Orchestrator(cfg, llm=mock_llm, search_tool=mock_search)
+        # 시작 전 강제 kill-switch — 예산 외부 사유로 trip된 상황 시뮬레이션
+        orch._cost_guard._trip("test_pre_trip")
+        assert orch._cost_guard.killed is True
+
+        state = _make_minimal_state()
+
+        def mock_run(s, c):
+            s["current_cycle"] = c
+            return CycleResult(cycle=c, state=s)
+
+        orch._run_single_cycle = mock_run
+        orch.run(initial_state=state)
+
+        # core loop 정상 완수
+        assert len(orch.results) == 5
+        assert all(r.error is None for r in orch.results)
+
+        # Stage E 가 LLM/Tavily 를 전혀 건드리지 않음
+        assert orch._cost_guard.usage.llm_calls == 0
+        assert orch._cost_guard.usage.tavily_queries == 0
+        mock_llm.invoke.assert_not_called()
+        mock_search.search.assert_not_called()
+
+        # universe_probe candidate 미등록, exploration_pivot history 비어 있음
+        final = orch.results[-1].state
+        candidates = final.get("domain_skeleton", {}).get("candidate_categories", [])
+        assert len(candidates) == 0
+        assert not (final.get("pivot_history") or [])
+
+        # core loop 산출물은 정상 — reach_history 5개 누적
+        assert len(final.get("reach_history") or []) == 5
+
+    def test_budget_exhausted_mid_run_blocks_subsequent_probes(self, tmp_path):
+        """첫 probe 가 LLM budget 을 모두 소진 → 이후 cycle 의 probe 는
+        kill-switch 로 인해 모두 skip. core loop 는 계속 진행."""
+        import json as _json
+        from unittest.mock import MagicMock
+
+        bench_base = _setup_bench(tmp_path)
+        # llm_budget=1: 첫 survey 한 번만 허용. 두 번째 probe 시도 시 trip.
+        ea = ExternalAnchorConfig(
+            enabled=True, probe_interval_cycles=2,
+            llm_budget_per_run=1, tavily_budget_per_run=0,
+        )
+        cfg = EvolverConfig(
+            orchestrator=OrchestratorConfig(
+                max_cycles=4,  # cycle 2, 4 에서 probe 트리거
+                audit_interval=0,
+                plateau_window=0,
+                bench_path=str(bench_base / "bench"),
+                bench_domain="test-domain",
+                stop_on_convergence=False,
+            ),
+            external_anchor=ea,
+        )
+
+        # LLM survey: 항상 빈 proposals 반환 (validator 진입 막아 budget 동작에 집중)
+        mock_llm = MagicMock()
+        survey_resp = MagicMock()
+        survey_resp.content = _json.dumps({"proposals": []})
+        mock_llm.invoke.return_value = survey_resp
+
+        mock_search = MagicMock()
+
+        orch = Orchestrator(cfg, llm=mock_llm, search_tool=mock_search)
+        state = _make_minimal_state()
+
+        def mock_run(s, c):
+            s["current_cycle"] = c
+            return CycleResult(cycle=c, state=s)
+
+        orch._run_single_cycle = mock_run
+        orch.run(initial_state=state)
+
+        # core loop 4c 정상 완수
+        assert len(orch.results) == 4
+        assert all(r.error is None for r in orch.results)
+
+        # 첫 probe (cycle 2) 만 LLM 호출, 이후 두 번째 probe (cycle 4) 는 kill-switch 로 skip
+        assert orch._cost_guard.usage.llm_calls == 1
+        assert mock_llm.invoke.call_count == 1
+        assert orch._cost_guard.killed is True  # cycle 4 진입 시 trip
+
+        # Tavily 는 budget 0 + 빈 proposals 라 한 번도 호출 안 됨
+        assert orch._cost_guard.usage.tavily_queries == 0
+        mock_search.search.assert_not_called()
+
+        # candidate / pivot 결과물 없음
+        final = orch.results[-1].state
+        candidates = final.get("domain_skeleton", {}).get("candidate_categories", [])
+        assert len(candidates) == 0
+        assert not (final.get("pivot_history") or [])

@@ -14,6 +14,7 @@ from src.utils.readiness_gate import (
     evaluate_vp1,
     evaluate_vp2,
     evaluate_vp3,
+    evaluate_vp4,
 )
 
 
@@ -384,3 +385,136 @@ class TestEvaluateReadiness:
             "VP2_completeness",
             "VP3_self_governance",
         }
+
+
+# ---------------------------------------------------------------------------
+# VP4: Exploration Reach (External Anchor) — SI-P4 Stage E (E8-1)
+# ---------------------------------------------------------------------------
+
+def _stage_e_state(
+    *,
+    ext_history: list[float] | None = None,
+    domains_per_100ku: float = 18.0,
+    candidate_count: int = 3,
+    pivot_count: int = 1,
+    category_addition_count: int = 1,
+) -> dict:
+    """VP4 평가용 state — 모든 criteria pass 가능한 기본값."""
+    base = _healthy_state()
+    if ext_history is None:
+        # cold-start cycle 1 = 1.0, 이후 0.30~ → avg(slice[1:]) ≈ 0.30 ≥ 0.25
+        ext_history = [1.0] + [0.30] * 14
+    base["external_novelty_history"] = ext_history
+    base["reach_history"] = [
+        {"cycle": i, "domains_per_100ku": domains_per_100ku, "distinct_domains": 5,
+         "active_ku_count": 30}
+        for i in range(1, 16)
+    ]
+    base["pivot_history"] = [
+        {"cycle": 7, "variants": 3, "candidate_targets": 2, "reason": "plateau"}
+        for _ in range(pivot_count)
+    ]
+    base["domain_skeleton"]["candidate_categories"] = [
+        {"slug": f"cand-{i}", "status": "validated"} for i in range(candidate_count)
+    ]
+    base["phase_history"] = [
+        {"phase_number": i, "cycle": 5 * i, "report_id": f"R-{i}",
+         "proposals_applied": 1, "proposal_types": ["category_addition"]}
+        for i in range(1, category_addition_count + 1)
+    ]
+    return base
+
+
+class TestVP4:
+    def test_healthy_passes(self) -> None:
+        state = _stage_e_state()
+        result = evaluate_vp4(state)
+        assert result["viewpoint"] == "VP4_exploration_reach"
+        assert result["passed"] is True
+        for key, crit in result["criteria"].items():
+            assert crit["passed"] is True, f"{key} should pass: {crit}"
+
+    def test_low_external_novelty_fails_critical(self) -> None:
+        # 모든 measurable cycle 의 ext_novelty 가 floor 미만
+        state = _stage_e_state(ext_history=[1.0] + [0.10] * 14)
+        result = evaluate_vp4(state)
+        assert result["criteria"]["R1_external_novelty"]["passed"] is False
+        assert result["passed"] is False  # critical fail
+
+    def test_external_novelty_skips_cold_start(self) -> None:
+        """cycle 1 의 1.0 (cold-start) 는 평균 계산에서 제외."""
+        state = _stage_e_state(ext_history=[1.0, 0.30])
+        result = evaluate_vp4(state)
+        # avg(slice[1:]) = 0.30 → pass
+        assert result["criteria"]["R1_external_novelty"]["value"] == 0.30
+        assert result["criteria"]["R1_external_novelty"]["passed"] is True
+
+    def test_external_novelty_empty_history_fails(self) -> None:
+        state = _stage_e_state(ext_history=[])
+        result = evaluate_vp4(state)
+        assert result["criteria"]["R1_external_novelty"]["value"] == 0.0
+        assert result["criteria"]["R1_external_novelty"]["passed"] is False
+
+    def test_low_distinct_domains_non_critical(self) -> None:
+        state = _stage_e_state(domains_per_100ku=10.0)
+        result = evaluate_vp4(state)
+        assert result["criteria"]["R2_distinct_domains"]["passed"] is False
+        # 4/5 → 80% 충족 + critical 모두 통과 → VP4 still passes
+        assert result["passed"] is True
+
+    def test_no_validated_proposals_fails_critical(self) -> None:
+        state = _stage_e_state(candidate_count=0)
+        result = evaluate_vp4(state)
+        assert result["criteria"]["R3_validated_proposals"]["passed"] is False
+        assert result["passed"] is False  # critical fail
+
+    def test_no_pivot_non_critical(self) -> None:
+        state = _stage_e_state(pivot_count=0)
+        result = evaluate_vp4(state)
+        assert result["criteria"]["R4_exploration_pivot"]["passed"] is False
+        assert result["passed"] is True
+
+    def test_no_category_addition_non_critical(self) -> None:
+        state = _stage_e_state(category_addition_count=0)
+        result = evaluate_vp4(state)
+        assert result["criteria"]["R5_category_addition"]["passed"] is False
+        assert result["passed"] is True
+
+    def test_two_non_critical_fails_breaks_80pct(self) -> None:
+        """non-critical 2개 fail → 3/5 = 60% < 80% → VP4 fail."""
+        state = _stage_e_state(pivot_count=0, category_addition_count=0)
+        result = evaluate_vp4(state)
+        # R4, R5 fail → 3/5 = 60%
+        assert result["score"] == "3/5"
+        assert result["passed"] is False
+
+
+class TestEvaluateReadinessWithVP4:
+    """VP4 통합 — external_anchor_enabled=True 시 viewpoints 에 포함."""
+
+    def test_vp4_excluded_by_default(self) -> None:
+        state = _stage_e_state()
+        result = evaluate_readiness(state, _make_trajectory(15, mode="jump"))
+        vp_names = {vp["viewpoint"] for vp in result["viewpoints"]}
+        assert "VP4_exploration_reach" not in vp_names
+        assert len(result["viewpoints"]) == 3
+
+    def test_vp4_included_when_enabled(self) -> None:
+        state = _stage_e_state()
+        result = evaluate_readiness(
+            state, _make_trajectory(15, mode="jump"),
+            external_anchor_enabled=True,
+        )
+        assert len(result["viewpoints"]) == 4
+        vp_names = {vp["viewpoint"] for vp in result["viewpoints"]}
+        assert "VP4_exploration_reach" in vp_names
+        assert result["verdict"] == "PASS"
+
+    def test_vp4_failure_blocks_gate_when_enabled(self) -> None:
+        state = _stage_e_state(candidate_count=0)  # critical R3 fail
+        result = evaluate_readiness(
+            state, _make_trajectory(15, mode="jump"),
+            external_anchor_enabled=True,
+        )
+        assert result["verdict"] == "FAIL"
+        assert "VP4_exploration_reach" in result["failed_viewpoints"]

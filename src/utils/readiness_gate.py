@@ -1,9 +1,12 @@
-"""Readiness Gate — 3-Viewpoint Evolver 준비도 판정.
+"""Readiness Gate — Multi-Viewpoint Evolver 준비도 판정.
 
-Phase 4 Stage D (Task 4.11).
+Phase 4 Stage D (Task 4.11) — VP1/VP2/VP3.
+SI-P4 Stage E (E8-1) — VP4 (External Anchor / Exploration Reach).
+
 VP1: Expansion with Variability
 VP2: Completeness of Domain Knowledge
 VP3: Self-Governance on System Evolution
+VP4: Exploration Reach (외부 anchor — external_anchor enabled 시에만 평가)
 
 Gate 판정: 관점별 80%+ 기준 충족 + 치명적 FAIL 없음 → PASS.
 """
@@ -435,6 +438,112 @@ def evaluate_vp3(
 
 
 # ---------------------------------------------------------------------------
+# VP4: Exploration Reach (External Anchor — SI-P4 Stage E)
+# ---------------------------------------------------------------------------
+
+# VP4 임계치 (lovely-imagining-popcorn 계획 / session-compact 명시)
+VP4_EXTERNAL_NOVELTY_AVG_FLOOR = 0.25
+VP4_DOMAINS_PER_100KU_FLOOR = 15
+VP4_VALIDATED_PROPOSALS_FLOOR = 2  # candidate_categories (validated, registered) 누적
+VP4_PIVOT_FLOOR = 1
+VP4_CATEGORY_ADDITION_FLOOR = 1
+
+
+def evaluate_vp4(
+    state: dict,
+    trajectory: list[dict] | None = None,
+) -> dict:
+    """VP4: Exploration Reach 평가 (External Anchor / Stage E).
+
+    Stage E 가 외부로 충분히 뻗었는지 5개 지표로 판정.
+    external_novelty_history / reach_history / pivot_history / phase_history /
+    domain_skeleton.candidate_categories 를 활용.
+
+    Criteria:
+    - R1: external_novelty avg ≥ 0.25 (cycle 0 의 1.0 cold-start 제외)
+    - R2: distinct_domains_per_100ku 마지막 값 ≥ 15
+    - R3: 검증된 universe_probe proposals (candidate_categories) ≥ 2
+    - R4: exploration_pivot 발동 ≥ 1
+    - R5: category_addition (HITL-R 승격) ≥ 1
+    """
+    results: dict[str, dict[str, Any]] = {}
+
+    # R1: external_novelty 평균
+    ext_history = list(state.get("external_novelty_history") or [])
+    # 첫 cycle 은 모든 key 가 신규라 ext_novelty=1.0 — cold-start 효과 제외
+    measurable = ext_history[1:] if len(ext_history) > 1 else ext_history
+    ext_avg = sum(measurable) / len(measurable) if measurable else 0.0
+    results["R1_external_novelty"] = {
+        "passed": ext_avg >= VP4_EXTERNAL_NOVELTY_AVG_FLOOR,
+        "value": round(ext_avg, 4),
+        "threshold": VP4_EXTERNAL_NOVELTY_AVG_FLOOR,
+        "critical": True,
+    }
+
+    # R2: distinct_domains_per_100ku — 가장 최근 cycle snapshot
+    reach_history = list(state.get("reach_history") or [])
+    last_reach = reach_history[-1] if reach_history else {}
+    domains_per_100ku = float(last_reach.get("domains_per_100ku", 0.0))
+    results["R2_distinct_domains"] = {
+        "passed": domains_per_100ku >= VP4_DOMAINS_PER_100KU_FLOOR,
+        "value": round(domains_per_100ku, 2),
+        "threshold": VP4_DOMAINS_PER_100KU_FLOOR,
+        "critical": False,
+    }
+
+    # R3: validated universe_probe proposals — candidate_categories 누적
+    skeleton = state.get("domain_skeleton", {})
+    candidate_categories = skeleton.get("candidate_categories", [])
+    validated_proposals = len(candidate_categories)
+    results["R3_validated_proposals"] = {
+        "passed": validated_proposals >= VP4_VALIDATED_PROPOSALS_FLOOR,
+        "value": validated_proposals,
+        "threshold": VP4_VALIDATED_PROPOSALS_FLOOR,
+        "critical": True,
+    }
+
+    # R4: exploration_pivot 발동 횟수
+    pivot_history = list(state.get("pivot_history") or [])
+    pivot_count = len(pivot_history)
+    results["R4_exploration_pivot"] = {
+        "passed": pivot_count >= VP4_PIVOT_FLOOR,
+        "value": pivot_count,
+        "threshold": VP4_PIVOT_FLOOR,
+        "critical": False,
+    }
+
+    # R5: category_addition (HITL-R 승격된 candidate)
+    phase_history = list(state.get("phase_history") or [])
+    category_additions = sum(
+        1 for ph in phase_history
+        if "category_addition" in (ph.get("proposal_types") or [])
+    )
+    results["R5_category_addition"] = {
+        "passed": category_additions >= VP4_CATEGORY_ADDITION_FLOOR,
+        "value": category_additions,
+        "threshold": VP4_CATEGORY_ADDITION_FLOOR,
+        "critical": False,
+    }
+
+    total_criteria = len(results)
+    passed_criteria = sum(1 for r in results.values() if r["passed"])
+    critical_fail = any(
+        not r["passed"] for r in results.values() if r.get("critical")
+    )
+    vp_passed = (
+        passed_criteria / total_criteria >= 0.80
+        and not critical_fail
+    )
+
+    return {
+        "viewpoint": "VP4_exploration_reach",
+        "passed": vp_passed,
+        "criteria": results,
+        "score": f"{passed_criteria}/{total_criteria}",
+    }
+
+
+# ---------------------------------------------------------------------------
 # Gate 종합 판정
 # ---------------------------------------------------------------------------
 
@@ -443,13 +552,17 @@ def evaluate_readiness(
     trajectory: list[dict],
     *,
     late_cycle_start: int = 11,
+    external_anchor_enabled: bool = False,
 ) -> dict:
-    """3-Viewpoint Readiness Gate 종합 판정.
+    """Multi-Viewpoint Readiness Gate 종합 판정.
+
+    `external_anchor_enabled=True` 일 때만 VP4 가 viewpoints 에 포함된다
+    (Stage E 평가). 기본값은 False — 기존 Phase 4 평가 호환성 유지.
 
     Returns:
         {
             "gate_passed": bool,
-            "viewpoints": [vp1, vp2, vp3],
+            "viewpoints": [vp1, vp2, vp3, (vp4)],
             "verdict": "PASS" | "FAIL",
             "failed_viewpoints": [...],
         }
@@ -459,6 +572,9 @@ def evaluate_readiness(
     vp3 = evaluate_vp3(state, trajectory)
 
     viewpoints = [vp1, vp2, vp3]
+    if external_anchor_enabled:
+        viewpoints.append(evaluate_vp4(state, trajectory))
+
     failed = [vp for vp in viewpoints if not vp["passed"]]
 
     gate_passed = len(failed) == 0
