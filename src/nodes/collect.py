@@ -240,19 +240,30 @@ def collect_node(
                 executor.submit(_collect_single_gu, gu, gu_queries, search_tool, llm): gu.get("gu_id")
                 for gu, gu_queries in tasks
             }
-            for future in as_completed(futures, timeout=120):
-                gu_id = futures[future]
-                try:
-                    claims = future.result(timeout=60)
-                    all_claims.extend(claims)
-                    per_gu_claims.append(len(claims))
-                    logger.info("collect: %s → %d claims", gu_id, len(claims))
-                except TimeoutError:
-                    logger.warning("collect: %s timeout (60s)", gu_id)
-                    failed_gu_count += 1
-                except Exception as e:
-                    logger.warning("collect: %s 실패 — %s", gu_id, e)
-                    failed_gu_count += 1
+            try:
+                for future in as_completed(futures, timeout=300):
+                    gu_id = futures[future]
+                    try:
+                        claims = future.result(timeout=120)
+                        all_claims.extend(claims)
+                        per_gu_claims.append(len(claims))
+                        logger.info("collect: %s → %d claims", gu_id, len(claims))
+                    except TimeoutError:
+                        logger.warning("collect: %s timeout (120s)", gu_id)
+                        failed_gu_count += 1
+                    except Exception as e:
+                        logger.warning("collect: %s 실패 — %s", gu_id, e)
+                        failed_gu_count += 1
+            except TimeoutError:
+                unfinished = sum(1 for f in futures if not f.done())
+                logger.warning(
+                    "collect: as_completed 300s 초과 — %d/%d GU 미완료로 skip",
+                    unfinished, len(futures),
+                )
+                failed_gu_count += unfinished
+                for f in futures:
+                    if not f.done():
+                        f.cancel()
 
     failure_rate = failed_gu_count / total_gu_count if total_gu_count > 0 else 0.0
 

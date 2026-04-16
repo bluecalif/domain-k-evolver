@@ -12,6 +12,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import dataclasses
 import json
 import logging
 import sys
@@ -34,6 +35,7 @@ logger = logging.getLogger("run_readiness")
 def _run_benchmark(
     cycles: int, resume: bool, bench_root: str | None = None,
     audit_interval: int | None = None,
+    external_anchor: bool | None = None,
 ) -> tuple[dict, list[dict]]:
     """N Cycle 벤치마크 실행 → (final_state, trajectory)."""
     from src.adapters.llm_adapter import create_llm
@@ -43,6 +45,12 @@ def _run_benchmark(
 
     config = EvolverConfig.from_env()
     config.validate_api_keys()
+
+    # Stage E (External Anchor) 플래그 override
+    if external_anchor is not None:
+        ea_cfg = dataclasses.replace(config.external_anchor, enabled=external_anchor)
+        config = dataclasses.replace(config, external_anchor=ea_cfg)
+        logger.info("external_anchor=%s (flag override)", external_anchor)
 
     ai = audit_interval if audit_interval is not None else 5
     if bench_root:
@@ -75,6 +83,7 @@ def _run_benchmark(
 
     config = EvolverConfig(
         llm=config.llm, search=config.search, orchestrator=orch_cfg,
+        external_anchor=config.external_anchor,
     )
 
     llm = create_llm(config.llm)
@@ -183,19 +192,38 @@ def main() -> None:
                         help="Silver trial 직접 경로 (예: bench/silver/japan-travel/p0-20260411-baseline)")
     parser.add_argument("--audit-interval", type=int, default=None,
                         help="audit_interval 오버라이드 (0=audit+remodel 비활성)")
+    parser.add_argument("--external-anchor", dest="external_anchor",
+                        action="store_true", default=None,
+                        help="Stage E (External Anchor) 활성화. VP4 포함 평가.")
+    parser.add_argument("--no-external-anchor", dest="external_anchor",
+                        action="store_false",
+                        help="Stage E 비활성화 (env override).")
     args = parser.parse_args()
 
     if args.evaluate_only:
         logger.info("Evaluate-only 모드: 기존 결과 로드")
         state, trajectory = _load_existing_results()
     else:
-        logger.info("벤치마크 실행: %d cycles (audit_interval=%s)", args.cycles, args.audit_interval)
-        state, trajectory = _run_benchmark(args.cycles, args.resume, args.bench_root, args.audit_interval)
+        logger.info("벤치마크 실행: %d cycles (audit_interval=%s, external_anchor=%s)",
+                    args.cycles, args.audit_interval, args.external_anchor)
+        state, trajectory = _run_benchmark(
+            args.cycles, args.resume, args.bench_root, args.audit_interval,
+            external_anchor=args.external_anchor,
+        )
 
     # Gate 평가
+    from src.config import EvolverConfig
     from src.utils.readiness_gate import evaluate_readiness
 
-    gate_result = evaluate_readiness(state, trajectory)
+    _eval_cfg = EvolverConfig.from_env()
+    if args.external_anchor is not None:
+        ea_enabled = args.external_anchor
+    else:
+        ea_enabled = _eval_cfg.external_anchor.enabled
+
+    gate_result = evaluate_readiness(
+        state, trajectory, external_anchor_enabled=ea_enabled,
+    )
 
     _print_report(gate_result)
 
@@ -203,9 +231,7 @@ def main() -> None:
     if args.bench_root:
         output_path = Path(args.bench_root)
     else:
-        from src.config import EvolverConfig
-        config = EvolverConfig.from_env()
-        domain_path = Path(config.orchestrator.bench_path) / config.orchestrator.bench_domain
+        domain_path = Path(_eval_cfg.orchestrator.bench_path) / _eval_cfg.orchestrator.bench_domain
         if domain_path.name.endswith("-readiness"):
             output_path = domain_path
         else:
