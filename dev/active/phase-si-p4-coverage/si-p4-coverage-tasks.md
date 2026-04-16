@@ -1,6 +1,6 @@
 # Silver P4: Coverage Intelligence — Tasks
 > Last Updated: 2026-04-16
-> Status: **Stage A~D Complete · Stage E Code Complete (22/29) · E7 실 벤치 + E8 Gate 대기**
+> Status: **Stage A~D Complete · Stage E Code Complete (23/25) · E7-2 실 벤치 완료 (VP4 FAIL 진단) · E7-3/E8 대기**
 
 ## Summary
 
@@ -10,8 +10,8 @@
 | B. Plan/Critique 통합 | 4 | 4/4 | ✅ 완료 |
 | C. Smart Category Addition | 3 | 3/3 | ✅ 완료 |
 | D. 검증 | 5 | 5/5 | ✅ 완료 |
-| E. External Anchor | 25 | 22/25 | Code Complete — 실 벤치 대기 |
-| **합계** | **42** | **39/42** | 93% |
+| E. External Anchor | 25 | 23/25 | E7-2 완료 (VP4 FAIL 진단) — E7-3/E8 대기 |
+| **합계** | **42** | **40/42** | 95% |
 
 **Size 분포**: S: 27 / M: 15 / L: 3 / XL: 0
 - Stage A~D: S 7 / M 8 / L 1
@@ -40,9 +40,36 @@
 - [x] category_addition 보수적 조건 (미달 시 미제안) 테스트 pass (11 tests)
 - [x] 테스트 수 ≥ 628 → **669 passed** (613 + 56 신규)
 
-## E2E Bench Results (Phase 종료 시 기록)
+## E2E Bench Results
 
-> (trial 실행 후 작성)
+### E7-2 Stage-E-on vs Stage-E-off 15c 비교 (2026-04-16)
+
+| 지표 | E-off | E-on | 비교 |
+|------|-------|------|------|
+| KU | 116 | 97 | E-on -16% |
+| GU | 123 | 108 | |
+| 총 시간 | 1378.6s | 1335.4s | 유사 |
+| VP1 | PASS 5/5 | PASS 5/5 | 동일 |
+| VP2 | FAIL 4/6 | FAIL 4/6 | 동일 |
+| - gap_resolution | 0.789 | 0.750 | E-on 더 낮음 |
+| - multi_evidence | 0.765 | 0.773 | 유사 |
+| VP3 | PASS 5/6 | PASS 5/6 | 동일 |
+| VP4 (E-on only) | — | FAIL 2/5 | |
+| - external_novelty | — | 0.085 (< 0.25) | CRITICAL |
+| - exploration_pivot | — | 0 (< 1) | FAIL |
+| - category_addition | — | 0 (< 1) | FAIL |
+| - validated_proposals | — | 2 (≥ 2) | PASS |
+| - distinct_domains | — | 54.6 (≥ 15) | PASS |
+
+### VP4 FAIL 근본 원인 분석 (4건)
+
+1. **Budget kill-switch cycle 4 발동** (D-147): llm_budget=3 → universe_probe 1회(survey 1 + validator 2)로 전체 run 예산 소진. kill-switch 영구 trip → 이후 11 cycle Stage E 전체 사망. exploration_pivot도 같은 cost_guard 사용하므로 불가.
+
+2. **ext_novelty 산식 0 수렴** (D-148): `score = novel_keys / total_keys`. 분모가 누적 KU 전체 키 → 단조 증가. cycle 3부터 0.1 미만, cycle 10+ 0.01 수준. 임계치 0.25는 수학적으로 도달 불가.
+
+3. **exploration_pivot 조건 unreachable** (D-149): `is_reach_degraded` = `domains_per_100ku < 15 연속 3c`. 실측 52~57 (floor의 3.5배). Tavily가 자연적으로 다양한 도메인 반환 → 절대 trigger 안 됨. + budget kill이 먼저 발동.
+
+4. **category_addition HITL-R 필수** (D-150): candidate_categories에 registered=2 완료. 그러나 active 승격은 HITL-R(사람 승인) 필수. 자동 벤치에 사람 없음 → 영원히 0. 자동 벤치에서 원천적으로 PASS 불가.
 
 ---
 
@@ -214,8 +241,12 @@
 ### E7. Validation (Ground-Truth)
 
 - [x] **E7-1** `a4df15d` Synthetic injection 테스트 — 숨긴 카테고리 표면화 검증 (`tests/integration/test_synthetic_injection.py`, +4 tests) `[M]`
-- [ ] **E7-2** Regression bench — Stage-E-on vs Stage-E-off 15c 비교 (실 API 비용 발생) `[M]`
-- [ ] **E7-3** `bench/japan-travel-external-anchor/` 디렉터리 + 비교 리포트 MD `[S]`
+- [x] **E7-2** `b2aafc5` Regression bench — Stage-E-on vs Stage-E-off 15c 비교 (실 API) `[M]`
+  - collect.py timeout fix (D-144/145) + run_readiness.py --external-anchor 플래그 (D-146) commit
+  - **stage-e-off**: 15c 완주, KU 116, VP1 5/5, VP2 **FAIL** 4/6 (gap_res 0.789), VP3 5/6
+  - **stage-e-on**: 15c 완주, KU 97, VP1 5/5, VP2 **FAIL** 4/6 (gap_res 0.750), VP3 5/6, VP4 **FAIL** 2/5
+  - **VP4 FAIL 근본 원인 4건**: (1) budget kill-switch cycle 4 발동 → Stage E 사실상 1c만 작동, (2) ext_novelty 산식 0 수렴, (3) pivot 조건 unreachable, (4) category_addition HITL 필수 → 자동 벤치 불가
+- [ ] **E7-3** `bench/japan-travel-external-anchor/` 비교 리포트 MD + VP4 fix 방안 `[S]`
 
 ### E8. Stage E Gate Judgment
 

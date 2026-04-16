@@ -1,0 +1,383 @@
+{
+  "domain": "japan-travel",
+  "version": 0,
+  "scope_boundary": {
+    "includes": [
+      "일본 국내 교통수단",
+      "숙박 유형 및 예약",
+      "관광지 입장/운영",
+      "식당/음식 문화",
+      "입국/비자/세관 규정",
+      "패스/티켓 상품",
+      "통신 (SIM/eSIM/Wi-Fi)",
+      "결제 수단"
+    ],
+    "excludes": [
+      "출발국→일본 항공권 비교",
+      "여행 보험 상품 비교",
+      "일본어 학습",
+      "역사/문화 심층 해설",
+      "장기 체류/취업/유학 비자"
+    ],
+    "boundary_rule": "일본 도착 후~출국까지 여행자 실용 정보. 2024년 이후 유효 정보만."
+  },
+  "categories": [
+    {
+      "slug": "transport",
+      "description": "교통수단/노선/서비스"
+    },
+    {
+      "slug": "accommodation",
+      "description": "숙박 유형/서비스"
+    },
+    {
+      "slug": "attraction",
+      "description": "관광지/명소"
+    },
+    {
+      "slug": "dining",
+      "description": "식당/음식 유형/에티켓"
+    },
+    {
+      "slug": "regulation",
+      "description": "입국/비자/세관/법규"
+    },
+    {
+      "slug": "pass-ticket",
+      "description": "교통패스/관광패스 상품"
+    },
+    {
+      "slug": "connectivity",
+      "description": "통신/인터넷"
+    },
+    {
+      "slug": "payment",
+      "description": "결제수단"
+    }
+  ],
+  "fields": [
+    {
+      "name": "price",
+      "type": "object",
+      "categories": [
+        "*"
+      ],
+      "description": "가격 정보"
+    },
+    {
+      "name": "hours",
+      "type": "string",
+      "categories": [
+        "attraction",
+        "dining"
+      ],
+      "description": "운영시간"
+    },
+    {
+      "name": "policy",
+      "type": "string",
+      "categories": [
+        "regulation",
+        "pass-ticket"
+      ],
+      "description": "규정/조건"
+    },
+    {
+      "name": "location",
+      "type": "object",
+      "categories": [
+        "attraction",
+        "dining",
+        "accommodation"
+      ],
+      "description": "위치"
+    },
+    {
+      "name": "duration",
+      "type": "string",
+      "categories": [
+        "transport",
+        "pass-ticket"
+      ],
+      "description": "소요/유효기간"
+    },
+    {
+      "name": "eligibility",
+      "type": "string",
+      "categories": [
+        "pass-ticket",
+        "regulation"
+      ],
+      "description": "이용 자격"
+    },
+    {
+      "name": "how_to_use",
+      "type": "string",
+      "categories": [
+        "transport",
+        "payment",
+        "connectivity"
+      ],
+      "description": "이용 방법"
+    },
+    {
+      "name": "etiquette",
+      "type": "string",
+      "categories": [
+        "dining",
+        "accommodation"
+      ],
+      "description": "에티켓/매너"
+    },
+    {
+      "name": "tips",
+      "type": "string",
+      "categories": [
+        "*"
+      ],
+      "description": "실용 팁"
+    },
+    {
+      "name": "acceptance",
+      "type": "string",
+      "categories": [
+        "payment"
+      ],
+      "description": "사용 가능 범위"
+    },
+    {
+      "name": "where_to_buy",
+      "type": "string",
+      "categories": [
+        "pass-ticket",
+        "connectivity"
+      ],
+      "description": "구매처/방법"
+    }
+  ],
+  "relations": [
+    {
+      "name": "covers_route",
+      "source": "transport",
+      "target": "transport",
+      "description": "노선 커버 구간"
+    },
+    {
+      "name": "valid_for",
+      "source": "pass-ticket",
+      "target": "transport",
+      "description": "패스 이용 가능 교통"
+    },
+    {
+      "name": "located_in",
+      "source": [
+        "attraction",
+        "dining"
+      ],
+      "target": "region",
+      "description": "위치 관계"
+    },
+    {
+      "name": "accepted_at",
+      "source": "payment",
+      "target": [
+        "transport",
+        "dining",
+        "attraction"
+      ],
+      "description": "결제수단 사용처"
+    }
+  ],
+  "preferred_sources": [
+    {
+      "url": "https://www.japan-guide.com",
+      "title": "Japan Guide",
+      "categories": [
+        "transport",
+        "accommodation",
+        "attraction",
+        "dining",
+        "pass-ticket"
+      ],
+      "axis_tags": {}
+    },
+    {
+      "url": "https://www.jnto.go.jp/en/",
+      "title": "Japan National Tourism Organization",
+      "categories": [
+        "attraction",
+        "regulation",
+        "transport"
+      ],
+      "axis_tags": {}
+    },
+    {
+      "url": "https://www.japan.travel/en/",
+      "title": "Travel Japan (JNTO)",
+      "categories": [
+        "attraction",
+        "dining",
+        "accommodation"
+      ],
+      "axis_tags": {}
+    },
+    {
+      "url": "https://www.japanrailpass.net/en/",
+      "title": "Japan Rail Pass",
+      "categories": [
+        "pass-ticket",
+        "transport"
+      ],
+      "axis_tags": {}
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Tourism_in_Japan",
+      "title": "Wikipedia - Tourism in Japan",
+      "categories": [
+        "transport",
+        "attraction",
+        "regulation",
+        "payment"
+      ],
+      "axis_tags": {}
+    },
+    {
+      "url": "https://tokyocheapo.com",
+      "title": "Tokyo Cheapo",
+      "categories": [
+        "pass-ticket",
+        "payment",
+        "connectivity",
+        "dining"
+      ],
+      "axis_tags": {}
+    },
+    {
+      "url": "https://matcha-jp.com/en/",
+      "title": "MATCHA - Japan Travel",
+      "categories": [
+        "attraction",
+        "dining",
+        "accommodation",
+        "transport"
+      ],
+      "axis_tags": {}
+    },
+    {
+      "url": "https://www.timeout.com/tokyo",
+      "title": "Time Out Tokyo",
+      "categories": [
+        "attraction",
+        "dining"
+      ],
+      "axis_tags": {}
+    }
+  ],
+  "canonical_key_rule": {
+    "format": "japan-travel:{category}:{slug}",
+    "slug_rules": "영문 소문자, 하이픈 구분, 공식 영문 명칭 기반"
+  },
+  "candidate_categories": [
+    {
+      "slug": "accessibility",
+      "name": "Accessibility",
+      "rationale": "Information on accessibility features and services is crucial for travelers with disabilities or mobility challenges to navigate Japan comfortably and safely.",
+      "expected_source": "Official tourism boards, disability advocacy groups, transport and accommodation providers",
+      "type": "NEW_CATEGORY",
+      "proposed_at_cycle": 4,
+      "status": "validated",
+      "evidence": {
+        "snippets": [
+          {
+            "url": "https://www.japan.travel/en/guide/accessibility-in-japan/",
+            "title": "Accessible Tourism | Guide | Travel Japan (Japan National Tourism ...",
+            "snippet": "Accessible tourism means travel designed for everyone. That includes the elderly, people with disabilities, families with children, and anyone else who may"
+          },
+          {
+            "url": "https://www.accessible-japan.com/",
+            "title": "Accessible Japan - Your Guide to Barrier-Free Travel in Japan",
+            "snippet": "## We are your guide to. # Accessible Travel in Japan. Visiting a country far from home can be overwhelming, and finding the right information on accessibility can be a challenge. We’re here to be your one-stop shop for everything you need to enjoy an accessible vacation in Japan. ## We are your guide to. ## Accessible Travel Basics. ## Accessible Hotels. Learn about the accessibility of different forms of transportation – from buses to bullet trains – and how to book accessible taxis for your journey. #### Osaka Without Obstacles: A Guide to the City’s Best Accessible Stays. #### Yes, You Can Visit Japan: How to Navigate Tokyo and Beyond with a Disability. #### Traveling to Hakodate in Winter: An Accessibility Guide. We also enjoy learning from others and hearing your stories. The best way to do this is via the Japan group on our website tabifolk — an online community dedicated to making global travel accessible to everyone."
+          },
+          {
+            "url": "https://www.insidejapantours.com/us/themes-f/accessible-travel/",
+            "title": "Accessible Japan Tours From USA 2026/2027 | InsideJapan Tours",
+            "snippet": "Wheelchair accessible public transport, \"barrier-free\" hotel rooms and flexible English-speaking guides means you can relax and enjoy the sights from the Tokyo Skytree to the temples of Kyoto. Lorna and Mike travelled with us on a fully wheelchair accessible Japan trip. Wheelchair accessible public transport, \"barrier-free\" hotel rooms and flexible English-speaking guides means you can relax and enjoy the sights from the Tokyo Skytree to the temples of Kyoto. # Accessible travel in Japan. **Visit our blog here to read all about the travels of Peter & Suzy** who took a tailormade wheelchair accessible trip with InsideJapan Tours. ### Accessible Travel accommodation across Japan. ### Richmond Premier Asakusa International (Accessible Room) (Tokyo). * ### Richmond Premier Asakusa International (Accessible Room) (Tokyo). The hotel has one wheelchair accessible room on the 6th floor. The hotel's wheelchair accessible room is 39sqm with a king bed. The hotel's accessible room is 28sqm and has twin beds that are 122x203 cm. ### Accessible Travel destinations across Japan."
+          },
+          {
+            "url": "https://wheelchairtraveling.com/travel-guide-japan-wheelchair-seniors-disabled-tips/",
+            "title": "Japan: Accessible Travel Guide Overview | WheelchairTraveling.com",
+            "snippet": "It is not impossible to travel in Japan with a large power wheelchair, but you will encounter less maneuverability or no access at all in some places, such as hotel rooms, restaurants, and stores. Outside of train stations and shopping malls, accessible restaurants were few and far between. Hotels and public buildings like museums and even gardens also have wheelchair accessible bathrooms. I stayed in a variety of hotels but felt like the more expensive ones did not do as good of a job when it came to wheelchair accessibility. So you are looking for a local travel agent in Japan that speaks English and also knows everything about access? Thank you for the information,my husband and i will be staying at shinjuku,gracery hotel,this first week of october.our first time trip to japan,i am glad to learn your helpful tips in exploring japan,though it will be a short trip only,but nice to know i can do it with my cane."
+          },
+          {
+            "url": "https://www.mobal.com/accessible-japan-travel/",
+            "title": "Accessibility in Japan: Travel Tips & Resources for Travellers with Disabilities",
+            "snippet": "#### Adding product... ###### Japan Guides. ###### Japan Guides. Japan SIM Cards for Extended Stays. ###### Tourist SIM Cards. ###### Japan Guides. ###### Japan Guides. All of Japan's major airports provide multi-lingual assistance, step-free paths, and priority lanes for travellers with disabilities. It shows others that you may need a little more assistance is certain situations - so don't be surprised if somebody offers you their subway seat if you have one! Our favourites are **Seeing AI**, **iOS VoiceOver**, and **Google Translate**. ### Cultural & Social Etiquette. The people of Japan are world-renowned for their courtesy and hospitality, so you can expect the vast majority of people to be more than happy to help. | **Translation** | **Google Translate**   For quick camera-based actions   **VoiceTra Free government translation app** VoiceTra Free government translation app   **Seeing AI** For reading signs and menus   **iOS VoiceOver**  For reading Japanese text aloud in English |. ##### Our Products. ##### Social."
+          }
+        ]
+      },
+      "validation": {
+        "exists": true,
+        "confidence": 0.95,
+        "source_diversity": 5,
+        "sample_entity_names": [
+          "Accessible Tourism | Travel Japan (Japan National Tourism)",
+          "Accessible Japan - Your Guide to Barrier-Free Travel in Japan",
+          "InsideJapan Tours - Accessible Japan Tours",
+          "WheelchairTraveling.com - Japan Accessible Travel Guide",
+          "Accessibility in Japan: Travel Tips & Resources for Travellers with Disabilities"
+        ],
+        "status": "passed"
+      }
+    },
+    {
+      "slug": "budget-travel",
+      "name": "Budget Travel",
+      "rationale": "Budget-conscious travelers need dedicated guidance on low-cost options, discounts, and money-saving tips that differ from standard travel advice.",
+      "expected_source": "Travel blogs, budget travel guides, discount ticket providers, hostels",
+      "type": "NEW_CATEGORY",
+      "proposed_at_cycle": 4,
+      "status": "validated",
+      "evidence": {
+        "snippets": [
+          {
+            "url": "https://www.klook.com/blog/japan-budget-travel/",
+            "title": "Your Ultimate Budget Travel Guide to Japan - Klook Travel Blog",
+            "snippet": "A typical Japan trip budget depends on your travel style and trip length. Budget travelers usually spend $120-$180 per day, including"
+          },
+          {
+            "url": "https://www.nomadsister.com/en/blog/articles/budget-travel-japan-complete-guide-for-solo-female-travelers/",
+            "title": "Japan on a Budget: Travel Smart Without Breaking Bank",
+            "snippet": "# Budget Travel Japan: Complete Guide for Solo Female Travelers. Solo female traveling, okay, but **budget travel in Japan is even better**! Between cheap Air France flight deals, tips for finding affordable Japan trips, and my techniques for saving on every meal, transport, and hotel, I'm going to reveal **how to transform your dream into an accessible adventure** without spending all your money. ## The Basics for Budget Travel in Japan. My personal experience: I explored Tokyo, Kyoto, and Osaka for 15 days with $650 (not including flights), mixing street food and traditional ryokans. ### When to Travel to Japan for Lower Prices? So know that **youth hostels** (2,500-4,000¥/night, $15-25) create a friendly atmosphere perfect for meeting other female otaku travelers, and **capsule hotels** (3,500-6,000¥, $20-35) offer a unique futuristic experience. The Japan Rail Pass (29,650¥ for 7 days, $174) can pay for itself quite quickly for, say, a Tokyo-Kyoto round trip (26,000¥, $153). Working in Japan while traveling saves you from all budget torments! ## FAQ About Budget Travel in Japan."
+          },
+          {
+            "url": "https://www.lonelyplanet.com/articles/japan-on-a-budget",
+            "title": "16 great ways to see Japan on a budget - Lonely Planet",
+            "snippet": "To help you plan, this guide to budget travel in Japan is full of top tips on finding the best-value places to stay, the right transportation and the best places to eat to suit your wallet, and make your yen go further. Visiting large cities such as Tokyo and Kyoto tends to be more expensive than visiting smaller towns and rural areas, and prices soar at peak travel times such as the spring cherry blossom season and Golden Week; book well ahead to avoid paying top rates for rooms and transport during these busy periods. Japan's famous capsule hotels, which offer tiny \"rooms\" – more like compartments, with just enough space for a bed, a light and a shelf for your phone – provide a budget-friendly place to spend the night. Like the famous Eurail Pass in Europe, the Japan Rail Pass, or JR Pass, is one of the world’s great travel bargains and it's the best way to see a lot of Japan by train if you're on a budget."
+          },
+          {
+            "url": "https://www.japan-guide.com/e/e2410.html",
+            "title": "Travel Budget - Japan Guide",
+            "snippet": "Dormitories and hostels, found in most cities of Japan, typically charge below 5000 yen per night and person. A stay at a ryokan with two meals included typically costs between 15,000 and 40,000 yen per person and night. Breakfast buffets in first-class hotels typically cost at least 3000 yen. Various fast food restaurants, specializing in noodles, curry, domburi or hamburger, also offer relatively filling meals for 800 yen or less. At this level you will have an even larger range of inexpensive restaurants, such as the above-mentioned fast food places, plus restaurants offering lunch sets for around 1000 yen. A lunch at better restaurants costs typically between 1500 and 3000 yen. At this level, you will be able to enjoy a nice dinner at a wide range of fast food and conventional restaurants, including the restaurants found in department stores where meals typically cost between 1000 and 2500 yen, not including alcoholic drinks."
+          },
+          {
+            "url": "https://www.nomadicmatt.com/travel-blogs/japan-budget-tips/",
+            "title": "How to Save Money When You Visit Japan (Updated 2026)",
+            "snippet": "Traveling in Japan doesn’t need to cost a lot of money. Yet I think train travel is the best way to see the country, so in order to reduce your train costs, purchase a Japan Rail Pass (JR Pass). Compare that to single tickets, where the three-hour journey from Tokyo to Osaka costs around 32,000 JPY (round-trip), yet you can get a 7-day rail pass that includes unlimited travel on JR trains for 50,000 JPY. You can buy a day pass in most cities which gives you unlimited travel for 24 hours for 800–1,200 JPY. If you’re staying in a hostel dorm room, buying a rail pass, eating relatively inexpensive local food like ramen or donburi with the occasional nice meal, and visiting a few attractions and doing a couple of days tours, you could spend between $90–100 USD per day. Be sure to check out the Japan Rail Pass if you’ll be traveling around the country."
+          }
+        ]
+      },
+      "validation": {
+        "exists": true,
+        "confidence": 0.9,
+        "source_diversity": 4,
+        "sample_entity_names": [
+          "Klook Travel Blog",
+          "Lonely Planet",
+          "Japan Guide",
+          "Travel Budget - Japan Guide"
+        ],
+        "status": "passed"
+      }
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 # Project Overall Plan
-> Last Updated: 2026-04-14
-> Status: Bronze 완료 → Silver P0/P1 완료 → SI-P3R **완료** (Gate PASS, D-125) → **Gap-Resolution Investigation Phase** (D-126, 착수) → SI-P2 재판정 대기
+> Last Updated: 2026-04-16
+> Status: Bronze 완료 → Silver P0/P1/P3R/P2/Gap-Res 완료 → **SI-P4 Stage E VP4 FAIL 진단 (D-147~D-150)** → VP4 fix + 재실행 대기
 
 ## 0. Refactor Pivot (2026-04-14)
 
@@ -22,10 +22,11 @@ SI-P3R 완료 (2026-04-14, D-125)
    │
    ▼  Silver P2 재판정 (remodel on/off 비교 실험, D-127) ✅ Gate PASS (D-132/133)
    │
-   ▼  Silver P4 (Coverage Intelligence)
+   ▼  Silver P4 (Coverage Intelligence) ← 현재
    │      - Stage A~D: Internal Foundation (완료, 17/17, 669 tests)
-   │      - Stage E: External Anchor (Planning, 29 tasks) ← 미션 정렬 (D-135)
-   │                  Semi-front 진입 조건 = Stage E Gate PASS (D-139)
+   │      - Stage E: External Anchor (23/25, 793 tests) — E7-2 실 벤치 VP4 FAIL 진단
+   │                  VP4 FAIL 근본 원인 4건 (D-147~D-150): budget/산식/조건/HITL
+   │                  → VP4 fix + 재실행 후 Gate 판정 예정
    │
    ▼  Silver P5 (Telemetry & Dashboard)
    │

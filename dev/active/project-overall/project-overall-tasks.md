@@ -1,6 +1,6 @@
 # Project Overall Tasks
-> Last Updated: 2026-04-14
-> Status: Bronze 완료 (85/85) · Silver P0 (32) · P1 (12) · P3R (8) 완료 · P3/P2 REVOKED · **Gap-Res Investigation 착수 (0/12)**
+> Last Updated: 2026-04-16
+> Status: Bronze 완료 (85/85) · Silver P0 (32) · P1 (12) · P3R (8) · P2 (14) · Gap-Res (12) 완료 · **SI-P4 Stage E (23/25, VP4 FAIL 진단)**
 
 ## Summary
 
@@ -27,7 +27,7 @@
 | P2 Outer-Loop Remodel | 14 | 5 | 8 | 1 | **14/14** ✅ | **Gate PASS** (D-132/133, 613 tests) |
 | P3 Acquisition Expansion | 22 | 7 | 13 | 2 | — | **REVOKED** (D-120) |
 | P3R Snippet-First Refactor | 8 | — | — | — | **8/8** ✅ | PASS (D-125, 608 tests) |
-| P4 Coverage Intelligence | **46** | 27 | 15 | 3 | **17/46** | **A~D Complete · Stage E Planning** |
+| P4 Coverage Intelligence | **42** | 27 | 15 | 3 | **40/42** | **A~D Complete · Stage E 23/25 (VP4 FAIL 진단, D-147~D-150)** |
 | P5 Telemetry & Dashboard | 14 | 3 | 10 | 1 | 0/14 | 대기 |
 | P6 Multi-Domain | 7 | 2 | 3 | 2 | 0/7 | 대기 |
 | X Cross-phase | 7 | 7 | 0 | 0 | 0/7 | — |
@@ -39,7 +39,7 @@
 |-------|-------|---|---|------|--------|
 | Gap-Res Investigation | 12 | 8 | 4 | 12/12 | 완료 (D-131) |
 
-**총계: Bronze 85 + Silver (P4 46 포함) 156 + Investigation 12 = 253 tasks · 현재 테스트 669**
+**총계: Bronze 85 + Silver (P4 42 포함) 152 + Investigation 12 = 249 tasks · 현재 테스트 793**
 
 참조 문서:
 - 단일 진실 소스: `docs/silver-masterplan-v2.md` §4 Phase 표
@@ -367,10 +367,10 @@
 
 ---
 
-## Phase P4: Coverage Intelligence (46 tasks: A~D Complete 17/17 · Stage E Planning 0/29)
+## Phase P4: Coverage Intelligence (42 tasks: A~D Complete 17/17 · Stage E 23/25, VP4 FAIL 진단)
 
 > **목표**: Internal Foundation (A~D) — novelty/coverage_map/reason_code/Gini/Smart category addition + External Anchor (E) — history-aware external_novelty + universe_probe + reach_ledger + exploration_pivot
-> **Gate**: Stage A~D PASS (669 tests), Stage E 추가 예정 (VP4_exploration_reach)
+> **Gate**: Stage A~D PASS (669 tests), Stage E VP4 FAIL (793 tests, D-147~D-150)
 > **Dev-docs**: `dev/active/phase-si-p4-coverage/`
 > **배경**: `mission-alignment-critique.md`, `mission-alignment-opinion.md`, `external-anchor-improvement-plan.md`
 
@@ -403,53 +403,19 @@
 - [ ] **P4-R1** readiness-report.json 에 reframe 근거 + Internal Foundation PASS `[S]`
 - [ ] **P4-R2** commit: `[si-p4] Scope reframe (D-135)` `[S]`
 
-### P4-E. Stage E: External Anchor (신규 29 tasks)
+### P4-E. Stage E: External Anchor (25 tasks: 23/25 완료)
 
-#### E0. 예산 & 축 실측 (선행)
-- [ ] **E0-1** Stage E API 예산 + kill-switch 스펙 `[S]`
-- [ ] **E0-2** Tavily snippet reach 축 추출 가능성 실측 `[S]`
-
-#### E1. External Novelty Metric
-- [ ] **E1-1** `src/utils/external_novelty.py` 신규 (entity_key+field, claim-hash 보조) `[M]`
-- [ ] **E1-2** `orchestrator.py` `external_novelty_history` append `[S]`
-- [ ] **E1-3** `state_io.py` 새 필드 save/load `[S]`
-- [ ] **E1-4** 단위 테스트 6개 `[S]`
-
-#### E2. Universe Probe + Tiered Skeleton
-- [ ] **E2-1** `src/nodes/universe_probe.py` 신규 (LLM survey + Tavily + validator) `[L]`
-- [ ] **E2-2** tiered skeleton (candidate vs active) `[M]`
-- [ ] **E2-3** 트리거 조건 (cycle N 주기 or ext_novelty 낮음) `[S]`
-- [ ] **E2-4** `graph.py` 노드 삽입 `[S]`
-- [ ] **E2-5** 통합 테스트 5개 + kill-switch `[M]`
-
-#### E3. Reach Diversity Ledger
-- [ ] **E3-1** `src/utils/reach_ledger.py` 신규 `[M]`
-- [ ] **E3-2** `orchestrator.py` ledger 업데이트 `[S]`
-- [ ] **E3-3** normalization (`diversity_per_100ku`) `[S]`
-- [ ] **E3-4** `is_reach_degraded()` + 테스트 8개 `[S]`
-
-#### E4. Exploration Pivot Node
-- [ ] **E4-1** `src/nodes/exploration_pivot.py` 신규 (query_rewrite + candidate_axis_probe) `[L]`
-- [ ] **E4-2** `plateau_detector.py` L3/L5 경로 분기 `[M]`
-- [ ] **E4-3** `graph.py` edge + 통합 테스트 4개 `[M]`
-
-#### E5. Planning Integration
-- [ ] **E5-1** `plan.py` reason_code +3 + 우선순위 재조정 `[S]`
-- [ ] **E5-2** reason_code 테스트 확장 `[S]`
-
-#### E6. Cost Guard & Safety
-- [ ] **E6-1** `src/utils/cost_guard.py` 신규 `[S]`
-- [ ] **E6-2** `config.py` external_anchor 필드 `[S]`
-- [ ] **E6-3** budget 초과 skip 테스트 `[S]`
+#### E0~E6: Code Complete ✅
+- [x] E0-1/E0-2, E1 (4), E2 (5), E3 (4), E4 (3), E5 (2), E6 (3) — `df219e5`~`a4df15d`
 
 #### E7. Validation
-- [ ] **E7-1** Synthetic injection 테스트 `[M]`
-- [ ] **E7-2** Stage-E-on/off 15c 비교 bench `[M]`
-- [ ] **E7-3** `bench/japan-travel-external-anchor/` + 리포트 `[S]`
+- [x] **E7-1** `a4df15d` Synthetic injection 테스트 `[M]`
+- [x] **E7-2** `b2aafc5` Stage-E-on/off 15c 비교 bench — VP4 FAIL 2/5 (D-147~D-150) `[M]`
+- [ ] **E7-3** 비교 리포트 + VP4 fix 방안 `[S]`
 
 #### E8. Stage E Gate
-- [ ] **E8-1** `readiness_gate.py` VP4_exploration_reach `[S]`
-- [ ] **E8-2** VP4 실측 + readiness-report 갱신 `[S]`
+- [x] **E8-1** `a4df15d` `readiness_gate.py` VP4_exploration_reach `[S]`
+- [ ] **E8-2** VP4 fix 후 재실행 + readiness-report 갱신 `[S]`
 - [ ] **E8-3** Gate 판정 commit `[S]`
 
 ---

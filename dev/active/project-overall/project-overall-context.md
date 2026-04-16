@@ -1,6 +1,6 @@
 # Project Overall Context
-> Last Updated: 2026-04-15
-> Status: Bronze 완료 (468) → SI-P0 완료 (510) → P1 완료 (544) → P3R 완료 (608, D-125) → Gap-Res 완료 (610, D-129) → P2 PASS (613, D-132/133) → **SI-P4 Stage A~D 완료 (669, D-135 reframe) · Stage E Planning**
+> Last Updated: 2026-04-16
+> Status: Bronze 완료 (468) → SI-P0 완료 (510) → P1 완료 (544) → P3R 완료 (608, D-125) → Gap-Res 완료 (610, D-129) → P2 PASS (613, D-132/133) → **SI-P4 Stage A~D 완료 (669) · Stage E 23/25 (793 tests, VP4 FAIL 진단 D-147~D-150)**
 
 ## 1. 핵심 파일
 
@@ -52,8 +52,8 @@
 | Silver P2 | `dev/active/phase-si-p2-remodel/` | **REVOKED** → remodel on/off 비교 실험으로 재설계 (D-127) |
 | Silver P3 | `dev/active/phase-si-p3-acquisition/` | **REVOKED** (D-120, 2026-04-13) |
 | Silver P3R | `dev/active/phase-si-p3r-snippet-refactor/` | ✅ **완료** (8/8, Gate PASS, D-125, 608 tests) |
-| **Gap-Res Investigation** | `dev/active/phase-gap-resolution-investigation/` | **착수** (D-126) — Primary cap regression + Secondary LLM parse yield |
-| Silver P4 | `dev/active/phase-si-p4-coverage/` | **Stage A~D 완료 (17/17, 669 tests)** · Stage E Planning (29 tasks) |
+| **Gap-Res Investigation** | `dev/active/phase-gap-resolution-investigation/` | ✅ **완료** (12/12, D-129~D-131) |
+| Silver P4 | `dev/active/phase-si-p4-coverage/` | **Stage A~D 완료 · Stage E 23/25 (793 tests, VP4 FAIL D-147~D-150)** |
 | Silver P5 | `dev/active/phase-si-p5-telemetry-dashboard/` | P3R + P4 |
 | Silver P6 | `dev/active/phase-si-p6-multidomain/` | P1~P5 전부 (Silver exit gate) |
 

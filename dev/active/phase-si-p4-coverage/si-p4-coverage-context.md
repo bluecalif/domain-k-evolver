@@ -1,6 +1,6 @@
 # Silver P4: Coverage Intelligence — Context
 > Last Updated: 2026-04-16
-> Status: **Stage A~D Complete · Stage E Code Complete (22/25) · E7-2/E7-3/E8-2/E8-3 실 벤치 대기**
+> Status: **Stage A~D Complete · Stage E (23/25) · E7-2 완료 (VP4 FAIL 진단) · E7-3/E8 대기**
 
 ## 1. 핵심 파일
 
@@ -184,6 +184,13 @@
 | D-141 | VP4 5 criteria (R1~R5) + 80% + critical 무실패 패턴 | VP1~3 과 동일 형식 유지. R1(external_novelty) / R3(validated_proposals) 이 critical |
 | D-142 | `evaluate_readiness(external_anchor_enabled=False)` opt-in 파라미터 | 기본값 False 로 기존 Phase 4 게이트 호환성 유지. Stage E 실 벤치에서만 True |
 | D-143 | 검증된 proposals = candidate_categories count | HITL-R 대기 큐 그대로 사용. 미검증 proposals 별도 추적 안 함 |
+| D-144 | `collect.py` as_completed timeout 120→300s, future.result 60→120s | cycle 진행에 따른 parse 시간 증가. cycle 5에서 160s 소요 → 기존 120s 한계 abort |
+| D-145 | as_completed TimeoutError catch → 미완료 cancel + cycle 계속 진행 | 기존 uncaught → orchestrator cycle 전체 abort → 15c 미완주 |
+| D-146 | `--external-anchor / --no-external-anchor` 플래그 env override | 벤치 비교 시 env 오염 방지. dataclasses.replace |
+| D-147 | **VP4 FAIL**: budget kill-switch cycle 4 발동 — llm_budget=3이 universe_probe 1회분 | survey 1 + validator 2 = LLM 3. 이후 Stage E 전체 사망. budget 확대 필요 |
+| D-148 | **VP4 FAIL**: ext_novelty = novel/total_keys → 0 수렴 산식 결함 | 분모가 누적 전체 KU 키 → 단조 증가. 0.25 임계치 구조적 도달 불가. 산식 재설계 필요 |
+| D-149 | **VP4 FAIL**: exploration_pivot 조건 unreachable — domains_per_100ku 52~57 vs floor 15 | Tavily 자연적 다양성으로 절대 trigger 안 됨. 조건 재설계 필요 |
+| D-150 | **VP4 FAIL**: category_addition HITL-R 필수 → 자동 벤치 불가 | registered=2 완료했으나 승격 불가. 자동 벤치 경로 또는 VP4 기준 재설계 필요 |
 
 ### 5.7 검증 방법 (Stage E 전용)
 

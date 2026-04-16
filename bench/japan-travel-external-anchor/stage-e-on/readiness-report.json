@@ -1,0 +1,170 @@
+{
+  "gate_passed": false,
+  "verdict": "FAIL",
+  "viewpoints": [
+    {
+      "viewpoint": "VP1_expansion_variability",
+      "passed": true,
+      "criteria": {
+        "R1_category_gini": {
+          "passed": true,
+          "value": 0.2384,
+          "threshold": 0.45,
+          "critical": true
+        },
+        "R2_blind_spot": {
+          "passed": true,
+          "value": 0.0,
+          "threshold": 0.4,
+          "critical": false
+        },
+        "R3_late_discovery": {
+          "passed": true,
+          "value": 10,
+          "threshold": 2,
+          "critical": false
+        },
+        "R4_field_gini": {
+          "passed": true,
+          "value": 0.283,
+          "threshold": 0.45,
+          "critical": false
+        },
+        "R5_explore_yield": {
+          "passed": true,
+          "value": 0.8667,
+          "threshold": 0.2,
+          "critical": false
+        }
+      },
+      "score": "5/5"
+    },
+    {
+      "viewpoint": "VP2_completeness",
+      "passed": false,
+      "criteria": {
+        "R1_gap_resolution": {
+          "passed": false,
+          "value": 0.75,
+          "threshold": 0.85,
+          "critical": true
+        },
+        "R2_min_ku_per_cat": {
+          "passed": true,
+          "value": 6,
+          "threshold": 5,
+          "critical": true
+        },
+        "R3_multi_evidence": {
+          "passed": false,
+          "value": 0.7732,
+          "threshold": 0.8,
+          "critical": false
+        },
+        "R4_avg_confidence": {
+          "passed": true,
+          "value": 0.8892,
+          "threshold": 0.82,
+          "critical": false
+        },
+        "R5_health_grade": {
+          "passed": true,
+          "value": 2.0,
+          "threshold": 1.4,
+          "critical": false
+        },
+        "R6_staleness": {
+          "passed": true,
+          "value": 0,
+          "threshold": 2,
+          "critical": false
+        }
+      },
+      "score": "4/6"
+    },
+    {
+      "viewpoint": "VP3_self_governance",
+      "passed": true,
+      "criteria": {
+        "R1_audit_count": {
+          "passed": true,
+          "value": 3,
+          "threshold": 2,
+          "critical": true
+        },
+        "R2_policy_changes": {
+          "passed": true,
+          "value": 3,
+          "threshold": 1,
+          "critical": true
+        },
+        "R3_threshold_adapt": {
+          "passed": true,
+          "value": 3,
+          "threshold": 1,
+          "critical": false
+        },
+        "R4_adapted_ratio": {
+          "passed": true,
+          "value": 13,
+          "threshold": 3,
+          "critical": false
+        },
+        "R5_rollback": {
+          "passed": true,
+          "value": 0,
+          "threshold": 0,
+          "critical": false
+        },
+        "R6_closed_loop": {
+          "passed": false,
+          "value": 0,
+          "threshold": 1,
+          "critical": false
+        }
+      },
+      "score": "5/6"
+    },
+    {
+      "viewpoint": "VP4_exploration_reach",
+      "passed": false,
+      "criteria": {
+        "R1_external_novelty": {
+          "passed": false,
+          "value": 0.0852,
+          "threshold": 0.25,
+          "critical": true
+        },
+        "R2_distinct_domains": {
+          "passed": true,
+          "value": 54.64,
+          "threshold": 15,
+          "critical": false
+        },
+        "R3_validated_proposals": {
+          "passed": true,
+          "value": 2,
+          "threshold": 2,
+          "critical": true
+        },
+        "R4_exploration_pivot": {
+          "passed": false,
+          "value": 0,
+          "threshold": 1,
+          "critical": false
+        },
+        "R5_category_addition": {
+          "passed": false,
+          "value": 0,
+          "threshold": 1,
+          "critical": false
+        }
+      },
+      "score": "2/5"
+    }
+  ],
+  "failed_viewpoints": [
+    "VP2_completeness",
+    "VP4_exploration_reach"
+  ]
+}
