@@ -1,6 +1,6 @@
 # Silver P4: Coverage Intelligence — Context
-> Last Updated: 2026-04-15
-> Status: **Stage A~D Complete · Stage E Planning**
+> Last Updated: 2026-04-16
+> Status: **Stage A~D Complete · Stage E Code Complete (22/25) · E7-2/E7-3/E8-2/E8-3 실 벤치 대기**
 
 ## 1. 핵심 파일
 
@@ -180,6 +180,10 @@
 | D-137 | Universe probe → tiered skeleton (candidate vs active) | HITL 루프 지연 회피 + skeleton 오염 방지. active 승격만 HITL-R. |
 | D-138 | Exploration pivot 1 cycle 지속 + gap_rule 우선 | core loop 교란 최소화. L3 가 이번 cycle consume 한 경우 L5 skip. |
 | D-139 | Semi-front 진입 조건 = Stage E Gate PASS | Stage A~D만으로는 UI 에서 "수렴" 주장이 사용자 기만 |
+| D-140 | VP4 cold-start 보정 — ext_history[0] 평균 제외 | cycle 1 은 모든 key 가 신규라 external_novelty 가 항상 1.0 → 평균 왜곡 방지 |
+| D-141 | VP4 5 criteria (R1~R5) + 80% + critical 무실패 패턴 | VP1~3 과 동일 형식 유지. R1(external_novelty) / R3(validated_proposals) 이 critical |
+| D-142 | `evaluate_readiness(external_anchor_enabled=False)` opt-in 파라미터 | 기본값 False 로 기존 Phase 4 게이트 호환성 유지. Stage E 실 벤치에서만 True |
+| D-143 | 검증된 proposals = candidate_categories count | HITL-R 대기 큐 그대로 사용. 미검증 proposals 별도 추적 안 함 |
 
 ### 5.7 검증 방법 (Stage E 전용)
 
@@ -188,8 +192,39 @@
 
 ### 5.8 Stage E 컨벤션 체크
 
-- [ ] **Gap-driven**: external_novelty 낮음도 gap 의 한 형태로 reason_code 반영
-- [ ] **Claim→KU**: candidate skeleton 은 KU 영향 없음 (active 승격 시에만)
-- [ ] **Evidence-first**: universe_probe 제안은 broad Tavily evidence validator 통과 필수
-- [ ] **Conflict-preserving**: exploration_pivot 은 targets 만 치환, 기존 KU 불변
-- [ ] **Prescription-compiled**: critique machine_rule 에 external_novelty 하한 포함
+- [x] **Gap-driven**: external_novelty 낮음도 gap 의 한 형태로 reason_code 반영 (`df219e5`)
+- [x] **Claim→KU**: candidate skeleton 은 KU 영향 없음 (active 승격 시에만) — `skeleton_tiers.py` (`618bb21`)
+- [x] **Evidence-first**: universe_probe 제안은 broad Tavily evidence validator 통과 필수 — 3-step pipeline (`618bb21`)
+- [x] **Conflict-preserving**: exploration_pivot 은 targets 만 치환, 기존 KU 불변 (`47a798f`)
+- [x] **Prescription-compiled**: critique machine_rule 에 external_novelty 하한 포함 (`df219e5`)
+
+---
+
+## 6. Stage E Code Complete 자산 요약 (2026-04-16)
+
+### 6.1 신규 모듈
+- `src/utils/external_novelty.py` — history-aware novelty (entity_key+field)
+- `src/utils/reach_ledger.py` — publisher_domain/tld 축 추적 + `distinct_domains_per_100ku` + `is_reach_degraded`
+- `src/utils/skeleton_tiers.py` — active/candidate 분리 helpers
+- `src/utils/cost_guard.py` — per-cycle/per-run budget + kill-switch
+- `src/nodes/universe_probe.py` — LLM survey + broad Tavily + validator 3-step pipeline + `should_run_universe_probe`
+- `src/nodes/exploration_pivot.py` — `should_pivot` + query rewriter (3 전략) + candidate axis probe
+- `tests/integration/test_synthetic_injection.py` — ground-truth 발견 검증 (4 tests)
+
+### 6.2 수정 모듈
+- `src/config.py` — `ExternalAnchorConfig` 추가 (`enabled`, `probe_interval_cycles`, budgets)
+- `src/state.py` — `external_novelty_history`, `observation_keys`, `reach_history`, `candidate_categories`, `pivot_history`
+- `src/orchestrator.py` — `_cost_guard`, `_maybe_run_universe_probe`, `_maybe_run_exploration_pivot`, `_update_novelty_and_coverage`, reach_history
+- `src/nodes/plan.py` — reason_code +3 (external_novelty/universe_probe/reach_diversity) + 우선순위 재조정
+- `src/utils/state_io.py` — `external-anchor.json` 분리 영속화
+- `src/utils/readiness_gate.py` — `evaluate_vp4` (5 criteria) + `evaluate_readiness` 에 `external_anchor_enabled` 플래그
+
+### 6.3 테스트 현황
+- Pre-Stage E: 677 tests
+- Stage E Code Complete: **793 tests** (+116)
+- 주요 신규: cost_guard 8 / external_novelty 6 / plan reason_code 7 / skeleton_tiers 15 / universe_probe ~60 / orchestrator E 통합 ~15 / reach_ledger 10 / exploration_pivot 8 / synthetic injection 4 / VP4 12
+
+### 6.4 남은 작업 (실 API 필요)
+- **E7-2**: `scripts/run_readiness.py` `--external-anchor` 플래그 + 15c × 2 trial
+- **E7-3**: `bench/japan-travel-external-anchor/` 스캐폴드 + 비교 리포트
+- **E8-2/E8-3**: VP4 실측 → readiness-report 갱신 → Gate 판정 commit

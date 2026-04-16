@@ -1,6 +1,13 @@
 # Silver P4: Coverage Intelligence
-> Last Updated: 2026-04-15
-> Status: **Stage A~D Complete (17/17, 669 tests) · Stage E External Anchor Planning (29 tasks)**
+> Last Updated: 2026-04-16
+> Status: **Stage A~D Complete (17/17) · Stage E Code Complete (22/25, 793 tests) · E7-2/E7-3/E8-2/E8-3 실 벤치 대기**
+
+## 0.1 Current State (2026-04-16)
+
+- Stage E 코드 작업 완료: E0-1/E0-2, E1 (4), E2 (5), E3 (4), E4 (3), E5 (2), E6 (3), E7-1, E8-1 — 22/25
+- 커밋 히스토리: `df219e5` (E0/E1/E5/E6-1/E6-2) → `618bb21` (E2) → `cf83733` (E3) → `47a798f` (E4) → `a4df15d` (E6-3/E7-1/E8-1)
+- 테스트 677 → 793 (+116). 전체 테스트 ≥ 700 Gate checklist PASS
+- 남은 작업: E7-2 (실 벤치 15c × 2, API 비용), E7-3 (비교 리포트), E8-2/E8-3 (VP4 실측 + Gate 판정)
 
 ## 0. Scope Reframe (2026-04-15)
 

@@ -1,6 +1,6 @@
 # Silver P4: Coverage Intelligence — Tasks
-> Last Updated: 2026-04-15
-> Status: **Stage A~D Complete (Internal Foundation) · Stage E External Anchor Planning**
+> Last Updated: 2026-04-16
+> Status: **Stage A~D Complete · Stage E Code Complete (22/29) · E7 실 벤치 + E8 Gate 대기**
 
 ## Summary
 
@@ -10,12 +10,12 @@
 | B. Plan/Critique 통합 | 4 | 4/4 | ✅ 완료 |
 | C. Smart Category Addition | 3 | 3/3 | ✅ 완료 |
 | D. 검증 | 5 | 5/5 | ✅ 완료 |
-| E. External Anchor | 29 | 0/29 | Planning |
-| **합계** | **46** | **17/46** | 37% |
+| E. External Anchor | 25 | 22/25 | Code Complete — 실 벤치 대기 |
+| **합계** | **42** | **39/42** | 93% |
 
 **Size 분포**: S: 27 / M: 15 / L: 3 / XL: 0
 - Stage A~D: S 7 / M 8 / L 1
-- Stage E: S 20 / M 7 / L 2
+- Stage E: S 16 / M 7 / L 2 (E7-1 을 포함한 22 tasks 완료)
 
 ---
 
@@ -159,67 +159,67 @@
 
 ### Stage E Gate Checklist (VP4_exploration_reach)
 
-- [ ] external_novelty avg ≥ 0.25 (새 정의: history-aware)
-- [ ] distinct_domains_per_100ku ≥ 15 (E0-2 실측 후 조정)
-- [ ] universe_probe proposals ≥ 2 per 15c
-- [ ] exploration_pivot triggered ≥ 1 (plateau 시)
-- [ ] category_addition via universe_probe ≥ 1 (L4b 경로 작동 증거)
-- [ ] 전체 테스트 수 ≥ 700
-- [ ] Cost budget: LLM ≤ 3 calls + Tavily ≤ 9 queries / 15c bench
+- [ ] external_novelty avg ≥ 0.25 (새 정의: history-aware) — 실 벤치 E7-2 후
+- [ ] distinct_domains_per_100ku ≥ 15 (E0-2 실측 후 조정) — 실 벤치 E7-2 후
+- [ ] universe_probe proposals ≥ 2 per 15c — 실 벤치 E7-2 후
+- [ ] exploration_pivot triggered ≥ 1 (plateau 시) — 실 벤치 E7-2 후
+- [ ] category_addition via universe_probe ≥ 1 (L4b 경로 작동 증거) — 실 벤치 E7-2 후
+- [x] 전체 테스트 수 ≥ 700 → **793 passed** (`a4df15d`)
+- [ ] Cost budget: LLM ≤ 3 calls + Tavily ≤ 9 queries / 15c bench — 실 벤치 E7-2 후
 
 ### E0. 예산 & 축 실측 (선행)
 
-- [ ] **E0-1** Stage E 전용 API 예산 정의 + kill-switch 스펙 `[S]`
-- [ ] **E0-2** Tavily snippet 에서 추출 가능한 reach 축 실측 (publisher/author/language) `[S]`
+- [x] **E0-1** `df219e5` Stage E 전용 API 예산 정의 + kill-switch 스펙 `[S]`
+- [x] **E0-2** `df219e5` Tavily snippet 에서 추출 가능한 reach 축 실측 (publisher_domain primary, tld secondary) `[S]`
 
 ### E1. External Novelty Metric
 
-- [ ] **E1-1** `src/utils/external_novelty.py` 신규 (entity_key+field 튜플, claim-hash 보조) `[M]`
-- [ ] **E1-2** `orchestrator.py` cycle 종료 시 `external_novelty_history` append `[S]`
-- [ ] **E1-3** `state_io.py` save/load 에 새 필드 포함 `[S]`
-- [ ] **E1-4** 단위 테스트 6개 (완전 새/부분/중복/빈 state/claim-hash edge) `[S]`
+- [x] **E1-1** `df219e5` `src/utils/external_novelty.py` 신규 (entity_key+field 튜플, claim-hash 보조) `[M]`
+- [x] **E1-2** `df219e5` `orchestrator.py` cycle 종료 시 `external_novelty_history` append `[S]`
+- [x] **E1-3** `df219e5` `state_io.py` save/load 에 새 필드 포함 (external-anchor.json 분리) `[S]`
+- [x] **E1-4** `df219e5` 단위 테스트 6개 (완전 새/부분/중복/빈 state/claim-hash edge) `[S]`
 
 ### E2. Universe Probe + Tiered Skeleton
 
-- [ ] **E2-1** `src/nodes/universe_probe.py` 신규 (LLM survey + broad Tavily + validator 3-step) `[L]`
-- [ ] **E2-2** tiered skeleton 도입 (`candidate_categories` vs `categories`) `[M]`
-- [ ] **E2-3** 트리거 조건 (cycle N 주기 or external_novelty < 0.15 × 3c) `[S]`
-- [ ] **E2-4** `graph.py` universe_probe 노드 삽입 (audit → probe → remodel) `[S]`
-- [ ] **E2-5** 통합 테스트 5개 + budget kill-switch 테스트 `[M]`
+- [x] **E2-1** `618bb21` `src/nodes/universe_probe.py` 신규 (LLM survey + broad Tavily + validator 3-step) `[L]`
+- [x] **E2-2** `618bb21` tiered skeleton 도입 (`candidate_categories` vs `categories`) `[M]`
+- [x] **E2-3** `618bb21` 트리거 조건 (cycle N 주기 or external_novelty < 0.15 × 3c) `[S]`
+- [x] **E2-4** `618bb21` orchestrator `_maybe_run_universe_probe` 노드 삽입 (audit → probe → remodel) `[S]`
+- [x] **E2-5** `618bb21` 통합 테스트 5개 + budget kill-switch 테스트 `[M]`
 
 ### E3. Reach Diversity Ledger
 
-- [ ] **E3-1** `src/utils/reach_ledger.py` 신규 (E0-2 확정 축만) `[M]`
-- [ ] **E3-2** `orchestrator.py` cycle 종료 시 ledger 업데이트 `[S]`
-- [ ] **E3-3** normalization: `diversity_per_100ku` 도입 `[S]`
-- [ ] **E3-4** `is_reach_degraded()` + 단위 테스트 8개 `[S]`
+- [x] **E3-1** `cf83733` `src/utils/reach_ledger.py` 신규 (publisher_domain + tld) `[M]`
+- [x] **E3-2** `cf83733` `orchestrator.py` cycle 종료 시 reach_history append `[S]`
+- [x] **E3-3** `cf83733` normalization: `distinct_domains_per_100ku` 도입 `[S]`
+- [x] **E3-4** `cf83733` `is_reach_degraded()` + 단위 테스트 8개 `[S]`
 
 ### E4. Exploration Pivot Node
 
-- [ ] **E4-1** `src/nodes/exploration_pivot.py` 신규 (query_rewrite LLM + candidate_axis_probe) `[L]`
-- [ ] **E4-2** `plateau_detector.py` 확장 — external_novelty + reach_degraded 조건 통합, L3/L5 경로 분기 `[M]`
-- [ ] **E4-3** `graph.py` exploration_pivot edge 추가 + 통합 테스트 4개 `[M]`
+- [x] **E4-1** `47a798f` `src/nodes/exploration_pivot.py` 신규 (query_rewrite LLM 3전략 + candidate_axis_probe) `[L]`
+- [x] **E4-2** `47a798f` should_pivot 확장 — external_novelty + reach_degraded + audit 미소비 조건 통합 `[M]`
+- [x] **E4-3** `47a798f` orchestrator `_maybe_run_exploration_pivot` + pivot_history + 통합 테스트 `[M]`
 
 ### E5. Planning Integration
 
-- [ ] **E5-1** `plan.py` reason_code enum +3 (external_novelty / universe_probe / reach_diversity) + 우선순위 재조정 `[S]`
-- [ ] **E5-2** reason_code 테스트 확장 (기존 D3 + 3 enum) `[S]`
+- [x] **E5-1** `df219e5` `plan.py` reason_code enum +3 (external_novelty / universe_probe / reach_diversity) + 우선순위 재조정 `[S]`
+- [x] **E5-2** `df219e5` reason_code 테스트 확장 (기존 D3 + 3 enum) `[S]`
 
 ### E6. Cost Guard & Safety
 
-- [ ] **E6-1** `src/utils/cost_guard.py` 신규 (per-cycle/per-run budget tracking) `[S]`
-- [ ] **E6-2** `config.py` 확장 (`external_anchor_enabled`, `probe_interval_cycles`, budget 필드) `[S]`
-- [ ] **E6-3** budget 초과 시 Stage E skip + core loop 지속 테스트 `[S]`
+- [x] **E6-1** `df219e5` `src/utils/cost_guard.py` 신규 (per-cycle/per-run budget tracking + kill-switch) `[S]`
+- [x] **E6-2** `df219e5` `config.py` `ExternalAnchorConfig` 추가 (`enabled`, `probe_interval_cycles`, budgets) `[S]`
+- [x] **E6-3** `a4df15d` budget 초과 시 Stage E skip + core loop 지속 orchestrator 통합 테스트 `[S]`
 
 ### E7. Validation (Ground-Truth)
 
-- [ ] **E7-1** Synthetic injection 테스트 — 숨긴 카테고리 표면화 검증 `[M]`
-- [ ] **E7-2** Regression bench — Stage-E-on vs Stage-E-off 15c 비교 `[M]`
-- [ ] **E7-3** `bench/japan-travel-external-anchor/` 디렉터리 + 비교 리포트 `[S]`
+- [x] **E7-1** `a4df15d` Synthetic injection 테스트 — 숨긴 카테고리 표면화 검증 (`tests/integration/test_synthetic_injection.py`, +4 tests) `[M]`
+- [ ] **E7-2** Regression bench — Stage-E-on vs Stage-E-off 15c 비교 (실 API 비용 발생) `[M]`
+- [ ] **E7-3** `bench/japan-travel-external-anchor/` 디렉터리 + 비교 리포트 MD `[S]`
 
 ### E8. Stage E Gate Judgment
 
-- [ ] **E8-1** `readiness_gate.py` VP4_exploration_reach 추가 `[S]`
+- [x] **E8-1** `a4df15d` `readiness_gate.py` VP4 추가 (5 criteria + `external_anchor_enabled` opt-in 플래그, +12 tests) `[S]`
 - [ ] **E8-2** E7-2 bench 결과로 VP4 실측 + readiness-report 갱신 `[S]`
 - [ ] **E8-3** Gate 판정 commit `[si-p4] Stage E Gate PASS/FAIL: {근거}` `[S]`
 
@@ -227,5 +227,16 @@
 
 ## 즉시 조치 (Scope Reframe Commit)
 
-- [ ] **P4-R1** 현재 readiness-report.json 에 scope reframe 근거 기술 + Internal Foundation PASS 표기 `[S]`
-- [ ] **P4-R2** commit: `[si-p4] Scope reframe: Internal Foundation PASS + External Anchor 분리 (D-135)` `[S]`
+- [x] **P4-R1** `f69fd01` 현재 readiness-report.json 에 scope reframe 근거 기술 + Internal Foundation PASS 표기 `[S]`
+- [x] **P4-R2** `f69fd01` commit: `[si-p4] Scope reframe: Internal Foundation PASS + External Anchor 분리 (D-135)` `[S]`
+
+---
+
+## 다음 단계 (E7-2 실 벤치 준비)
+
+1. `scripts/run_readiness.py` 에 `--external-anchor` 플래그 추가
+2. `evaluate_readiness(..., external_anchor_enabled=cfg.external_anchor.enabled)` 연결
+3. `bench/japan-travel-external-anchor/` 디렉터리 스캐폴드
+4. **사용자 확인 후** Stage-E-on / Stage-E-off 각각 15c trial 실행 (API 비용 발생)
+5. 결과로 VP4 criteria 5 실측 → E8-2 readiness-report 갱신
+6. E8-3 Gate 판정 commit

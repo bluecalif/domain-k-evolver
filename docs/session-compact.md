@@ -42,13 +42,9 @@ Phase tasks: `dev/active/phase-si-p4-coverage/si-p4-coverage-tasks.md`.
 
 ## Current State
 
-- Branch: `main`. 마지막 commit `47a798f`.
-- **Uncommitted** (이번 세션 변경, 4 files):
-  - `src/utils/readiness_gate.py` (수정 — evaluate_vp4 + 모듈 docstring + evaluate_readiness 파라미터)
-  - `tests/test_readiness_gate.py` (수정 — import + TestVP4 + TestEvaluateReadinessWithVP4)
-  - `tests/test_orchestrator.py` (수정 — TestStageEKillSwitchIntegration class 추가)
-  - `tests/integration/test_synthetic_injection.py` (신규)
-- Stage E 진행: E0-1 ✅ E0-2 ✅ E1 ✅ E2 ✅ E3 ✅ E4 ✅ E5 ✅ **E6 ✅ E7-1 ✅ E8-1 ✅** → 다음 E7-2/E7-3/E8-2/E8-3 (실 벤치).
+- Branch: `main`. 마지막 commit **`a4df15d`** ([si-p4] Stage E E6-3/E7-1/E8-1).
+- Uncommitted: 없음 (이번 세션 변경분 commit 완료).
+- Stage E 진행: E0-1 ✅ E0-2 ✅ E1 ✅ E2 ✅ E3 ✅ E4 ✅ E5 ✅ E6 ✅ E7-1 ✅ E8-1 ✅ → 다음 **E7-2/E7-3/E8-2/E8-3 (실 벤치)**.
 
 ### Stage E 완료 코드 베이스 (참조)
 
@@ -73,7 +69,7 @@ Phase tasks: `dev/active/phase-si-p4-coverage/si-p4-coverage-tasks.md`.
 - [ ] **E8-3** Gate 판정 commit `[si-p4] Stage E Gate PASS/FAIL: {근거}`
 
 ### 즉시 결정 필요
-- [ ] 이번 세션 4 files commit — **이번 세션 사용자에게 commit 결정 묻고 답변 대기 중**
+- [x] 이번 세션 4 files commit — **완료 (`a4df15d`, 2026-04-16)**
 
 ## Key Decisions
 
@@ -121,13 +117,10 @@ Phase tasks: `dev/active/phase-si-p4-coverage/si-p4-coverage-tasks.md`.
 - Bash 절대경로 (cd 금지).
 
 ### 작업 흐름
-E0-1 ✅ → E0-2 ✅ → E1 ✅ → E5 ✅ → E2 ✅ → E3 ✅ → E4 ✅ → E6-3 ✅ → E7-1 ✅ → E8-1 ✅ → **이번 세션 commit 결정 → E7-2 (실 벤치 — 사용자 확인)**
+E0-1 ✅ → E0-2 ✅ → E1 ✅ → E5 ✅ → E2 ✅ → E3 ✅ → E4 ✅ → E6-3 ✅ → E7-1 ✅ → E8-1 ✅ → **commit `a4df15d` ✅ → E7-2 (실 벤치 — 사용자 확인 후 실행)**
 
 ## Next Action
 
-1. **이번 세션 변경분 commit 결정** — 4 files (`readiness_gate.py`, `test_readiness_gate.py`, `test_orchestrator.py`, `tests/integration/test_synthetic_injection.py`). 사용자 답변 대기 중. 제안 commit message:
-   ```
-   [si-p4] Stage E E6-3/E7-1/E8-1: kill-switch + synthetic injection + VP4 gate
-   ```
-2. **E7-2 실 벤치 준비** — `run_readiness.py` 에 `--external-anchor` 플래그 + `evaluate_readiness` 호출에 `external_anchor_enabled=cfg.external_anchor.enabled` 전달. **사용자 확인 후 실행 (API 비용)**.
-3. **E7-3 / E8-2 / E8-3** — 벤치 결과 후 진행.
+1. **E7-2 실 벤치 준비** — `run_readiness.py` 에 `--external-anchor` 플래그 + `evaluate_readiness` 호출에 `external_anchor_enabled=cfg.external_anchor.enabled` 전달. **사용자 확인 후 실행 (API 비용)**.
+2. **E7-3** `bench/japan-travel-external-anchor/` 스캐폴드 + Stage-E-on/off 비교 리포트 MD.
+3. **E8-2 / E8-3** — VP4 실측 → readiness-report 갱신 → Gate 판정 commit.
