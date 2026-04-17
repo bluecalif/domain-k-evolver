@@ -1,6 +1,6 @@
 # Silver P5: Telemetry Contract & Dashboard — Tasks
 > Last Updated: 2026-04-17
-> Status: In Progress (11/15)
+> Status: In Progress (14/15)
 
 ## Summary
 
@@ -9,7 +9,7 @@
 | P5-Prep state.py TypedDict 보완 | 1 | 1 | ✅ 완료 |
 | P5-A Telemetry 계약 | 5 | 5 | ✅ 완료 |
 | P5-B Dashboard 구현 | 5 | 5 | ✅ 완료 |
-| P5-C 검증 | 4 | 0 | 대기 (Stage B 완료 후) |
+| P5-C 검증 | 4 | 3 | C3 남음 (manual walkthrough) |
 | **합계** | **15** | **0** | — |
 
 Size: S:4 / M:9 / L:1 / XL:0
@@ -284,7 +284,7 @@ dashboard = ["fastapi", "uvicorn[standard]", "jinja2"]
 - P5-A5 에서 작성한 테스트가 Stage B 통합 후에도 green인지 확인
 - B3 views가 emit 경로를 건드리지 않았는지 regression 체크
 
-- [ ] P5-C1 완료 — commit: ___
+- [x] P5-C1 완료 — commit: `TBD` (7/7 green)
 
 ---
 
@@ -299,7 +299,7 @@ dashboard = ["fastapi", "uvicorn[standard]", "jinja2"]
 
 **주의**: fixture 생성 시 실 telemetry schema 준수 필수 (stub 데이터 아닌 valid schema 데이터).
 
-- [ ] P5-C2 완료 — commit: ___
+- [x] P5-C2 완료 — commit: `TBD` (7 views × 100c fixture, 1.33s << 10s)
 
 ---
 
@@ -329,7 +329,7 @@ dashboard = ["fastapi", "uvicorn[standard]", "jinja2"]
 - 초과 시 scope 컷 전 사용자 확인 필수
 - 측정 결과를 `debug-history.md` 에 기록
 
-- [ ] P5-C4 완료 — commit: ___
+- [x] P5-C4 완료 — commit: `TBD` (691 LOC ≤ 2000)
 
 ---
 

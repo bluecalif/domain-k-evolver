@@ -71,8 +71,8 @@ def create_app(trial_root: Path | None = None) -> FastAPI:
     async def overview(request: Request):
         root = _trial_root()
         cycles = load_cycles(root) if root else []
-        return templates.TemplateResponse("overview.html", {
-            "request": request, "cycles": cycles, "trial_id": _trial_id(),
+        return templates.TemplateResponse(request, "overview.html", {
+            "cycles": cycles, "trial_id": _trial_id(),
         })
 
     @app.get("/timeline", response_class=HTMLResponse)
@@ -80,8 +80,8 @@ def create_app(trial_root: Path | None = None) -> FastAPI:
         root = _trial_root()
         cycles = load_cycles(root) if root else []
         series = _extract_chart_series(cycles)
-        return templates.TemplateResponse("timeline.html", {
-            "request": request, "cycles": cycles, "trial_id": _trial_id(), **series,
+        return templates.TemplateResponse(request, "timeline.html", {
+            "cycles": cycles, "trial_id": _trial_id(), **series,
         })
 
     @app.get("/coverage", response_class=HTMLResponse)
@@ -89,8 +89,8 @@ def create_app(trial_root: Path | None = None) -> FastAPI:
         root = _trial_root()
         cycles = load_cycles(root) if root else []
         series = _extract_chart_series(cycles)
-        return templates.TemplateResponse("coverage.html", {
-            "request": request, "cycles": cycles, "trial_id": _trial_id(),
+        return templates.TemplateResponse(request, "coverage.html", {
+            "cycles": cycles, "trial_id": _trial_id(),
             "cycle_nums": series["cycle_nums"],
             "gaps_open": series["gaps_open"],
             "gaps_resolved": series["gaps_resolved"],
@@ -101,8 +101,8 @@ def create_app(trial_root: Path | None = None) -> FastAPI:
         root = _trial_root()
         cycles = load_cycles(root) if root else []
         series = _extract_chart_series(cycles)
-        return templates.TemplateResponse("sources.html", {
-            "request": request, "cycles": cycles, "trial_id": _trial_id(),
+        return templates.TemplateResponse(request, "sources.html", {
+            "cycles": cycles, "trial_id": _trial_id(),
             "cycle_nums": series["cycle_nums"],
             "collect_failure": series["collect_failure"],
             "search_calls": series["search_calls"],
@@ -112,8 +112,8 @@ def create_app(trial_root: Path | None = None) -> FastAPI:
     async def conflicts(request: Request):
         root = _trial_root()
         ledger = load_conflict_ledger(root) if root else []
-        return templates.TemplateResponse("conflicts.html", {
-            "request": request, "ledger": ledger, "trial_id": _trial_id(),
+        return templates.TemplateResponse(request, "conflicts.html", {
+            "ledger": ledger, "trial_id": _trial_id(),
         })
 
     @app.get("/hitl", response_class=HTMLResponse)
@@ -124,8 +124,8 @@ def create_app(trial_root: Path | None = None) -> FastAPI:
         hitl_q = last.get("hitl_queue", {"seed": 0, "remodel": 0, "exception": 0})
         dispute_size = last.get("dispute_queue_size", 0)
         exceptions = _extract_exceptions(cycles)
-        return templates.TemplateResponse("hitl.html", {
-            "request": request, "hitl": hitl_q, "dispute_size": dispute_size,
+        return templates.TemplateResponse(request, "hitl.html", {
+            "hitl": hitl_q, "dispute_size": dispute_size,
             "exceptions": exceptions, "trial_id": _trial_id(),
         })
 
@@ -133,8 +133,8 @@ def create_app(trial_root: Path | None = None) -> FastAPI:
     async def remodel(request: Request):
         root = _trial_root()
         report = load_remodel_report(root) if root else None
-        return templates.TemplateResponse("remodel.html", {
-            "request": request, "report": report, "trial_id": _trial_id(),
+        return templates.TemplateResponse(request, "remodel.html", {
+            "report": report, "trial_id": _trial_id(),
         })
 
     return app
