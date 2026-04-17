@@ -50,7 +50,7 @@ pivot_history: list[dict]     # P4-Stage-E exploration pivot records
 
 **Cross-check**: 추가 후 `orchestrator.py` 기존 코드(L251, L327, L347)와 key 이름 일치 확인.
 
-- [x] P5-Prep 완료 — commit: TBD
+- [x] P5-Prep 완료 — commit: `dbefadc`
 
 ---
 
