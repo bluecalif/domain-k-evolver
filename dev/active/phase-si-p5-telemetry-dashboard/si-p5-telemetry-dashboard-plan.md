@@ -134,8 +134,9 @@ schema 재검증 → 100-cycle fixture load ≤ 10s → slowdown self-test → L
 | R4 | 대시보드 스프롤 → LOC 폭발 | M | M | 2,000 LOC 하드 리밋 (cloc 측정), htmx 단일 운영자 범위, 인증/모바일 비범위 |
 | R10 | HITL-D dispute_queue 적체 → inbox 과부하 | M | M | dispute_queue > 20 → HITL-E 자동 승격 (P0-C4), 배치 뷰 Day 1 구현 |
 | P5-X1 | UI-first 착수로 schema 계약 사후 맞춤 | H | H | D-77 엄수: Stage A merge 전 Stage B PR 금지 |
-| P5-X2 | 100-cycle fixture 부재 → 성능 테스트 불가 | M | M | P5-C2 전 fixture 생성 스크립트 작성 (scripts/gen_fixture.py) |
+| P5-X2 | 100-cycle fixture 부재 → 성능 테스트 불가 | M | M | P5-C2 전 `scripts/gen_fixture.py` 작성 (API 미호출 분석 스크립트 — Scripts Policy 허용 범위) |
 | P5-X3 | stub 데이터 혼입 | M | M | P5-B4 코드리뷰 필수: `bench/silver/**/telemetry/*.jsonl` 실경로 확인 |
+| **P5-X4** | **Schema Drift**: metrics_logger·state·telemetry 값 불일치 → 화면 수치와 실제 불일치 | **H** | **H** | telemetry.py에서 metrics_logger entry를 직접 참조 (재계산 금지). P5-A5 positive test가 실 emit 경로 end-to-end 커버. B3 구현 후 주요 수치 manual cross-check 필수 |
 
 ---
 

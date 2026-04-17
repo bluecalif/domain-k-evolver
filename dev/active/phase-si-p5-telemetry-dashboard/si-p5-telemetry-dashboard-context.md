@@ -234,8 +234,8 @@ trial_id = trial_root.name  # 예: "p5-20260417-telemetry-v1"
 | # | 결정 대상 | 권장 방향 | 근거 |
 |---|----------|---------|------|
 | D-151 | telemetry schema 버저닝 | `telemetry.v1` 고정, v2는 별도 파일 | Silver 범위 내 변경 없음 |
-| D-152 | Dashboard 실행 방식 | `uvicorn src/obs/dashboard/app:app` 직접 실행 또는 `run_readiness.py --serve-dashboard` 플래그 | CLAUDE.md Scripts Policy — 신규 스크립트 금지 |
-| D-153 | 100-cycle fixture 생성 | 실 trial 데이터 우선 (Silver bench에서 실행). 부족 시 gen_fixture.py 허용 검토 | stub 금지 원칙 |
+| **D-152** | **Dashboard 실행 방식** | **`run_readiness.py --serve-dashboard` 플래그 추가** | CLAUDE.md Scripts Policy — 신규 실행 스크립트 금지. 별도 `run_dashboard.py` 불가. `run_readiness.py` 옵션으로 확장 |
+| D-153 | 100-cycle fixture 생성 | 실 trial 데이터 우선. 부족 시 `scripts/gen_fixture.py` 허용 (API 미호출 분석 스크립트 — Scripts Policy 허용 범위) | stub 금지 원칙 |
 | D-154 | timeout_count/retry_success_rate emit | telemetry schema에서 제외 (현재 코드 없음). Gold에서 추가 | P0 가정값이었으나 미구현 |
 
 ---
@@ -283,6 +283,17 @@ trial_id = trial_root.name  # 예: "p5-20260417-telemetry-v1"
 - telemetry emitter — orchestrator에서 단일 call site (per-node hook 과설계)
 - dashboard — read-only viewer, state 직접 수정 기능 없음
 - LOC 측정: 200 LOC 단위로 모니터링
+
+### HITL 의미론적 경계 (P5-B3 구현 시 필수 — 혼용 금지)
+
+| 개념 | 의미 | 데이터 소스 | Dashboard view |
+|------|------|-----------|---------------|
+| `conflict_ledger` | **이력 기록** — 충돌 발생·해소 모두 영속 보관, 삭제 없음 | `state/conflict_ledger.json` | Conflict ledger |
+| `dispute_queue` | **처리 대기 묶음** — 아직 해결되지 않은 dispute 목록 | state 필드 (memory) | HITL inbox Dispute 탭 |
+| `remodel_report` | **구조 변경 제안서** — merge/split/reclassify 제안 + rollback_payload | `state/phase_{N}/remodel_report.json` | Remodel review / HITL inbox Remodel 탭 |
+| HITL exception | **즉시 개입 경고** — auto-pause 조건 충족 시 발생 | metrics_guard `should_auto_pause` 결과 | HITL inbox Exception 탭 |
+
+> **규칙**: 위 4가지는 화면에서 반드시 분리 표시. 뭉뚱그리면 운영자가 오해함 (예: ledger를 pending으로 착각, dispute를 exception으로 혼동).
 
 ### Stage B 착수 전 체크리스트 (D-77)
 

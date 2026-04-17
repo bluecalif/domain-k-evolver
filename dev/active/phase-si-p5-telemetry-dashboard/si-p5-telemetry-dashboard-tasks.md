@@ -223,7 +223,7 @@ dashboard = ["fastapi", "uvicorn[standard]", "jinja2"]
 | Overview | `/` | 현재 phase/cycle/mode, 주요 메트릭 요약, 이상 경고 |
 | Cycle timeline | `/timeline` | novelty/conflict_rate/gap_open/cost 시계열 (Chart.js) |
 | Gap coverage map | `/coverage` | axis × bucket 커버리지 히트맵 |
-| Source reliability | `/sources` | provider별 collect_failure_rate/fetch_failure_rate |
+| Source reliability | `/sources` | provider별 `collect_failure_rate` (코드에 있음). `fetch_failure_rate`는 미구현 — **이 view에서 제외**, 대신 `search_calls`/`fetch_calls` 추이 표시 |
 | Conflict ledger | `/conflicts` | KU별 충돌 이력 (open/resolved 필터링, ledger_id 검색) |
 | HITL inbox | `/hitl` | 탭 3: `[Seed/Remodel 승인]` / `[Dispute 배치 검토]` / `[Exception 알림]` |
 | Remodel review | `/remodel` | 제안 목록 (merge/split/reclassify), 승인 상태, rollback_payload |
