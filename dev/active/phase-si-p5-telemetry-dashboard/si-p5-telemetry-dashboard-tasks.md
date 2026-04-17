@@ -1,13 +1,13 @@
 # Silver P5: Telemetry Contract & Dashboard — Tasks
 > Last Updated: 2026-04-17
-> Status: In Progress (1/15)
+> Status: In Progress (2/15)
 
 ## Summary
 
 | Stage | Tasks | Done | Status |
 |-------|-------|------|--------|
 | P5-Prep state.py TypedDict 보완 | 1 | 1 | ✅ 완료 |
-| P5-A Telemetry 계약 | 5 | 0 | 대기 |
+| P5-A Telemetry 계약 | 5 | 1 | 진행 중 |
 | P5-B Dashboard 구현 | 5 | 0 | 대기 (Stage A 완료 후) |
 | P5-C 검증 | 4 | 0 | 대기 (Stage B 완료 후) |
 | **합계** | **15** | **0** | — |
@@ -103,7 +103,7 @@ pivot_history: list[dict]     # P4-Stage-E exploration pivot records
 
 **Cross-check**: `metrics_logger.py` L49~L69 현행 key 목록과 field 이름 동기화. `novelty`/`external_novelty`/`wall_clock_s`는 emitter에서 직접 추가 (metrics_logger 확장 or telemetry.py 자체 수집).
 
-- [ ] P5-A1 완료 — commit: ___
+- [x] P5-A1 완료 — commit: `TBD`
 
 ---
 

@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "telemetry.v1.schema.json",
+  "title": "Telemetry V1",
+  "description": "Evolver cycle 단위 telemetry snapshot 계약. orchestrator cycle 루프 끝에서 emit.",
+  "type": "object",
+  "required": ["trial_id", "phase", "cycle", "mode", "timestamp", "metrics", "gaps", "failures", "audit_summary", "hitl_queue", "dispute_queue_size"],
+  "additionalProperties": false,
+  "properties": {
+    "trial_id": {
+      "type": "string",
+      "description": "bench/silver/{domain}/{trial_id} 의 trial_id"
+    },
+    "phase": {
+      "type": "string",
+      "description": "현재 Silver phase 식별자 (예: si-p5)"
+    },
+    "cycle": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "cycle 번호 (0-indexed)"
+    },
+    "mode": {
+      "type": "string",
+      "enum": ["normal", "jump"],
+      "description": "이번 cycle의 mode (mode.py 출력)"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "emit 시각 (ISO 8601)"
+    },
+    "metrics": {
+      "type": "object",
+      "required": [
+        "evidence_rate", "multi_evidence_rate", "conflict_rate",
+        "avg_confidence", "gap_resolution_rate", "staleness_risk",
+        "collect_failure_rate", "novelty", "external_novelty",
+        "wall_clock_s", "llm_calls", "llm_tokens",
+        "search_calls", "fetch_calls"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "evidence_rate":         { "type": "number", "minimum": 0.0, "maximum": 1.0 },
+        "multi_evidence_rate":   { "type": "number", "minimum": 0.0, "maximum": 1.0 },
+        "conflict_rate":         { "type": "number", "minimum": 0.0, "maximum": 1.0 },
+        "avg_confidence":        { "type": "number", "minimum": 0.0, "maximum": 1.0 },
+        "gap_resolution_rate":   { "type": "number", "minimum": 0.0, "maximum": 1.0 },
+        "staleness_risk":        { "type": "integer", "minimum": 0 },
+        "collect_failure_rate":  { "type": "number", "minimum": 0.0, "maximum": 1.0 },
+        "novelty":               { "type": "number", "minimum": 0.0 },
+        "external_novelty":      { "type": "number", "minimum": 0.0 },
+        "wall_clock_s":          { "type": "number", "minimum": 0.0 },
+        "llm_calls":             { "type": "integer", "minimum": 0 },
+        "llm_tokens":            { "type": "integer", "minimum": 0 },
+        "search_calls":          { "type": "integer", "minimum": 0 },
+        "fetch_calls":           { "type": "integer", "minimum": 0 }
+      }
+    },
+    "gaps": {
+      "type": "object",
+      "required": ["open", "resolved", "plateau", "probe_history_count", "pivot_history_count"],
+      "additionalProperties": false,
+      "properties": {
+        "open":                  { "type": "integer", "minimum": 0 },
+        "resolved":              { "type": "integer", "minimum": 0 },
+        "plateau":               { "type": "boolean" },
+        "probe_history_count":   { "type": "integer", "minimum": 0 },
+        "pivot_history_count":   { "type": "integer", "minimum": 0 }
+      }
+    },
+    "failures": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "이번 cycle에서 발생한 실패 항목 식별자 목록"
+    },
+    "audit_summary": {
+      "type": "object",
+      "required": ["has_critical", "findings_count", "last_audit_cycle"],
+      "additionalProperties": false,
+      "properties": {
+        "has_critical":       { "type": "boolean" },
+        "findings_count":     { "type": "integer", "minimum": 0 },
+        "last_audit_cycle":   { "type": "integer", "minimum": -1 }
+      }
+    },
+    "hitl_queue": {
+      "type": "object",
+      "required": ["seed", "remodel", "exception"],
+      "additionalProperties": false,
+      "properties": {
+        "seed":      { "type": "integer", "minimum": 0 },
+        "remodel":   { "type": "integer", "minimum": 0 },
+        "exception": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "dispute_queue_size": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "현재 dispute_queue 길이"
+    }
+  }
+}
