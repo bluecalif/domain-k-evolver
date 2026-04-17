@@ -24,6 +24,7 @@ from src.utils.metrics_logger import MetricsLogger
 from src.utils.external_novelty import compute_delta_kus, compute_external_novelty
 from src.utils.novelty import compute_novelty
 from src.utils.reach_ledger import build_ledger_snapshot
+from src.obs.telemetry import emit_cycle
 from src.nodes.exploration_pivot import run_exploration_pivot
 from src.nodes.universe_probe import (
     gather_evidence,
@@ -166,7 +167,10 @@ class Orchestrator:
             # 사이클 후 처리: save, snapshot
             self._post_cycle(state, cycle_num, orch_cfg)
 
+            # Telemetry emit (P5-A3) — trial_root 없으면 무시
             cycle_elapsed = time.monotonic() - cycle_t0
+            if self.config.orchestrator.bench_root:
+                emit_cycle(state, self._domain_path, cycle_elapsed)
             total_elapsed = time.monotonic() - orch_t0
             logger.info("  Cycle %d 완료: %.1fs (graph=%.1fs, audit=%.1fs, remodel=%.1fs) | 누적 %.1fs",
                         cycle_num, cycle_elapsed, graph_elapsed, audit_elapsed, remodel_elapsed, total_elapsed)
