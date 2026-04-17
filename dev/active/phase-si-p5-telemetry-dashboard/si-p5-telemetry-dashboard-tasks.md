@@ -1,13 +1,13 @@
 # Silver P5: Telemetry Contract & Dashboard — Tasks
 > Last Updated: 2026-04-17
-> Status: In Progress (4/15)
+> Status: In Progress (6/15)
 
 ## Summary
 
 | Stage | Tasks | Done | Status |
 |-------|-------|------|--------|
 | P5-Prep state.py TypedDict 보완 | 1 | 1 | ✅ 완료 |
-| P5-A Telemetry 계약 | 5 | 3 | 진행 중 |
+| P5-A Telemetry 계약 | 5 | 5 | ✅ 완료 |
 | P5-B Dashboard 구현 | 5 | 0 | 대기 (Stage A 완료 후) |
 | P5-C 검증 | 4 | 0 | 대기 (Stage B 완료 후) |
 | **합계** | **15** | **0** | — |
@@ -120,7 +120,7 @@ pivot_history: list[dict]     # P4-Stage-E exploration pivot records
 
 **Cross-check (X4)**: `src/obs/__init__.py` 생성 필수 (Python import).
 
-- [x] P5-A2 완료 — commit: `TBD`
+- [x] P5-A2 완료 — commit: `f6739ce`
 
 ---
 
@@ -134,7 +134,7 @@ pivot_history: list[dict]     # P4-Stage-E exploration pivot records
 - `trial_id`, `trial_root`는 `--bench-root` 경로 기반으로 추출 (P0-A4/A5에서 확립된 패턴)
 - telemetry 비활성 시 (trial_root 없음) 무시
 
-- [x] P5-A3 완료 — commit: `TBD`
+- [x] P5-A3 완료 — commit: `f6739ce`
 
 ---
 
@@ -148,7 +148,7 @@ pivot_history: list[dict]     # P4-Stage-E exploration pivot records
 - `telemetry/` 디렉토리 없을 시 자동 생성
 - trial-card.md 없이 실행 시 경고 (§12.3 규칙 3)
 
-- [ ] P5-A4 완료 — commit: ___
+- [x] P5-A4 완료 — commit: `f6739ce` (A2에 포함: mkdir + trial-card 경고)
 
 ---
 
@@ -164,14 +164,14 @@ pivot_history: list[dict]     # P4-Stage-E exploration pivot records
 
 **최소 5 개 테스트**.
 
-- [ ] P5-A5 완료 — commit: ___
+- [x] P5-A5 완료 — commit: `TBD`
 
 ---
 
 **Stage A 완료 체크** (Stage B 착수 전):
-- [ ] 위 5 tasks 모두 merge 완료
-- [ ] `tests/test_obs/test_telemetry_schema.py` green
-- [ ] `bench/silver/japan-travel/*/telemetry/cycles.jsonl` 실 데이터 1개 이상 생성 확인
+- [x] 위 5 tasks 모두 merge 완료
+- [x] `tests/test_obs/test_telemetry_schema.py` green (7/7)
+- [ ] `bench/silver/japan-travel/*/telemetry/cycles.jsonl` 실 데이터 1개 이상 생성 확인 (trial 재실행 후)
 
 ---
 
