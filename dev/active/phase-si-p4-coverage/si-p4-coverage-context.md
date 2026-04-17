@@ -190,7 +190,33 @@
 | D-147 | **VP4 FAIL**: budget kill-switch cycle 4 발동 — llm_budget=3이 universe_probe 1회분 | survey 1 + validator 2 = LLM 3. 이후 Stage E 전체 사망. budget 확대 필요 |
 | D-148 | **VP4 FAIL**: ext_novelty = novel/total_keys → 0 수렴 산식 결함 | 분모가 누적 전체 KU 키 → 단조 증가. 0.25 임계치 구조적 도달 불가. 산식 재설계 필요 |
 | D-149 | **VP4 FAIL**: exploration_pivot 조건 unreachable — domains_per_100ku 52~57 vs floor 15 | Tavily 자연적 다양성으로 절대 trigger 안 됨. 조건 재설계 필요 |
-| D-150 | **VP4 FAIL**: category_addition HITL-R 필수 → 자동 벤치 불가 | registered=2 완료했으나 승격 불가. 자동 벤치 경로 또는 VP4 기준 재설계 필요 |
+| D-150 | **VP4 FAIL**: category_addition HITL-R 필수 → 자동 벤치 불가 | registered=2 완료했으나 승격 불가. VP4 R5 기준을 `probe_history` 실행 횟수로 완화 (`10bc58a`). **단, 실제 런타임에서 candidate → active 승격을 처리하는 HITL 로직이 미구현 상태 — 추후 별도 구현 필요 (아래 §5.9 참조)** |
+
+### 5.9 미구현 런타임 로직 (Future Work)
+
+#### category_addition HITL 승격 경로 (D-150 후속)
+
+현재 `candidate_categories` 등록까지는 자동화되어 있으나, 실제 운영 환경에서 skeleton 을 확장하려면 아래 경로가 구현되어야 함:
+
+```
+candidate_categories (universe_probe 등록)
+  → [미구현] HITL 인터페이스: 사용자가 후보 목록 검토 + 승인/거부
+  → promote_candidate(skeleton, slug) 호출
+  → skeleton.categories 에 편입 (active)
+  → 이후 collect 노드가 해당 카테고리 KU 수집 시작
+```
+
+**현재 코드 상태**:
+- `skeleton_tiers.py::promote_candidate()` 함수 존재 (승격 로직 구현됨)
+- HITL 진입점(CLI / API endpoint / interrupt node) 없음
+- `phase_history` 에 `category_addition` 기록되지 않음 (승격이 안 일어나므로)
+
+**구현 시 고려사항**:
+- Silver HITL 정책(`silver-hitl-policy` skill) 에 따라 HITL-R (Remodel) 경로로 처리
+- 승격 시 VP4 R5 기준(기존 `category_addition`)도 복원 가능
+- 자동 벤치와 실 운영을 구분하는 플래그 또는 mode 필요
+
+---
 
 ### 5.7 검증 방법 (Stage E 전용)
 

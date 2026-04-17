@@ -1,6 +1,6 @@
 # Silver P4: Coverage Intelligence — Tasks
-> Last Updated: 2026-04-16
-> Status: **Stage A~D Complete · Stage E Code Complete (23/25) · E7-2 실 벤치 완료 (VP4 FAIL 진단) · E7-3/E8 대기**
+> Last Updated: 2026-04-17
+> Status: **Stage A~E Complete (25/25) · E8-3 Gate PASS (VP4) · 전체 gate FAIL (VP2 gap_res — Stage E 외 범위)**
 
 ## Summary
 
@@ -10,8 +10,8 @@
 | B. Plan/Critique 통합 | 4 | 4/4 | ✅ 완료 |
 | C. Smart Category Addition | 3 | 3/3 | ✅ 완료 |
 | D. 검증 | 5 | 5/5 | ✅ 완료 |
-| E. External Anchor | 25 | 23/25 | E7-2 완료 (VP4 FAIL 진단) — E7-3/E8 대기 |
-| **합계** | **42** | **40/42** | 95% |
+| E. External Anchor | 25 | 25/25 | ✅ 완료 (E8-3 Gate PASS) |
+| **합계** | **42** | **42/42** | ✅ **100%** |
 
 **Size 분포**: S: 27 / M: 15 / L: 3 / XL: 0
 - Stage A~D: S 7 / M 8 / L 1
@@ -246,13 +246,16 @@
   - **stage-e-off**: 15c 완주, KU 116, VP1 5/5, VP2 **FAIL** 4/6 (gap_res 0.789), VP3 5/6
   - **stage-e-on**: 15c 완주, KU 97, VP1 5/5, VP2 **FAIL** 4/6 (gap_res 0.750), VP3 5/6, VP4 **FAIL** 2/5
   - **VP4 FAIL 근본 원인 4건**: (1) budget kill-switch cycle 4 발동 → Stage E 사실상 1c만 작동, (2) ext_novelty 산식 0 수렴, (3) pivot 조건 unreachable, (4) category_addition HITL 필수 → 자동 벤치 불가
-- [ ] **E7-3** `bench/japan-travel-external-anchor/` 비교 리포트 MD + VP4 fix 방안 `[S]`
+- [x] **E7-3** `bench/japan-travel-external-anchor/COMPARISON.md` — VP4 fix 적용 on/off 비교 리포트 `[S]`
 
 ### E8. Stage E Gate Judgment
 
 - [x] **E8-1** `a4df15d` `readiness_gate.py` VP4 추가 (5 criteria + `external_anchor_enabled` opt-in 플래그, +12 tests) `[S]`
-- [ ] **E8-2** E7-2 bench 결과로 VP4 실측 + readiness-report 갱신 `[S]`
-- [ ] **E8-3** Gate 판정 commit `[si-p4] Stage E Gate PASS/FAIL: {근거}` `[S]`
+- [x] **E8-2** VP4 fix 적용 stage-e-on 15c 재실행 → readiness-report.json 갱신 (2026-04-17) `[S]`
+  - VP4: **PASS 4/5** — R1 ext_novelty 0.7857, R2 domains/100ku 49.06, R3 candidates 6, R5 probe_runs 1
+  - VP4 R4 (pivot): FAIL (novelty 5c 연속 미달, 비설계적 실패 아님)
+  - 전체 gate FAIL: VP2 gap_resolution 0.8125 < 0.85 (Stage E 외 범위)
+- [x] **E8-3** Gate 판정 commit `[si-p4] Stage E Gate PASS: VP4 4/5 (D-147~D-150 해소)` `[S]`
 
 ---
 

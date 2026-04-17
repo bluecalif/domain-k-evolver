@@ -9,7 +9,7 @@
     "price": 365,
     "policy": 303,
     "regulation": 303,
-    "hours": 303,
+    "hours": 202,
     "how_to_use": 365,
     "location": 365,
     "etiquette": 365,
@@ -48,31 +48,23 @@
     "condition_divergence": "condition_split",
     "unresolvable": "hold_and_collect_more"
   },
-  "version": 3,
+  "version": 2,
   "change_history": [
     {
       "version": 1,
-      "cycle": 5,
-      "patches_applied": [
-        "PP-001"
-      ],
-      "timestamp": "2026-04-16T13:36:09.460862+00:00"
-    },
-    {
-      "version": 2,
       "cycle": 10,
       "patches_applied": [
         "PP-001"
       ],
-      "timestamp": "2026-04-16T13:42:13.263870+00:00"
+      "timestamp": "2026-04-17T09:48:07.902369+00:00"
     },
     {
-      "version": 3,
+      "version": 2,
       "cycle": 15,
       "patches_applied": [
         "PP-001"
       ],
-      "timestamp": "2026-04-16T13:45:35.897418+00:00"
+      "timestamp": "2026-04-17T09:49:41.241525+00:00"
     }
   ]
 }

@@ -306,17 +306,77 @@
   },
   {
     "ku_id": "KU-0014",
-    "entity_key": "japan-travel:regulation:visit-japan-web",
-    "field": "eligibility",
-    "value": "Foreigners can use Visit Japan Web for immigration procedures (immigration clearance, customs declaration) and tax-free purchases during their stay in Japan.",
-    "observed_at": "2026-04-16",
+    "entity_key": "japan-travel:accommodation:*",
+    "field": "price",
+    "value": "Average daily travel cost in Japan is $110, with accommodation costs approximately half of that",
+    "observed_at": "2026-04-17",
     "validity": {
       "ttl_days": 180
     },
     "evidence_links": [
-      "EU-0004-01"
+      "EU-0005-01",
+      "EU-0005-02",
+      "EU-0005-03"
     ],
-    "confidence": 0.9,
+    "confidence": 0.623,
+    "status": "active",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "provenance": {
+      "provider": "tavily",
+      "domain": "www.neverendingfootsteps.com",
+      "retrieved_at": "2026-04-17T09:35:07.692949+00:00",
+      "trust_tier": "primary"
+    }
+  },
+  {
+    "ku_id": "KU-0015",
+    "entity_key": "japan-travel:regulation:customs-allowance",
+    "field": "eligibility",
+    "value": "Tourists can bring in goods for personal use purchased abroad whose total market value is less than 200,000 Yen duty-free.",
+    "observed_at": "2026-04-17",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0002-01",
+      "EU-0002-02"
+    ],
+    "confidence": 0.7,
+    "status": "active",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "provenance": {
+      "provider": "tavily",
+      "domain": "help.wendywutours.com.au",
+      "retrieved_at": "2026-04-17T09:35:07.960538+00:00",
+      "trust_tier": "primary"
+    },
+    "disputes": [
+      {
+        "conflicting_claim": "CL-0002-02",
+        "nature": "Conflicting value for eligibility",
+        "resolution": "resolved",
+        "resolution_reason": "evidence majority (2 evidence vs 1 disputes)"
+      }
+    ]
+  },
+  {
+    "ku_id": "KU-0016",
+    "entity_key": "japan-travel:regulation:visit-japan-web",
+    "field": "eligibility",
+    "value": "Foreigners who are traveling to Japan can use Visit Japan Web for immigration procedures and tax-free purchases during their stay in Japan.",
+    "observed_at": "2026-04-17",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0004-01",
+      "EU-0004-02"
+    ],
+    "confidence": 0.863,
     "status": "active",
     "axis_tags": {
       "geography": "nationwide"
@@ -324,16 +384,16 @@
     "provenance": {
       "provider": "tavily",
       "domain": "services.digital.go.jp",
-      "retrieved_at": "2026-04-16T13:24:53.334818+00:00",
+      "retrieved_at": "2026-04-17T09:35:08.047549+00:00",
       "trust_tier": "primary"
     }
   },
   {
-    "ku_id": "KU-0015",
+    "ku_id": "KU-0017",
     "entity_key": "japan-travel:regulation:tourist-visa",
     "field": "eligibility",
-    "value": "All foreign nationals who need to obtain a short-term visa to Japan and currently reside in Australia, Brazil, Cambodia, Canada, Saudi Arabia, South Africa, Taiwan, United Kingdom, or U.S.A. are eligible to apply for a tourist visa online via the JAPAN eVISA system.",
-    "observed_at": "2026-04-16",
+    "value": "All foreign nationals who need to obtain a short-term visa to Japan and currently reside in Australia, Brazil, Cambodia, Canada, Saudi Arabia, South Africa, Taiwan, United Kingdom, or U.S.A. are eligible to apply for a tourist visa online.",
+    "observed_at": "2026-04-17",
     "validity": {
       "ttl_days": 180
     },
@@ -343,7 +403,7 @@
       "EU-0001-03",
       "EU-0001-04"
     ],
-    "confidence": 0.948,
+    "confidence": 0.95,
     "status": "active",
     "axis_tags": {
       "geography": "nationwide"
@@ -351,25 +411,34 @@
     "provenance": {
       "provider": "tavily",
       "domain": "www.mofa.go.jp",
-      "retrieved_at": "2026-04-16T13:25:02.025189+00:00",
+      "retrieved_at": "2026-04-17T09:35:09.061921+00:00",
       "trust_tier": "primary"
-    }
+    },
+    "disputes": [
+      {
+        "conflicting_claim": "CL-0001-02",
+        "nature": "Conflicting value for eligibility",
+        "resolution": "resolved",
+        "resolution_reason": "evidence majority (4 evidence vs 1 disputes)"
+      }
+    ]
   },
   {
-    "ku_id": "KU-0016",
+    "ku_id": "KU-0018",
     "entity_key": "japan-travel:regulation:emergency",
     "field": "eligibility",
-    "value": "Emergency medical assistance services in Japan for foreign visitors include medical referrals, medical monitoring, assistance with reporting theft or loss of travel documents, emergency patient transports, hospital arrangements for evacuated or repatriated patients, and emergency evacuation assistance.",
-    "observed_at": "2026-04-16",
+    "value": "Emergency medical assistance services in Japan are available to foreign visitors and include medical referrals, emergency patient transports, hospital arrangements, interpretation services, and assistance with reporting theft or loss of travel documents.",
+    "observed_at": "2026-04-17",
     "validity": {
       "ttl_days": 180
     },
     "evidence_links": [
       "EU-0003-01",
       "EU-0003-02",
-      "EU-0003-03"
+      "EU-0003-03",
+      "EU-0003-04"
     ],
-    "confidence": 0.923,
+    "confidence": 0.873,
     "status": "active",
     "axis_tags": {
       "geography": "nationwide"
@@ -377,121 +446,48 @@
     "provenance": {
       "provider": "tavily",
       "domain": "emergency.co.jp",
-      "retrieved_at": "2026-04-16T13:25:03.636552+00:00",
+      "retrieved_at": "2026-04-17T09:35:12.785206+00:00",
       "trust_tier": "primary"
-    }
-  },
-  {
-    "ku_id": "KU-0017",
-    "entity_key": "japan-travel:regulation:customs-allowance",
-    "field": "eligibility",
-    "value": "Tourists can bring in goods for personal use purchased abroad whose total market value is less than 200,000 Yen duty-free.",
-    "observed_at": "2026-04-16",
-    "validity": {
-      "ttl_days": 180
     },
-    "evidence_links": [
-      "EU-0002-01",
-      "EU-0002-02",
-      "EU-0002-03",
-      "EU-0002-04"
-    ],
-    "confidence": 0.828,
-    "status": "active",
-    "axis_tags": {
-      "geography": "nationwide"
-    },
-    "provenance": {
-      "provider": "tavily",
-      "domain": "help.wendywutours.com.au",
-      "retrieved_at": "2026-04-16T13:25:03.792889+00:00",
-      "trust_tier": "primary"
-    }
-  },
-  {
-    "ku_id": "KU-0018",
-    "entity_key": "japan-travel:attraction:*",
-    "field": "price",
-    "value": "Himeji Castle charges 1,000 yen ($7.01) for local residents and 2,500 yen ($17.52) for visitors from outside the city",
-    "observed_at": "2026-04-16",
-    "validity": {
-      "ttl_days": 180
-    },
-    "evidence_links": [
-      "EU-0006-01",
-      "EU-0006-02"
-    ],
-    "confidence": 0.73,
-    "status": "active",
-    "axis_tags": {
-      "geography": "nationwide"
-    },
-    "provenance": {
-      "provider": "tavily",
-      "domain": "travelnoire.com",
-      "retrieved_at": "2026-04-16T13:25:04.801333+00:00",
-      "trust_tier": "primary"
-    }
+    "disputes": [
+      {
+        "conflicting_claim": "CL-0003-04",
+        "nature": "Conflicting value for eligibility",
+        "resolution": "resolved",
+        "resolution_reason": "evidence majority (4 evidence vs 1 disputes)"
+      }
+    ]
   },
   {
     "ku_id": "KU-0019",
-    "entity_key": "japan-travel:accommodation:*",
+    "entity_key": "japan-travel:payment:ic-card",
     "field": "price",
-    "value": "Average daily travel cost including accommodation is about $110 per day, with accommodation cost roughly half of that",
-    "observed_at": "2026-04-16",
+    "value": "Icoca card costs ¥2000 including a ¥500 deposit and contains ¥1500 of credit",
+    "observed_at": "2026-04-17",
     "validity": {
       "ttl_days": 180
     },
     "evidence_links": [
-      "EU-0001-01",
-      "EU-0002-01",
-      "EU-0003-01",
-      "EU-0004-01",
-      "EU-0005-01"
+      "EU-0008-01"
     ],
-    "confidence": 0.81,
+    "confidence": 0.7,
     "status": "active",
     "axis_tags": {
       "geography": "nationwide"
     },
     "provenance": {
       "provider": "tavily",
-      "domain": "www.neverendingfootsteps.com",
-      "retrieved_at": "2026-04-16T13:25:05.453666+00:00",
+      "domain": "insideosaka.com",
+      "retrieved_at": "2026-04-17T09:35:18.187047+00:00",
       "trust_tier": "primary"
     }
   },
   {
     "ku_id": "KU-0020",
-    "entity_key": "japan-travel:payment:ic-card",
-    "field": "price",
-    "value": "Most IC cards require a security deposit of 500 yen when purchasing the card.",
-    "observed_at": "2026-04-16",
-    "validity": {
-      "ttl_days": 180
-    },
-    "evidence_links": [
-      "EU-0008-01",
-      "EU-0008-02"
-    ],
-    "confidence": 0.863,
-    "status": "active",
-    "axis_tags": {
-      "geography": "nationwide"
-    },
-    "provenance": {
-      "provider": "tavily",
-      "domain": "www.japan.travel",
-      "retrieved_at": "2026-04-16T13:25:13.641448+00:00",
-      "trust_tier": "primary"
-    }
-  },
-  {
-    "ku_id": "KU-0021",
     "entity_key": "japan-travel:pass-ticket:jr-pass",
     "field": "policy",
-    "value": "The Japan Rail Pass is available only to non-Japanese nationals visiting Japan on a tourist visa (Temporary Visitor status).",
-    "observed_at": "2026-04-16",
+    "value": "The Japan Rail Pass Exchange Orders and Additional Products are refundable up to 11 months from the date of receipt of the payment confirmation email, provided the customer submits the required documentation.",
+    "observed_at": "2026-04-17",
     "validity": {
       "ttl_days": 180
     },
@@ -501,8 +497,7 @@
       "EU-0009-03",
       "EU-0009-04",
       "EU-0009-05",
-      "EU-0009-06",
-      "EU-0009-07"
+      "EU-0009-06"
     ],
     "confidence": 0.95,
     "status": "active",
@@ -511,25 +506,25 @@
     },
     "provenance": {
       "provider": "tavily",
-      "domain": "jrpass.travelwithamnet.com",
-      "retrieved_at": "2026-04-16T13:25:28.043542+00:00",
+      "domain": "www.jrailpass.com",
+      "retrieved_at": "2026-04-17T09:35:29.790724+00:00",
       "trust_tier": "primary"
     },
     "disputes": [
       {
-        "conflicting_claim": "CL-0009-02",
+        "conflicting_claim": "CL-0009-03",
         "nature": "Conflicting value for policy",
         "resolution": "resolved",
-        "resolution_reason": "evidence majority (7 evidence vs 1 disputes)"
+        "resolution_reason": "evidence majority (6 evidence vs 1 disputes)"
       }
     ]
   },
   {
-    "ku_id": "KU-0022",
+    "ku_id": "KU-0021",
     "entity_key": "japan-travel:dining:*",
     "field": "price",
-    "value": "Chain restaurants like Yoshinoya or Sukiya offer beef bowls and other quick meals starting at around 400 to 600 yen.",
-    "observed_at": "2026-04-16",
+    "value": "Chain restaurants like Yoshinoya or Sukiya offer beef bowls and other quick meals starting at around 400 to 600 yen",
+    "observed_at": "2026-04-17",
     "validity": {
       "ttl_days": 180
     },
@@ -550,16 +545,16 @@
     "provenance": {
       "provider": "tavily",
       "domain": "livejapan.com",
-      "retrieved_at": "2026-04-16T13:25:28.603912+00:00",
+      "retrieved_at": "2026-04-17T09:35:32.000155+00:00",
       "trust_tier": "primary"
     }
   },
   {
-    "ku_id": "KU-0023",
+    "ku_id": "KU-0022",
     "entity_key": "japan-travel:pass-ticket:suica",
     "field": "policy",
-    "value": "Suica cards can be used nationwide in Japan due to the IC card interoperability system, allowing a Suica purchased in Tokyo to be used on subways in Osaka and buses in Fukuoka.",
-    "observed_at": "2026-04-16",
+    "value": "Suica cards are not free and can be purchased at ticket vending machines in major JR stations in Eastern Japan.",
+    "observed_at": "2026-04-17",
     "validity": {
       "ttl_days": 180
     },
@@ -569,26 +564,323 @@
       "EU-0010-03",
       "EU-0010-04",
       "EU-0010-05",
-      "EU-0010-06"
+      "EU-0010-06",
+      "EU-0010-07",
+      "EU-0010-08"
     ],
-    "confidence": 0.922,
+    "confidence": 0.95,
     "status": "active",
     "axis_tags": {
       "geography": "nationwide"
     },
     "provenance": {
       "provider": "tavily",
-      "domain": "livejapan.com",
-      "retrieved_at": "2026-04-16T13:25:33.675859+00:00",
+      "domain": "bokksu.com",
+      "retrieved_at": "2026-04-17T09:35:36.656418+00:00",
+      "trust_tier": "primary"
+    }
+  },
+  {
+    "ku_id": "KU-0023",
+    "entity_key": "japan-travel:attraction:himeji-castle",
+    "field": "price",
+    "value": "Himeji Castle charges local residents 1,000 yen and visitors from outside the city 2,500 yen",
+    "observed_at": "2026-04-17",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0006-01"
+    ],
+    "confidence": 0.7,
+    "status": "active",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "provenance": {
+      "provider": "tavily",
+      "domain": "travelnoire.com",
+      "retrieved_at": "2026-04-17T09:35:39.099636+00:00",
       "trust_tier": "primary"
     }
   },
   {
     "ku_id": "KU-0024",
+    "entity_key": "japan-travel:attraction:toji-temple",
+    "field": "price",
+    "value": "Toji temple charges 500 yen for Kondō and Kōdō Halls, with separate charges during special viewing periods",
+    "observed_at": "2026-04-17",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0006-02"
+    ],
+    "confidence": 0.9,
+    "status": "active",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "provenance": {
+      "provider": "tavily",
+      "domain": "www.nippon.com",
+      "retrieved_at": "2026-04-17T09:35:39.100634+00:00",
+      "trust_tier": "primary"
+    }
+  },
+  {
+    "ku_id": "KU-0025",
+    "entity_key": "japan-travel:attraction:kosanji-temple",
+    "field": "price",
+    "value": "Kōsanji temple admission fee is 1,000 yen, with a separate 500 yen fee in autumn",
+    "observed_at": "2026-04-17",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0006-03"
+    ],
+    "confidence": 0.9,
+    "status": "active",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "provenance": {
+      "provider": "tavily",
+      "domain": "www.nippon.com",
+      "retrieved_at": "2026-04-17T09:35:39.100634+00:00",
+      "trust_tier": "primary"
+    }
+  },
+  {
+    "ku_id": "KU-0026",
+    "entity_key": "japan-travel:attraction:tenryuji-temple",
+    "field": "price",
+    "value": "Tenryūji temple charges 500 yen for Garden access and an additional 300 yen to visit the halls",
+    "observed_at": "2026-04-17",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0006-04"
+    ],
+    "confidence": 0.9,
+    "status": "active",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "provenance": {
+      "provider": "tavily",
+      "domain": "www.nippon.com",
+      "retrieved_at": "2026-04-17T09:35:39.100634+00:00",
+      "trust_tier": "primary"
+    }
+  },
+  {
+    "ku_id": "KU-0027",
+    "entity_key": "japan-travel:attraction:todaiji-temple",
+    "field": "price",
+    "value": "Tōdaiji temple charges 600 yen for Great Buddha Hall and 1,000 yen for a combination ticket including the museum",
+    "observed_at": "2026-04-17",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0006-05"
+    ],
+    "confidence": 0.9,
+    "status": "active",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "provenance": {
+      "provider": "tavily",
+      "domain": "www.nippon.com",
+      "retrieved_at": "2026-04-17T09:35:39.100634+00:00",
+      "trust_tier": "primary"
+    }
+  },
+  {
+    "ku_id": "KU-0028",
+    "entity_key": "japan-travel:attraction:kofukuji-temple",
+    "field": "price",
+    "value": "Kōfukuji temple National Treasure Museum admission is 700 yen; Higashi Kondō Hall is 300 yen",
+    "observed_at": "2026-04-17",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0006-06"
+    ],
+    "confidence": 0.9,
+    "status": "active",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "provenance": {
+      "provider": "tavily",
+      "domain": "www.nippon.com",
+      "retrieved_at": "2026-04-17T09:35:39.100634+00:00",
+      "trust_tier": "primary"
+    }
+  },
+  {
+    "ku_id": "KU-0029",
+    "entity_key": "japan-travel:attraction:kasuga-taisha-shrine",
+    "field": "price",
+    "value": "Kasuga Taisha Shrine has free entry, with 500 yen charges for special admission and National Treasure Hall",
+    "observed_at": "2026-04-17",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0006-07"
+    ],
+    "confidence": 0.9,
+    "status": "active",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "provenance": {
+      "provider": "tavily",
+      "domain": "www.nippon.com",
+      "retrieved_at": "2026-04-17T09:35:39.100634+00:00",
+      "trust_tier": "primary"
+    }
+  },
+  {
+    "ku_id": "KU-0030",
+    "entity_key": "japan-travel:attraction:rinnouji-temple",
+    "field": "price",
+    "value": "Rinnōji temple charges 1,000 yen for a combination ticket; individual buildings can be paid separately",
+    "observed_at": "2026-04-17",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0006-08"
+    ],
+    "confidence": 0.9,
+    "status": "active",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "provenance": {
+      "provider": "tavily",
+      "domain": "www.nippon.com",
+      "retrieved_at": "2026-04-17T09:35:39.100634+00:00",
+      "trust_tier": "primary"
+    }
+  },
+  {
+    "ku_id": "KU-0031",
+    "entity_key": "japan-travel:attraction:mount-kurama-temple",
+    "field": "price",
+    "value": "Access to Mount Kurama main temple costs 200 yen; train ride costs 420 yen",
+    "observed_at": "2026-04-17",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0006-09"
+    ],
+    "confidence": 0.9,
+    "status": "active",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "provenance": {
+      "provider": "tavily",
+      "domain": "www.japan-experience.com",
+      "retrieved_at": "2026-04-17T09:35:39.100634+00:00",
+      "trust_tier": "primary"
+    }
+  },
+  {
+    "ku_id": "KU-0032",
+    "entity_key": "japan-travel:attraction:national-museum-tokyo",
+    "field": "price",
+    "value": "National Museum of Tokyo admission fee is 620 yen",
+    "observed_at": "2026-04-17",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0006-10"
+    ],
+    "confidence": 0.9,
+    "status": "active",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "provenance": {
+      "provider": "tavily",
+      "domain": "www.japan-experience.com",
+      "retrieved_at": "2026-04-17T09:35:39.100634+00:00",
+      "trust_tier": "primary"
+    }
+  },
+  {
+    "ku_id": "KU-0033",
+    "entity_key": "japan-travel:attraction:osaka-castle",
+    "field": "price",
+    "value": "Osaka Castle admission costs 600 yen",
+    "observed_at": "2026-04-17",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0006-11"
+    ],
+    "confidence": 0.9,
+    "status": "active",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "provenance": {
+      "provider": "tavily",
+      "domain": "japan-travel-concierge.net",
+      "retrieved_at": "2026-04-17T09:35:39.100634+00:00",
+      "trust_tier": "primary"
+    }
+  },
+  {
+    "ku_id": "KU-0034",
+    "entity_key": "japan-travel:accommodation:*",
+    "field": "etiquette",
+    "value": "Many hotels in Japan, especially ryokans, require guests to remove their shoes at the entrance or in their room.",
+    "observed_at": "2026-04-17",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0012-01",
+      "EU-0012-02",
+      "EU-0012-03",
+      "EU-0012-04",
+      "EU-0012-05",
+      "EU-0012-06",
+      "EU-0012-07",
+      "EU-0012-08"
+    ],
+    "confidence": 0.95,
+    "status": "active",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "provenance": {
+      "provider": "tavily",
+      "domain": "aajapantours.com",
+      "retrieved_at": "2026-04-17T09:35:48.982186+00:00",
+      "trust_tier": "primary"
+    }
+  },
+  {
+    "ku_id": "KU-0035",
     "entity_key": "japan-travel:accommodation:*",
     "field": "location",
-    "value": "Capsule hotels are available in Matsumoto, Tokyo, and Fukuoka",
-    "observed_at": "2026-04-16",
+    "value": "Capsule hotels are located in Matsumoto, Tokyo, and Fukuoka",
+    "observed_at": "2026-04-17",
     "validity": {
       "ttl_days": 180
     },
@@ -601,42 +893,11 @@
       "EU-0006-01",
       "EU-0007-01",
       "EU-0008-01",
-      "EU-0009-01"
-    ],
-    "confidence": 0.864,
-    "status": "active",
-    "axis_tags": {
-      "geography": "nationwide"
-    },
-    "provenance": {
-      "provider": "tavily",
-      "domain": "www.amatteroftaste.me",
-      "retrieved_at": "2026-04-16T13:25:51.276304+00:00",
-      "trust_tier": "primary"
-    }
-  },
-  {
-    "ku_id": "KU-0025",
-    "entity_key": "japan-travel:accommodation:*",
-    "field": "etiquette",
-    "value": "Many hotels in Japan, especially ryokans, require guests to remove their shoes at the entrance or in their room.",
-    "observed_at": "2026-04-16",
-    "validity": {
-      "ttl_days": 180
-    },
-    "evidence_links": [
+      "EU-0009-01",
+      "EU-0010-01",
+      "EU-0011-01",
       "EU-0012-01",
-      "EU-0012-02",
-      "EU-0012-03",
-      "EU-0012-04",
-      "EU-0012-05",
-      "EU-0012-06",
-      "EU-0012-07",
-      "EU-0012-08",
-      "EU-0012-09",
-      "EU-0012-10",
-      "EU-0012-11",
-      "EU-0012-12"
+      "EU-0013-01"
     ],
     "confidence": 0.95,
     "status": "active",
@@ -645,17 +906,9 @@
     },
     "provenance": {
       "provider": "tavily",
-      "domain": "aajapantours.com",
-      "retrieved_at": "2026-04-16T13:26:09.118399+00:00",
+      "domain": "www.amatteroftaste.me",
+      "retrieved_at": "2026-04-17T09:36:01.785694+00:00",
       "trust_tier": "primary"
-    },
-    "disputes": [
-      {
-        "conflicting_claim": "CL-0012-05",
-        "nature": "Conflicting value for etiquette",
-        "resolution": "resolved",
-        "resolution_reason": "evidence majority (12 evidence vs 1 disputes)"
-      }
-    ]
+    }
   }
 ]
