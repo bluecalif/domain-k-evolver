@@ -1,6 +1,6 @@
 # Project Overall Context
 > Last Updated: 2026-04-17
-> Status: Bronze 완료 (468) → SI-P0 완료 (510) → P1 완료 (544) → P3R 완료 (608, D-125) → Gap-Res 완료 (610, D-129) → P2 PASS (613, D-132/133) → **SI-P4 완료 (42/42, 797 tests, Stage E Gate: VP4 PASS 4/5, Overall FAIL(VP2), D-147~D-150 해소)**
+> Status: Bronze 완료 (468) → SI-P0 완료 (510) → P1 완료 (544) → P3R 완료 (608, D-125) → Gap-Res 완료 (610, D-129) → P2 PASS (613, D-132/133) → P4 완료 (797, D-147~D-150) → **SI-P5 착수 (Telemetry & Dashboard)**
 
 ## 1. 핵심 파일
 
@@ -54,7 +54,7 @@
 | Silver P3R | `dev/active/phase-si-p3r-snippet-refactor/` | ✅ **완료** (8/8, Gate PASS, D-125, 608 tests) |
 | **Gap-Res Investigation** | `dev/active/phase-gap-resolution-investigation/` | ✅ **완료** (12/12, D-129~D-131) |
 | Silver P4 | `dev/active/phase-si-p4-coverage/` | ✅ **완료** (42/42, 797 tests, VP4 PASS 4/5, D-147~D-150 해소) |
-| Silver P5 | `dev/active/phase-si-p5-telemetry-dashboard/` | P3R + P4 |
+| Silver P5 | `dev/active/phase-si-p5-telemetry-dashboard/` | **Planning** (0/14) — P3R + P4 ✅ |
 | Silver P6 | `dev/active/phase-si-p6-multidomain/` | P1~P5 전부 (Silver exit gate) |
 
 ### Bronze 구현 파일 (현행)
@@ -90,7 +90,7 @@
 | `src/utils/novelty.py`, `src/utils/coverage_map.py` | P4 Stage A (✅ 완료) |
 | `src/utils/external_novelty.py`, `src/utils/reach_ledger.py`, `src/utils/cost_guard.py` | P4 Stage E (신규) |
 | `src/nodes/universe_probe.py`, `src/nodes/exploration_pivot.py` | P4 Stage E (신규) |
-| `src/obs/telemetry.py`, `src/obs/dashboard/` | P5 |
+| `src/obs/__init__.py`, `src/obs/telemetry.py`, `src/obs/dashboard/app.py`, `src/obs/dashboard/views/*.py` | P5 ← 현재 |
 
 ### 벤치 데이터
 | 경로 | 내용 |
@@ -210,6 +210,9 @@ class EvolverState(TypedDict):
 | D-148 | ext_novelty 산식 재설계: `novel/all_kus` → delta_kus 분모 (이번 cycle 신규 KU만) — 0 수렴 방지 | P4 E7-3 |
 | D-149 | exploration_pivot `reach_degraded` 조건 제거 (domains_per_100ku<15 실측 52~57, 구조적 unreachable) | P4 E7-3 |
 | D-150 | VP4 R5: category_addition HITL-R → probe_history 실행 횟수 기준 (자동 벤치 경로 허용). 런타임 HITL 로직(promote_candidate) 은 미구현 — future work | P4 E7-3 |
+| D-151 후보 | telemetry schema 버저닝: `telemetry.v1` 고정, v2 필요 시 별도 schema 파일 | P5 |
+| D-152 후보 | Dashboard 실행 방식: CLAUDE.md Scripts Policy — `run_readiness.py --serve-dashboard` 옵션 통합 or `uvicorn` 직접 실행 (신규 스크립트 금지) | P5 |
+| D-153 후보 | 100-cycle fixture: 실 trial 데이터 우선 (stub 금지 원칙), 부재 시 gen_fixture.py 허용 검토 | P5 |
 
 ---
 

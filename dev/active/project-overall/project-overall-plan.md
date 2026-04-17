@@ -1,6 +1,6 @@
 # Project Overall Plan
-> Last Updated: 2026-04-16
-> Status: Bronze 완료 → Silver P0/P1/P3R/P2/Gap-Res 완료 → **SI-P4 Stage E VP4 FAIL 진단 (D-147~D-150)** → VP4 fix + 재실행 대기
+> Last Updated: 2026-04-17
+> Status: Bronze 완료 → Silver P0/P1/P3R/P2/Gap-Res/P4 완료 → **SI-P5 (Telemetry & Dashboard) 착수**
 
 ## 0. Refactor Pivot (2026-04-14)
 
@@ -22,13 +22,13 @@ SI-P3R 완료 (2026-04-14, D-125)
    │
    ▼  Silver P2 재판정 (remodel on/off 비교 실험, D-127) ✅ Gate PASS (D-132/133)
    │
-   ▼  Silver P4 (Coverage Intelligence) ← 현재
+   ▼  Silver P4 (Coverage Intelligence) ✅
    │      - Stage A~D: Internal Foundation (완료, 17/17, 669 tests)
-   │      - Stage E: External Anchor (23/25, 793 tests) — E7-2 실 벤치 VP4 FAIL 진단
-   │                  VP4 FAIL 근본 원인 4건 (D-147~D-150): budget/산식/조건/HITL
-   │                  → VP4 fix + 재실행 후 Gate 판정 예정
+   │      - Stage E: External Anchor (42/42, 797 tests)
+   │                  VP4 PASS 4/5 (D-147~D-150 해소). Overall FAIL(VP2 gap_res 0.8125<0.85)
+   │                  VP2 gap_res FAIL은 Stage E 외 범위 — 별도 Phase 예정
    │
-   ▼  Silver P5 (Telemetry & Dashboard)
+   ▼  Silver P5 (Telemetry & Dashboard) ← 현재
    │
    ▼  Silver P6 (Multi-Domain Validation, Silver exit gate)
 ```
@@ -254,20 +254,23 @@ src/obs/          — 부재 (Silver P5 에서 telemetry + dashboard 신규)
 
 #### Silver P5. Telemetry Contract & Dashboard
 - **Goal**: 운영자가 JSON 파일 없이 상태 파악·개입
-- **실행 순서**: P5-A (schema + emit) → P5-B (UI). UI-first 금지.
+- **Status**: **Planning** (0/14, 대기) | Dev-docs: `dev/active/phase-si-p5-telemetry-dashboard/`
+- **실행 순서**: P5-A (schema + emit) → P5-B (UI). UI-first 금지 (D-77).
 - **Scope**:
-  - `schemas/telemetry.v1.schema.json` [NEW] — cycle 단위 snapshot
+  - `schemas/telemetry.v1.schema.json` [NEW] — cycle 단위 snapshot 계약
   - `src/obs/telemetry.py` [NEW] — jsonl append-only, atomic write
-  - Dashboard: FastAPI + htmx + Chart.js, localhost only
-  - Views: overview / cycle timeline / gap coverage map / source reliability / conflict ledger / HITL inbox (3탭) / remodel review
+  - `src/obs/dashboard/` [NEW] — FastAPI + htmx + Chart.js, localhost only
+  - Views: overview / cycle timeline / gap coverage map / source reliability / conflict ledger / HITL inbox (3탭: Seed/Remodel·Dispute·Exception) / remodel review
   - `docs/operator-guide.md` (≤ 20 페이지)
 - **Gate (정량)**:
+  - telemetry schema contract 테스트 pass (positive + negative, S10)
   - 100 cycle fixture: 모든 view 10s 이내 로드
-  - telemetry schema contract 테스트 (positive + negative)
-  - S10 scenario pass
+  - HITL/dispute/remodel view stub 금지 (실제 artifact)
   - 대시보드 LOC ≤ 2,000 (하드 리밋)
+  - "왜 느려졌나" 3분 내 식별 self-test
   - 운영자 가이드 ≥ 5페이지 walkthrough
-- **Depends on**: P0 (metric emit), P3 (provenance), P4 (novelty)
+  - 테스트 ≥ 812 (797 + 15)
+- **Depends on**: P0 ✅ (metric emit), P3R ✅ (provenance), P4 ✅ (novelty/reason_code)
 
 #### Silver P6. Multi-Domain Validation (Silver 완료 exit gate)
 - **Goal**: 프레임워크 도메인 무관성 실증

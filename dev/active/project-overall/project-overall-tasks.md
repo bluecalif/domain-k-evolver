@@ -1,6 +1,6 @@
 # Project Overall Tasks
 > Last Updated: 2026-04-17
-> Status: Bronze 완료 (85/85) · Silver P0 (32) · P1 (12) · P3R (8) · P2 (14) · Gap-Res (12) 완료 · **SI-P4 완료 (42/42, VP4 PASS 4/5)** · 797 tests
+> Status: Bronze 완료 (85/85) · Silver P0 (32) · P1 (12) · P3R (8) · P2 (14) · Gap-Res (12) · P4 (42) 완료 · **SI-P5 착수 (0/14)** · 797 tests
 
 ## Summary
 
@@ -28,7 +28,7 @@
 | P3 Acquisition Expansion | 22 | 7 | 13 | 2 | — | **REVOKED** (D-120) |
 | P3R Snippet-First Refactor | 8 | — | — | — | **8/8** ✅ | PASS (D-125, 608 tests) |
 | P4 Coverage Intelligence | **42** | 27 | 15 | 3 | **42/42** ✅ | **Gate PASS (VP4 4/5, D-147~D-150 해소, 797 tests)** |
-| P5 Telemetry & Dashboard | 14 | 3 | 10 | 1 | 0/14 | 대기 |
+| P5 Telemetry & Dashboard | 14 | 3 | 9 | 1 | 0/14 | **Planning** (Dev-docs 완료) |
 | P6 Multi-Domain | 7 | 2 | 3 | 2 | 0/7 | 대기 |
 | X Cross-phase | 7 | 7 | 0 | 0 | 0/7 | — |
 | **Silver 합계** | **127** | — | — | — | **52/127** | — |
@@ -423,28 +423,29 @@
 ## Phase P5: Telemetry Contract & Dashboard (14 tasks)
 
 > **목표**: Telemetry schema v1 + FastAPI 운영 대시보드 (≤ 2000 LOC)
-> **Gate**: schema validate, 100-cycle fixture 모든 view ≤ 10s, stub 금지, LOC 하드리밋, S10 pass, operator-guide 5+ 페이지
+> **Gate**: schema validate, 100-cycle fixture 모든 view ≤ 10s, stub 금지, LOC 하드리밋, S10 pass, operator-guide 5+ 페이지, 테스트 ≥ 812
 > **제약**: P5-A (telemetry schema) 가 P5-B (UI) **엄격 선행** (D-77)
+> **Dev-docs**: `dev/active/phase-si-p5-telemetry-dashboard/`
 
-### P5-A. Telemetry 계약
-- [ ] **P5-A1** `schemas/telemetry.v1.schema.json` 필수 필드 `[M]`
-- [ ] **P5-A2** `src/obs/telemetry.py` emitter (jsonl atomic) `[M]`
-- [ ] **P5-A3** 노드 경계 emit hook (orchestrator 단일 call site) `[M]`
+### P5-A. Telemetry 계약 [CRITICAL: Stage B 착수 전 merge 완료 필수]
+- [ ] **P5-A1** `schemas/telemetry.v1.schema.json` 필수 필드 정의 `[M]`
+- [ ] **P5-A2** `src/obs/__init__.py` [NEW] + `src/obs/telemetry.py` emitter (jsonl atomic write) `[M]`
+- [ ] **P5-A3** `orchestrator.py` 노드 경계 emit hook (단일 call site) `[M]`
 - [ ] **P5-A4** 출력 경로 `bench/silver/{domain}/{trial}/telemetry/cycles.jsonl` `[S]`
-- [ ] **P5-A5** 스키마 계약 테스트 (positive/negative, S10) `[M]`
+- [ ] **P5-A5** `tests/test_obs/test_telemetry_schema.py` [NEW] 스키마 계약 테스트 (positive/negative, S10) `[M]`
 
-### P5-B. Dashboard
-- [ ] **P5-B1** FastAPI bootstrap (localhost, no auth) `[M]`
-- [ ] **P5-B2** 의존성 (fastapi/uvicorn/jinja2/htmx/chart.js) `[S]`
-- [ ] **P5-B3** Views (masterplan §4 verbatim) `[L]`
-- [ ] **P5-B4** Data source: 실제 artifact (stub 금지) `[M]`
-- [ ] **P5-B5** `docs/operator-guide.md` 작성 `[M]`
+### P5-B. Dashboard 구현 [전제: Stage A 완료]
+- [ ] **P5-B1** `src/obs/dashboard/__init__.py` [NEW] + `app.py` [NEW] FastAPI bootstrap (localhost, no auth) `[M]`
+- [ ] **P5-B2** `pyproject.toml` extras `[dashboard]` 의존성 (fastapi/uvicorn/jinja2) `[S]`
+- [ ] **P5-B3** Views 7종 (overview/timeline/coverage/sources/conflicts/HITL inbox 3탭/remodel) `[L]`
+- [ ] **P5-B4** Data source: 실제 artifact 연결 (stub 금지) `[M]`
+- [ ] **P5-B5** `docs/operator-guide.md` [NEW] 작성 (≤ 20페이지, 5+ walkthrough) `[M]`
 
 ### P5-C. 검증
-- [ ] **P5-C1** schema 계약 재검증 `[S]`
-- [ ] **P5-C2** 100-cycle fixture load ≤ 10s `[M]`
-- [ ] **P5-C3** Self-test "slowdown" walkthrough `[M]`
-- [ ] **P5-C4** LOC 하드 리밋 측정 (≤ 2000) `[S]`
+- [ ] **P5-C1** schema 계약 재검증 (Stage B 통합 후 regression 확인) `[S]`
+- [ ] **P5-C2** `tests/test_obs/test_dashboard_load.py` [NEW] 100-cycle fixture load ≤ 10s `[M]`
+- [ ] **P5-C3** Self-test "slowdown" walkthrough — 3분 내 원인 식별 (operator-guide에 기록) `[M]`
+- [ ] **P5-C4** LOC 하드 리밋 측정: `cloc src/obs/dashboard` ≤ 2,000 `[S]`
 
 ---
 
