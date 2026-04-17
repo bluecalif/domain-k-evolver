@@ -78,9 +78,9 @@ SI-P5 (Telemetry Contract & Dashboard) 15/15 tasks 전체 구현 완료.
 
 ## Remaining / TODO
 
-- [ ] **project-overall-tasks.md 동기화**: P5 섹션 15/15 완료, 814 tests 반영
-- [ ] **project-overall-plan.md 동기화**: P5 Current State 완료로 갱신
-- [ ] **si-p5 plan.md + context.md Status 갱신**: Planning → Complete
+- [x] **project-overall-tasks.md 동기화**: P5 섹션 15/15 완료, 814 tests 반영
+- [x] **project-overall-plan.md 동기화**: P5 Current State 완료로 갱신
+- [x] **si-p5 plan.md + context.md Status 갱신**: Planning → Complete
 - [ ] **실 trial cycles.jsonl 확인**: `run_readiness.py` 재실행 → bench/silver/japan-travel/*/telemetry/cycles.jsonl 생성 확인 (API 비용 발생 주의)
 - [ ] **P5 Gate 공식 판정**: `silver-phase-gate-check` skill 실행
 - [ ] **P6 (Multi-Domain)** dev-docs 생성 및 착수

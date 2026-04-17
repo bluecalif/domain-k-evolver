@@ -1,6 +1,6 @@
 # Project Overall Tasks
 > Last Updated: 2026-04-17
-> Status: Bronze 완료 (85/85) · Silver P0 (32) · P1 (12) · P3R (8) · P2 (14) · Gap-Res (12) · P4 (42) 완료 · **SI-P5 착수 (0/15)** · 797 tests
+> Status: Bronze 완료 (85/85) · Silver P0 (32) · P1 (12) · P3R (8) · P2 (14) · Gap-Res (12) · P4 (42) · **P5 완료 (15/15)** · 814 tests
 
 ## Summary
 
@@ -28,10 +28,10 @@
 | P3 Acquisition Expansion | 22 | 7 | 13 | 2 | — | **REVOKED** (D-120) |
 | P3R Snippet-First Refactor | 8 | — | — | — | **8/8** ✅ | PASS (D-125, 608 tests) |
 | P4 Coverage Intelligence | **42** | 27 | 15 | 3 | **42/42** ✅ | **Gate PASS (VP4 4/5, D-147~D-150 해소, 797 tests)** |
-| P5 Telemetry & Dashboard | 15 | 4 | 9 | 1 | 0/15 | **Planning** (Dev-docs 완료, 코드 검증 반영) |
+| P5 Telemetry & Dashboard | 15 | 4 | 9 | 1 | **15/15** ✅ | **Gate 판정 대기** (814 tests, S10 PASS, LOC 691) |
 | P6 Multi-Domain | 7 | 2 | 3 | 2 | 0/7 | 대기 |
 | X Cross-phase | 7 | 7 | 0 | 0 | 0/7 | — |
-| **Silver 합계** | **127** | — | — | — | **52/127** | — |
+| **Silver 합계** | **127** | — | — | — | **67/127** | — |
 
 ### Investigation Phase (Gap-Resolution)
 
@@ -39,7 +39,7 @@
 |-------|-------|---|---|------|--------|
 | Gap-Res Investigation | 12 | 8 | 4 | 12/12 | 완료 (D-131) |
 
-**총계: Bronze 85 + Silver (P4 42 포함) 152 + Investigation 12 = 249 tasks · 현재 테스트 797**
+**총계: Bronze 85 + Silver (P5 15 포함) 167 + Investigation 12 = 264 tasks · 현재 테스트 814**
 
 참조 문서:
 - 단일 진실 소스: `docs/silver-masterplan-v2.md` §4 Phase 표

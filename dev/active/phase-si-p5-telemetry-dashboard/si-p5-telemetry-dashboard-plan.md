@@ -1,6 +1,6 @@
 # Silver P5: Telemetry Contract & Dashboard
 > Last Updated: 2026-04-17
-> Status: Planning
+> Status: Complete (15/15, 814 tests, Gate 판정 대기)
 
 ---
 
