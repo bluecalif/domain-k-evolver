@@ -164,7 +164,7 @@ pivot_history: list[dict]     # P4-Stage-E exploration pivot records
 
 **최소 5 개 테스트**.
 
-- [x] P5-A5 완료 — commit: `TBD`
+- [x] P5-A5 완료 — commit: `84b1993`
 
 ---
 
