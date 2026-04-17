@@ -228,3 +228,6 @@ class EvolverState(TypedDict, total=False):
     novelty_history: list[float]  # P4: cycle 별 novelty 점수
     external_novelty_history: list[float]  # SI-P4 Stage E: cycle 별 external novelty
     external_observation_keys: list[str]   # SI-P4 Stage E: 누적 (entity_key|field) 관찰 키
+    reach_history: list[dict]   # SI-P5: cycle 별 reach target 기록
+    probe_history: list[dict]   # SI-P5: cycle 별 universe probe 결과
+    pivot_history: list[dict]   # SI-P5: cycle 별 exploration pivot 기록

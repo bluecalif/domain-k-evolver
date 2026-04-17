@@ -1,12 +1,12 @@
 # Silver P5: Telemetry Contract & Dashboard — Tasks
 > Last Updated: 2026-04-17
-> Status: Planning (0/15)
+> Status: In Progress (1/15)
 
 ## Summary
 
 | Stage | Tasks | Done | Status |
 |-------|-------|------|--------|
-| P5-Prep state.py TypedDict 보완 | 1 | 0 | 대기 (Stage A 착수 전) |
+| P5-Prep state.py TypedDict 보완 | 1 | 1 | ✅ 완료 |
 | P5-A Telemetry 계약 | 5 | 0 | 대기 |
 | P5-B Dashboard 구현 | 5 | 0 | 대기 (Stage A 완료 후) |
 | P5-C 검증 | 4 | 0 | 대기 (Stage B 완료 후) |
@@ -50,7 +50,7 @@ pivot_history: list[dict]     # P4-Stage-E exploration pivot records
 
 **Cross-check**: 추가 후 `orchestrator.py` 기존 코드(L251, L327, L347)와 key 이름 일치 확인.
 
-- [ ] P5-Prep 완료 — commit: ___
+- [x] P5-Prep 완료 — commit: TBD
 
 ---
 
