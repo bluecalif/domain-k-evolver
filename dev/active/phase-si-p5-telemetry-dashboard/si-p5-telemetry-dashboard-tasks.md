@@ -1,6 +1,6 @@
 # Silver P5: Telemetry Contract & Dashboard — Tasks
 > Last Updated: 2026-04-17
-> Status: In Progress (14/15)
+> Status: Complete (15/15)
 
 ## Summary
 
@@ -9,7 +9,7 @@
 | P5-Prep state.py TypedDict 보완 | 1 | 1 | ✅ 완료 |
 | P5-A Telemetry 계약 | 5 | 5 | ✅ 완료 |
 | P5-B Dashboard 구현 | 5 | 5 | ✅ 완료 |
-| P5-C 검증 | 4 | 3 | C3 남음 (manual walkthrough) |
+| P5-C 검증 | 4 | 4 | ✅ 완료 |
 | **합계** | **15** | **0** | — |
 
 Size: S:4 / M:9 / L:1 / XL:0
@@ -316,7 +316,7 @@ dashboard = ["fastapi", "uvicorn[standard]", "jinja2"]
 
 **판정 기준**: 시나리오 fixture 로드 → 3단계 내 원인 식별 가능 여부 (manual 검증).
 
-- [ ] P5-C3 완료 — commit: ___
+- [x] P5-C3 완료 — commit: `TBD` (slowdown fixture 3 테스트 + operator-guide §5)
 
 ---
 
