@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Remodel Review — Evolver{% endblock %}
+{% block content %}
+<h1>Remodel Review</h1>
+{% if not report %}
+<div class="card"><p class="no-data">remodel_report.json 없음</p></div>
+{% else %}
+<div class="card">
+  <p><strong>Report ID:</strong> {{ report.get('report_id', '—') }}</p>
+  <p><strong>Created:</strong> {{ report.get('created_at', '—') }}</p>
+  <p><strong>Source Audit:</strong> {{ report.get('source_audit_id', '—') }}</p>
+  <p><strong>Status:</strong>
+    {% set s = report.get('status', 'pending') %}
+    <span class="badge {% if s == 'approved' %}badge-resolved{% elif s == 'rejected' %}badge-critical{% else %}badge-warning{% endif %}">{{ s }}</span>
+  </p>
+</div>
+
+{% set proposals = report.get('proposals', []) %}
+{% if not proposals %}
+<div class="card"><p class="no-data">proposals 없음</p></div>
+{% else %}
+<h2>Proposals ({{ proposals | length }}건)</h2>
+<div class="card" style="overflow-x:auto">
+<table>
+  <tr><th>Type</th><th>Target</th><th>Reason</th><th>Rollback</th></tr>
+  {% for p in proposals %}
+  <tr>
+    <td><span class="badge badge-warning">{{ p.get('type', '—') }}</span></td>
+    <td style="font-size:12px">{{ p.get('target', '—') }}</td>
+    <td style="font-size:12px">{{ p.get('reason', '—') }}</td>
+    <td>{% if p.get('rollback_payload') %}<span style="color:#3fb950">있음</span>{% else %}<span style="color:#8b949e">없음</span>{% endif %}</td>
+  </tr>
+  {% endfor %}
+</table>
+</div>
+{% endif %}
+{% endif %}
+{% endblock %}

@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block title %}Overview — Evolver{% endblock %}
+{% block content %}
+<h1>Overview</h1>
+{% if not cycles %}
+<div class="card"><p class="no-data">데이터 없음 — trial을 실행해 cycles.jsonl을 생성하세요.</p></div>
+{% else %}
+{% set last = cycles[-1] %}
+<div class="card">
+  <div class="metric-grid">
+    <div class="metric">
+      <div class="metric-label">Phase</div>
+      <div class="metric-value" style="font-size:16px">{{ last.phase }}</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Cycle</div>
+      <div class="metric-value">{{ last.cycle }}</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Mode</div>
+      <div class="metric-value" style="font-size:16px">{{ last.mode }}</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Evidence Rate</div>
+      {% set v = last.metrics.evidence_rate %}
+      <div class="metric-value {% if v >= 0.95 %}ok{% elif v >= 0.55 %}warn{% else %}crit{% endif %}">
+        {{ "%.2f"|format(v) }}
+      </div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Conflict Rate</div>
+      {% set v = last.metrics.conflict_rate %}
+      <div class="metric-value {% if v <= 0.05 %}ok{% elif v <= 0.25 %}warn{% else %}crit{% endif %}">
+        {{ "%.3f"|format(v) }}
+      </div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Avg Confidence</div>
+      {% set v = last.metrics.avg_confidence %}
+      <div class="metric-value {% if v >= 0.85 %}ok{% elif v >= 0.60 %}warn{% else %}crit{% endif %}">
+        {{ "%.2f"|format(v) }}
+      </div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Gap Resolution</div>
+      {% set v = last.metrics.gap_resolution_rate %}
+      <div class="metric-value {% if v >= 0.85 %}ok{% elif v >= 0.50 %}warn{% else %}crit{% endif %}">
+        {{ "%.2f"|format(v) }}
+      </div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Collect Failure</div>
+      {% set v = last.metrics.collect_failure_rate %}
+      <div class="metric-value {% if v <= 0.10 %}ok{% elif v <= 0.50 %}warn{% else %}crit{% endif %}">
+        {{ "%.2f"|format(v) }}
+      </div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Novelty</div>
+      <div class="metric-value">{{ "%.2f"|format(last.metrics.novelty) }}</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Gaps Open</div>
+      <div class="metric-value">{{ last.gaps.open }}</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Dispute Queue</div>
+      {% set v = last.dispute_queue_size %}
+      <div class="metric-value {% if v == 0 %}ok{% elif v < 10 %}warn{% else %}crit{% endif %}">{{ v }}</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Wall Clock</div>
+      <div class="metric-value" style="font-size:16px">{{ "%.1f"|format(last.metrics.wall_clock_s) }}s</div>
+    </div>
+  </div>
+</div>
+
+{% if last.audit_summary.has_critical %}
+<div class="card" style="border-color:#f85149">
+  <strong style="color:#f85149">⚠ Critical Audit Finding</strong>
+  — {{ last.audit_summary.findings_count }}건 (last audit cycle {{ last.audit_summary.last_audit_cycle }})
+</div>
+{% endif %}
+
+{% if last.gaps.plateau %}
+<div class="card" style="border-color:#d29922">
+  <strong style="color:#d29922">Plateau 감지됨</strong>
+</div>
+{% endif %}
+
+{% if last.failures %}
+<div class="card">
+  <h2>Failures</h2>
+  <ul>{% for f in last.failures %}<li style="color:#f85149">{{ f }}</li>{% endfor %}</ul>
+</div>
+{% endif %}
+{% endif %}
+{% endblock %}

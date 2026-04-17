@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}HITL Inbox — Evolver{% endblock %}
+{% block content %}
+<h1>HITL Inbox</h1>
+<div class="tabs">
+  <span class="tab active" onclick="showTab('seed', this)">Seed/Remodel 승인 ({{ hitl.remodel }})</span>
+  <span class="tab" onclick="showTab('dispute', this)">Dispute 배치 검토 ({{ dispute_size }})</span>
+  <span class="tab" onclick="showTab('exception', this)">Exception 알림 ({{ hitl.exception }})</span>
+</div>
+
+<div id="tab-seed">
+  {% if hitl.remodel == 0 and hitl.seed == 0 %}
+  <div class="card"><p class="no-data">Seed/Remodel 승인 대기 없음</p></div>
+  {% else %}
+  <div class="card">
+    <p>Seed 승인 대기: <strong>{{ hitl.seed }}</strong>건</p>
+    <p>Remodel 승인 대기: <strong>{{ hitl.remodel }}</strong>건 — <a href="/remodel">Remodel Review</a>에서 확인</p>
+  </div>
+  {% endif %}
+</div>
+
+<div id="tab-dispute" style="display:none">
+  {% if dispute_size == 0 %}
+  <div class="card"><p class="no-data">Dispute 배치 검토 대기 없음</p></div>
+  {% else %}
+  <div class="card">
+    <p>dispute_queue 크기: <strong>{{ dispute_size }}</strong>건</p>
+    <p style="color:#8b949e;font-size:12px;margin-top:8px">
+      dispute_queue는 in-memory state. 실 trail 재실행 후 conflict_ledger에서 이력 확인 가능.
+    </p>
+  </div>
+  {% endif %}
+</div>
+
+<div id="tab-exception" style="display:none">
+  {% if not exceptions %}
+  <div class="card"><p class="no-data">Exception 알림 없음</p></div>
+  {% else %}
+  <div class="card">
+    {% for exc in exceptions %}
+    <div style="padding:8px 0;border-bottom:1px solid #21262d">
+      <span class="badge badge-critical">EXCEPTION</span>
+      Cycle {{ exc.cycle }} — {{ exc.reason }}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+
+<script>
+function showTab(name, el) {
+  ['seed','dispute','exception'].forEach(t => {
+    document.getElementById('tab-'+t).style.display = t === name ? '' : 'none';
+  });
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+}
+</script>
+{% endblock %}

@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Gap Coverage — Evolver{% endblock %}
+{% block content %}
+<h1>Gap Coverage Map</h1>
+{% if not cycles %}
+<div class="card"><p class="no-data">데이터 없음</p></div>
+{% else %}
+{% set last = cycles[-1] %}
+<div class="card">
+  <div class="metric-grid">
+    <div class="metric">
+      <div class="metric-label">Gaps Open</div>
+      <div class="metric-value {% if last.gaps.open == 0 %}ok{% elif last.gaps.open < 20 %}warn{% else %}crit{% endif %}">
+        {{ last.gaps.open }}
+      </div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Gaps Resolved</div>
+      <div class="metric-value ok">{{ last.gaps.resolved }}</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Probe History</div>
+      <div class="metric-value">{{ last.gaps.probe_history_count }}</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Pivot History</div>
+      <div class="metric-value">{{ last.gaps.pivot_history_count }}</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Plateau</div>
+      <div class="metric-value {% if last.gaps.plateau %}warn{% else %}ok{% endif %}">
+        {{ "Yes" if last.gaps.plateau else "No" }}
+      </div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Gap Resolution</div>
+      {% set v = last.metrics.gap_resolution_rate %}
+      <div class="metric-value {% if v >= 0.85 %}ok{% elif v >= 0.50 %}warn{% else %}crit{% endif %}">
+        {{ "%.2f"|format(v) }}
+      </div>
+    </div>
+  </div>
+</div>
+<h2>Open vs Resolved per Cycle</h2>
+<div class="card">
+  <canvas id="chartCoverage"></canvas>
+</div>
+<script>
+new Chart(document.getElementById('chartCoverage'), {
+  type: 'bar',
+  data: {
+    labels: {{ cycle_nums | tojson }},
+    datasets: [
+      { label: 'open', data: {{ gaps_open | tojson }}, backgroundColor: '#d29922aa' },
+      { label: 'resolved', data: {{ gaps_resolved | tojson }}, backgroundColor: '#3fb95088' },
+    ]
+  },
+  options: { plugins: { title: { display: true, text: 'Gap Status per Cycle', color: '#c9d1d9' } },
+    scales: { x: { stacked: false, ticks: { color: '#8b949e' } }, y: { ticks: { color: '#8b949e' }, min: 0 } } }
+});
+</script>
+{% endif %}
+{% endblock %}

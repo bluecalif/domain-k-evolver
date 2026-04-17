@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Source Reliability — Evolver{% endblock %}
+{% block content %}
+<h1>Source Reliability</h1>
+<p style="color:#8b949e;font-size:12px;margin-bottom:12px">
+  fetch_failure_rate는 현재 코드에서 미구현 (D-154). collect_failure_rate + search/fetch call 추이를 표시.
+</p>
+{% if not cycles %}
+<div class="card"><p class="no-data">데이터 없음</p></div>
+{% else %}
+{% set last = cycles[-1] %}
+<div class="card">
+  <div class="metric-grid">
+    <div class="metric">
+      <div class="metric-label">Collect Failure Rate</div>
+      {% set v = last.metrics.collect_failure_rate %}
+      <div class="metric-value {% if v <= 0.10 %}ok{% elif v <= 0.50 %}warn{% else %}crit{% endif %}">
+        {{ "%.2f"|format(v) }}
+      </div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Search Calls</div>
+      <div class="metric-value">{{ last.metrics.search_calls }}</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Fetch Calls</div>
+      <div class="metric-value">{{ last.metrics.fetch_calls }}</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">LLM Calls</div>
+      <div class="metric-value">{{ last.metrics.llm_calls }}</div>
+    </div>
+  </div>
+</div>
+<h2>Collect Failure Rate 추이</h2>
+<div class="card">
+  <canvas id="chartSrc"></canvas>
+</div>
+<script>
+new Chart(document.getElementById('chartSrc'), {
+  type: 'line',
+  data: {
+    labels: {{ cycle_nums | tojson }},
+    datasets: [
+      { label: 'collect_failure_rate', data: {{ collect_failure | tojson }}, borderColor: '#f85149', tension: 0.3, fill: false },
+      { label: 'search_calls', data: {{ search_calls | tojson }}, borderColor: '#58a6ff', tension: 0.3, fill: false, yAxisID: 'y2' },
+    ]
+  },
+  options: {
+    plugins: { title: { display: true, text: 'Source Reliability per Cycle', color: '#c9d1d9' } },
+    scales: {
+      x: { ticks: { color: '#8b949e' } },
+      y: { ticks: { color: '#8b949e' }, min: 0, max: 1, title: { display: true, text: 'failure rate', color: '#8b949e' } },
+      y2: { position: 'right', ticks: { color: '#8b949e' }, title: { display: true, text: 'calls', color: '#8b949e' } }
+    }
+  }
+});
+</script>
+{% endif %}
+{% endblock %}

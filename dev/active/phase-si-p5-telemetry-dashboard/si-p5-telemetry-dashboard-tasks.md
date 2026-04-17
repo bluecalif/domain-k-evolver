@@ -1,6 +1,6 @@
 # Silver P5: Telemetry Contract & Dashboard — Tasks
 > Last Updated: 2026-04-17
-> Status: In Progress (6/15)
+> Status: In Progress (10/15)
 
 ## Summary
 
@@ -8,7 +8,7 @@
 |-------|-------|------|--------|
 | P5-Prep state.py TypedDict 보완 | 1 | 1 | ✅ 완료 |
 | P5-A Telemetry 계약 | 5 | 5 | ✅ 완료 |
-| P5-B Dashboard 구현 | 5 | 0 | 대기 (Stage A 완료 후) |
+| P5-B Dashboard 구현 | 5 | 4 | 진행 중 (B5 남음) |
 | P5-C 검증 | 4 | 0 | 대기 (Stage B 완료 후) |
 | **합계** | **15** | **0** | — |
 
@@ -192,7 +192,7 @@ pivot_history: list[dict]     # P4-Stage-E exploration pivot records
 
 **Cross-check (X4)**: `src/obs/dashboard/__init__.py` 생성 필수.
 
-- [ ] P5-B1 완료 — commit: ___
+- [x] P5-B1 완료 — commit: `TBD`
 
 ---
 
@@ -208,7 +208,7 @@ dashboard = ["fastapi", "uvicorn[standard]", "jinja2"]
 - `htmx`, `chart.js` 는 CDN 링크 (HTML template에서 직접 참조) — 패키지 추가 불필요
 - `duckduckgo-search` 는 P3에서 추가됨 — 여기서는 dashboard extras만
 
-- [ ] P5-B2 완료 — commit: ___
+- [x] P5-B2 완료 — commit: `TBD`
 
 ---
 
@@ -230,7 +230,7 @@ dashboard = ["fastapi", "uvicorn[standard]", "jinja2"]
 
 **LOC 경계**: 구현 중 `cloc src/obs/dashboard` 200 LOC 단위 체크.
 
-- [ ] P5-B3 완료 — commit: ___
+- [x] P5-B3 완료 — commit: `TBD`
 
 ---
 
@@ -247,7 +247,7 @@ dashboard = ["fastapi", "uvicorn[standard]", "jinja2"]
 
 **Cross-check**: P5-C2 실행 전 실 trial cycles.jsonl 존재 확인 필수.
 
-- [ ] P5-B4 완료 — commit: ___
+- [x] P5-B4 완료 — commit: `TBD` (loader.py: 실 artifact 연결, stub 없음)
 
 ---
 

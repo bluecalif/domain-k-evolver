@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Evolver Dashboard{% endblock %}</title>
+  <script src="https://cdn.jsdelivr.net/npm/htmx.org@1.9.12/dist/htmx.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: monospace; font-size: 14px; background: #0d1117; color: #e6edf3; }
+    nav { background: #161b22; border-bottom: 1px solid #30363d; padding: 8px 16px; display: flex; gap: 16px; align-items: center; }
+    nav a { color: #58a6ff; text-decoration: none; }
+    nav a:hover { text-decoration: underline; }
+    nav .trial { color: #8b949e; font-size: 12px; margin-left: auto; }
+    main { padding: 20px; max-width: 1200px; margin: 0 auto; }
+    h1 { font-size: 18px; margin-bottom: 16px; color: #f0f6fc; }
+    h2 { font-size: 15px; margin: 20px 0 10px; color: #c9d1d9; border-bottom: 1px solid #21262d; padding-bottom: 4px; }
+    .card { background: #161b22; border: 1px solid #30363d; border-radius: 6px; padding: 16px; margin-bottom: 16px; }
+    .metric-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
+    .metric { background: #0d1117; border: 1px solid #21262d; border-radius: 4px; padding: 10px; }
+    .metric-label { font-size: 11px; color: #8b949e; margin-bottom: 4px; }
+    .metric-value { font-size: 20px; font-weight: bold; }
+    .ok { color: #3fb950; }
+    .warn { color: #d29922; }
+    .crit { color: #f85149; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { background: #21262d; padding: 8px; text-align: left; color: #8b949e; font-weight: normal; }
+    td { padding: 6px 8px; border-bottom: 1px solid #21262d; }
+    tr:hover td { background: #161b22; }
+    .badge { display: inline-block; padding: 2px 6px; border-radius: 12px; font-size: 11px; }
+    .badge-open { background: #1f4e2a; color: #3fb950; }
+    .badge-resolved { background: #1f3a4e; color: #58a6ff; }
+    .badge-critical { background: #4e1f1f; color: #f85149; }
+    .badge-warning { background: #4e3c1f; color: #d29922; }
+    .empty { color: #8b949e; padding: 20px; text-align: center; }
+    .tabs { display: flex; gap: 2px; margin-bottom: 16px; }
+    .tab { padding: 6px 14px; background: #21262d; border: 1px solid #30363d; border-radius: 4px; cursor: pointer; color: #8b949e; }
+    .tab.active { background: #1f6feb; color: #fff; border-color: #1f6feb; }
+    canvas { max-height: 300px; }
+    .no-data { color: #8b949e; font-style: italic; padding: 12px 0; }
+  </style>
+</head>
+<body>
+<nav>
+  <strong>Evolver</strong>
+  <a href="/">Overview</a>
+  <a href="/timeline">Cycle Timeline</a>
+  <a href="/coverage">Gap Coverage</a>
+  <a href="/sources">Source Reliability</a>
+  <a href="/conflicts">Conflict Ledger</a>
+  <a href="/hitl">HITL Inbox</a>
+  <a href="/remodel">Remodel Review</a>
+  <span class="trial">trial: {{ trial_id }}</span>
+</nav>
+<main>
+{% block content %}{% endblock %}
+</main>
+</body>
+</html>

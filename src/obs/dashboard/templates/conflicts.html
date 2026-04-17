@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Conflict Ledger — Evolver{% endblock %}
+{% block content %}
+<h1>Conflict Ledger</h1>
+<p style="color:#8b949e;font-size:12px;margin-bottom:12px">
+  충돌 이력 기록 (append-only). resolved 포함 전체 표시. dispute_queue와 별개.
+</p>
+{% if not ledger %}
+<div class="card"><p class="no-data">conflict_ledger.json 없음 또는 항목 없음</p></div>
+{% else %}
+<div class="card" style="overflow-x:auto">
+<table>
+  <tr><th>ID</th><th>Entity</th><th>Field</th><th>Status</th><th>KU Count</th><th>Created</th></tr>
+  {% for entry in ledger %}
+  <tr>
+    <td style="font-size:11px;color:#8b949e">{{ entry.get('ledger_id', '—') }}</td>
+    <td>{{ entry.get('entity_key', '—') }}</td>
+    <td>{{ entry.get('field', '—') }}</td>
+    <td>
+      {% set s = entry.get('status', 'open') %}
+      <span class="badge {% if s == 'resolved' %}badge-resolved{% else %}badge-open{% endif %}">{{ s }}</span>
+    </td>
+    <td>{{ entry.get('ku_ids', []) | length }}</td>
+    <td style="font-size:11px">{{ entry.get('created_at', '—') }}</td>
+  </tr>
+  {% endfor %}
+</table>
+</div>
+<p style="color:#8b949e;font-size:12px;margin-top:8px">총 {{ ledger | length }}건</p>
+{% endif %}
+{% endblock %}

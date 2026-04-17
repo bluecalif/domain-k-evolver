@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Cycle Timeline — Evolver{% endblock %}
+{% block content %}
+<h1>Cycle Timeline</h1>
+{% if not cycles %}
+<div class="card"><p class="no-data">데이터 없음</p></div>
+{% else %}
+<div class="card">
+  <canvas id="chartMetrics"></canvas>
+</div>
+<div class="card">
+  <canvas id="chartGaps"></canvas>
+</div>
+<script>
+const labels = {{ cycle_nums | tojson }};
+new Chart(document.getElementById('chartMetrics'), {
+  type: 'line',
+  data: {
+    labels,
+    datasets: [
+      { label: 'novelty', data: {{ novelty | tojson }}, borderColor: '#58a6ff', tension: 0.3, fill: false },
+      { label: 'conflict_rate', data: {{ conflict_rate | tojson }}, borderColor: '#f85149', tension: 0.3, fill: false },
+      { label: 'evidence_rate', data: {{ evidence_rate | tojson }}, borderColor: '#3fb950', tension: 0.3, fill: false },
+      { label: 'collect_failure', data: {{ collect_failure | tojson }}, borderColor: '#d29922', tension: 0.3, fill: false },
+    ]
+  },
+  options: { plugins: { title: { display: true, text: 'Metrics per Cycle', color: '#c9d1d9' } },
+    scales: { x: { ticks: { color: '#8b949e' } }, y: { ticks: { color: '#8b949e' }, min: 0, max: 1 } } }
+});
+new Chart(document.getElementById('chartGaps'), {
+  type: 'line',
+  data: {
+    labels,
+    datasets: [
+      { label: 'gaps_open', data: {{ gaps_open | tojson }}, borderColor: '#d29922', tension: 0.3, fill: false },
+      { label: 'gaps_resolved', data: {{ gaps_resolved | tojson }}, borderColor: '#3fb950', tension: 0.3, fill: false },
+    ]
+  },
+  options: { plugins: { title: { display: true, text: 'Gap Map per Cycle', color: '#c9d1d9' } },
+    scales: { x: { ticks: { color: '#8b949e' } }, y: { ticks: { color: '#8b949e' }, min: 0 } } }
+});
+</script>
+<h2>Raw Table</h2>
+<div class="card" style="overflow-x:auto">
+<table>
+  <tr><th>Cycle</th><th>Mode</th><th>Novelty</th><th>Conflict</th><th>Evidence</th><th>Gap Res</th><th>Failure</th><th>Wall(s)</th></tr>
+  {% for c in cycles %}
+  <tr>
+    <td>{{ c.cycle }}</td>
+    <td>{{ c.mode }}</td>
+    <td>{{ "%.2f"|format(c.metrics.novelty) }}</td>
+    <td>{{ "%.3f"|format(c.metrics.conflict_rate) }}</td>
+    <td>{{ "%.2f"|format(c.metrics.evidence_rate) }}</td>
+    <td>{{ "%.2f"|format(c.metrics.gap_resolution_rate) }}</td>
+    <td>{{ "%.2f"|format(c.metrics.collect_failure_rate) }}</td>
+    <td>{{ "%.1f"|format(c.metrics.wall_clock_s) }}</td>
+  </tr>
+  {% endfor %}
+</table>
+</div>
+{% endif %}
+{% endblock %}
