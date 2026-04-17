@@ -1,6 +1,6 @@
 # Silver P5: Telemetry Contract & Dashboard — Tasks
 > Last Updated: 2026-04-17
-> Status: In Progress (10/15)
+> Status: In Progress (11/15)
 
 ## Summary
 
@@ -8,7 +8,7 @@
 |-------|-------|------|--------|
 | P5-Prep state.py TypedDict 보완 | 1 | 1 | ✅ 완료 |
 | P5-A Telemetry 계약 | 5 | 5 | ✅ 완료 |
-| P5-B Dashboard 구현 | 5 | 4 | 진행 중 (B5 남음) |
+| P5-B Dashboard 구현 | 5 | 5 | ✅ 완료 |
 | P5-C 검증 | 4 | 0 | 대기 (Stage B 완료 후) |
 | **합계** | **15** | **0** | — |
 
@@ -271,7 +271,7 @@ dashboard = ["fastapi", "uvicorn[standard]", "jinja2"]
 7. Conflict ledger 읽기
 8. Remodel review 승인/거부
 
-- [ ] P5-B5 완료 — commit: ___
+- [x] P5-B5 완료 — commit: `TBD`
 
 ---
 
