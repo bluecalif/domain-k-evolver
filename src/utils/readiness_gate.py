@@ -446,7 +446,7 @@ VP4_EXTERNAL_NOVELTY_AVG_FLOOR = 0.25
 VP4_DOMAINS_PER_100KU_FLOOR = 15
 VP4_VALIDATED_PROPOSALS_FLOOR = 2  # candidate_categories (validated, registered) 누적
 VP4_PIVOT_FLOOR = 1
-VP4_CATEGORY_ADDITION_FLOOR = 1
+VP4_PROBE_RUNS_FLOOR = 1  # universe_probe 실행 횟수 (D-150: HITL-R 불요 기준으로 변경)
 
 
 def evaluate_vp4(
@@ -464,7 +464,7 @@ def evaluate_vp4(
     - R2: distinct_domains_per_100ku 마지막 값 ≥ 15
     - R3: 검증된 universe_probe proposals (candidate_categories) ≥ 2
     - R4: exploration_pivot 발동 ≥ 1
-    - R5: category_addition (HITL-R 승격) ≥ 1
+    - R5: universe_probe 실행 ≥ 1 (D-150: HITL-R 승격 불요 → probe 실행 자체 점수화)
     """
     results: dict[str, dict[str, Any]] = {}
 
@@ -512,16 +512,13 @@ def evaluate_vp4(
         "critical": False,
     }
 
-    # R5: category_addition (HITL-R 승격된 candidate)
-    phase_history = list(state.get("phase_history") or [])
-    category_additions = sum(
-        1 for ph in phase_history
-        if "category_addition" in (ph.get("proposal_types") or [])
-    )
-    results["R5_category_addition"] = {
-        "passed": category_additions >= VP4_CATEGORY_ADDITION_FLOOR,
-        "value": category_additions,
-        "threshold": VP4_CATEGORY_ADDITION_FLOOR,
+    # R5: universe_probe 실행 횟수 (D-150: HITL-R 승격 불요 → probe 실행 자체 점수화)
+    probe_history = list(state.get("probe_history") or [])
+    probe_run_count = len(probe_history)
+    results["R5_universe_probe_runs"] = {
+        "passed": probe_run_count >= VP4_PROBE_RUNS_FLOOR,
+        "value": probe_run_count,
+        "threshold": VP4_PROBE_RUNS_FLOOR,
         "critical": False,
     }
 

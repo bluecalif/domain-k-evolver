@@ -100,12 +100,13 @@ class TestShouldPivot:
         assert should is False
         assert reason == "ext_novelty_not_stagnant"
 
-    def test_reach_not_degraded(self):
+    def test_reach_diversity_no_longer_blocks_pivot(self):
+        """D-149: reach_degraded 조건 제거 — reach 높아도 novelty 정체면 pivot 발동."""
         cfg = _config(enabled=True)
-        state = _stagnant_state(reach_per_100=20.0)  # above floor
+        state = _stagnant_state(reach_per_100=55.0)  # 실측 수준 (52~57), floor=15 초과
         should, reason = should_pivot(state, cfg)
-        assert should is False
-        assert "reach_not_degraded" in reason
+        assert should is True  # reach 무관하게 novelty 정체만으로 트리거
+        assert reason == "plateau:exploration_pivot"
 
     def test_audit_already_consumed(self):
         cfg = _config(enabled=True)

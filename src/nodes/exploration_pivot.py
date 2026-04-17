@@ -14,7 +14,6 @@ import logging
 from typing import TYPE_CHECKING, Any, Optional
 
 from src.utils.llm_parse import extract_json
-from src.utils.reach_ledger import is_reach_degraded
 from src.utils.skeleton_tiers import get_candidate_categories
 
 if TYPE_CHECKING:
@@ -62,9 +61,11 @@ def should_pivot(
 
     조건 (AND):
     1. external_anchor enabled
-    2. external_novelty < 0.1 연속 5 cycle
-    3. reach_degraded (domains_per_100ku < 15 연속 3 cycle)
-    4. audit coverage_gap 이 이번 cycle 에 소비되지 않음
+    2. external_novelty < 0.1 연속 5 cycle (D-149: reach_degraded 조건 제거)
+    3. audit coverage_gap 이 이번 cycle 에 소비되지 않음
+
+    D-149: domains_per_100ku < 15 floor 는 실측 52~57 대비 구조적 unreachable.
+    novelty 정체만으로 pivot 트리거.
 
     Returns:
         (should_run, reason)
@@ -82,13 +83,7 @@ def should_pivot(
     if not all(v < EXTERNAL_NOVELTY_THRESHOLD for v in recent_ext):
         return False, "ext_novelty_not_stagnant"
 
-    # 조건 2: reach diversity 저하
-    reach_history = state.get("reach_history") or []
-    degraded, deg_reason = is_reach_degraded(reach_history)
-    if not degraded:
-        return False, f"reach_not_degraded({deg_reason})"
-
-    # 조건 3: audit coverage_gap 미소비
+    # 조건 2: audit coverage_gap 미소비
     if state.get("_audit_consumed_this_cycle", False):
         return False, "audit_already_consumed"
 

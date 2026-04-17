@@ -44,6 +44,19 @@ def claim_value_hash(value: Any) -> str:
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()[:12]
 
 
+def compute_delta_kus(prev_kus: list[dict], curr_kus: list[dict]) -> list[dict]:
+    """이전 cycle KU 목록 대비 이번 cycle 에 신규 추가된 KU 반환.
+
+    (entity_key, field) 기준으로 prev_kus 에 없던 항목만 반환.
+    orchestrator 가 external_novelty 분모를 '이번 cycle 신규 KU 키' 로 제한하는 데 사용 (D-148).
+    """
+    prev_obs = extract_observation_keys(prev_kus)
+    return [
+        ku for ku in curr_kus
+        if _observation_key(ku.get("entity_key", ""), ku.get("field", "")) not in prev_obs
+    ]
+
+
 def compute_external_novelty(
     new_items: list[dict],
     history: Iterable[str] | None,

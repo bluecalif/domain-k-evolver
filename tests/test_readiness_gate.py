@@ -397,7 +397,7 @@ def _stage_e_state(
     domains_per_100ku: float = 18.0,
     candidate_count: int = 3,
     pivot_count: int = 1,
-    category_addition_count: int = 1,
+    probe_run_count: int = 1,
 ) -> dict:
     """VP4 평가용 state — 모든 criteria pass 가능한 기본값."""
     base = _healthy_state()
@@ -417,10 +417,10 @@ def _stage_e_state(
     base["domain_skeleton"]["candidate_categories"] = [
         {"slug": f"cand-{i}", "status": "validated"} for i in range(candidate_count)
     ]
-    base["phase_history"] = [
-        {"phase_number": i, "cycle": 5 * i, "report_id": f"R-{i}",
-         "proposals_applied": 1, "proposal_types": ["category_addition"]}
-        for i in range(1, category_addition_count + 1)
+    # D-150: probe_history — universe_probe 실행 이력
+    base["probe_history"] = [
+        {"cycle": 5 * i, "registered": 1}
+        for i in range(1, probe_run_count + 1)
     ]
     return base
 
@@ -474,17 +474,18 @@ class TestVP4:
         assert result["criteria"]["R4_exploration_pivot"]["passed"] is False
         assert result["passed"] is True
 
-    def test_no_category_addition_non_critical(self) -> None:
-        state = _stage_e_state(category_addition_count=0)
+    def test_no_probe_run_non_critical(self) -> None:
+        """D-150: probe_run_count=0 → R5 fail (non-critical)."""
+        state = _stage_e_state(probe_run_count=0)
         result = evaluate_vp4(state)
-        assert result["criteria"]["R5_category_addition"]["passed"] is False
-        assert result["passed"] is True
+        assert result["criteria"]["R5_universe_probe_runs"]["passed"] is False
+        assert result["passed"] is True  # non-critical 1개 fail → 4/5 = 80% PASS
 
     def test_two_non_critical_fails_breaks_80pct(self) -> None:
         """non-critical 2개 fail → 3/5 = 60% < 80% → VP4 fail."""
-        state = _stage_e_state(pivot_count=0, category_addition_count=0)
+        state = _stage_e_state(domains_per_100ku=10.0, probe_run_count=0)
         result = evaluate_vp4(state)
-        # R4, R5 fail → 3/5 = 60%
+        # R2 (distinct_domains), R5 (probe_runs) fail → 3/5 = 60%
         assert result["score"] == "3/5"
         assert result["passed"] is False
 

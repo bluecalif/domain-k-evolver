@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from src.utils.external_novelty import (
     claim_value_hash,
+    compute_delta_kus,
     compute_external_novelty,
     extract_observation_keys,
 )
@@ -63,6 +64,53 @@ class TestComputeExternalNovelty:
         score, new_keys = compute_external_novelty(items, None)
         assert score == 1.0
         assert new_keys == {"d:c:y|note"}
+
+
+class TestComputeDeltaKus:
+    """compute_delta_kus — prev/curr 대비 신규 KU 추출 (D-148)."""
+
+    def test_all_new(self):
+        """prev 없으면 curr 전체가 delta."""
+        curr = [_item("d:c:a", "price"), _item("d:c:b", "name")]
+        delta = compute_delta_kus([], curr)
+        assert len(delta) == 2
+
+    def test_no_new(self):
+        """prev 와 curr 동일하면 delta 빈 목록."""
+        kus = [_item("d:c:a", "price"), _item("d:c:a", "name")]
+        delta = compute_delta_kus(kus, kus)
+        assert delta == []
+
+    def test_partial_new(self):
+        """일부만 신규."""
+        prev = [_item("d:c:a", "price")]
+        curr = [_item("d:c:a", "price"), _item("d:c:b", "note")]
+        delta = compute_delta_kus(prev, curr)
+        assert len(delta) == 1
+        assert delta[0]["entity_key"] == "d:c:b"
+
+    def test_external_novelty_with_delta_avoids_convergence(self):
+        """delta 기반 분모 사용 시 score 가 0 으로 수렴하지 않음.
+
+        all_kus 기반이면 cycle 경과 후 score ≈ 0 (D-148 버그).
+        delta 기반이면 신규 KU 가 있는 한 score ≥ 0 유지.
+        """
+        # 10 cycle 분 누적 KU (100개)
+        history_kus = [_item(f"d:c:e{i}", "price") for i in range(100)]
+        external_hist = [f"d:c:e{i}|price" for i in range(100)]
+
+        # 이번 cycle 에 새 KU 5개 추가
+        new_kus = [_item(f"d:c:new{j}", "price") for j in range(5)]
+        all_kus = history_kus + new_kus
+
+        # D-148 이전: all_kus 기반 → score = 5/105 ≈ 0.048
+        score_old, _ = compute_external_novelty(all_kus, external_hist)
+        assert score_old < 0.1
+
+        # D-148 이후: delta_kus 기반 → score = 5/5 = 1.0
+        delta = compute_delta_kus(history_kus, all_kus)
+        score_new, _ = compute_external_novelty(delta, external_hist)
+        assert score_new == 1.0
 
 
 class TestClaimValueHash:

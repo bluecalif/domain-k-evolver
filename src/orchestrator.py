@@ -21,7 +21,7 @@ from src.utils.cost_guard import CostGuard
 from src.utils.coverage_map import build_coverage_map
 from src.utils.metrics_guard import check_metrics_guard
 from src.utils.metrics_logger import MetricsLogger
-from src.utils.external_novelty import compute_external_novelty
+from src.utils.external_novelty import compute_delta_kus, compute_external_novelty
 from src.utils.novelty import compute_novelty
 from src.utils.reach_ledger import build_ledger_snapshot
 from src.nodes.exploration_pivot import run_exploration_pivot
@@ -231,11 +231,14 @@ class Orchestrator:
         novelty_history = list(state.get("novelty_history") or [])
         novelty_history.append(novelty)
         state["novelty_history"] = novelty_history
+        # D-148: delta_kus 먼저 계산 (self._prev_kus 갱신 전)
+        delta_kus = compute_delta_kus(self._prev_kus, curr_kus)
         self._prev_kus = [dict(ku) for ku in curr_kus]  # 다음 cycle 용 스냅샷
 
-        # SI-P4 Stage E: external_novelty — 누적 history 대비 신규 (entity_key, field) 비율
+        # SI-P4 Stage E: external_novelty — delta KU 기준 신규 비율 (D-148 fix)
+        # 분모를 전체 KU 가 아닌 이번 cycle 신규 KU 로 제한해 단조 수렴 방지
         prev_keys = state.get("external_observation_keys") or []
-        ext_score, new_keys = compute_external_novelty(curr_kus, prev_keys)
+        ext_score, new_keys = compute_external_novelty(delta_kus if delta_kus else curr_kus, prev_keys)
         ext_history = list(state.get("external_novelty_history") or [])
         ext_history.append(ext_score)
         state["external_novelty_history"] = ext_history
@@ -308,6 +311,7 @@ class Orchestrator:
         else:
             validated = []
 
+        registered: list = []
         if validated:
             skeleton = state.get("domain_skeleton", {})
             registered, errors = register_validated(validated, skeleton)
@@ -318,6 +322,11 @@ class Orchestrator:
             )
         else:
             logger.info("Universe probe: cycle=%d, 검증 통과 proposal 없음", cycle_num)
+
+        # D-150: probe_history 기록 — VP4 R5 자동 벤치 기준
+        probe_history = list(state.get("probe_history") or [])
+        probe_history.append({"cycle": cycle_num, "registered": len(registered)})
+        state["probe_history"] = probe_history
 
     def _maybe_run_exploration_pivot(
         self,

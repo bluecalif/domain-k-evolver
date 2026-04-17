@@ -101,7 +101,7 @@ class ExternalAnchorConfig:
 
     enabled: bool = False  # 기본 off — 명시적 활성화 필요
     probe_interval_cycles: int = 5  # universe_probe 주기 (cycle N마다)
-    llm_budget_per_run: int = 3  # 15c bench 당 Stage E 전용 LLM call 상한
+    llm_budget_per_run: int = 12  # 15c bench 당 Stage E 전용 LLM call 상한 (D-147: 3→12)
     tavily_budget_per_run: int = 9  # 15c bench 당 Stage E 전용 Tavily query 상한
     pivot_min_plateau_cycles: int = 5  # exploration_pivot 발동 최소 plateau 길이
     candidate_promotion_min_confidence: float = 0.6  # universe_probe candidate → HITL-R 최소 신뢰도
@@ -111,7 +111,7 @@ class ExternalAnchorConfig:
         return cls(
             enabled=os.environ.get("EVOLVER_EXTERNAL_ANCHOR_ENABLED", "false").lower() == "true",
             probe_interval_cycles=int(os.environ.get("EVOLVER_PROBE_INTERVAL_CYCLES", "5")),
-            llm_budget_per_run=int(os.environ.get("EVOLVER_STAGE_E_LLM_BUDGET", "3")),
+            llm_budget_per_run=int(os.environ.get("EVOLVER_STAGE_E_LLM_BUDGET", "12")),
             tavily_budget_per_run=int(os.environ.get("EVOLVER_STAGE_E_TAVILY_BUDGET", "9")),
             pivot_min_plateau_cycles=int(os.environ.get("EVOLVER_PIVOT_MIN_PLATEAU", "5")),
             candidate_promotion_min_confidence=float(
