@@ -1,17 +1,18 @@
 # Silver P5: Telemetry Contract & Dashboard — Tasks
 > Last Updated: 2026-04-17
-> Status: Planning (0/14)
+> Status: Planning (0/15)
 
 ## Summary
 
 | Stage | Tasks | Done | Status |
 |-------|-------|------|--------|
+| P5-Prep state.py TypedDict 보완 | 1 | 0 | 대기 (Stage A 착수 전) |
 | P5-A Telemetry 계약 | 5 | 0 | 대기 |
 | P5-B Dashboard 구현 | 5 | 0 | 대기 (Stage A 완료 후) |
 | P5-C 검증 | 4 | 0 | 대기 (Stage B 완료 후) |
-| **합계** | **14** | **0** | — |
+| **합계** | **15** | **0** | — |
 
-Size: S:3 / M:9 / L:1 / XL:0
+Size: S:4 / M:9 / L:1 / XL:0
 
 테스트 목표: 797 → ≥ **812** (+15)
 
@@ -30,6 +31,29 @@ Size: S:3 / M:9 / L:1 / XL:0
 
 ---
 
+## Stage Prep: state.py TypedDict 보완
+
+> **[CRITICAL]** Stage A 착수 전 완료 필수 — emit 코드가 state 필드를 읽기 전에 TypedDict 선언 필수
+
+### P5-Prep `src/state.py` EvolverState TypedDict 3 필드 추가 `[S]`
+
+**파일**: `src/state.py`
+
+**배경**: `orchestrator.py`에서 `reach_history`(L251~L252), `probe_history`(L327~L329), `pivot_history`(L347~L354)를 state dict에 직접 write하지만, `EvolverState` TypedDict에 선언되지 않음. P5 emit 코드가 `state.get("reach_history", [])` 등으로 읽기 전에 타입 정합성 확보 필요.
+
+**추가 필드** (`external_observation_keys` 선언 직후, L230 이후):
+```python
+reach_history: list[dict]     # P4-Stage-E reach targets per cycle
+probe_history: list[dict]     # P4-Stage-E universe probe results
+pivot_history: list[dict]     # P4-Stage-E exploration pivot records
+```
+
+**Cross-check**: 추가 후 `orchestrator.py` 기존 코드(L251, L327, L347)와 key 이름 일치 확인.
+
+- [ ] P5-Prep 완료 — commit: ___
+
+---
+
 ## Stage A: Telemetry 계약
 
 > **[CRITICAL]** Stage B 착수 전 Stage A 전체 merge 완료 필수 (D-77)
@@ -38,24 +62,46 @@ Size: S:3 / M:9 / L:1 / XL:0
 
 **파일**: `schemas/telemetry.v1.schema.json` [NEW]
 
-**필수 필드** (masterplan §4 P5 + silver-implementation-tasks §9 P5-A1 verbatim):
-```
-trial_id, phase, cycle, mode, timestamp,
-metrics: {
-  evidence_rate, conflict_rate, novelty, overlap,
-  domain_entropy, provider_entropy,
-  llm_tokens, fetch_bytes, wall_clock_s,
-  collect_failure_rate, fetch_failure_rate, cost_regression_flag
-},
-gaps: {open, resolved, plateau, ext_novelty, probe_history_count},
-failures: [...],
-providers_used: [...],
-audit_summary: {has_critical, findings},
-hitl_queue: {seed, remodel, exception},
-dispute_queue: [...]
+**필수 필드** (코드 실제 상태 기반 — 코드에 없는 필드 제외, context.md §2-B 참조):
+```json
+{
+  "trial_id": str, "phase": str, "cycle": int, "mode": str, "timestamp": str,
+
+  "metrics": {
+    "evidence_rate": float, "multi_evidence_rate": float,
+    "conflict_rate": float, "avg_confidence": float,
+    "gap_resolution_rate": float, "staleness_risk": int,
+    "collect_failure_rate": float,
+    "novelty": float,          // state["novelty_history"][-1]  ← 추가 emit
+    "external_novelty": float, // state["external_novelty_history"][-1]  ← 추가 emit
+    "wall_clock_s": float,     // orchestrator time.monotonic() 측정  ← 추가 emit
+    "llm_calls": int, "llm_tokens": int,
+    "search_calls": int, "fetch_calls": int
+  },
+
+  "gaps": {
+    "open": int, "resolved": int, "plateau": bool,
+    "probe_history_count": int,   // len(state.get("probe_history", []))
+    "pivot_history_count": int    // len(state.get("pivot_history", []))
+  },
+
+  "failures": [str],
+
+  "audit_summary": {
+    "has_critical": bool, "findings_count": int, "last_audit_cycle": int
+  },
+
+  "hitl_queue": {"seed": int, "remodel": int, "exception": int},
+
+  "dispute_queue_size": int
+}
 ```
 
-**Cross-check**: `metrics_logger.py` 의 현행 key 목록과 field 이름 동기화 확인 필요.
+**제외 필드** (코드에 없음 — schema에 넣지 말 것):
+`domain_entropy`, `provider_entropy`, `fetch_bytes`, `fetch_failure_rate`, `cost_regression_flag`, `timeout_count`, `retry_success_rate`
+→ 상세 사유: context.md §2-B "실제로 없는 값" 표 참조.
+
+**Cross-check**: `metrics_logger.py` L49~L69 현행 key 목록과 field 이름 동기화. `novelty`/`external_novelty`/`wall_clock_s`는 emitter에서 직접 추가 (metrics_logger 확장 or telemetry.py 자체 수집).
 
 - [ ] P5-A1 완료 — commit: ___
 

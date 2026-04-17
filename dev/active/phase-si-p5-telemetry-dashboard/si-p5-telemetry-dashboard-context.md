@@ -11,183 +11,278 @@
 #### 설계 참조
 | 파일 | 참조 이유 |
 |------|----------|
-| `docs/silver-masterplan-v2.md` §4 P5 | Gate 정량 조건 (단일 진실 소스) |
-| `docs/silver-masterplan-v2.md` §7 S10 | blocking scenario 정의 |
-| `docs/silver-masterplan-v2.md` §14.4 / §14.6 | HITL inbox 3탭 구조 (Seed/Remodel·Dispute·Exception) |
+| `docs/silver-masterplan-v2.md` §4 P5, §7 S10, §14.6 | Gate 정량 조건 · S10 blocking test · HITL inbox 3탭 구조 |
 | `docs/silver-implementation-tasks.md` §9 | task 상세 + touched files |
 
-#### 의존 구현 파일 (읽기 전용)
+#### Orchestrator / 상태 관리 (emit hook 삽입 위치)
 | 파일 | P5 관련성 |
 |------|----------|
-| `src/orchestrator.py` | emit hook 단일 call site 추가 위치 |
-| `src/utils/metrics_logger.py` | 기존 metrics key 목록 — telemetry.v1 필드와 동기화 |
-| `src/utils/metrics_guard.py` | cost_regression_flag, dispute_queue_size → telemetry `failures` 필드 |
-| `src/utils/readiness_gate.py` | VP1/VP2/VP3 판정 로직 — gate 결과를 telemetry에 포함 여부 확인 |
-| `src/state.py` | `dispute_queue`, `conflict_ledger`, `phase_history`, `coverage_map`, `novelty_history` 필드 |
-| `src/nodes/hitl_gate.py` | HITL-S/R/E 케이스 — inbox 탭 구조와 매핑 |
-| `src/utils/novelty.py` | novelty_score 계산 — telemetry metrics에 포함 |
-| `src/utils/coverage_map.py` | coverage_deficit — telemetry gaps에 포함 |
-| `src/utils/external_novelty.py` | ext_novelty — telemetry 필드 후보 |
-| `src/utils/reach_ledger.py` | probe_history — telemetry gaps에 포함 |
-| `src/nodes/collect.py` | collect_failure_rate, providers_used — P0에서 emit, telemetry에 포함 |
+| `src/orchestrator.py` | cycle 루프 구조 (L114~L192), `_update_novelty_and_coverage` (L225~L267), `_domain_path` 속성, `_cost_guard`, `self.logger.entries` |
+| `src/utils/metrics_logger.py` | 현재 emit 키 전체 목록 (하단 §2 참조) — telemetry.v1 필드와 동기화 필수 |
+| `src/utils/metrics_guard.py` | `should_auto_pause` 5개 조건 (하단 §2 참조) — HITL-E 연결 |
+| `src/state.py` | EvolverState TypedDict — P5 착수 전 누락 필드 3개 추가 필요 (§2 참조) |
+| `src/config.py` | `OrchestratorConfig.bench_root` 경로 처리 방식, `ExternalAnchorConfig` |
 
-#### 데이터 소스 파일 (Dashboard에서 읽는 artifact)
+#### P4 Stage E 신규 파일 (telemetry 필드 소스)
+| 파일 | telemetry 관련 값 |
+|------|----------------|
+| `src/utils/novelty.py` | `novelty_history[-1]` → telemetry metrics.novelty |
+| `src/utils/external_novelty.py` | `external_novelty_history[-1]` → telemetry metrics.external_novelty |
+| `src/utils/reach_ledger.py` | `reach_history[-1]` → telemetry gaps (domains_per_100ku) |
+| `src/utils/cost_guard.py` | `CostGuard._killed` → telemetry failures 참고 |
+| `src/nodes/universe_probe.py` | `probe_history` — state에 누적 (TypedDict 미선언) |
+| `src/nodes/exploration_pivot.py` | `pivot_history` — state에 누적 (TypedDict 미선언) |
+
+#### P0~P4 결과물 (Dashboard 데이터 소스)
 | 파일/경로 | Dashboard view |
 |----------|---------------|
-| `bench/silver/{domain}/{trial_id}/telemetry/cycles.jsonl` | 모든 view |
+| `bench/silver/{domain}/{trial_id}/telemetry/cycles.jsonl` | 모든 view (P5에서 생성) |
+| `bench/silver/{domain}/{trial_id}/trajectory/trajectory.json` | Cycle timeline 보조 |
 | `bench/silver/{domain}/{trial_id}/state/conflict_ledger.json` | Conflict ledger view |
 | `bench/silver/{domain}/{trial_id}/state/phase_{N}/remodel_report.json` | Remodel review view |
-| `src/state.py` dispute_queue | HITL inbox Dispute 탭 |
+| `src/state.py dispute_queue` | HITL inbox Dispute 탭 |
 
-#### 스키마 참조
+#### 참조 스키마
 | 파일 | 참조 이유 |
 |------|----------|
-| `schemas/knowledge-unit.json` | telemetry의 gaps.open/resolved 항목 구조 |
+| `schemas/knowledge-unit.json` | telemetry gaps.open/resolved 항목 구조 |
 | `schemas/remodel_report.schema.json` | Remodel review view 데이터 형식 |
 
 ---
 
 ## 2. 데이터 인터페이스
 
-### Telemetry Emit 흐름
+### 현재 코드 상태 vs P5 요구 — 정확한 현황
+
+#### 2-A. state.py EvolverState TypedDict 현황 (2026-04-17)
+
+P5 착수 전 수정 필요:
+
+| 필드 | TypedDict 선언 | orchestrator 사용 | 조치 |
+|------|--------------|----------------|------|
+| `dispute_queue` | ✅ 선언됨 (L220) | ✅ | — |
+| `conflict_ledger` | ✅ 선언됨 (L223) | ✅ | — |
+| `phase_number` | ✅ 선언됨 (L224) | ✅ | — |
+| `phase_history` | ✅ 선언됨 (L225) | ✅ | — |
+| `remodel_report` | ✅ 선언됨 (L226) | ✅ | — |
+| `coverage_map` | ✅ 선언됨 (L227) | ✅ | — |
+| `novelty_history` | ✅ 선언됨 (L228) | ✅ | — |
+| `external_novelty_history` | ✅ 선언됨 (L229) | ✅ | — |
+| `external_observation_keys` | ✅ 선언됨 (L230) | ✅ | — |
+| **`reach_history`** | ❌ 미선언 | orchestrator L251~L252 | **P5-Prep 추가 필수** |
+| **`probe_history`** | ❌ 미선언 | orchestrator L327~L329 | **P5-Prep 추가 필수** |
+| **`pivot_history`** | ❌ 미선언 | orchestrator L347~L354 | **P5-Prep 추가 필수** |
+
+#### 2-B. metrics_logger.py 현행 emit 키 (실제 코드 L49~L69)
+
+```python
+entry = {
+    "cycle": int,
+    "ku_total": int,   "ku_active": int,   "ku_disputed": int,
+    "gu_total": int,   "gu_open": int,     "gu_resolved": int,
+    "evidence_rate": float,   "multi_evidence_rate": float,
+    "conflict_rate": float,   "avg_confidence": float,
+    "gap_resolution_rate": float,   "staleness_risk": int,
+    "mode": str,
+    "collect_failure_rate": float,   # state["collect_failure_rate"]에서
+    "llm_calls": int,   "llm_tokens": int,
+    "search_calls": int,   "fetch_calls": int,
+}
+```
+
+**P5-A1/A3에서 추가 emit 필요한 값** (현재 metrics_logger에 없음):
+- `novelty` — `state["novelty_history"][-1]` (orchestrator L231~L233)
+- `external_novelty` — `state["external_novelty_history"][-1]` (orchestrator L243~L244)
+- `wall_clock_s` — orchestrator cycle 루프에서 `time.monotonic()` 측정 가능
+- `probe_history_count` — `len(state.get("probe_history", []))` (state TypedDict 추가 후)
+- `pivot_history_count` — `len(state.get("pivot_history", []))` (state TypedDict 추가 후)
+- `dispute_queue_size` — `len(state.get("dispute_queue", []))`
+
+**실제로 없는 값** (dev-docs 초안에서 잘못 가정):
+
+| 필드 | 실제 상태 | 처리 방안 |
+|------|---------|---------|
+| `timeout_count` | metrics_logger 없음 | telemetry schema에서 제외 또는 collect.py 확장 |
+| `retry_success_rate` | metrics_logger 없음 | telemetry schema에서 제외 |
+| `domain_entropy` | P3R 이후 제거됨 (D-124), SearchConfig에 entropy_floor만 남음 | telemetry schema에서 제외 |
+| `provider_entropy` | 단일 Tavily provider, emit 없음 | telemetry schema에서 제외 |
+| `fetch_bytes` | metrics_logger 없음 | telemetry schema에서 제외 |
+| `fetch_failure_rate` | metrics_logger 없음 (`collect_failure_rate`만 있음) | telemetry schema에서 제외 |
+| `cost_regression_flag` | CostGuard._killed 내부 flag, state에 저장 안 됨 | telemetry failures[]로 표현 |
+
+#### 2-C. metrics_guard.should_auto_pause 실제 5개 조건 (L79~L138)
+
+```python
+AUTO_PAUSE_THRESHOLDS = {
+    "conflict_rate_max": 0.25,
+    "evidence_rate_min": 0.55,
+    "collect_failure_rate_max": 0.50,
+    "staleness_ratio_max": 0.30,
+    "avg_confidence_min": 0.60,
+}
+```
+
+> **dev-docs 초안 수정**: `cost_regression_flag`, `fetch_failure_rate > 0.5`, `dispute_queue > 20` 조건은 코드에 없음. 실제 5개 조건으로 교체.
+
+#### 2-D. bench/silver trial 실제 구조 (2026-04-17 확인)
 
 ```
-orchestrator.py (cycle 루프 끝)
-    → src/obs/telemetry.py::emit_cycle(state, trial_id)
+bench/silver/japan-travel/p0-20260412-baseline/
+├── trial-card.md
+├── readiness-report.md
+├── readiness-report.json
+├── config.snapshot.json
+├── state/
+├── state-snapshots/
+├── trajectory/
+│   ├── trajectory.json
+│   └── trajectory.csv
+└── telemetry/             ← 디렉토리 있으나 cycles.jsonl 없음 (P5에서 생성)
+```
+
+→ **bench/silver/** 구조는 이미 존재. telemetry/ 디렉토리도 scaffold됨. **cycles.jsonl만 없음**.
+
+### Telemetry Emit 흐름 (P5 목표)
+
+```
+orchestrator.py (cycle 루프 끝, L167 _post_cycle 전후)
+    → src/obs/telemetry.py::emit_cycle(state, trial_root, cycle_elapsed_s)
     → bench/silver/{domain}/{trial_id}/telemetry/cycles.jsonl
        (jsonl append-only, atomic tmp→rename)
 ```
 
-### Telemetry Schema 필드 (P5-A1 정의 기준)
+### Telemetry Schema 필드 (P5-A1 실제 코드 기반)
 
 ```json
 {
-  "trial_id": "p5-20260417-telemetry-v1",
+  "trial_id": "p5-20260417-...",
   "phase": "si-p5",
   "cycle": 3,
   "mode": "explore",
   "timestamp": "2026-04-17T...",
+
   "metrics": {
     "evidence_rate": 0.97,
+    "multi_evidence_rate": 0.61,
     "conflict_rate": 0.03,
-    "novelty": 0.31,
-    "overlap": 0.12,
-    "domain_entropy": 2.8,
-    "provider_entropy": 1.0,
-    "llm_tokens": 45000,
-    "fetch_bytes": 2400000,
-    "wall_clock_s": 38.2,
+    "avg_confidence": 0.85,
+    "gap_resolution_rate": 0.88,
+    "staleness_risk": 0,
     "collect_failure_rate": 0.04,
-    "fetch_failure_rate": 0.07,
-    "cost_regression_flag": false
+    "novelty": 0.31,
+    "external_novelty": 0.44,
+    "wall_clock_s": 38.2,
+    "llm_calls": 23,
+    "llm_tokens": 45000,
+    "search_calls": 8,
+    "fetch_calls": 0
   },
+
   "gaps": {
     "open": 12,
     "resolved": 8,
     "plateau": false,
-    "ext_novelty": 0.44,
-    "probe_history_count": 2
+    "probe_history_count": 2,
+    "pivot_history_count": 0
   },
+
   "failures": [],
-  "providers_used": ["tavily"],
-  "audit_summary": {"has_critical": false, "findings": []},
+
+  "audit_summary": {
+    "has_critical": false,
+    "findings_count": 0,
+    "last_audit_cycle": 5
+  },
+
   "hitl_queue": {
     "seed": 0,
     "remodel": 0,
     "exception": 0
   },
-  "dispute_queue": []
+
+  "dispute_queue_size": 0
 }
 ```
 
-> **주의**: `metrics_logger.py` key 목록과 반드시 동기화. 신규 key 추가 시 telemetry schema도 갱신.
+> `domain_entropy`, `provider_entropy`, `fetch_bytes`, `fetch_failure_rate`, `cost_regression_flag`는 **코드에 없으므로 스키마에서 제외**.
 
-### Dashboard 데이터 읽기 흐름
+### trial_id 추출 로직 (P5-A3 구현 시 주의)
 
+```python
+# orchestrator._domain_path 기반
+trial_root = self._domain_path  # bench_root 설정 시 직접 경로
+# trial_id는 Path의 마지막 component
+trial_id = trial_root.name  # 예: "p5-20260417-telemetry-v1"
 ```
-FastAPI app
-    → bench/silver/{domain}/{trial_id}/telemetry/cycles.jsonl  (primary)
-    → state/conflict_ledger.json                               (Conflict ledger view)
-    → state/phase_{N}/remodel_report.json                      (Remodel review view)
-    → state.dispute_queue (직접 state 파일)                     (HITL inbox Dispute 탭)
-```
-
-### Dashboard Views 목록 (masterplan §4 verbatim)
-
-| View | 데이터 소스 | 핵심 기능 |
-|------|------------|---------|
-| Overview | cycles.jsonl | 현재 phase/cycle/mode/주요 메트릭 1장 요약 |
-| Cycle timeline | cycles.jsonl | novelty/conflict_rate/gap_open 시계열 차트 |
-| Gap coverage map | cycles.jsonl `.gaps` | axis × bucket 커버리지 히트맵 |
-| Source reliability | cycles.jsonl `.metrics` | provider별 collect_failure_rate / fetch_failure_rate |
-| Conflict ledger | conflict_ledger.json | KU별 충돌 이력 (open/resolved 필터) |
-| HITL inbox (3탭) | hitl_queue + dispute_queue | [Seed/Remodel 승인] / [Dispute 배치 검토] / [Exception 알림] |
-| Remodel review | remodel_report.json | 제안 목록 + 승인/거부 상태 |
 
 ---
 
 ## 3. 주요 결정사항
 
-### 확정된 결정 (masterplan 기반)
+### 확정된 결정 (masterplan + 코드 반영)
 
-| # | 결정 | 근거 |
-|---|------|------|
-| D-77 | P5-A (telemetry schema) 가 P5-B (UI) 엄격 선행 | v1 UI-first 실패 재발 방지 — masterplan §11 |
-| D-79 | Silver 완료 테스트 목표 ≥ 588. P5 목표 797+15=812 | silver-implementation-tasks §14 |
-| R4 | Dashboard LOC ≤ 2,000 하드 리밋 | 스프롤 방지 — masterplan §8 R4 |
-| R10 | dispute_queue > 20 → HITL-E 자동 승격 | P0-C4 should_auto_pause 조건 |
+| # | 결정 | 근거 | 코드 위치 |
+|---|------|------|---------|
+| D-77 | P5-A (telemetry schema) 가 P5-B (UI) 엄격 선행 | v1 UI-first 실패 재발 방지 | masterplan §11 |
+| D-79 | Silver 완료 테스트 목표 ≥ 588. P5 목표 797+15=812 | silver-implementation-tasks §14 | — |
+| R4 | Dashboard LOC ≤ 2,000 하드 리밋 | masterplan §8 R4 | cloc src/obs/dashboard |
+| D-124 | provider_entropy 메트릭 제거 (Tavily 단일) | P3R 결정 | SearchConfig에 없음 |
+| D-148 | ext_novelty 분모 = delta_kus (전체 KU 아닌 신규 KU) | 0 수렴 방지 | orchestrator L235 |
 
 ### P5에서 결정해야 할 항목
 
-| # | 결정 대상 | 옵션 | 비고 |
-|---|----------|------|------|
-| D-151 후보 | telemetry schema 버저닝 정책 | `telemetry.v1` 고정 vs 마이너 버전 | 일단 v1 고정, v2 필요 시 별도 schema 파일 |
-| D-152 후보 | Dashboard 실행 방식 | `uvicorn src/obs/dashboard/app.py` vs scripts/run_dashboard.py | scripts 정책상 run_readiness.py --dashboard 옵션 가능 |
-| D-153 후보 | 100-cycle fixture 생성 | scripts/gen_fixture.py 신규 vs 실 trial 데이터 활용 | 실 trial 선호 (P5-B4 stub 금지 원칙) |
-
-> **D-152 주의**: CLAUDE.md Scripts Policy — 새 실행 스크립트 금지, 옵션/플래그로 확장. `run_readiness.py --serve-dashboard` 형태로 통합하거나 `src/obs/dashboard/app.py` 를 직접 uvicorn으로 실행하는 방식 선택.
+| # | 결정 대상 | 권장 방향 | 근거 |
+|---|----------|---------|------|
+| D-151 | telemetry schema 버저닝 | `telemetry.v1` 고정, v2는 별도 파일 | Silver 범위 내 변경 없음 |
+| D-152 | Dashboard 실행 방식 | `uvicorn src/obs/dashboard/app:app` 직접 실행 또는 `run_readiness.py --serve-dashboard` 플래그 | CLAUDE.md Scripts Policy — 신규 스크립트 금지 |
+| D-153 | 100-cycle fixture 생성 | 실 trial 데이터 우선 (Silver bench에서 실행). 부족 시 gen_fixture.py 허용 검토 | stub 금지 원칙 |
+| D-154 | timeout_count/retry_success_rate emit | telemetry schema에서 제외 (현재 코드 없음). Gold에서 추가 | P0 가정값이었으나 미구현 |
 
 ---
 
 ## 4. 컨벤션 체크리스트
 
+### P5 착수 전 체크 (코드 상태 기반)
+
+- [ ] **state.py** `reach_history`, `probe_history`, `pivot_history` 3 필드 TypedDict 추가 완료 (P5-Prep)
+- [ ] `bench/silver/{trial_id}/telemetry/` 디렉토리 존재 확인 (p0-20260412-baseline에 확인됨 ✅)
+
 ### 5대 불변원칙 (P5 관련성)
 
 | 원칙 | P5 관련 체크 |
 |------|------------|
-| Gap-driven | telemetry `gaps.open` 카운트가 coverage_map 기반 GU 목록과 정합 |
-| Claim→KU 착지성 | dashboard에서 KU 수 변화가 cycle별로 추적 가능 |
-| Evidence-first | telemetry `metrics.evidence_rate` ≥ 0.95 임계치 위반 시 dashboard 경고 표시 |
-| Conflict-preserving | Conflict ledger view가 resolved KU도 삭제 없이 표시 |
-| Prescription-compiled | HITL inbox Remodel 탭이 remodel_report.json 의 proposal을 표시 |
+| Gap-driven | telemetry `gaps.open` 카운트가 실 GU open 수와 정합 |
+| Claim→KU 착지성 | dashboard에서 KU 변화가 cycle별로 추적 가능 |
+| Evidence-first | `metrics.evidence_rate` ≥ 0.95 위반 시 dashboard 경고 표시 |
+| Conflict-preserving | Conflict ledger view가 resolved KU도 삭제 없이 표시 (append-only) |
+| Prescription-compiled | HITL inbox Remodel 탭이 remodel_report proposals 표시 |
 
-### Metrics 건강 임계치 (dashboard 경고 기준)
+### Metrics 임계치 (dashboard 경고 기준 — metrics_guard 코드 기반)
 
-| 지표 | 건강 | 주의 표시 | 위험 표시 |
-|------|------|----------|---------|
-| 근거율 | ≥ 0.95 | 0.80–0.94 | < 0.80 |
-| 다중근거율 | ≥ 0.50 | 0.30–0.49 | < 0.30 |
-| 충돌률 | ≤ 0.05 | 0.06–0.15 | > 0.15 |
-| collect_failure_rate | ≤ 0.10 | 0.10–0.30 | > 0.30 (HITL-E) |
-| fetch_failure_rate | ≤ 0.20 | 0.20–0.50 | > 0.50 (HITL-E) |
-| novelty_avg | ≥ 0.25 | 0.10–0.24 | < 0.10 (plateau) |
+| 지표 | 건강 | HITL-E 트리거 임계치 |
+|------|------|---------------------|
+| evidence_rate | ≥ 0.95 | < 0.55 (AUTO_PAUSE_THRESHOLDS) |
+| conflict_rate | ≤ 0.05 | > 0.25 |
+| collect_failure_rate | ≤ 0.10 | > 0.50 |
+| staleness_ratio | — | > 0.30 |
+| avg_confidence | ≥ 0.85 | < 0.60 |
 
 ### Silver Blocking Scenario
 
-| ID | 시나리오 | 관련 Phase |
+| ID | 시나리오 | 테스트 파일 |
 |----|----------|----------|
-| S10 | dashboard telemetry 1 cycle → schema validate pass | **P5 (이 Phase)** |
+| S10 | 1 cycle emit → telemetry.v1 schema validate pass | `tests/test_obs/test_telemetry_schema.py` |
 
 ### 인코딩
 - jsonl 파일: `encoding='utf-8'` 명시
-- telemetry.py atomic write: `*.jsonl.tmp` → rename (Windows에서는 `os.replace` 사용)
-- dashboard HTML templates: `charset=utf-8` 명시
+- atomic write: `cycles.jsonl.tmp` → `os.replace()` (Windows 호환)
+- dashboard HTML: `<meta charset="utf-8">` 명시
 
 ### 코드 컨벤션
-- `src/obs/` 는 관찰성 전용 모듈 — 비즈니스 로직 (cycle, plan 등) 의존 금지
-- telemetry emitter는 orchestrator에서 단일 call site (per-node hook은 과설계)
-- dashboard는 read-only viewer — state 직접 수정 기능 없음
-- LOC 측정: `cloc src/obs/dashboard` — 200 LOC 단위로 진행 상황 모니터링
+- `src/obs/` — 관찰성 전용 모듈, 비즈니스 로직 의존 금지
+- telemetry emitter — orchestrator에서 단일 call site (per-node hook 과설계)
+- dashboard — read-only viewer, state 직접 수정 기능 없음
+- LOC 측정: 200 LOC 단위로 모니터링
 
 ### Stage B 착수 전 체크리스트 (D-77)
 
@@ -195,4 +290,4 @@ FastAPI app
 - [ ] `src/obs/telemetry.py` merge 완료
 - [ ] `orchestrator.py` emit hook merge 완료
 - [ ] `tests/test_obs/test_telemetry_schema.py` green
-- [ ] `bench/silver/japan-travel/*/telemetry/cycles.jsonl` 실 데이터 1개 이상 존재
+- [ ] `bench/silver/japan-travel/*/telemetry/cycles.jsonl` 실 데이터 1개 이상 존재 (trial 재실행으로 생성)

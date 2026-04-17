@@ -41,10 +41,11 @@
 | `src/obs/` 디렉토리 | **없음** — P5에서 신규 생성 |
 | `schemas/telemetry.v1.schema.json` | **없음** — P5-A1에서 신규 생성 |
 | `pyproject.toml` dashboard 의존성 | **없음** — P5-B2에서 추가 |
-| P0 reliability metrics emit | ✅ `collect_failure_rate`, `timeout_count`, `retry_success_rate` |
+| P0 reliability metrics emit | ✅ `collect_failure_rate` emit 확인 (`timeout_count`/`retry_success_rate`는 실제 코드에 없음 — D-154) |
 | P3R provenance 필드 | ✅ `provider`, `domain`, `retrieved_at`, `trust_tier` |
-| P4 novelty / reason_code / coverage_map | ✅ emit 경로에 노출됨 (P4-C4 확인) |
-| P4 external_novelty / reach_ledger | ✅ Stage E에서 완료 |
+| P4 novelty / reason_code / coverage_map | ✅ `novelty_history`/`external_novelty_history` 선언됨 — emit은 P5-A3에서 추가 |
+| P4 external_novelty / reach_ledger | ✅ Stage E에서 완료. `reach_history`/`probe_history`/`pivot_history`는 TypedDict 미선언 — P5-Prep에서 수정 |
+| `bench/silver/` telemetry 디렉토리 | ✅ `p0-*` trial에 `telemetry/` 디렉토리 존재 — `cycles.jsonl` 없음 (P5-A3 이후 생성) |
 | HITL-S/R/D/E 체제 | ✅ P0에서 전환 완료 |
 | dispute_queue state 필드 | ✅ P0-C7에서 추가 |
 | conflict_ledger.json | ✅ P1에서 영속화 완료 |
@@ -106,7 +107,8 @@ schema 재검증 → 100-cycle fixture load ≤ 10s → slowdown self-test → L
 
 | Task | 설명 | Size | 의존 |
 |------|------|------|------|
-| P5-A1 | `schemas/telemetry.v1.schema.json` 필수 필드 정의 | M | P4 완료 |
+| P5-Prep | `src/state.py` EvolverState 3 필드 추가 (`reach_history`, `probe_history`, `pivot_history`) | S | P4 완료 |
+| P5-A1 | `schemas/telemetry.v1.schema.json` 필수 필드 정의 (코드 기반, 없는 필드 제외) | M | P5-Prep |
 | P5-A2 | `src/obs/telemetry.py` emitter (jsonl atomic write) | M | P5-A1 |
 | P5-A3 | `orchestrator.py` 노드 경계 emit hook (단일 call site) | M | P5-A2 |
 | P5-A4 | 출력 경로 `bench/silver/{domain}/{trial}/telemetry/cycles.jsonl` | S | P5-A3 |
@@ -121,7 +123,7 @@ schema 재검증 → 100-cycle fixture load ≤ 10s → slowdown self-test → L
 | P5-C3 | Self-test "slowdown" walkthrough — 3분 내 원인 식별 | M | P5-B5 |
 | P5-C4 | LOC 측정: `cloc src/obs/dashboard` ≤ 2,000 | S | P5-B3 |
 
-**합계**: 14 tasks (S: 3, M: 9, L: 1, XL: 0)
+**합계**: 15 tasks (S: 4, M: 9, L: 1, XL: 0)
 
 ---
 

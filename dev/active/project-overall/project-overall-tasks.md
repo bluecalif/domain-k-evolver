@@ -1,6 +1,6 @@
 # Project Overall Tasks
 > Last Updated: 2026-04-17
-> Status: Bronze 완료 (85/85) · Silver P0 (32) · P1 (12) · P3R (8) · P2 (14) · Gap-Res (12) · P4 (42) 완료 · **SI-P5 착수 (0/14)** · 797 tests
+> Status: Bronze 완료 (85/85) · Silver P0 (32) · P1 (12) · P3R (8) · P2 (14) · Gap-Res (12) · P4 (42) 완료 · **SI-P5 착수 (0/15)** · 797 tests
 
 ## Summary
 
@@ -28,7 +28,7 @@
 | P3 Acquisition Expansion | 22 | 7 | 13 | 2 | — | **REVOKED** (D-120) |
 | P3R Snippet-First Refactor | 8 | — | — | — | **8/8** ✅ | PASS (D-125, 608 tests) |
 | P4 Coverage Intelligence | **42** | 27 | 15 | 3 | **42/42** ✅ | **Gate PASS (VP4 4/5, D-147~D-150 해소, 797 tests)** |
-| P5 Telemetry & Dashboard | 14 | 3 | 9 | 1 | 0/14 | **Planning** (Dev-docs 완료) |
+| P5 Telemetry & Dashboard | 15 | 4 | 9 | 1 | 0/15 | **Planning** (Dev-docs 완료, 코드 검증 반영) |
 | P6 Multi-Domain | 7 | 2 | 3 | 2 | 0/7 | 대기 |
 | X Cross-phase | 7 | 7 | 0 | 0 | 0/7 | — |
 | **Silver 합계** | **127** | — | — | — | **52/127** | — |
@@ -420,17 +420,21 @@
 
 ---
 
-## Phase P5: Telemetry Contract & Dashboard (14 tasks)
+## Phase P5: Telemetry Contract & Dashboard (15 tasks)
 
 > **목표**: Telemetry schema v1 + FastAPI 운영 대시보드 (≤ 2000 LOC)
 > **Gate**: schema validate, 100-cycle fixture 모든 view ≤ 10s, stub 금지, LOC 하드리밋, S10 pass, operator-guide 5+ 페이지, 테스트 ≥ 812
 > **제약**: P5-A (telemetry schema) 가 P5-B (UI) **엄격 선행** (D-77)
 > **Dev-docs**: `dev/active/phase-si-p5-telemetry-dashboard/`
 
+### P5-Prep. state.py TypedDict 보완 [Stage A 착수 전 필수]
+- [ ] **P5-Prep** `src/state.py` EvolverState에 `reach_history`, `probe_history`, `pivot_history` 3 필드 추가 `[S]`
+  - 근거: orchestrator.py L251/L327/L347에서 사용하지만 TypedDict 미선언 — emit 코드 작성 전 타입 정합성 확보
+
 ### P5-A. Telemetry 계약 [CRITICAL: Stage B 착수 전 merge 완료 필수]
-- [ ] **P5-A1** `schemas/telemetry.v1.schema.json` 필수 필드 정의 `[M]`
+- [ ] **P5-A1** `schemas/telemetry.v1.schema.json` 필수 필드 정의 (코드 기반 — `domain_entropy`/`provider_entropy`/`fetch_bytes`/`cost_regression_flag` 등 7 필드 제외) `[M]`
 - [ ] **P5-A2** `src/obs/__init__.py` [NEW] + `src/obs/telemetry.py` emitter (jsonl atomic write) `[M]`
-- [ ] **P5-A3** `orchestrator.py` 노드 경계 emit hook (단일 call site) `[M]`
+- [ ] **P5-A3** `orchestrator.py` 노드 경계 emit hook (단일 call site, `novelty`/`external_novelty`/`wall_clock_s` 추가 emit 포함) `[M]`
 - [ ] **P5-A4** 출력 경로 `bench/silver/{domain}/{trial}/telemetry/cycles.jsonl` `[S]`
 - [ ] **P5-A5** `tests/test_obs/test_telemetry_schema.py` [NEW] 스키마 계약 테스트 (positive/negative, S10) `[M]`
 
