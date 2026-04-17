@@ -1,6 +1,6 @@
 # Silver P4: Coverage Intelligence — Context
-> Last Updated: 2026-04-16
-> Status: **Stage A~D Complete · Stage E (23/25) · E7-2 완료 (VP4 FAIL 진단) · E7-3/E8 대기**
+> Last Updated: 2026-04-17
+> Status: **Stage A~E Complete (42/42, 797 tests) · E8-3 Gate PASS (VP4 4/5) · Overall FAIL (VP2 gap_res)**
 
 ## 1. 핵심 파일
 
@@ -257,7 +257,24 @@ candidate_categories (universe_probe 등록)
 - Stage E Code Complete: **793 tests** (+116)
 - 주요 신규: cost_guard 8 / external_novelty 6 / plan reason_code 7 / skeleton_tiers 15 / universe_probe ~60 / orchestrator E 통합 ~15 / reach_ledger 10 / exploration_pivot 8 / synthetic injection 4 / VP4 12
 
-### 6.4 남은 작업 (실 API 필요)
-- **E7-2**: `scripts/run_readiness.py` `--external-anchor` 플래그 + 15c × 2 trial
-- **E7-3**: `bench/japan-travel-external-anchor/` 스캐폴드 + 비교 리포트
-- **E8-2/E8-3**: VP4 실측 → readiness-report 갱신 → Gate 판정 commit
+### 6.4 VP4 Fix 추가 변경 (2026-04-17, `f822f2c`)
+
+| 파일 | 변경 | 결정 |
+|------|------|------|
+| `src/config.py` | `llm_budget_per_run: 3 → 12` | D-147 |
+| `src/utils/external_novelty.py` | `compute_delta_kus()` 추가 | D-148 |
+| `src/orchestrator.py` | `_update_novelty_and_coverage` delta 기반 novelty + `probe_history` 추적 | D-148/D-150 |
+| `src/nodes/exploration_pivot.py` | `reach_degraded` 조건 제거 | D-149 |
+| `src/utils/readiness_gate.py` | R5 = `probe_history` 횟수 (`VP4_PROBE_RUNS_FLOOR = 1`) | D-150 |
+| `bench/japan-travel-external-anchor/COMPARISON.md` | E7-3 stage-e-on vs off 비교 리포트 | E7-3 |
+| `bench/japan-travel-external-anchor/stage-e-on/` | VP4 PASS 4/5 readiness-report + state | E8-2 |
+
+테스트 793 → 797 (+4):
+- `TestComputeDeltaKus` (4개): empty/new/partial/regression(D-148)
+- `test_reach_diversity_no_longer_blocks_pivot`: D-149
+- `test_no_probe_run_non_critical`: D-150 gate
+
+### 6.5 Phase 완료 상태
+- **42/42 tasks 완료**
+- VP4: **PASS 4/5** (R1 ext_novelty 0.7857 ✅, R2 domains 49.06 ✅, R3 proposals 6 ✅, R4 pivot 0 ❌ non-critical, R5 probe_runs 1 ✅)
+- Overall: FAIL (VP2 gap_res 0.8125 < 0.85 — Stage E 외 범위)

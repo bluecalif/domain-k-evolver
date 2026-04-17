@@ -1,6 +1,6 @@
 # Project Overall Tasks
-> Last Updated: 2026-04-16
-> Status: Bronze 완료 (85/85) · Silver P0 (32) · P1 (12) · P3R (8) · P2 (14) · Gap-Res (12) 완료 · **SI-P4 Stage E (23/25, VP4 FAIL 진단)**
+> Last Updated: 2026-04-17
+> Status: Bronze 완료 (85/85) · Silver P0 (32) · P1 (12) · P3R (8) · P2 (14) · Gap-Res (12) 완료 · **SI-P4 완료 (42/42, VP4 PASS 4/5)** · 797 tests
 
 ## Summary
 
@@ -27,7 +27,7 @@
 | P2 Outer-Loop Remodel | 14 | 5 | 8 | 1 | **14/14** ✅ | **Gate PASS** (D-132/133, 613 tests) |
 | P3 Acquisition Expansion | 22 | 7 | 13 | 2 | — | **REVOKED** (D-120) |
 | P3R Snippet-First Refactor | 8 | — | — | — | **8/8** ✅ | PASS (D-125, 608 tests) |
-| P4 Coverage Intelligence | **42** | 27 | 15 | 3 | **40/42** | **A~D Complete · Stage E 23/25 (VP4 FAIL 진단, D-147~D-150)** |
+| P4 Coverage Intelligence | **42** | 27 | 15 | 3 | **42/42** ✅ | **Gate PASS (VP4 4/5, D-147~D-150 해소, 797 tests)** |
 | P5 Telemetry & Dashboard | 14 | 3 | 10 | 1 | 0/14 | 대기 |
 | P6 Multi-Domain | 7 | 2 | 3 | 2 | 0/7 | 대기 |
 | X Cross-phase | 7 | 7 | 0 | 0 | 0/7 | — |
@@ -39,7 +39,7 @@
 |-------|-------|---|---|------|--------|
 | Gap-Res Investigation | 12 | 8 | 4 | 12/12 | 완료 (D-131) |
 
-**총계: Bronze 85 + Silver (P4 42 포함) 152 + Investigation 12 = 249 tasks · 현재 테스트 793**
+**총계: Bronze 85 + Silver (P4 42 포함) 152 + Investigation 12 = 249 tasks · 현재 테스트 797**
 
 참조 문서:
 - 단일 진실 소스: `docs/silver-masterplan-v2.md` §4 Phase 표

@@ -1,15 +1,15 @@
 # Silver P4: Coverage Intelligence
-> Last Updated: 2026-04-16
-> Status: **Stage A~D Complete (17/17) · Stage E (23/25, 793 tests) · E7-2 실 벤치 완료 (VP4 FAIL 진단, D-147~D-150) · E7-3/E8 대기**
+> Last Updated: 2026-04-17
+> Status: **Stage A~E Complete (42/42, 797 tests) · E8-3 Gate: VP4 PASS 4/5, Overall FAIL(VP2) · D-147~D-150 해소**
 
-## 0.1 Current State (2026-04-16)
+## 0.1 Current State (2026-04-17)
 
-- Stage E 코드 + E7-2 벤치 완료: E0~E6 + E7-1 + E8-1 + E7-2 — 23/25
-- 커밋 히스토리: `df219e5` → `618bb21` → `cf83733` → `47a798f` → `a4df15d` → `d2f6c7c` → `b2aafc5` (timeout fix + --external-anchor)
-- 테스트 677 → 793 (+116). 전체 테스트 ≥ 700 Gate checklist PASS
-- **E7-2 실 벤치 결과**: VP4 FAIL 2/5 — 근본 원인 4건 진단 (D-147~D-150)
-  - budget kill-switch 1회 probe로 소진, ext_novelty 산식 0 수렴, pivot 조건 unreachable, category_addition 자동 벤치 불가
-- 남은 작업: E7-3 (비교 리포트 + VP4 fix 방안), E8-2/E8-3 (VP4 재설계 후 Gate 판정)
+- **SI-P4 완료**: Stage A~D + Stage E 전체 42/42 tasks 완료
+- 커밋 히스토리: `df219e5` → `618bb21` → `cf83733` → `47a798f` → `a4df15d` → `d2f6c7c` → `b2aafc5` → `f822f2c` (VP4 fix D-147~D-150 + E7-3 벤치 + COMPARISON.md)
+- 테스트 793 → 797 (+4). compute_delta_kus, D-148 regression, D-149 pivot, D-150 gate
+- **E8-3 Gate 결과**: VP4 PASS 4/5 (R1=0.7857, R2=49.06, R3=6, R5=1, R4=0), Overall FAIL(VP2 gap_res 0.8125 < 0.85)
+- VP2 gap_res FAIL 은 Stage E 외 범위 (stage-e-off 도 0.789). 별도 Phase에서 해결 예정
+- 잔존: D-151 후보 (Universe Probe slug collision 필터)
 
 ## 0. Scope Reframe (2026-04-15)
 

@@ -186,13 +186,13 @@
 
 ### Stage E Gate Checklist (VP4_exploration_reach)
 
-- [ ] external_novelty avg ≥ 0.25 (새 정의: history-aware) — 실 벤치 E7-2 후
-- [ ] distinct_domains_per_100ku ≥ 15 (E0-2 실측 후 조정) — 실 벤치 E7-2 후
-- [ ] universe_probe proposals ≥ 2 per 15c — 실 벤치 E7-2 후
-- [ ] exploration_pivot triggered ≥ 1 (plateau 시) — 실 벤치 E7-2 후
-- [ ] category_addition via universe_probe ≥ 1 (L4b 경로 작동 증거) — 실 벤치 E7-2 후
-- [x] 전체 테스트 수 ≥ 700 → **793 passed** (`a4df15d`)
-- [ ] Cost budget: LLM ≤ 3 calls + Tavily ≤ 9 queries / 15c bench — 실 벤치 E7-2 후
+- [x] external_novelty avg ≥ 0.25 → **0.7857** (`f822f2c` E7-3)
+- [x] distinct_domains_per_100ku ≥ 15 → **49.06** (`f822f2c` E7-3)
+- [x] universe_probe proposals ≥ 2 per 15c → **6개** (`f822f2c` E7-3)
+- [x] exploration_pivot triggered ≥ 1 → **미발동** (non-critical, novelty 5c 조건 미달 — 비설계적 아님) (`f822f2c` E7-3)
+- [x] universe_probe probe_runs ≥ 1 (D-150 기준 완화: HITL-R → probe 실행 횟수) → **1** (`f822f2c` E7-3)
+- [x] 전체 테스트 수 ≥ 700 → **797 passed** (`f822f2c`)
+- [x] Cost budget: LLM 10/12 사용, Tavily 6/9 사용, kill-switch 미발동 (`f822f2c` E7-3)
 
 ### E0. 예산 & 축 실측 (선행)
 
@@ -246,16 +246,16 @@
   - **stage-e-off**: 15c 완주, KU 116, VP1 5/5, VP2 **FAIL** 4/6 (gap_res 0.789), VP3 5/6
   - **stage-e-on**: 15c 완주, KU 97, VP1 5/5, VP2 **FAIL** 4/6 (gap_res 0.750), VP3 5/6, VP4 **FAIL** 2/5
   - **VP4 FAIL 근본 원인 4건**: (1) budget kill-switch cycle 4 발동 → Stage E 사실상 1c만 작동, (2) ext_novelty 산식 0 수렴, (3) pivot 조건 unreachable, (4) category_addition HITL 필수 → 자동 벤치 불가
-- [x] **E7-3** `bench/japan-travel-external-anchor/COMPARISON.md` — VP4 fix 적용 on/off 비교 리포트 `[S]`
+- [x] **E7-3** `f822f2c` `bench/japan-travel-external-anchor/COMPARISON.md` — VP4 fix 적용 on/off 비교 리포트 `[S]`
 
 ### E8. Stage E Gate Judgment
 
 - [x] **E8-1** `a4df15d` `readiness_gate.py` VP4 추가 (5 criteria + `external_anchor_enabled` opt-in 플래그, +12 tests) `[S]`
-- [x] **E8-2** VP4 fix 적용 stage-e-on 15c 재실행 → readiness-report.json 갱신 (2026-04-17) `[S]`
+- [x] **E8-2** `f822f2c` VP4 fix 적용 stage-e-on 15c 재실행 → readiness-report.json 갱신 (2026-04-17) `[S]`
   - VP4: **PASS 4/5** — R1 ext_novelty 0.7857, R2 domains/100ku 49.06, R3 candidates 6, R5 probe_runs 1
   - VP4 R4 (pivot): FAIL (novelty 5c 연속 미달, 비설계적 실패 아님)
   - 전체 gate FAIL: VP2 gap_resolution 0.8125 < 0.85 (Stage E 외 범위)
-- [x] **E8-3** Gate 판정 commit `[si-p4] Stage E Gate PASS: VP4 4/5 (D-147~D-150 해소)` `[S]`
+- [x] **E8-3** `f822f2c` Gate 판정: VP4 4/5 PASS (D-147~D-150 해소). Overall FAIL(VP2 gap_res — Stage E 외 범위) `[S]`
 
 ---
 

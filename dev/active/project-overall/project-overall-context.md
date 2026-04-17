@@ -1,6 +1,6 @@
 # Project Overall Context
-> Last Updated: 2026-04-16
-> Status: Bronze 완료 (468) → SI-P0 완료 (510) → P1 완료 (544) → P3R 완료 (608, D-125) → Gap-Res 완료 (610, D-129) → P2 PASS (613, D-132/133) → **SI-P4 Stage A~D 완료 (669) · Stage E 23/25 (793 tests, VP4 FAIL 진단 D-147~D-150)**
+> Last Updated: 2026-04-17
+> Status: Bronze 완료 (468) → SI-P0 완료 (510) → P1 완료 (544) → P3R 완료 (608, D-125) → Gap-Res 완료 (610, D-129) → P2 PASS (613, D-132/133) → **SI-P4 완료 (42/42, 797 tests, Stage E Gate: VP4 PASS 4/5, Overall FAIL(VP2), D-147~D-150 해소)**
 
 ## 1. 핵심 파일
 
@@ -53,7 +53,7 @@
 | Silver P3 | `dev/active/phase-si-p3-acquisition/` | **REVOKED** (D-120, 2026-04-13) |
 | Silver P3R | `dev/active/phase-si-p3r-snippet-refactor/` | ✅ **완료** (8/8, Gate PASS, D-125, 608 tests) |
 | **Gap-Res Investigation** | `dev/active/phase-gap-resolution-investigation/` | ✅ **완료** (12/12, D-129~D-131) |
-| Silver P4 | `dev/active/phase-si-p4-coverage/` | **Stage A~D 완료 · Stage E 23/25 (793 tests, VP4 FAIL D-147~D-150)** |
+| Silver P4 | `dev/active/phase-si-p4-coverage/` | ✅ **완료** (42/42, 797 tests, VP4 PASS 4/5, D-147~D-150 해소) |
 | Silver P5 | `dev/active/phase-si-p5-telemetry-dashboard/` | P3R + P4 |
 | Silver P6 | `dev/active/phase-si-p6-multidomain/` | P1~P5 전부 (Silver exit gate) |
 
@@ -100,6 +100,7 @@
 | `bench/japan-travel-auto-phase2-baseline/` | Phase 2 10 Cycle 백업 |
 | `bench/japan-travel-readiness/` | Phase 4·5 Readiness Gate 벤치마크 |
 | `bench/silver/{domain}/{trial_id}/` | **[Silver P0 NEW]** — trial-card.md + readiness-report.md 의무 |
+| `bench/japan-travel-external-anchor/` | **[P4 Stage E]** — stage-e-off / stage-e-on 15c 비교 벤치. COMPARISON.md 포함 |
 
 ### 템플릿
 | 파일 | 내용 |
@@ -202,6 +203,13 @@ class EvolverState(TypedDict):
 | D-137 | Universe probe → tiered skeleton (candidate vs active). candidate 는 통계만 유지, active 승격 시에만 HITL-R. HITL 루프 지연 회피 | P4 Stage E |
 | D-138 | Exploration pivot 1 cycle 지속 + gap_rule 우선. 동일 cycle 내 L3(GU 생성→다음 cycle) + L5(이번 cycle targets 치환) 중복 발동 금지 | P4 Stage E |
 | D-139 | Semi-front 진입 조건 = Stage E Gate PASS. Internal-only 판정만으로 UI 에 "수렴" 표시 시 사용자 기만 | P4 Stage E → semi-front |
+| D-144 | collect.py as_completed timeout 120→300s, future.result 60→120s (cycle 진행에 따른 parse 시간 증가 대응) | P4 E7-2 |
+| D-145 | as_completed TimeoutError catch → graceful degradation (기존 uncaught → cycle abort) | P4 E7-2 |
+| D-146 | --external-anchor / --no-external-anchor 플래그 env override (벤치 비교 시 config 오염 방지) | P4 E7-2 |
+| D-147 | llm_budget kill-switch 수정: budget 3→12 (probe 1회 3 LLM calls, 3+3+여유 = 12) | P4 E7-3 |
+| D-148 | ext_novelty 산식 재설계: `novel/all_kus` → delta_kus 분모 (이번 cycle 신규 KU만) — 0 수렴 방지 | P4 E7-3 |
+| D-149 | exploration_pivot `reach_degraded` 조건 제거 (domains_per_100ku<15 실측 52~57, 구조적 unreachable) | P4 E7-3 |
+| D-150 | VP4 R5: category_addition HITL-R → probe_history 실행 횟수 기준 (자동 벤치 경로 허용). 런타임 HITL 로직(promote_candidate) 은 미구현 — future work | P4 E7-3 |
 
 ---
 
