@@ -1,75 +1,74 @@
 # Session Compact
 
 > Generated: 2026-04-17
-> Source: Step-update 후 갱신
+> Source: Conversation compaction via /compact-and-go
 
 ## Goal
 
-SI-P4 **완료** (42/42). VP4 FAIL 근본 원인 4건 해소 (D-147~D-150) + E7-3 비교 리포트 + E8 Gate 판정.
-다음: SI-P5 (Telemetry & Dashboard) 또는 다른 Silver Phase.
+SI-P5 (Telemetry Contract & Dashboard) dev-docs 생성 및 실제 코드 기반 검증·수정 완료.
 
 ## Completed
 
-### 이번 세션
-
-- [x] **D-147 fix**: `src/config.py` llm_budget 3→12
-- [x] **D-148 fix**: `src/utils/external_novelty.py` `compute_delta_kus` 추가 + orchestrator.py delta 기반 novelty 계산
-- [x] **D-149 fix**: `src/nodes/exploration_pivot.py` `reach_degraded` 조건 제거
-- [x] **D-150 fix**: `src/utils/readiness_gate.py` R5 = probe_history 실행 횟수 기준 (HITL-R 불요)
-- [x] **tests 추가** (793→797): test_compute_delta_kus, D-148 regression, D-149 pivot, D-150 gate
-- [x] **E7-3 stage-e-on 15c 벤치** — VP4 PASS 4/5 (R1=0.7857, R2=49.06, R3=6, R4=0, R5=1)
-- [x] **E7-3 COMPARISON.md** — stage-e-on vs off 비교 리포트 작성
-- [x] **E8-2** readiness-report.json 갱신 (stage-e-on final)
-- [x] **E8-3** Gate 판정: VP4 PASS, Overall FAIL (VP2 gap_res 0.8125 < 0.85)
-- [x] **commit `f822f2c`** — VP4 fix + bench + 비교 리포트
-- [x] **Step-update + project-overall 동기화**
-
-### 이전 세션 누적
-- [x] **commit `b2aafc5`** — collect.py timeout fix + --external-anchor 플래그
-- [x] **E7-2 stage-e-off 15c** — VP1/VP3 PASS, VP2 FAIL (gap_res 0.789)
-- [x] **E7-2 stage-e-on 15c** — VP4 FAIL 2/5 진단 (D-147~D-150)
-- Stage A~D Internal Foundation Gate PASS (D-135, `f69fd01`)
-- Stage E E0-2/E1/E2/E3/E4/E5/E6-1~E6-3/E7-1/E8-1 전부 구현
-- 총 797 tests
+- [x] SI-P5 dev-docs 4파일 최초 생성 (plan/context/tasks/debug-history) — commit `e52ea87`
+- [x] project-overall 3파일 동기화 (plan/context/tasks)
+- [x] context.md 전면 재작성: 실제 코드 검증 반영
+  - state.py TypedDict 미선언 3 필드 발견 (reach_history/probe_history/pivot_history)
+  - metrics_logger.py 실제 16 emit 키 확인
+  - should_auto_pause 실제 5 조건 확인 (metrics_guard.py)
+  - telemetry schema에서 코드에 없는 7 필드 제거
+  - bench/silver/ telemetry/ 디렉토리 존재 확인 (cycles.jsonl 없음)
+- [x] tasks.md 업데이트: P5-Prep 추가, P5-A1 schema 필드 수정, 14→15 tasks
+- [x] plan.md 업데이트: Task Breakdown에 P5-Prep 행 추가, Current State 수정
+- [x] project-overall-tasks.md 동기화: P5 섹션 15 tasks 반영 — commit `1eb7f2c`
 
 ## Current State
 
-- Branch: `main`. 마지막 commit **`f822f2c`** (SI-P4 42/42 완료).
-- SI-P4 **완료** — VP4 PASS 4/5 달성. VP2 gap_res FAIL은 Stage E 무관 (core loop 문제, 별도 Phase에서 해결).
-- **VP2 gap_res 잔존 이슈 (0.8125 < 0.85)**: off(0.789) / on(0.813) 모두 FAIL. Stage E가 아닌 core loop의 GU 해소 성능 문제.
-- **D-151 후보**: Universe Probe collision_active 반복 — slug 정규화 + 유사도 필터 추가 필요.
+SI-P5 dev-docs 완전히 완료 (코드 검증 반영). 구현 착수 준비 완료.
+
+- 브랜치: `main`
+- 최신 커밋: `1eb7f2c` — [si-p5] Dev-docs 코드 검증 반영
+- 테스트: 797개 (목표 ≥ 812)
+- `bench/silver/japan-travel/p0-20260412-baseline/telemetry/` — 디렉토리 있음, cycles.jsonl 없음
+
+### Changed Files (이번 세션)
+
+- `dev/active/phase-si-p5-telemetry-dashboard/si-p5-telemetry-dashboard-context.md` — 코드 기반 전면 재작성
+- `dev/active/phase-si-p5-telemetry-dashboard/si-p5-telemetry-dashboard-tasks.md` — P5-Prep 추가, P5-A1 schema 수정, 15 tasks
+- `dev/active/phase-si-p5-telemetry-dashboard/si-p5-telemetry-dashboard-plan.md` — Task Breakdown + Current State 수정
+- `dev/active/project-overall/project-overall-tasks.md` — P5 섹션 동기화
 
 ## Remaining / TODO
 
-### 다음 Phase 선택지
-
-- [ ] **SI-P5** (Telemetry & Dashboard) — P3R + P4 완료 조건 충족
-- [ ] **SI-P6** (Multi-Domain & Robustness) — P1~P5 전부 선행 조건
-- [ ] **VP2 gap_res 개선** (별도 조사 또는 P2 개선) — gap_res 0.85 임계치 미달 해소
-- [ ] **D-151**: Universe Probe slug collision 필터 (candidate)
+- [ ] **P5-Prep**: `src/state.py` EvolverState에 `reach_history`, `probe_history`, `pivot_history` 추가
+- [ ] P5-A1: `schemas/telemetry.v1.schema.json` 생성
+- [ ] P5-A2: `src/obs/telemetry.py` emitter 구현
+- [ ] P5-A3: `orchestrator.py` emit hook 추가
+- [ ] P5-A4 ~ A5, B1 ~ B5, C1 ~ C4
 
 ## Key Decisions
 
-### 이번 세션 신규
-
-| # | 결정 | 근거 |
-|---|------|------|
-| D-147 | llm_budget 3→12 fix | probe 1회 3 LLM calls, 이후 11c dead |
-| D-148 | ext_novelty delta_kus 분모 fix | novel/all_kus → 0 수렴 구조 해소 |
-| D-149 | reach_degraded 조건 제거 | floor 15 vs 실측 52~57, unreachable |
-| D-150 | VP4 R5 = probe_history 횟수 (HITL 불요) | 자동 벤치 경로 허용. 런타임 HITL 미구현 future work |
+- **D-77**: P5-A (schema) → P5-B (UI) 엄격 순서 유지
+- **D-124**: provider_entropy 제거 (Tavily 단일, P3R 결정)
+- **D-154**: timeout_count/retry_success_rate/domain_entropy/fetch_bytes 등 7 필드 — 코드에 없으므로 telemetry schema 제외, Gold에서 추가
+- **P5-Prep 필요성**: orchestrator.py L251/L327/L347에서 reach/probe/pivot_history를 state dict에 직접 쓰지만 TypedDict 미선언 — emit 코드 전 타입 정합성 필수
 
 ## Context
 
 다음 세션에서는 답변에 한국어를 사용하세요.
 
-### 제약 / 주의
-- API 비용 발생 작업 신중. 재실행 전 사용자 재확인 (memory rule)
-- **Bash 절대경로 필수** (cd 금지)
+- 실제 telemetry schema 필드: context.md §2-B 참조 (16 emit 키 + novelty/external_novelty/wall_clock_s 추가 예정)
+- state.py TypedDict 끝: L230 (`external_observation_keys`) — 3 필드는 그 다음에 추가
+- orchestrator.py 참조 위치: reach_history L251~L252, probe_history L327~L329, pivot_history L347~L354
+- bench/silver 구조: `bench/silver/japan-travel/{trial_id}/telemetry/` scaffold 완료
+- scripts 정책: 신규 실행 스크립트 금지, `run_readiness.py` 단일 진입점
+- Gate 조건: schema validate + 100c fixture ≤10s + stub 금지 + LOC ≤2000 + S10 + operator-guide 5p+ + 테스트 ≥812
 
-### 핵심 참조 파일
-- project-overall: `dev/active/project-overall/`
-- SI-P4 dev-docs: `dev/active/phase-si-p4-coverage/`
-- External Anchor 구현: `src/nodes/universe_probe.py`, `src/nodes/exploration_pivot.py`
-- ReadinessGate: `src/utils/readiness_gate.py` (VP1~VP4)
-- 비교 리포트: `bench/japan-travel-external-anchor/COMPARISON.md`
+## Next Action
+
+**P5-Prep 구현**: `src/state.py` EvolverState TypedDict L230 (`external_observation_keys`) 다음에 3 필드 추가:
+```python
+reach_history: list[dict]
+probe_history: list[dict]
+pivot_history: list[dict]
+```
+확인 후 P5-A1 (`schemas/telemetry.v1.schema.json`) 작성으로 진행.
