@@ -75,6 +75,44 @@
   </div>
 </div>
 
+{% if ku_summary and ku_summary.current_ku > 0 %}
+<h2>KU Evolution (critical)</h2>
+<div class="card">
+  <div class="metric-grid">
+    <div class="metric">
+      <div class="metric-label">Total KU</div>
+      <div class="metric-value">{{ ku_summary.current_ku }}</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">KU Growth (last 5c, /cycle)</div>
+      {% set g = ku_summary.growth_5c %}
+      <div class="metric-value {% if g >= 3 %}ok{% elif g >= 1 %}warn{% else %}crit{% endif %}">
+        {{ "%.1f"|format(g) }}
+      </div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Categories</div>
+      <div class="metric-value">{{ ku_summary.current_cats }}</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Category Gini (다양성)</div>
+      {% set v = ku_summary.current_gini %}
+      <div class="metric-value {% if v <= 0.25 %}ok{% elif v <= 0.45 %}warn{% else %}crit{% endif %}">
+        {{ "%.3f"|format(v) }}
+      </div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">External Novelty</div>
+      <div class="metric-value">{{ "%.3f"|format(last.metrics.get('external_novelty', 0)) }}</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Cycles Observed</div>
+      <div class="metric-value" style="font-size:16px">{{ ku_summary.first_cycle }} → {{ ku_summary.last_cycle }}</div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
 {% if last.audit_summary.has_critical %}
 <div class="card" style="border-color:#f85149">
   <strong style="color:#f85149">⚠ Critical Audit Finding</strong>

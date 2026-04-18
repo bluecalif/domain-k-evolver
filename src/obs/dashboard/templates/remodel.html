@@ -2,8 +2,33 @@
 {% block title %}Remodel Review — Evolver{% endblock %}
 {% block content %}
 <h1>Remodel Review</h1>
+
+{% if events and events.total_events > 0 %}
+<h2>Derived Remodel/Jump Events ({{ events.total_events }}건)</h2>
+<div class="card">
+  <p style="color:#8b949e; font-size:12px; margin-bottom:8px">
+    persisted remodel_report.json 이 없는 trial 의 경우 cycles telemetry 에서 mode='jump' 또는 hitl_queue.remodel 신호로 사후 추출.
+    Δ 컬럼은 직전 cycle 대비 증감.
+  </p>
+  <table>
+    <tr><th>Cycle</th><th>Mode</th><th>HITL-R</th><th>gap_res</th><th>Δ res</th><th>Δ resolved</th><th>open</th></tr>
+    {% for e in events.events %}
+    <tr>
+      <td>{{ e.cycle }}</td>
+      <td><span class="badge {% if e.mode == 'jump' %}badge-warning{% else %}badge-resolved{% endif %}">{{ e.mode }}</span></td>
+      <td>{% if e.hitl_remodel %}<span class="badge badge-warning">YES</span>{% else %}<span style="color:#8b949e">—</span>{% endif %}</td>
+      <td>{{ "%.3f"|format(e.gap_resolution_rate) }}</td>
+      <td>{% if e.get('delta_res_rate') is not none %}<span style="color:{% if e.delta_res_rate >= 0 %}#3fb950{% else %}#f85149{% endif %}">{{ "%+.3f"|format(e.delta_res_rate) }}</span>{% else %}—{% endif %}</td>
+      <td>{% if e.get('delta_gap_resolved') is not none %}<span style="color:{% if e.delta_gap_resolved >= 0 %}#3fb950{% else %}#f85149{% endif %}">{{ "%+d"|format(e.delta_gap_resolved) }}</span>{% else %}—{% endif %}</td>
+      <td>{{ e.gaps_open }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+{% endif %}
+
 {% if not report %}
-<div class="card"><p class="no-data">remodel_report.json 없음</p></div>
+<div class="card"><p class="no-data">persisted remodel_report.json 없음 (P2 schema 적용 trial 이거나 신규 trial 만 보유)</p></div>
 {% else %}
 <div class="card">
   <p><strong>Report ID:</strong> {{ report.get('report_id', '—') }}</p>

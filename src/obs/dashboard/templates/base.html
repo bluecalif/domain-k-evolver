@@ -13,6 +13,8 @@
     nav a { color: #58a6ff; text-decoration: none; }
     nav a:hover { text-decoration: underline; }
     nav .trial { color: #8b949e; font-size: 12px; margin-left: auto; }
+    nav select { background: #21262d; color: #c9d1d9; border: 1px solid #30363d; border-radius: 4px; padding: 3px 8px; font-size: 12px; font-family: monospace; margin-left: auto; cursor: pointer; }
+    nav select:focus { outline: none; border-color: #58a6ff; }
     main { padding: 20px; max-width: 1200px; margin: 0 auto; }
     h1 { font-size: 18px; margin-bottom: 16px; color: #f0f6fc; }
     h2 { font-size: 15px; margin: 20px 0 10px; color: #c9d1d9; border-bottom: 1px solid #21262d; padding-bottom: 4px; }
@@ -44,14 +46,20 @@
 <body>
 <nav>
   <strong>Evolver</strong>
-  <a href="/">Overview</a>
-  <a href="/timeline">Cycle Timeline</a>
-  <a href="/coverage">Gap Coverage</a>
-  <a href="/sources">Source Reliability</a>
-  <a href="/conflicts">Conflict Ledger</a>
-  <a href="/hitl">HITL Inbox</a>
-  <a href="/remodel">Remodel Review</a>
+  <a href="/?trial={{ trial_id }}">Overview</a>
+  <a href="/timeline?trial={{ trial_id }}">Cycle Timeline</a>
+  <a href="/coverage?trial={{ trial_id }}">Gap Coverage</a>
+  <a href="/sources?trial={{ trial_id }}">Source Reliability</a>
+  <a href="/conflicts?trial={{ trial_id }}">Conflict Ledger</a>
+  <a href="/hitl?trial={{ trial_id }}">HITL Inbox</a>
+  <a href="/remodel?trial={{ trial_id }}">Remodel Review</a>
+  {% if trials %}
+  <select onchange="location.pathname === '/' ? location.href = '/?trial=' + this.value : location.href = location.pathname + '?trial=' + this.value">
+    {% for t in trials %}<option value="{{ t }}"{% if t == trial_id %} selected{% endif %}>{{ t }}</option>{% endfor %}
+  </select>
+  {% else %}
   <span class="trial">trial: {{ trial_id }}</span>
+  {% endif %}
 </nav>
 <main>
 {% block content %}{% endblock %}

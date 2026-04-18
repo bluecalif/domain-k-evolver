@@ -6,6 +6,12 @@
 <div class="card"><p class="no-data">데이터 없음</p></div>
 {% else %}
 <div class="card">
+  <canvas id="chartKU"></canvas>
+</div>
+<div class="card">
+  <canvas id="chartVariability"></canvas>
+</div>
+<div class="card">
   <canvas id="chartMetrics"></canvas>
 </div>
 <div class="card">
@@ -13,18 +19,47 @@
 </div>
 <script>
 const labels = {{ cycle_nums | tojson }};
+new Chart(document.getElementById('chartKU'), {
+  type: 'line',
+  data: {
+    labels,
+    datasets: [
+      { label: 'KU total', data: {{ ku_total | tojson }}, borderColor: '#f0c674', backgroundColor: '#f0c67422', tension: 0.3, fill: true, yAxisID: 'y' },
+      { label: 'category count', data: {{ category_count | tojson }}, borderColor: '#58a6ff', tension: 0.3, fill: false, yAxisID: 'y1' },
+    ]
+  },
+  options: { plugins: { title: { display: true, text: 'KU & Category Growth', color: '#c9d1d9' } },
+    scales: {
+      x: { ticks: { color: '#8b949e' } },
+      y: { position: 'left', ticks: { color: '#f0c674' }, min: 0, title: { display: true, text: 'KU total', color: '#f0c674' } },
+      y1: { position: 'right', ticks: { color: '#58a6ff' }, min: 0, grid: { drawOnChartArea: false }, title: { display: true, text: 'category count', color: '#58a6ff' } }
+    } }
+});
+new Chart(document.getElementById('chartVariability'), {
+  type: 'line',
+  data: {
+    labels,
+    datasets: [
+      { label: 'novelty (inner)', data: {{ novelty | tojson }}, borderColor: '#58a6ff', tension: 0.3, fill: false },
+      { label: 'external_novelty (P4)', data: {{ external_novelty | tojson }}, borderColor: '#bc8cff', tension: 0.3, fill: false },
+      { label: 'category_gini (1=편중,0=균등)', data: {{ category_gini | tojson }}, borderColor: '#ff7b72', tension: 0.3, fill: false },
+    ]
+  },
+  options: { plugins: { title: { display: true, text: 'Variability & Diversity', color: '#c9d1d9' } },
+    scales: { x: { ticks: { color: '#8b949e' } }, y: { ticks: { color: '#8b949e' }, min: 0, max: 1 } } }
+});
 new Chart(document.getElementById('chartMetrics'), {
   type: 'line',
   data: {
     labels,
     datasets: [
-      { label: 'novelty', data: {{ novelty | tojson }}, borderColor: '#58a6ff', tension: 0.3, fill: false },
-      { label: 'conflict_rate', data: {{ conflict_rate | tojson }}, borderColor: '#f85149', tension: 0.3, fill: false },
       { label: 'evidence_rate', data: {{ evidence_rate | tojson }}, borderColor: '#3fb950', tension: 0.3, fill: false },
+      { label: 'gap_resolution', data: {{ gap_resolution | tojson }}, borderColor: '#1f6feb', tension: 0.3, fill: false },
+      { label: 'conflict_rate', data: {{ conflict_rate | tojson }}, borderColor: '#f85149', tension: 0.3, fill: false },
       { label: 'collect_failure', data: {{ collect_failure | tojson }}, borderColor: '#d29922', tension: 0.3, fill: false },
     ]
   },
-  options: { plugins: { title: { display: true, text: 'Metrics per Cycle', color: '#c9d1d9' } },
+  options: { plugins: { title: { display: true, text: 'Quality Metrics per Cycle', color: '#c9d1d9' } },
     scales: { x: { ticks: { color: '#8b949e' } }, y: { ticks: { color: '#8b949e' }, min: 0, max: 1 } } }
 });
 new Chart(document.getElementById('chartGaps'), {
