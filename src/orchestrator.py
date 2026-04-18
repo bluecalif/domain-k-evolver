@@ -129,6 +129,12 @@ class Orchestrator:
                 break
 
             state = result.state
+
+            # 진단 필드 추출 후 state에서 제거
+            cycle_ctx = self._extract_cycle_ctx(state, cycle_num)
+            for k in list(state.keys()):
+                if k.startswith("_diag_"):
+                    del state[k]
             ku_after = len(state.get("knowledge_units", []))
             gu_after = len(state.get("gap_map", []))
             logger.info("  Graph 완료: %.1fs (KU %d→%d, GU %d→%d)",
@@ -170,7 +176,7 @@ class Orchestrator:
             # Telemetry emit (P5-A3) — trial_root 없으면 무시
             cycle_elapsed = time.monotonic() - cycle_t0
             if self.config.orchestrator.bench_root:
-                emit_cycle(state, self._domain_path, cycle_elapsed)
+                emit_cycle(state, self._domain_path, cycle_elapsed, cycle_ctx=cycle_ctx)
             total_elapsed = time.monotonic() - orch_t0
             logger.info("  Cycle %d 완료: %.1fs (graph=%.1fs, audit=%.1fs, remodel=%.1fs) | 누적 %.1fs",
                         cycle_num, cycle_elapsed, graph_elapsed, audit_elapsed, remodel_elapsed, total_elapsed)
@@ -736,6 +742,37 @@ class Orchestrator:
             applied_count,
             len(proposals),
         )
+
+    def _extract_cycle_ctx(self, state: EvolverState, cycle_num: int) -> dict:
+        """진단 필드에서 cycle_ctx dict 구성."""
+        plan = state.get("current_plan") or {}
+        gap_map = state.get("gap_map") or []
+        gu_by_id = {gu.get("gu_id"): gu for gu in gap_map}
+
+        target_gap_ids = plan.get("target_gaps", [])
+        targets_selected = []
+        for gu_id in target_gap_ids:
+            gu = gu_by_id.get(gu_id)
+            if gu is None:
+                continue
+            target = gu.get("target", {})
+            entity_key = target.get("entity_key", "")
+            targets_selected.append({
+                "gu_id": gu_id,
+                "entity_key": entity_key,
+                "field": target.get("field", ""),
+                "is_wildcard": "*" in entity_key,
+                "status": gu.get("status", "open"),
+            })
+
+        return {
+            "cycle": cycle_num,
+            "targets_selected": targets_selected,
+            "queries_by_gu": plan.get("queries", {}),
+            "search_yield_by_gu": state.get("_diag_search_by_gu") or {},
+            "resolved_gus": state.get("_diag_resolved_gus") or [],
+            "adjacent_gap_generated": state.get("_diag_adjacent_gap_count") or 0,
+        }
 
     def _post_cycle(
         self,

@@ -162,11 +162,12 @@ def _collect_single_gu(
     gu_queries: list[str],
     search_tool: Any,
     llm: Any | None,
-) -> list[dict]:
-    """단일 GU: SEARCH → PARSE."""
+) -> tuple[list[dict], int]:
+    """단일 GU: SEARCH → PARSE. (claims, search_result_count) 반환."""
     gu_id = gu.get("gu_id", "?")
 
     search_results = _search_phase(gu_queries, search_tool)
+    search_count = len(search_results)
 
     if not search_results:
         logger.debug("collect[%s]: SEARCH=0 results (queries=%d)", gu_id, len(gu_queries))
@@ -180,7 +181,7 @@ def _collect_single_gu(
         logger.info("collect[%s]: 0 claims despite SEARCH=%d queries=%s",
                      gu_id, len(search_results), gu_queries[:2])
 
-    return claims
+    return claims, search_count
 
 
 def collect_node(
@@ -230,6 +231,7 @@ def collect_node(
     total_gu_count = len(tasks)
     failed_gu_count = 0
     per_gu_claims: list[int] = []
+    diag_search_by_gu: dict[str, int] = {}
 
     if tasks:
         workers = min(max_workers, len(tasks))
@@ -244,9 +246,10 @@ def collect_node(
                 for future in as_completed(futures, timeout=300):
                     gu_id = futures[future]
                     try:
-                        claims = future.result(timeout=120)
+                        claims, search_count = future.result(timeout=120)
                         all_claims.extend(claims)
                         per_gu_claims.append(len(claims))
+                        diag_search_by_gu[gu_id] = search_count
                         logger.info("collect: %s → %d claims", gu_id, len(claims))
                     except TimeoutError:
                         logger.warning("collect: %s timeout (120s)", gu_id)
@@ -286,6 +289,7 @@ def collect_node(
     return {
         "current_claims": all_claims,
         "collect_failure_rate": round(failure_rate, 3),
+        "_diag_search_by_gu": diag_search_by_gu,
     }
 
 

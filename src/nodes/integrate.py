@@ -322,6 +322,7 @@ def integrate_node(
     updates: list[dict] = []
     rejected: list[dict] = []
     new_dynamic_gus: list[dict] = []
+    diag_resolved_gus: list[str] = []
 
     # parse_yield gap 조사 — GU resolve 성공/실패 분류 (D-126)
     resolve_outcomes = {
@@ -519,6 +520,8 @@ def integrate_node(
                     gu["resolved_by"] = claim.get("claim_id", "")
                     _resolved = True
                     break
+            if _resolved:
+                diag_resolved_gus.append(source_gu_id)
             resolve_outcomes["resolved" if _resolved else "other"] += 1
 
         # 동적 GU 발견 (Trigger A)
@@ -568,4 +571,6 @@ def integrate_node(
         "current_claims": claims,
         "dispute_queue": dispute_queue,
         "conflict_ledger": conflict_ledger,
+        "_diag_adjacent_gap_count": len(new_dynamic_gus),
+        "_diag_resolved_gus": diag_resolved_gus,
     }

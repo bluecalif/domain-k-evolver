@@ -231,3 +231,8 @@ class EvolverState(TypedDict, total=False):
     reach_history: list[dict]   # SI-P5: cycle 별 reach target 기록
     probe_history: list[dict]   # SI-P5: cycle 별 universe probe 결과
     pivot_history: list[dict]   # SI-P5: cycle 별 exploration pivot 기록
+
+    # Diagnostic fields (진단 전용, orchestrator가 cycle마다 읽고 제거)
+    _diag_search_by_gu: dict | None       # collect: {gu_id: search_result_count}
+    _diag_adjacent_gap_count: int | None  # integrate: 신규 dynamic GU 수
+    _diag_resolved_gus: list | None       # integrate: resolved GU gu_id 목록

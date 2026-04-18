@@ -98,6 +98,20 @@
       "type": "integer",
       "minimum": 0,
       "description": "현재 dispute_queue 길이"
+    },
+    "cycle_trace": {
+      "type": ["object", "null"],
+      "description": "cycle 단위 진단 요약 (D-162). null이면 bench_root 없음",
+      "properties": {
+        "target_count":           { "type": "integer" },
+        "wildcard_count":         { "type": "integer" },
+        "concrete_count":         { "type": "integer" },
+        "wildcard_search_yield":  { "type": "integer" },
+        "concrete_search_yield":  { "type": "integer" },
+        "resolved_count":         { "type": "integer" },
+        "resolved_gus":           { "type": "array", "items": { "type": "string" } },
+        "adjacent_gap_generated": { "type": "integer" }
+      }
     }
   }
 }
