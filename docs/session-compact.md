@@ -5,120 +5,113 @@
 
 ## Goal
 
-Dashboard 개선 + P4 평가 + 프로젝트 Phase 재구조화 계획 수립.
+미커밋 변경사항 커밋 → P5 Gate 공식 판정 → Phase 재구조화 (P6 → M1 분리 + 신규 P6 dev-docs)
 
 ## Completed
 
-- [x] **Dashboard: trial 드롭다운 추가** — `bench/silver/japan-travel/` 아래 모든 trial을 드롭다운으로 전환 가능 (`?trial=` query param)
-- [x] **stage-e-off/on 이동** — `bench/japan-travel-external-anchor/` → `bench/silver/japan-travel/` (각각 개별 trial로 분리)
-- [x] **Loader: conflict-ledger.json 버그 수정** — 언더스코어(`conflict_ledger.json`) 대신 하이픈(`conflict-ledger.json`) 모두 지원. 12/13 trial에서 ledger 복구
-- [x] **Loader: trajectory.json fallback** — P5 이전 trial (12개) 이 cycles.jsonl 없어도 자동 변환해 dashboard 표시
-- [x] **Loader: load_ku_progression()** — KU snapshot에서 cycle별 KU/category/Gini 계산
-- [x] **Loader: derive_remodel_events()** — cycles에서 mode='jump' or hitl_queue.remodel=1 이벤트 사후 추출
-- [x] **Timeline 보강** — KU & Category Growth 차트, Variability & Diversity 차트(novelty + external_novelty + category_gini), Quality Metrics(+ gap_resolution 추가), Gap Map
-- [x] **Overview 보강** — KU Evolution 섹션 추가 (Total KU, KU Growth/5c, Categories, Category Gini, External Novelty)
-- [x] **Remodel Review 보강** — derived events 테이블 (mode='jump' + delta_gap_resolved + delta_res_rate)
-- [x] **테스트 추가** — `tests/test_obs/test_loader_legacy_fallback.py` 24개 테스트 (5개 추가)
-- [x] **P4 재평가** — COMPARISON.md 정독 → VP4 4/5 PASS 확인, narrow goal 달성
-- [x] **KU saturation 분석** — 50c 외삽 데이터 도출
-- [x] **Phase 재구조화 계획 수립** — plan 파일 작성 + 사용자 의사결정 4개 수집
+- [x] **미커밋 변경사항 commit** — `009e52f` (279 files: dashboard loader/app/templates, stage-e-off/on bench 이동, tests)
+- [x] **P5 Gate 공식 판정** — **GATE PASS** (`7ed21b5`)
+  - G5-1 schema validate: 7/7 PASS
+  - G5-2 dashboard load: 1.49s (≤ 10s, 7 views)
+  - G5-3 stub 금지: 확인
+  - G5-4 LOC: 986 (≤ 2000)
+  - G5-5 operator-guide: 184줄
+  - G5-6 tests: **821** (≥ 583)
+  - S10 blocking scenario: PASS
+  - readiness-report.md: `dev/active/phase-si-p5-telemetry-dashboard/readiness-report.md`
+  - INDEX.md: p5-infra row 추가
+- [x] **Phase 재구조화** — `bfa6d9e`
+  - 기존 P6 (Multi-Domain) → **M1** (suspended) 분리
+  - 신규 P6 = "Consolidation & Knowledge DB Release" (A→B→C, 16 tasks)
+  - dev-docs 생성: `dev/active/phase-si-p6-consolidation/` (plan/context/tasks/debug-history)
+  - D-154~D-157 결정사항 기록
+  - project-overall 3파일 동기화 (plan/context/tasks)
+- [x] **session-compact 갱신** — `3f8d950`
 
 ## Current State
 
 **브랜치**: `main`  
-**서버**: PID 15988, `http://127.0.0.1:8000`  
-**테스트**: **24 passed** (test_obs/)
+**최신 commit**: `3f8d950`  
+**테스트**: **821 passed** (3 skipped)
 
-### 사용자 확정 결정
+### Silver Phase 현황
 
-| 결정 | 내용 |
-|------|------|
-| 기존 P6 (Multi-Domain) | **M1 으로 분리 (보류)** — task 보존 |
-| 신규 P6 순서 | **A → B → C** (Pain Point 먼저) |
-| KU saturation 위치 | **신규 P6-A 안에 흡수** |
-| P5 Gate 판정 시점 | **P6 재구조화 전에 먼저** |
+| Phase | 상태 |
+|-------|------|
+| P0~P4 | 완료 ✅ |
+| P5 Telemetry & Dashboard | **Gate PASS** (2026-04-18) ✅ |
+| **P6 Consolidation & KB Release** | **착수 예정** ← 현재 |
+| M1 Multi-Domain | suspended (P6 완료 후 활성화) |
 
-### Changed Files
+### Changed Files (이번 세션)
 
-- `src/obs/dashboard/loader.py` — conflict-ledger 양방향 호환, _from_trajectory, load_ku_progression, derive_remodel_events 추가
-- `src/obs/dashboard/app.py` — trial 드롭다운, KU/Gini series, remodel events 라우트
-- `src/obs/dashboard/templates/base.html` — trial 드롭다운 select 추가
-- `src/obs/dashboard/templates/overview.html` — KU Evolution 섹션
-- `src/obs/dashboard/templates/timeline.html` — 차트 4개로 확장
-- `src/obs/dashboard/templates/remodel.html` — derived events 테이블
-- `tests/test_obs/test_loader_legacy_fallback.py` — 5개 테스트 추가
-- `bench/silver/japan-travel/stage-e-off/` — 이동됨
+- `src/obs/dashboard/loader.py` — conflict-ledger 양방향, legacy fallback, KU progression, remodel events
+- `src/obs/dashboard/app.py` — trial 드롭다운, KU/Gini/remodel routes
+- `src/obs/dashboard/templates/` (4개) — base/overview/timeline/remodel
+- `tests/test_obs/test_loader_legacy_fallback.py` — 7개 (5개 추가)
+- `bench/silver/japan-travel/stage-e-off/` — 이동됨 (from japan-travel-external-anchor)
 - `bench/silver/japan-travel/stage-e-on/` — 이동됨
-- `C:\Users\User\.claude\plans\crystalline-imagining-snowflake.md` — Phase 재구조화 plan
+- `bench/silver/INDEX.md` — p5-infra row 추가
+- `dev/active/phase-si-p5-telemetry-dashboard/readiness-report.md` — P5 Gate PASS 보고서
+- `dev/active/phase-si-p6-consolidation/` — P6 dev-docs 4파일 신규
+- `dev/active/project-overall/project-overall-{plan,context,tasks}.md` — P6/M1 재구조화 반영
 
 ## Remaining / TODO
 
-- [x] **미커밋 변경사항 commit** — commit `009e52f` (dashboard 개선 279 files)
-- [x] **P5 Gate 공식 판정** — **GATE PASS** (`7ed21b5`). G5-1~6 전항목, S10, 821 tests
-- [x] **project-overall + masterplan 갱신** — P6 → M1 분리 + 신규 P6 추가 (`bfa6d9e`)
-- [x] **신규 P6 dev-docs 생성** — `dev/active/phase-si-p6-consolidation/` 생성 (`bfa6d9e`)
-- [ ] **기존 P6 디렉토리 rename** — `phase-si-p6-multidomain/` 디렉토리 미존재 (skip)
-- [ ] **신규 P6 착수** — A1 (KU saturation 진단) 시작
+- [ ] **P6-A1: KU saturation 진단** — `scripts/analyze_saturation.py` 작성 (API 미호출, 기존 데이터 분석)
+  - stage-e-on c11-15 0.5/cyc 정체 root cause: parse_yield / GU 생성 정체 / dedup 과다
+  - `bench/silver/japan-travel/stage-e-on/trajectory/` + `bench/silver/japan-travel/stage-e-off/trajectory/` 분석
+- [ ] **P6-A2~A4**: A1 root cause 기반 Inside fix (re-seed / field 다양화 / KU 재해소)
+- [ ] **P6-A5~A7**: Stage E 보강 (slug 정규화 / probe accept rate / pivot 검증)
+- [ ] **P6-A8**: stage-e-on 50c trial (API 비용 사전 확인 필수)
+- [ ] **P6-B~C**: Performance + KB Release
 
 ## Key Decisions
 
-### Dashboard
-- **Gini 정의**: variability가 아니라 *diversity/concentration* 지표. `category_gini (1=편중, 0=균등)` 명시
-- **legacy trial 처리**: trajectory.json → cycles.jsonl 스키마 메모리 변환 (파일 생성 없음). phase="legacy" 라벨
-- **conflict-ledger**: 하이픈(실제 P1-B1 schema)과 언더스코어(P5 초기 버그) 양쪽 지원
+### P6 재구조화 (2026-04-18 확정)
+| 결정 | 내용 |
+|------|------|
+| D-154 | 기존 P6(Multi-Domain) → M1(suspended) 분리 |
+| D-155 | KU saturation = P6-A Inside 흡수 (별도 phase 없음) |
+| D-156 | D-151 후보(slug collision) → P6-A5 확정 실행 |
+| D-157 | P6-A 순서: A1 진단 → A2~A4 Inside → A5~A7 Outside → A8 trial |
 
-### P4 재평가
-- **VP4 PASS 확인**: D-147~D-150 fix 적용된 commit `10bc58a` 기준 4/5 PASS
-- **Stage E on KU < off (106 < 116)**: probe overhead trade-off, 의도된 동작. gap_resolution 향상으로 보상 (0.789→0.813)
-- **Overall Gate FAIL**: VP2 gap_resolution 0.85 미달 — Stage E 책임 아님, core loop 문제
-- **잔존 이슈**: D-151 (universe probe slug collision), exploration pivot 50c 검증 필요
-
-### KU Saturation
-| Trial | c1-5/cyc | c11-15/cyc | 50c 외삽 |
-|---|---|---|---|
-| stage-e-off | 11.0 | 4.0 | 256 |
-| stage-e-on | 9.5 | **0.5** | 124 ⚠️ |
-| p2-smart-remodel | 11.0 | 5.2 | **336** ✅ |
-- P2 remodel 단독으로는 50c sustained growth 부족 → P6-A Inside 작업 필요
-
-### 신규 P6 = "Consolidation & Knowledge DB Release"
-- **P6-A (Inside)**: KU saturation 진단, re-seed, field 다양화, stale 재해소
-- **P6-A (Outside/Stage E)**: D-151 slug 정규화, probe accept rate 튜닝, pivot 50c 검증
-- **P6-B**: LLM batch, state_io 증분 저장, wall_clock 측정
-- **P6-C**: japan-travel KB external packaging + query API + operator guide
+### P5 Gate 판정 기준 (front setup 성격)
+- P5는 telemetry + dashboard 인프라 구축 phase → 실 trial 재실행 없이 코드/테스트/docs 기준 판정
+- cycles.jsonl 실 데이터 연결은 P6 첫 trial 시 자동 검증
 
 ## Context
 
 다음 세션에서는 답변에 한국어를 사용하세요.
 
-- **P5 완료 상태**: 코드+docs 완료. Gate 공식 판정(silver-phase-gate-check) 이 최우선
-- **Dashboard 서버**: `python -m src.obs.dashboard.app --trial-root bench/silver/japan-travel/p0-20260412-baseline`
-- **미커밋 변경**: dashboard 관련 파일 전체 (loader.py, app.py, 4개 templates, test file, bench 디렉토리 이동)
-- **plan 파일**: `C:\Users\User\.claude\plans\crystalline-imagining-snowflake.md` 참조
-- **bench/japan-travel-external-anchor/**: stage-e-off/on 이동 후 COMPARISON.md만 남아있음 (빈 디렉토리 아님)
-- **API 비용 주의**: 실 trial 재실행 전 사전 확인 필수 (feedback_api_cost_caution)
+- **P6 dev-docs**: `dev/active/phase-si-p6-consolidation/` — plan/context/tasks 참조
+- **P6-A1 분석 대상 데이터**:
+  - `bench/silver/japan-travel/stage-e-on/trajectory/` (15c)
+  - `bench/silver/japan-travel/stage-e-off/trajectory/` (15c)
+  - `bench/silver/japan-travel/stage-e-on/telemetry/cycles.jsonl` (있는 경우)
+  - `bench/japan-travel-external-anchor/COMPARISON.md` (P4 분석 결과)
+- **스크립트 정책**: `scripts/analyze_saturation.py` 는 분석 스크립트 (API 미호출) → 허용
+- **API 비용 주의**: P6-A8 50c trial 실행 전 반드시 사전 확인
+- **테스트 현황**: 821 passed, 3 skipped
+- **plan 파일**: `C:\Users\User\.claude\plans\crystalline-imagining-snowflake.md` (이미 실행 완료, 참고만)
 
 ## Next Action
 
-**Step 1: 미커밋 변경사항 commit**
+**P6-A1: KU saturation 진단 스크립트 작성**
 
 ```bash
-git -C /c/Users/User/Learning/KBs-2026/domain-k-evolver add \
-  src/obs/dashboard/loader.py \
-  src/obs/dashboard/app.py \
-  src/obs/dashboard/templates/ \
-  tests/test_obs/test_loader_legacy_fallback.py \
-  bench/silver/japan-travel/stage-e-off \
-  bench/silver/japan-travel/stage-e-on
-git -C /c/Users/User/Learning/KBs-2026/domain-k-evolver commit -m "[si-p5] Dashboard 개선: trial 드롭다운 + legacy 호환 + KU/Gini/Remodel 뷰 추가"
+# 분석 대상
+bench/silver/japan-travel/stage-e-on/trajectory/
+bench/silver/japan-travel/stage-e-off/trajectory/
+bench/silver/japan-travel/p2-smart-remodel*/trajectory/ (있는 경우)
+bench/japan-travel-external-anchor/COMPARISON.md
 ```
 
-**Step 2: P5 Gate 공식 판정**
+분석 항목:
+1. cycle별 KU 성장률 (window: 1~5, 6~10, 11~15)
+2. parse_yield 추이 (claims 생성 수 per cycle)
+3. GU 생성/해소 비율 추이
+4. entity dedup (skip/reject 비율)
+5. KU 카테고리별 포화도 (Gini 추이)
 
-`silver-phase-gate-check` skill 실행
-
-**Step 3: Phase 재구조화 + 신규 P6 dev-docs**
-
-1. project-overall-tasks.md / project-overall-plan.md / masterplan-v2.md 갱신
-2. `dev-docs` skill → phase-si-p6-consolidation
-3. `phase-si-p6-multidomain/` → `phase-m1-multidomain/` rename
+결과 → `debug-history.md` 기록 + A2~A4 scope 최종 결정
