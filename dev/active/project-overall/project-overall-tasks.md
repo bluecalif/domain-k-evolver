@@ -458,13 +458,13 @@
 
 > **목표**: KU saturation 해소 + Performance 최적화 + japan-travel KB 외부 패키징
 > **순서**: P6-A (Pain Point) → P6-B (Performance) → P6-C (KB Release)
-> **Gate**: P6-A: stage-e-on 50c rerun KU ≥ 250, gap_resolution ≥ 0.85 / P6-C: 외부 import e2e PASS
-> **Dev-docs**: `dev/active/phase-si-p6-consolidation/` (생성 예정)
+> **Gate**: P6-A F-Gate (A12 50c 선행): 15c rerun Remodel ≥ 2회 + Pivot ≥ 1회 실발동, forecast c16-c50 Remodel ≥ 4회 + Pivot ≥ 2회 (conf ≥ 0.6) / P6-A Gate: 50c rerun KU ≥ 250, gap_resolution ≥ 0.85 / P6-C: 외부 import e2e PASS
+> **Dev-docs**: `dev/active/phase-si-p6-consolidation/`
 
-### P6-A. Pain Point Resolution (Inside + Outside)
+### P6-A. Pain Point Resolution (Inside + Outside + Forecastability)
 
 **Inside — Core Loop (KU sustained growth)**:
-- [ ] **P6-A1** KU saturation 진단 — c11-15 정체 root cause (parse_yield / GU 정체 / dedup 과다) `[M]`
+- [ ] **P6-A1** KU saturation 진단 — c11-15 정체 root cause + gap_map delta=0 cycle 수 측정 `[M]`
 - [ ] **P6-A2** Plateau-driven re-seed — plateau 감지 시 LLM-driven new seed pack `[M]`
 - [ ] **P6-A3** Field 다양화 강화 — 같은 entity_key 내 미충족 field 우선 GU 생성 `[M]`
 - [ ] **P6-A4** Active KU 재해소 — disputed/stale KU → GU 재투입 `[M]`
@@ -472,11 +472,17 @@
 **Outside — Stage E 보강**:
 - [ ] **P6-A5** Universe probe slug 정규화 + 유사도 필터 (D-151, collision_active 반복 방지) `[M]`
 - [ ] **P6-A6** Probe accept rate 튜닝 — 15c에 1개 → 5c당 1개 목표 `[S]`
-- [ ] **P6-A7** Exploration pivot 50c trial 발동 검증 `[S]`
 
-**검증 (P6-A gate)**:
-- [ ] **P6-A8** stage-e-on-50c trial 생성 + 실행 → KU ≥ 250, gap_resolution ≥ 0.85 `[L]`
-- [ ] **P6-A9** COMPARISON-v2.md 작성 `[S]`
+**Forecastability — 메커니즘 발동 보장 (D-158 신규)**:
+- [ ] **P6-A7** Smart Remodel 임계값 config 외부화 (`SmartRemodelConfig`, `src/orchestrator.py:454-503`) `[S]`
+- [ ] **P6-A8** Exploration Pivot 임계값 config 외부화 (`ExternalAnchorConfig.novelty_*`, `src/nodes/exploration_pivot.py:25-26`) `[S]`
+- [ ] **P6-A9** Pivot 발동 조건 단위 테스트 확장 — 15c 내 시나리오 5+ (synthetic `_stagnant_state` 패턴 재사용) `[S]`
+- [ ] **P6-A10** Trigger telemetry 구조화 (`trigger_event` optional 필드 emit — Remodel/Pivot 발동 로그 JSON화) `[M]`
+- [ ] **P6-A11** **F-Gate 판정** — stage-e-on 15c rerun (~$1) + forecast (선형/지수 projection + damping + bootstrap confidence) → Remodel ≥ 2회 + Pivot ≥ 1회 실발동 + forecast c16-c50 Remodel ≥ 4회 + Pivot ≥ 2회 + conf ≥ 0.6. 미달 시 A2~A6 재설계 루프 `[M]`
+
+**검증 (P6-A gate, F-Gate PASS 이후)**:
+- [ ] **P6-A12** stage-e-on-50c trial 생성 + 실행 → KU ≥ 250, gap_resolution ≥ 0.85. trial card에 forecast 예측 기입 `[L]`
+- [ ] **P6-A13** COMPARISON-v2.md 작성 + forecast vs 실측 오차 분석 `[S]`
 
 ### P6-B. Performance Optimization
 

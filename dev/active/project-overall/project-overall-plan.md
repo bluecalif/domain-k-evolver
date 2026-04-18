@@ -31,7 +31,10 @@ SI-P3R 완료 (2026-04-14, D-125)
    ▼  Silver P5 (Telemetry & Dashboard) ✅ 완료 (2026-04-18, Gate PASS, 821 tests)
    │
    ▼  Silver P6 (Consolidation & KB Release) ← 현재
-   │      - P6-A: Pain Point Resolution (KU saturation + Stage E 보강)
+   │      - P6-A Inside (A1~A4): KU saturation 해소
+   │      - P6-A Outside (A5~A6): Stage E 보강
+   │      - P6-A Forecastability (A7~A11, D-158): config 외부화 + trigger telemetry + F-Gate (15c rerun + forecast)
+   │      - P6-A Gate (A12~A13): 50c trial (F-Gate PASS 선행)
    │      - P6-B: Performance Optimization (LLM batch, state_io 증분, wall_clock)
    │      - P6-C: Knowledge DB Release (외부 패키징, query API)
    │

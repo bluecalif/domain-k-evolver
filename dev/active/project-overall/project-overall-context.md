@@ -217,7 +217,11 @@ class EvolverState(TypedDict):
 | D-154 | 기존 P6(Multi-Domain)을 **M1**으로 분리 (suspended). 신규 P6 = Consolidation & KB Release (A→B→C) | P6 재구조화 |
 | D-155 | KU saturation 작업을 P6-A Inside에 흡수 (별도 phase 없음) | P6-A |
 | D-156 | D-151 후보(slug collision) → P6-A5로 확정 실행 | P6-A Outside |
-| D-157 | P6-A 실행 순서: 진단 우선(A1) → Inside(A2~A4) → Outside(A5~A7) → 50c trial(A8) | P6-A |
+| D-157 | P6-A 실행 순서 (초안): 진단(A1) → Inside(A2~A4) → Outside(A5~A6) → 50c trial. **D-158로 개정됨** | P6-A |
+| D-158 | **P6-A Forecastability F-Gate 신설 (A7~A11)**. Smart Remodel + Exploration Pivot 15c 내 충분 발동 + 15c 이후 지속 발동을 15c 데이터로 forecast — 50c A12 선행 조건. A1~A13 재번호 | P6-A |
+| D-159 | Remodel/Pivot 임계값 **config 외부화 필수** (`SmartRemodelConfig`, `ExternalAnchorConfig.novelty_*`). 하드코딩 유지 불가 | P6-A7, A8 |
+| D-160 | Trigger telemetry는 **log 파싱 아니라 JSON 필드 emit** (`trigger_event` optional). schema backward compat 유지 | P6-A10 |
+| D-161 | **Forecast 모델 금지 사항**: Prophet/ARIMA 등 블랙박스 모델 금지. 선형/지수 projection + damping + bootstrap confidence 한정 (설명가능성 우선) | P6-A11 |
 
 ---
 

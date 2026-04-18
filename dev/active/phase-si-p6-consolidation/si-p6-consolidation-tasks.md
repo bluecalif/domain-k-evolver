@@ -1,38 +1,51 @@
 # Silver P6: Consolidation & Knowledge DB Release — Tasks
-> Last Updated: 2026-04-18
-> Status: Planning (0/16)
+> Last Updated: 2026-04-18 (rev: F-Gate 추가, A1~A13 재번호)
+> Status: Planning (0/20)
 
 ## Summary
 
 | Stage | Tasks | Done | Status |
 |-------|-------|------|--------|
-| P6-A Inside (KU saturation) | 4 | 0 | 대기 |
-| P6-A Outside (Stage E 보강) | 3 | 0 | 대기 |
-| P6-A Gate (50c trial) | 2 | 0 | 대기 |
-| P6-B Performance | 3 | 0 | 대기 |
-| P6-C KB Release | 4 | 0 | 대기 |
-| **합계** | **16** | **0** | — |
+| P6-A Inside (KU saturation) | 4 (A1~A4) | 0 | 대기 |
+| P6-A Outside (Stage E 보강) | 2 (A5~A6) | 0 | 대기 |
+| **P6-A Forecastability (F-Gate)** | **5 (A7~A11)** | **0** | **대기 (신규, D-158)** |
+| P6-A Gate (50c trial) | 2 (A12~A13) | 0 | 대기 |
+| P6-B Performance | 3 (B1~B3) | 0 | 대기 |
+| P6-C KB Release | 4 (C1~C4) | 0 | 대기 |
+| **합계** | **20** | **0** | — |
 
-Size: S:5 / M:9 / L:2 / XL:0
+Size: S:7 / M:11 / L:2 / XL:0
 
-테스트 목표: 821 (현재) → ≥ **836** (+15 예상)
+테스트 목표: 821 (현재) → ≥ **840** (+19 예상)
 
 ---
 
-## Gate 조건 (P6-A / P6-B / P6-C)
+## Gate 조건 (P6-A F-Gate / P6-A Gate / P6-B / P6-C)
 
-### P6-A Gate
+### P6-A F-Gate (A12 50c 선행, D-158) — 신규
+
+- [ ] A1~A10 반영 완료 + 821 tests green 유지
+- [ ] stage-e-on 15c rerun 실행 (A11, ~$1) — API 비용 사전 확인 필수
+- [ ] **Smart Remodel ≥ 2회 실발동** 관측 (trigger_event 로그)
+- [ ] **Exploration Pivot ≥ 1회 실발동** 관측 (임계값 완화 실험 포함, forecast는 원복된 기준)
+- [ ] forecast 산출: **c16-c50 Remodel ≥ 4회 + Pivot ≥ 2회** 예측 + **confidence ≥ 0.6**
+- [ ] 미달 시 A2~A6 재설계 루프 (A12 진행 차단)
+
+### P6-A Gate (A12 이후)
+
 - [ ] stage-e-on 50c trial: **KU ≥ 250**
 - [ ] stage-e-on 50c trial: **gap_resolution ≥ 0.85**
 - [ ] collision_active 반복 없음 (A5 효과 확인)
-- [ ] Exploration pivot 발동 1회 이상 (A7 확인)
-- [ ] COMPARISON-v2.md 작성 완료 (A9)
+- [ ] Exploration pivot 실발동 1회 이상 (A11 forecast 검증)
+- [ ] COMPARISON-v2.md 작성 완료 (A13) — forecast vs 실측 오차 포함
 
 ### P6-B Gate
+
 - [ ] LLM batch 도입 후 wall_clock ≥ 10% 개선 측정값 기록
 - [ ] state_io delta write로 cycle 저장 성능 개선 확인
 
 ### P6-C Gate
+
 - [ ] `evolver-kb-japan-travel` 외부 import e2e PASS
 - [ ] KU lookup query API 동작 확인
 - [ ] operator-guide §9 외부 사용자 섹션 추가 완료
@@ -52,8 +65,9 @@ Size: S:5 / M:9 / L:2 / XL:0
 - GU 생성 수 추이 (신규 GU vs 해소 GU 비율)
 - entity dedup 비율 (통합 시 skip/reject 비율)
 - KU 카테고리별 포화도 (Gini 추이)
+- **gap_map delta = 0 cycle 수** — stage-e-on c10-c13 4사이클 완전 동결 현상 정량화
 
-**파일**: `scripts/analyze_saturation.py` [NEW] (API 미호출, 기존 데이터 분석)
+**파일**: `scripts/analyze_saturation.py` [NEW] (API 미호출, 기존 데이터 분석). A11에서 forecast 모드 확장.
 
 - [ ] P6-A1 완료 — commit: TBD
 
@@ -92,7 +106,7 @@ Size: S:5 / M:9 / L:2 / XL:0
 
 ### P6-A4 Active KU 재해소 `[M]`
 
-**전제**: A1 root cause = stale/disputed KU가 GU 생성을 막고 있는 경우
+**전제**: A1 root cause = stale/disputed KU가 GU 생성을 막고 있는 경우 (stage-e-on c10-c13 동결의 주 용의자)
 
 **파일**: `src/nodes/critique.py` 확장
 
@@ -100,6 +114,7 @@ Size: S:5 / M:9 / L:2 / XL:0
 - disputed KU 중 evidence가 충분한 것 → auto-resolve 또는 GU 재생성
 - stale KU 중 observed_at이 오래된 것 → refresh GU 재투입 (1회 refresh 후에도 stale 지속 시 재투입)
 - 재투입 횟수 제한: KU당 최대 3회 (무한 루프 방지)
+- **critique가 새 GU를 생성하지 못하는 조건 진단 추가** (A1 결과 기반)
 
 - [ ] P6-A4 완료 — commit: TBD
 
@@ -109,7 +124,7 @@ Size: S:5 / M:9 / L:2 / XL:0
 
 ### P6-A5 Universe probe slug 정규화 `[M]`
 
-**배경**: D-151 확정 — stage-e-on c11-15 growth 0.5/cyc는 probe slug collision 때문
+**배경**: D-151 확정 — stage-e-on c9/c13 collision_active 5건 실측. slug 정규화만으로는 0.5/cyc → 4.0/cyc 회복 불가 (gap_map 동결은 core loop 문제). collision 해소는 별도 기여.
 
 **파일**: `src/nodes/universe_probe.py`
 
@@ -137,30 +152,123 @@ Size: S:5 / M:9 / L:2 / XL:0
 
 ---
 
-### P6-A7 Exploration pivot 50c 발동 검증 `[S]`
+## Stage A-Forecastability: 메커니즘 발동 보장 (신규, D-158)
 
-**배경**: 15c window만 확인 — pivot 조건(low_novelty × 5c)이 50c에서 실제 발동하는지 미검증
+### P6-A7 Smart Remodel 임계값 config 외부화 `[S]`
 
-**파일**: A8 trial 결과 기반 (별도 코드 없음)
+**배경**: `src/orchestrator.py:454-458` 에 하드코딩 (GROWTH_STAGNATION_THRESHOLD=5, WINDOW=3; EXPLORATION_DROUGHT_THRESHOLD=30, WINDOW=5). sensitivity 실험 불가.
+
+**파일**: 신규 `SmartRemodelConfig` (`src/config.py`), `src/orchestrator.py:454-503` 리팩터
 
 **요건**:
-- A8 50c trial의 `pivot_history` 확인 → 발동 여부 기록
-- 미발동 시 조건 완화 검토 (context.md 결정사항 기록)
+- `SmartRemodelConfig`: `growth_stagnation_threshold`, `growth_stagnation_window`, `exploration_drought_threshold`, `exploration_drought_window`
+- `config.py` from_env / Silver trial snapshot에 dump
+- 기본값 = 현재 상수와 동일 (breaking change 아님)
+- 단위 테스트: config 기본값 injection → 기존 동작 보존 검증
+- 기존 821 tests green 유지 필수
 
-- [ ] P6-A7 완료 — commit: TBD (A8 후 확인)
+- [ ] P6-A7 완료 — commit: TBD
+
+---
+
+### P6-A8 Exploration Pivot 임계값 config 외부화 `[S]`
+
+**배경**: `src/nodes/exploration_pivot.py:25-26` 에 하드코딩 (WINDOW=5, THRESHOLD=0.1). 15c 내 발동 조건 실험 불가.
+
+**파일**: `src/config.py` `ExternalAnchorConfig` 확장, `src/nodes/exploration_pivot.py:25-90` 리팩터
+
+**요건**:
+- `ExternalAnchorConfig.novelty_threshold`, `.novelty_window` 추가
+- 기본값 = 0.1, 5 (기존 상수와 동일)
+- from_env / trial snapshot에 dump
+- 기존 테스트 전부 green 유지
+
+- [ ] P6-A8 완료 — commit: TBD
+
+---
+
+### P6-A9 Pivot 발동 조건 단위 테스트 확장 `[S]`
+
+**배경**: `tests/test_nodes/test_exploration_pivot.py` 에 synthetic `_stagnant_state` 주입 패턴 확립됨. 15c 내 발동 시나리오 커버 부족.
+
+**파일**: `tests/test_nodes/test_exploration_pivot.py`
+
+**요건**:
+- 15c 내 발동 시나리오 5개 이상 (synthetic `ext_novelty_history` 주입):
+  1. window 경계 (정확히 window 길이만큼 stagnant)
+  2. threshold 경계 (0.099 vs 0.101 갈림)
+  3. 중간 회복 (c3에서 novelty↑ → 리셋)
+  4. audit 소비 교차 (stagnant + audit_consumed → skip)
+  5. config override (novelty_window=3 → 발동, =5 → 미발동)
+- 모든 테스트는 실제 LLM/API 호출 없이 순수 단위 테스트
+
+- [ ] P6-A9 완료 — commit: TBD
+
+---
+
+### P6-A10 Trigger telemetry 구조화 `[M]`
+
+**배경**: 현재 Remodel/Pivot 발동은 orchestrator log line (`Remodel 완료: audit_cycle=10, proposals=67 (merge, ...)`) 텍스트로만 남음. forecast를 위해 JSON 필드로 구조화 필요.
+
+**파일**: `src/obs/telemetry.py:56-100`, `schemas/telemetry.v1.schema.json`, `src/orchestrator.py`, `src/nodes/exploration_pivot.py`
+
+**요건**:
+- `trigger_event` optional 필드: `{cycle: int, mechanism: "remodel"|"pivot", reason: str, leading_indicators: {ext_novelty: float, drought_counter: int, stagnation_counter: float, ku_delta: int, gu_open: int}}`
+- Remodel 발동 시 / Pivot 발동 시 emit
+- schema validate PASS (G5-1 회귀 방지)
+- Dashboard loader backward compat (없어도 동작)
+- 단위 테스트: emit 누락 / 중복 방지
+
+- [ ] P6-A10 완료 — commit: TBD
+
+---
+
+### P6-A11 Forecastability F-Gate (15c rerun + forecast + 판정) `[M]`
+
+> **API 비용 주의**: 15c rerun ≈ $1 예상. 실행 전 사전 확인 필수. 이 비용으로 A12 50c ($3~5) ROI 보증.
+
+**배경**: 사용자 bottomline — "Smart Remodel + Exploration Pivot 15c 내 충분 발동 + 15c 이후 지속 발동 보장을 15c 데이터만으로 forecast. A8 50c 전 완료." (D-158)
+
+**파일**: `bench/silver/japan-travel/p6a-fgate-15c/` [NEW], `scripts/analyze_saturation.py` forecast 모드 확장
+
+**실행 순서**:
+1. A1~A10 반영 + 821 tests green 확인
+2. stage-e-on 15c rerun (silver-trial-scaffold) — trigger_event emit 확인
+3. forecast 모델 적용:
+   - **Input**: `ku_delta[t]`, `gu_open[t]`, `ext_novelty[t]`, `drought_counter[t]`, `stagnation_counter[t]` 시계열 + 실발동 이벤트 목록
+   - **Method (단순/투명)**:
+     - (a) 관측 빈도 외삽: 15c 내 N회 → 50c 기대 = N × (35/15) × damping (growth slope 감쇠 시 drought↑)
+     - (b) Leading indicator threshold crossing: `drought_counter` 선형 회귀 → 임계값 30 미달 cycle 예측 / `ext_novelty` 이동평균 → WINDOW 연속 < THRESHOLD cycle 예측
+     - (c) Confidence: c1-c12 학습 → c13-c15 예측 bootstrap hit/miss → confidence 산출
+   - **Output (readiness-report 섹션)**:
+     ```
+     forecast.remodel: observed=N, projected_c16_c50=M, confidence=0.XX
+     forecast.pivot: observed=N, projected_c16_c50=M, confidence=0.XX
+     verdict: PASS/FAIL/RETRY
+     ```
+4. **Gate 판정**:
+   - [ ] Remodel ≥ 2회 + Pivot ≥ 1회 실발동 (Pivot 미발동 시 임계값 완화 실험 허용 — forecast는 원복된 기준으로 평가)
+   - [ ] forecast c16-c50 Remodel ≥ 4회 + Pivot ≥ 2회
+   - [ ] confidence ≥ 0.6
+   - [ ] 미달 시 A2~A6 재설계 루프
+
+**금지**: Prophet/ARIMA 등 블랙박스 모델. 선형/지수 projection + damping + bootstrap confidence 한정.
+
+- [ ] P6-A11 완료 — commit: TBD
 
 ---
 
 ## Stage A-Gate: 50c Trial
 
-### P6-A8 stage-e-on-50c trial 생성 + 실행 `[L]`
+### P6-A12 stage-e-on-50c trial 생성 + 실행 `[L]`
 
-> **API 비용 주의**: 실행 전 사전 확인 필수 (≈ $3~5 예상)
+> **선행 조건**: **P6-A F-Gate PASS (A11)**. API 비용 주의 (≈ $3~5 예상).
 
 **파일**: `bench/silver/japan-travel/p6a-stage-e-on-50c/` [NEW]
 
 **요건**:
 - silver-trial-scaffold skill로 trial 생성
+- trial card에 A11 forecast 예측 횟수 기입 (실측과 비교용)
 - `--external-anchor --cycles 50` 실행
 - 중간 체크포인트: 25c 후 KU/gap_resolution 확인 → 계속 여부 결정
 - 완료 후 readiness-report.md 작성
@@ -169,12 +277,13 @@ Size: S:5 / M:9 / L:2 / XL:0
 - KU ≥ 250
 - gap_resolution ≥ 0.85
 - collision_active = 0 or stable
+- Remodel / Pivot 실발동 = forecast ± 2회 (예측 정확도 검증)
 
-- [ ] P6-A8 완료 — commit: TBD
+- [ ] P6-A12 완료 — commit: TBD
 
 ---
 
-### P6-A9 COMPARISON-v2.md 작성 `[S]`
+### P6-A13 COMPARISON-v2.md 작성 `[S]`
 
 **파일**: `bench/japan-travel-external-anchor/COMPARISON-v2.md` 또는 `bench/silver/japan-travel/COMPARISON-v2.md`
 
@@ -182,10 +291,10 @@ Size: S:5 / M:9 / L:2 / XL:0
 - 15c vs 50c KU 성장률 비교 (per-window)
 - stage-e-on vs stage-e-off 50c 비교
 - P6-A5/A6 fix 효과 (collision_active, accept rate 변화)
-- Exploration pivot 발동 여부
-- P6-A gate 달성 여부 판정
+- **Remodel / Pivot 실발동 횟수 vs forecast 예측 비교** (오차 분석)
+- P6-A Gate 달성 여부 판정
 
-- [ ] P6-A9 완료 — commit: TBD
+- [ ] P6-A13 완료 — commit: TBD
 
 ---
 
@@ -193,7 +302,9 @@ Size: S:5 / M:9 / L:2 / XL:0
 
 ### P6-B1 LLM 호출 batch `[L]`
 
-**파일**: `src/adapters/llm_adapter.py`
+**배경**: 주 호출 지점 = `src/nodes/collect.py:130` (GU당 parse invoke). ThreadPool 병렬이나 batch API 아님. cycle당 최대 12회 → batch 1회로.
+
+**파일**: `src/adapters/llm_adapter.py`, `src/nodes/collect.py`
 
 **요건**:
 - claim별 단발 invoke → `ainvoke` batch 활용 (langchain `abatch`)
@@ -293,7 +404,9 @@ Size: S:5 / M:9 / L:2 / XL:0
 
 ## Cross-phase 제어
 
-- [ ] **X1** P6-A gate 완료 후 `bench/silver/INDEX.md` 에 p6a-stage-e-on-50c trial row 추가
+- [ ] **X1** P6-A Gate 완료 후 `bench/silver/INDEX.md` 에 p6a-fgate-15c + p6a-stage-e-on-50c trial row 추가
+- [ ] **X2** A10 `trigger_event` schema 변경 시 dashboard loader regression 테스트
 - [ ] **X3** `schemas/kb-export.schema.json` positive + negative 테스트 (C1 포함)
 - [ ] **X4** `src/kb/__init__.py` 생성 확인
+- [ ] **X5** A7/A8 config 외부화 후 기존 snapshot의 config dump 필드 backward compat 확인
 - [ ] **X6** P6 완료 시 masterplan §8 리스크 레지스터 재평가
