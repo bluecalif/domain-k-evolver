@@ -5,144 +5,126 @@
 
 ## Goal
 
-P6-A Plan 강화 — 사용자 피드백 3개 항목 검증 후 Forecastability F-Gate 신설 및 dev-docs 반영
+A1-D3 완료 (15c full bench + root cause 확정) → A2~A4 착수
 
 ## Completed
 
-- [x] **실 데이터 분석 (bench 조사)**
-  - stage-e-on/off trajectory.csv 비교: c10-c13 gap_map 완전 동결 확인 (open=20, resolved=76 불변 4사이클)
-  - p2-smart-remodel 분석: c10 Remodel 발동 (exploration_drought, 67 merges) + c15 1회 = 15c 내 2회
-  - LLM 단발 호출 지점 확정: `src/nodes/collect.py:130` (GU당 parse invoke)
-  - 임계값 하드코딩 실측: `src/orchestrator.py:454-458` (GROWTH_STAGNATION=5, DROUGHT=30), `src/nodes/exploration_pivot.py:25-26` (WINDOW=5, THRESHOLD=0.1)
-  - `tests/test_nodes/test_exploration_pivot.py` 에 synthetic `_stagnant_state` 주입 패턴 존재 확인
-
-- [x] **Plan 파일 작성** — `C:\Users\User\.claude\plans\a10-p2-remodel-indexed-duckling.md` (F-Gate 전체 설계)
-
-- [x] **P6 dev-docs 업데이트** (6개 파일)
-  - `dev/active/phase-si-p6-consolidation/si-p6-consolidation-plan.md` — pain points 업데이트 + Stage 재구조화 (Forecastability 추가) + task 재번호 (A1~A13) + 위험 목록 보강
-  - `dev/active/phase-si-p6-consolidation/si-p6-consolidation-tasks.md` — A1~A13 전면 재작성 (20 tasks), F-Gate 조건 추가, A7~A11 상세 spec
-  - `dev/active/phase-si-p6-consolidation/si-p6-consolidation-context.md` — D-158~D-161 추가, 파일 참조 갱신, F-Gate 임계치 표 추가
-  - `dev/active/project-overall/project-overall-tasks.md` — P6-A 목록 A1~A13 반영
-  - `dev/active/project-overall/project-overall-context.md` — D-158~D-161 추가
-  - `dev/active/project-overall/project-overall-plan.md` — P6 개요 Forecastability 섹션 추가
+- [x] **dev-docs 커밋** (e31b531) — A1 후속 조사 완료: wildcard 분석 + D-162 진단 로깅 전략
+- [x] **A1-D1: 진단 로깅 추가** (320caf0)
+  - `src/nodes/collect.py` — `_collect_single_gu` → `(claims, search_count)` 튜플, `_diag_search_by_gu` state 전달
+  - `src/nodes/integrate.py` — `_diag_resolved_gus`, `_diag_adjacent_gap_count` return 추가
+  - `src/orchestrator.py` — `_extract_cycle_ctx()` + `_diag_*` 필드 state 정리 + `emit_cycle` 전달
+  - `src/obs/telemetry.py` — `cycle_trace` 블록 + `emit_gu_trace()` (gu_trace.jsonl append)
+  - `src/state.py` — `_diag_*` 3개 필드 추가
+  - `schemas/telemetry.v1.schema.json` — `cycle_trace` 필드 추가
+  - 테스트: 821 passed 유지
+- [x] **A1-D2: analyze_saturation.py 옵션 4종** (5232155)
+  - `--trace-frozen N`: N cycle 이상 open GU + yield (gu_trace/스냅샷 fallback)
+  - `--query-patterns`: wildcard vs concrete search yield 분포
+  - `--cycle-diff C1 C2`: gap_map 상태 변화 상세
+  - `--compare-trials A B`: 두 trial open GU entity:field 집합 비교
+- [x] **A1-D3 일부: p6-diag-smoke-5c 실행** (stage-e-off, 5c)
+  - `bench/silver/japan-travel/p6-diag-smoke-5c/` trial 완료
+  - `telemetry/gu_trace.jsonl` 155행 생성 확인
+  - `--query-patterns` 결과: **wildcard avg_yield = 0.0 (cycle 2~5)**, concrete avg_yield = 11.95
+  - wildcard zero_yield 비율: 17/27 (63%) — 가설 강하게 지지
 
 ## Current State
 
 **브랜치**: `main`
-**최신 commit**: `ce5ebba` (`[si-p6] session-compact 최종 갱신`)
-**테스트**: **821 passed** (3 skipped)
+**최신 commit**: `5232155` (`[si-p6] A1-D2: analyze_saturation.py 진단 옵션 4종 추가`)
+**테스트**: 821 passed, 3 skipped
 
-### P6 task 구조 (개정 후)
+### Changed Files (미커밋 없음)
 
-| Stage | Tasks | Size |
-|-------|-------|------|
-| P6-A Inside (A1~A4) | KU saturation 진단 + re-seed + field 다양화 + KU 재해소 | M×4 |
-| P6-A Outside (A5~A6) | probe slug 정규화 + accept rate 튜닝 | M+S |
-| **P6-A Forecastability (A7~A11)** | Remodel config 외부화 + Pivot config 외부화 + Pivot 단위테스트 + trigger telemetry + F-Gate 판정 | S×3+M×2 |
-| P6-A Gate (A12~A13) | 50c trial + COMPARISON-v2.md | L+S |
-| P6-B (B1~B3) | LLM batch + state_io delta + wall_clock | L+M+S |
-| P6-C (C1~C4) | external schema + packaging + query API + operator guide | M×3+S |
-| **합계** | **20 tasks** | S:7 M:11 L:2 |
+- `bench/silver/japan-travel/p6-diag-smoke-5c/` — 5c smoke trial 완료
+- `bench/silver/japan-travel/p6-diag-full-15c/trial-card.md` — 생성됨 (bench 미실행)
 
-### Changed Files (이번 세션)
+### 주요 진단 데이터 (p6-diag-smoke-5c)
 
-- `dev/active/phase-si-p6-consolidation/si-p6-consolidation-plan.md` — F-Gate 추가, A1~A13 재번호, 위험/의존성 보강
-- `dev/active/phase-si-p6-consolidation/si-p6-consolidation-tasks.md` — 전면 재작성 (20 tasks)
-- `dev/active/phase-si-p6-consolidation/si-p6-consolidation-context.md` — D-158~D-161, F-Gate 임계치
-- `dev/active/project-overall/project-overall-tasks.md` — P6-A A1~A13 반영
-- `dev/active/project-overall/project-overall-context.md` — D-158~D-161
-- `dev/active/project-overall/project-overall-plan.md` — P6 개요 갱신
+| type     | count | avg_yield | zero_yield |
+|----------|-------|-----------|------------|
+| wildcard | 27    | 5.56      | 17/27 (63%) |
+| concrete | 128   | 11.95     | 26/128 (20%) |
+
+cycle별 wildcard avg_yield: c1=12.5, c2=0.0, c3=0.0, c4=0.0, c5=0.0
 
 ## Remaining / TODO
 
-- [ ] **미커밋 변경사항 커밋** — `[si-p6] P6-A 재구조화: F-Gate + A1~A13 재번호 (D-158~D-161)`
-- [ ] **session-compact.md 갱신 커밋** — `[si-p6] session-compact 갱신`
+### A1-D3 나머지
 
-### P6-A 착수 대기 (커밋 후)
+- [ ] **15c full bench 실행** (stage-e-on, `p6-diag-full-15c`) — 비용 ≈ $1
+  ```bash
+  PYTHONUTF8=1 python scripts/run_readiness.py \
+    --cycles 15 \
+    --bench-root bench/silver/japan-travel/p6-diag-full-15c \
+    --audit-interval 5 \
+    --external-anchor
+  ```
+  **주의**: exit code 1이어도 로그에 "Orchestrator 완료: 15 cycles" 있으면 재실행 금지
+- [ ] **진단 분석 실행**
+  ```bash
+  python scripts/analyze_saturation.py --query-patterns --trials p6-diag-full-15c
+  python scripts/analyze_saturation.py --trace-frozen 3 --trials p6-diag-full-15c
+  python scripts/analyze_saturation.py --compare-trials p6-diag-smoke-5c p6-diag-full-15c
+  ```
+- [ ] **Root cause 확정** — wildcard GU의 search_yield, stage-e-on vs off 비교, debug-history.md 업데이트
 
-- [ ] **P6-A1**: KU saturation 진단 스크립트 작성 (`scripts/analyze_saturation.py`)
-  - gap_map delta=0 cycle 수 측정 포함
-  - stage-e-on/off/p2-remodel 비교
-- [ ] **P6-A2~A4**: A1 root cause 기반 Inside fix
-- [ ] **P6-A5~A6**: Stage E 보강
-- [ ] **P6-A7~A11**: Forecastability F-Gate (config 외부화 → trigger telemetry → 15c rerun → forecast → 판정)
-- [ ] **P6-A12**: stage-e-on 50c trial (F-Gate PASS 이후, API 비용 사전 확인 필수)
-- [ ] **P6-A13**: COMPARISON-v2.md
+### A2~A4 (root cause 확정 후 착수)
+
+계획은 `dev/active/phase-si-p6-consolidation/si-p6-consolidation-tasks.md` 참조
 
 ## Key Decisions
 
-### 핵심 피드백 검증 결과 (2026-04-18)
+### D-162 (2026-04-18)
+진단 로깅 우선 전략 — 실 bench 데이터로 확정 후 fix
 
-| 항목 | 확인된 사실 |
-|------|-------------|
-| stage-e-on 0.5/cyc 원인 | probe slug collision 단독 아님. c10-c13 gap_map 완전 동결 (4사이클 open=20 불변) — core loop 마비 |
-| LLM 단발 호출 | `src/nodes/collect.py:130` — GU당 parse invoke (claim→KU 변환 아님) |
-| Exploration Pivot 50c 미검증 | 조건(WINDOW=5 연속 <0.1)이 15c 내 달성 불가 구조 → **50c 이전에 15c 내 검증 필수** |
-| stage-e-off 4.0 vs p2-remodel 5.2 | p2-remodel c10 Remodel 발동(67 merges)이 원인. remodel 없이는 saturation 불가피 |
-| 5.2/cyc 지속 가능성 | Remodel event 단발에 의존 → 장기 보장 없음. Forecast 필요 |
+### 5c smoke 결과 (2026-04-18)
+- wildcard GU: cycle 2~5 search_yield = **0.0** (zero_yield 63%)
+- concrete GU: avg_yield = 11.95
+- **plan.py slug 버그 가설 강하게 지지**: `entity_key.split(":")[-1]` → `"*"` → 의미없는 쿼리 → Tavily 결과 없음
 
-### 신규 결정사항
-
-| # | 결정 |
-|---|------|
-| D-158 | Forecastability F-Gate 신설 (A7~A11) — 50c A12 선행 조건 |
-| D-159 | Remodel/Pivot 임계값 config 외부화 필수 (`SmartRemodelConfig`, `ExternalAnchorConfig.novelty_*`) |
-| D-160 | Trigger telemetry JSON 필드 emit (`trigger_event` optional) — log 파싱 금지 |
-| D-161 | Forecast 모델 = 선형/지수 projection + damping + bootstrap confidence 한정 (블랙박스 금지) |
-
-### F-Gate 판정 기준 (A11)
-- Remodel ≥ 2회 + Pivot ≥ 1회 실발동 (15c rerun)
-- forecast c16-c50: Remodel ≥ 4회 + Pivot ≥ 2회 + confidence ≥ 0.6
-- 미달 시 A2~A6 재설계 루프 (A12 50c 진행 차단)
-- 비용: 15c rerun ≈ $1 (50c $3~5 ROI 보증)
+### run_readiness.py exit code 교훈 (2026-04-18)
+- **exit code 1 = Gate FAIL, bench 완료와 무관**
+- 동일 명령 재실행 → 5c 두 번 실행, API 비용 ≈ $0.35 중복 낭비
+- **교훈**: exit code 1 시 로그에서 "Orchestrator 완료: N cycles" 먼저 확인 후 재실행 여부 판단
+- cycles.jsonl에 중복 행 주의 (10행 = 5+5 중복)
 
 ## Context
 
 다음 세션에서는 답변에 한국어를 사용하세요.
 
-- **P6 dev-docs**: `dev/active/phase-si-p6-consolidation/` — plan/context/tasks 참조
-- **분석 대상 데이터 (A1용)**:
-  - `bench/silver/japan-travel/stage-e-on/trajectory/trajectory.csv` (15c)
-  - `bench/silver/japan-travel/stage-e-off/trajectory/trajectory.csv` (15c)
-  - `bench/silver/japan-travel/p2-smart-remodel-trial/trajectory/trajectory.csv` (15c)
-  - `bench/silver/japan-travel/*/state-snapshots/cycle-N-snapshot/gap-map.json` (gap_map delta 측정)
-  - `bench/japan-travel-external-anchor/COMPARISON.md` (P4 분석)
-- **핵심 코드 위치**:
-  - `src/orchestrator.py:454-503` (_should_remodel, 임계값 하드코딩)
-  - `src/nodes/exploration_pivot.py:25-90` (WINDOW/THRESHOLD 하드코딩)
-  - `src/nodes/collect.py:130` (LLM 단발 호출 지점)
-  - `tests/test_nodes/test_exploration_pivot.py` (synthetic injection 패턴)
-- **스크립트 정책**: `scripts/analyze_saturation.py` 분석 스크립트 (API 미호출) 허용. A11에서 forecast 모드 확장.
-- **API 비용 주의**: A11 15c rerun ≈ $1 사전 확인 필수 / A12 50c ≈ $3~5 사전 확인 필수 + **F-Gate PASS 선행 조건**
-- **테스트 현황**: 821 passed, 3 skipped. 목표: ≥ 840
-- **미커밋 상태**: 6개 dev-docs 파일 수정됨. 커밋 먼저.
+- **API 비용**: D3 15c ≈ $1. 실행 전 확인 필수. exit code 1 시 재실행 금지
+- **핵심 가설**: wildcard GU → 의미없는 쿼리(plan.py slug 버그) → search_yield=0 → claims=0 → resolve 불가 → pool 동결
+- **확인된 사실**: smoke 5c에서 wildcard zero_yield 63%, cycle 2~5 avg=0.0
+- **미확인 (15c full에서 확정 필요)**: stage-e-on에서 External Anchor → attraction entity flood → wildcard GU 증폭 여부
+- **핵심 코드**:
+  - `src/nodes/plan.py:268` — slug 버그 (`split(":")[-1]` → `"*"`)
+  - `src/nodes/seed.py:293-306` — fallback wildcard (버그 후보)
+  - `src/obs/telemetry.py` — `emit_gu_trace`, `_build_cycle_trace` (D1 구현)
+  - `scripts/analyze_saturation.py` — D2 옵션 4종
 
 ## Next Action
 
-**Step 1: 미커밋 변경사항 커밋**
+**Step 1: 15c full bench 실행** (stage-e-on)
 
 ```bash
-git -C "C:/Users/User/Learning/KBs-2026/domain-k-evolver" add \
-  dev/active/phase-si-p6-consolidation/ \
-  dev/active/project-overall/
-git -C "C:/Users/User/Learning/KBs-2026/domain-k-evolver" commit -m "[si-p6] P6-A 재구조화: F-Gate + A1~A13 재번호 (D-158~D-161)"
+PYTHONUTF8=1 python scripts/run_readiness.py \
+  --cycles 15 \
+  --bench-root bench/silver/japan-travel/p6-diag-full-15c \
+  --audit-interval 5 \
+  --external-anchor \
+  2>&1 | tail -60
 ```
 
-**Step 2: session-compact.md 커밋**
+exit code 1이어도 "Orchestrator 완료: 15 cycles" 있으면 성공. 재실행 금지.
+
+**Step 2: 진단 분석**
 
 ```bash
-git -C "C:/Users/User/Learning/KBs-2026/domain-k-evolver" add docs/session-compact.md
-git -C "C:/Users/User/Learning/KBs-2026/domain-k-evolver" commit -m "[si-p6] session-compact 갱신 (P6-A F-Gate 재구조화 완료)"
+PYTHONUTF8=1 python scripts/analyze_saturation.py --query-patterns --trials p6-diag-full-15c
+PYTHONUTF8=1 python scripts/analyze_saturation.py --trace-frozen 3 --trials p6-diag-full-15c
+PYTHONUTF8=1 python scripts/analyze_saturation.py --compare-trials p6-diag-smoke-5c p6-diag-full-15c
 ```
 
-**Step 3: P6-A1 착수 — KU saturation 진단 스크립트 작성**
-
-`scripts/analyze_saturation.py` 작성:
-1. stage-e-on/off/p2-remodel 세 trial의 trajectory.csv 로드
-2. window별 KU 성장률 계산 (c1-5, c6-10, c11-15)
-3. **gap_map delta = 0 cycle 수** 측정 (state-snapshots 순회)
-4. parse_yield 추이 (GU당 claims 생성 수)
-5. GU 생성/해소 비율 추이
-6. entity dedup 비율
-7. KU 카테고리별 Gini 추이
-결과 → `dev/active/phase-si-p6-consolidation/debug-history.md` 기록 → A2~A6 scope 결정
+**Step 3: Root cause 확정 → debug-history.md 업데이트 → dev-docs 커밋**
