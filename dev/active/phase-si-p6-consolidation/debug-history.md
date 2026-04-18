@@ -75,7 +75,7 @@ cycle별: wildcard c2~c4, c9, c11~c15 avg_yield = **0.0** (반복)
 - p6-diag-full-15c frozen wildcard=29, **wildcard_zero_yield=29 (100%)**
 - 고착된 wildcard GU 전원 zero_yield → slug 버그 단독 원인 확정
 
-**Root Cause 확정 (D-163)**:
+**Root Cause 확정 (D-163, 초기)**:
 ```python
 # src/nodes/plan.py:268
 slug = entity_key.split(":")[-1]  # "japan-travel:dining:*" → "*"
@@ -89,6 +89,84 @@ slug = entity_key.split(":")[-1]  # "japan-travel:dining:*" → "*"
 - 또는 wildcard GU를 Plan 단계에서 category-level query로 특수 처리
 
 **commit**: TBD (A2 구현 시)
+
+---
+
+### 2026-04-18 D-163 재검토: Local view → Extensive view
+
+**재검토 계기**: 사용자 지적 "wildcard 버그만 보고 concrete 는 안 봤다. c11-15 remaining 이 모두 wildcard 냐? 모든 GU 데이터로 보라". "zero yield = no answer. separate no answer from no integration".
+
+**데이터 재분석 결과** (c15 remaining 18 open GU, `gu_trace.jsonl` + `gap-map.json` 전수):
+
+| 카테고리 | 개수 | 비율 |
+|---|---:|---:|
+| NO-ANSWER (search_yield=0) | 5 | 28% |
+|  └ wildcard (slug="*") | 3 | 17% |
+|  └ concrete (부자연 query) | 2 | 11% |
+| NO-INTEGRATION (yield>0, unresolved) | 2 | 11% |
+| **NO-SELECTION (Plan 미선정)** | **11** | **61%** |
+
+**D-163 수정된 결론**:
+- wildcard slug 버그는 **NO-ANSWER 의 3/5** = 전체 18 중 **17% 부분 원인**일 뿐
+- **최대 미해결 버킷은 NO-SELECTION (61%)** — (medium, convenience) priority 11 GU 가 `plan.py:158-165` 고정 sort 탓에 14 cycle 동안 한 번도 target 으로 선정되지 않음
+- NO-INTEGRATION 2건 (GU-0033 visit-japan-web/price, GU-0090 attraction:Fukuoka/hours) 은 adjacent_gap generator 의 malformed field 생성 문제 — slug 버그와 무관
+
+**A2 Scope 재설계** (3-pronged):
+- A2a (NO-ANSWER, 5 GU 28%): plan.py query builder — wildcard slug 우회 + field/slug naturalization
+- A2b (NO-SELECTION, 11 GU 61%): plan.py target_gaps 선택 로직 — aging penalty + deficit_boost 완화
+- A2c (NO-INTEGRATION, 2 GU 11%): integrate.py `_generate_dynamic_gus` entity-type filter + `_detect_conflict` 오판 점검
+
+**교훈**: **Root cause 분석 시 샘플 데이터(특정 유형) 만 본 뒤 "확정" 하지 말 것**. 반드시 전체 open/unresolved 데이터로 3 카테고리(search 성공/실패, integrate 성공/실패, Plan 선정/비선정) 매핑 후 bucket 별 비율을 확인.
+
+**참조 문서**: `dev/active/phase-si-p6-consolidation/zero-yield-mapping.md`
+
+**commit**: TBD
+
+---
+
+### 2026-04-18 D-163 최종 확정 + D-164/D-165 신규 (stage-e on/off 15c 비교)
+
+**근거 데이터**: `bench/silver/japan-travel/p6-diag-off-15c/` (15c, --no-external-anchor) vs `p6-diag-full-15c/` (15c, --external-anchor)
+
+**3-카테고리 비교 (c15 open GU)**:
+| 카테고리 | on | off | 함의 |
+|----------|----:|----:|------|
+| open total | 18 | 25 | off 가 더 많음 |
+| NO-ANSWER | 5 (28%) | **0 (0%)** | wildcard 버그 안 드러남 |
+| NO-INTEGRATION | 2 (11%) | 2 (8%) | 같은 패턴 (city/hours, free/price) |
+| NO-SELECTION | 11 (61%) | **23 (92%)** | dominant root cause |
+
+**가설 검증**:
+- H1 (NO-SEL = External Anchor 산물): **FAIL** — off 에서 NO-SEL 23 으로 오히려 증가. trigger 22/23 = adjacent_gap (External Anchor 무관)
+- H2 ((medium, convenience) sort tail 문제 stage-e 무관): **PASS** — on/off 양쪽 NO-SEL 모두 (medium, convenience)
+- H3 (wildcard 버그 off 에서도 발생): **FAIL** — wildcard GU 들이 NO-SELECTION 버킷으로 안주, query 도 안 됨
+
+**D-163 최종 확정** (이전: "wildcard slug = root cause"):
+- wildcard slug 버그는 **부분 원인** (on 28%, off 0%, 평균 ~14%)
+- dominant root cause 는 **plan.py priority sort + adjacent_gap (medium, convenience) 양산의 상호작용** (NO-SEL on 61%, off 92%)
+- Stage-E (External Anchor) 와 무관한 구조적 결함
+
+**D-164 (신규) — NO-SELECTION dominant root cause**:
+- `plan.py:158-161` `_select_targets` 의 고정 sort `_UTILITY_ORDER × _RISK_ORDER` 가 (medium, convenience) GU 를 list tail 에 영구 고정
+- `_generate_dynamic_gus` (adjacent_gap) 가 cycle 마다 (medium, convenience) GU 양산 (off c1-c10 누적 ~66건) → tail 적체 가속
+- 후반 cycle 에서 mode.py exploit_budget 수축 (off c12+ target=3 고착) 으로 더욱 악화 — 정확한 코드 경로는 후속 조사 필요
+
+**D-165 (신규) — adjacent_gap entity-type 무관 field 양산**:
+- city entity + hours/price → semantically malformed (도시는 단일 입장료/시간 없음)
+- free service + price → malformed
+- `_generate_dynamic_gus` 에 entity-type aware filter 필수
+- on/off 양쪽에서 attraction:City/hours 패턴 동일 발현 (on: GU-0090 Fukuoka, off: GU-0107 Shirakawa, GU-0109 Choshi_City)
+
+**A2 Scope 최종 확정** (우선순위 조정 — A2b 최우선):
+1. A2b (NO-SELECTION 해소): aging penalty + deficit_boost 임계 완화 + exploit_budget 수축 조사
+2. A2c (NO-INTEGRATION + adjacent_gap filter): entity-type aware filter + skeleton_mismatch 마킹
+3. A2a (NO-ANSWER query 개선): wildcard 우회 + field naturalization (보조)
+
+**참조 문서**: `dev/active/phase-si-p6-consolidation/stage-e-compare-analysis.md`
+
+**교훈**: 단일 trial 데이터로 root cause 확정 금지. 비교 trial (control) 로 가설별 PASS/FAIL 검증해야 dominant cause 식별 가능. wildcard 버그는 "Plan 이 wildcard 를 우연히 선택한 cycle" 에서만 표출 — 하나의 trial 만 보면 dominant 처럼 보였으나 off 비교에서 부분 원인 확정.
+
+**commit**: TBD
 
 ---
 <!-- analyze_saturation.py output -->
