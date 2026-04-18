@@ -111,9 +111,8 @@ def _parse_claims_llm(
     search_results: list[dict],
     llm: Any,
 ) -> list[dict]:
-    """LLM snippet-only Claim 파싱."""
+    """LLM snippet-only Claim 파싱 (단발 invoke — fallback 경로 전용)."""
     gu_id = gu.get("gu_id", "?")
-
     snippet_count = sum(1 for sr in search_results if sr.get("snippet"))
 
     if not any(sr.get("snippet") for sr in search_results):
@@ -122,14 +121,31 @@ def _parse_claims_llm(
                     gu_id, snippet_count)
         return []
 
-    logger.info("parse[%s]: LLM 호출 — snippets=%d/%d",
-                 gu_id, snippet_count, len(search_results))
+    logger.info("parse[%s]: LLM 단발 invoke — snippets=%d/%d", gu_id, snippet_count, len(search_results))
 
     prompt = _build_parse_prompt(gu, search_results)
     try:
         response = llm.invoke(prompt)
-        resp_text = response.content
-        from src.utils.llm_parse import extract_json
+        return _parse_llm_response(gu, response.content, search_results)
+    except (ValueError, AttributeError) as exc:
+        logger.info("parse[%s]: invoke 실패 (%s) → deterministic fallback", gu_id, exc)
+        fb_claims = _parse_claims_deterministic(gu, search_results)
+        logger.info("parse_yield: gu=%s snippets=%d claims=%d path=fallback",
+                    gu_id, snippet_count, len(fb_claims))
+        return fb_claims
+
+
+def _parse_llm_response(
+    gu: dict,
+    resp_text: str,
+    search_results: list[dict],
+) -> list[dict]:
+    """LLM 응답 텍스트 → claims 파싱 (batch path 공유)."""
+    from src.utils.llm_parse import extract_json
+
+    gu_id = gu.get("gu_id", "?")
+    snippet_count = sum(1 for sr in search_results if sr.get("snippet"))
+    try:
         claims = extract_json(resp_text)
         if isinstance(claims, dict):
             claims = [claims]
@@ -157,31 +173,17 @@ def _parse_claims_llm(
 # Collect 메인
 # ============================================================
 
-def _collect_single_gu(
+def _search_for_gu(
     gu: dict,
     gu_queries: list[str],
     search_tool: Any,
-    llm: Any | None,
-) -> tuple[list[dict], int]:
-    """단일 GU: SEARCH → PARSE. (claims, search_result_count) 반환."""
+) -> tuple[dict, list[dict], int]:
+    """Search 전담 — PARSE 없음. (gu, search_results, search_count) 반환."""
     gu_id = gu.get("gu_id", "?")
-
     search_results = _search_phase(gu_queries, search_tool)
-    search_count = len(search_results)
-
     if not search_results:
         logger.debug("collect[%s]: SEARCH=0 results (queries=%d)", gu_id, len(gu_queries))
-
-    if llm is not None:
-        claims = _parse_claims_llm(gu, search_results, llm)
-    else:
-        claims = _parse_claims_deterministic(gu, search_results)
-
-    if not claims and search_results:
-        logger.info("collect[%s]: 0 claims despite SEARCH=%d queries=%s",
-                     gu_id, len(search_results), gu_queries[:2])
-
-    return claims, search_count
+    return gu, search_results, len(search_results)
 
 
 def collect_node(
@@ -233,29 +235,30 @@ def collect_node(
     per_gu_claims: list[int] = []
     diag_search_by_gu: dict[str, int] = {}
 
+    # Phase 1: Search (ThreadPool 병렬 — I/O bound)
+    search_data: list[tuple[dict, list[dict]]] = []  # (gu, search_results)
+
     if tasks:
         workers = min(max_workers, len(tasks))
-        logger.info("collect: %d GU 병렬 수집 (workers=%d)", len(tasks), workers)
+        logger.info("collect: %d GU search 병렬 (workers=%d)", len(tasks), workers)
 
         with ThreadPoolExecutor(max_workers=workers) as executor:
             futures = {
-                executor.submit(_collect_single_gu, gu, gu_queries, search_tool, llm): gu.get("gu_id")
+                executor.submit(_search_for_gu, gu, gu_queries, search_tool): gu.get("gu_id")
                 for gu, gu_queries in tasks
             }
             try:
                 for future in as_completed(futures, timeout=300):
                     gu_id = futures[future]
                     try:
-                        claims, search_count = future.result(timeout=120)
-                        all_claims.extend(claims)
-                        per_gu_claims.append(len(claims))
+                        gu, search_results, search_count = future.result(timeout=120)
                         diag_search_by_gu[gu_id] = search_count
-                        logger.info("collect: %s → %d claims", gu_id, len(claims))
+                        search_data.append((gu, search_results))
                     except TimeoutError:
-                        logger.warning("collect: %s timeout (120s)", gu_id)
+                        logger.warning("collect: %s search timeout (120s)", gu_id)
                         failed_gu_count += 1
                     except Exception as e:
-                        logger.warning("collect: %s 실패 — %s", gu_id, e)
+                        logger.warning("collect: %s search 실패 — %s", gu_id, e)
                         failed_gu_count += 1
             except TimeoutError:
                 unfinished = sum(1 for f in futures if not f.done())
@@ -267,6 +270,55 @@ def collect_node(
                 for f in futures:
                     if not f.done():
                         f.cancel()
+
+    # Phase 2: LLM Batch Parse (1회 호출)
+    if search_data:
+        if llm is not None:
+            has_snippet = [(gu, sr) for gu, sr in search_data if any(r.get("snippet") for r in sr)]
+            no_snippet = [(gu, sr) for gu, sr in search_data if not any(r.get("snippet") for r in sr)]
+
+            for gu, _ in no_snippet:
+                gu_id = gu.get("gu_id", "?")
+                logger.info("parse[%s]: no snippets — skip LLM", gu_id)
+                logger.info("parse_yield: gu=%s snippets=0 claims=0 path=no_snippets", gu_id)
+                per_gu_claims.append(0)
+
+            if has_snippet:
+                prompts = [_build_parse_prompt(gu, sr) for gu, sr in has_snippet]
+                logger.info("collect: batch LLM %d prompts (1회 호출)", len(prompts))
+                try:
+                    responses = llm.batch(prompts)
+                except Exception as exc:
+                    logger.warning("collect: batch API 실패 (%s) → 단발 invoke fallback", exc)
+                    responses = None
+
+                if responses is not None:
+                    for (gu, sr), response in zip(has_snippet, responses):
+                        gu_id = gu.get("gu_id", "?")
+                        try:
+                            resp_text = response.content
+                        except AttributeError:
+                            resp_text = ""
+                        claims = _parse_llm_response(gu, resp_text, sr)
+                        if not claims and sr:
+                            logger.info("collect[%s]: 0 claims despite SEARCH=%d", gu_id, len(sr))
+                        all_claims.extend(claims)
+                        per_gu_claims.append(len(claims))
+                        logger.info("collect: %s → %d claims", gu_id, len(claims))
+                else:
+                    for gu, sr in has_snippet:
+                        gu_id = gu.get("gu_id", "?")
+                        claims = _parse_claims_llm(gu, sr, llm)
+                        if not claims and sr:
+                            logger.info("collect[%s]: 0 claims despite SEARCH=%d", gu_id, len(sr))
+                        all_claims.extend(claims)
+                        per_gu_claims.append(len(claims))
+                        logger.info("collect: %s → %d claims", gu_id, len(claims))
+        else:
+            for gu, sr in search_data:
+                claims = _parse_claims_deterministic(gu, sr)
+                all_claims.extend(claims)
+                per_gu_claims.append(len(claims))
 
     failure_rate = failed_gu_count / total_gu_count if total_gu_count > 0 else 0.0
 

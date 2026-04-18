@@ -23,13 +23,13 @@ class LLMCallCounter:
     def __init__(self, llm: Any) -> None:
         self._llm = llm
         self.call_count: int = 0
+        self.batch_call_count: int = 0
         self.total_prompt_tokens: int = 0
         self.total_completion_tokens: int = 0
 
     def invoke(self, prompt: str | list) -> Any:
         self.call_count += 1
         response = self._llm.invoke(prompt)
-        # langchain-openai response에 usage_metadata가 있으면 추적
         usage = getattr(response, "usage_metadata", None)
         if usage:
             self.total_prompt_tokens += usage.get("input_tokens", 0)
@@ -41,6 +41,25 @@ class LLMCallCounter:
                 usage.get("output_tokens", 0),
             )
         return response
+
+    def batch(self, prompts: list) -> list:
+        """N개 프롬프트를 1회 batch API 호출. 실패 시 단발 invoke로 fallback."""
+        if not prompts:
+            return []
+        try:
+            responses = self._llm.batch(prompts)
+            self.call_count += 1
+            self.batch_call_count += 1
+            for r in responses:
+                usage = getattr(r, "usage_metadata", None)
+                if usage:
+                    self.total_prompt_tokens += usage.get("input_tokens", 0)
+                    self.total_completion_tokens += usage.get("output_tokens", 0)
+            logger.debug("LLM batch #%d: %d prompts → 1 call", self.batch_call_count, len(prompts))
+            return responses
+        except Exception as exc:
+            logger.warning("LLM batch 실패 (%s) → 단발 invoke fallback", exc)
+            return [self.invoke(p) for p in prompts]
 
     @property
     def total_tokens(self) -> int:
@@ -99,6 +118,9 @@ class MockLLM:
         text = self.responses[self._call_index % len(self.responses)]
         self._call_index += 1
         return _MockResponse(text)
+
+    def batch(self, prompts: list) -> list:
+        return [self.invoke(p) for p in prompts]
 
 
 class _MockResponse:

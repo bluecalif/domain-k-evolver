@@ -1,19 +1,22 @@
 # Silver P6: Consolidation & Knowledge DB Release — Tasks
-> Last Updated: 2026-04-18 (rev: A1 완료, A1-Diag 서브스테이지 추가)
+> Last Updated: 2026-04-18 (rev: B1 선행 실행 결정 — A1-D3 15c bench 전 배치 최적화 먼저)
 > Status: In Progress (1/23)
 
 ## Summary
 
 | Stage | Tasks | Done | Status |
 |-------|-------|------|--------|
+| **P6-B1 (선행)** | **1** | **0** | **진행 중 (A1-D3 bench 전 최적화 우선)** |
 | P6-A Inside (KU saturation) | 4 (A1~A4) | 1 | 진행 중 |
-| **P6-A1-Diag (진단 로깅 → root cause 확정)** | **3 (D1~D3)** | **0** | **착수 대기 (A1 완료 선행)** |
+| **P6-A1-Diag (진단 로깅 → root cause 확정)** | **3 (D1~D3)** | **2** | **D3 대기 (B1 완료 후)** |
 | P6-A Outside (Stage E 보강) | 2 (A5~A6) | 0 | 대기 |
 | **P6-A Forecastability (F-Gate)** | **5 (A7~A11)** | **0** | **대기 (신규, D-158)** |
 | P6-A Gate (50c trial) | 2 (A12~A13) | 0 | 대기 |
 | P6-B Performance | 3 (B1~B3) | 0 | 대기 |
 | P6-C KB Release | 4 (C1~C4) | 0 | 대기 |
 | **합계** | **23** | **1** | — |
+
+> **실행 순서 변경**: P6-B1 (LLM batch) → A1-D3 smoke 재실행 → A1-D3 15c full bench → A2~A4
 
 Size: S:8 / M:13 / L:2 / XL:0
 

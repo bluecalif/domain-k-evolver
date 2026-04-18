@@ -275,25 +275,26 @@ class TestCollectMalformedLLM:
     """P0-B9 S2: LLM 이 malformed JSON 반환 시 deterministic fallback."""
 
     def test_llm_returns_bad_json_falls_back(self) -> None:
-        """LLM 이 invalid JSON 반환 → deterministic 파서 fallback → claims 여전히 존재."""
+        """LLM batch 가 invalid JSON 반환 → deterministic fallback → claims 여전히 존재."""
         tool = MockSearchTool()
         bad_llm = MagicMock()
         bad_response = MagicMock()
         bad_response.content = "not a json { broken"
-        bad_llm.invoke.return_value = bad_response
+        bad_llm.batch.return_value = [bad_response]
 
         state = _gu_state(["GU-0001"])
         result = collect_node(state, search_tool=tool, llm=bad_llm)
         # fallback 덕분에 claim 은 생성됨 (mock 검색 결과 기반)
         assert len(result["current_claims"]) >= 1
-        # LLM 은 호출됐음
-        assert bad_llm.invoke.called
+        # batch 경로로 LLM 호출됐음
+        assert bad_llm.batch.called
 
     def test_llm_raises_attribute_error_falls_back(self) -> None:
-        """LLM 응답 객체가 content 없음 → AttributeError → fallback."""
+        """LLM batch 응답 객체가 content 없음 → AttributeError → fallback."""
         tool = MockSearchTool()
         broken_llm = MagicMock()
-        broken_llm.invoke.return_value = object()  # no .content
+        no_content = MagicMock(spec=[])  # no .content attribute
+        broken_llm.batch.return_value = [no_content]
         state = _gu_state(["GU-0001"])
         result = collect_node(state, search_tool=tool, llm=broken_llm)
         assert len(result["current_claims"]) >= 1
@@ -326,3 +327,51 @@ class TestCollectDuplicateGU:
             assert "domain" in prov
             assert "retrieved_at" in prov
             assert "trust_tier" in prov
+
+
+class TestCollectBatch:
+    """P6-B1: LLM batch 호출 경로 검증."""
+
+    def test_batch_called_not_invoke(self) -> None:
+        """LLM이 있을 때 invoke 대신 batch 1회 호출."""
+        tool = MockSearchTool()
+        mock_llm = MagicMock()
+        good_response = MagicMock()
+        good_response.content = '[{"claim_id": "CL-0001-01", "entity_key": "e", "field": "f", "value": "v", "source_gu_id": "GU-0001", "evidence": {"eu_id": "EU-0001-01", "url": "http://x.com", "title": "T", "snippet": "S", "observed_at": "2026-01-01", "credibility": 0.7}, "risk_flag": false}]'
+        mock_llm.batch.return_value = [good_response]
+
+        state = _gu_state(["GU-0001"])
+        result = collect_node(state, search_tool=tool, llm=mock_llm)
+
+        assert mock_llm.batch.called
+        assert not mock_llm.invoke.called
+        assert len(result["current_claims"]) >= 1
+
+    def test_batch_fallback_on_api_error(self) -> None:
+        """batch API 실패 시 단발 invoke fallback → claims 여전히 존재."""
+        tool = MockSearchTool()
+        mock_llm = MagicMock()
+        mock_llm.batch.side_effect = RuntimeError("API error")
+        fallback_response = MagicMock()
+        fallback_response.content = "[]"
+        mock_llm.invoke.return_value = fallback_response
+
+        state = _gu_state(["GU-0001"])
+        result = collect_node(state, search_tool=tool, llm=mock_llm)
+
+        assert mock_llm.batch.called
+        assert "current_claims" in result
+
+    def test_multi_gu_single_batch_call(self) -> None:
+        """GU 3개 → batch 1회, invoke 0회."""
+        tool = MockSearchTool()
+        mock_llm = MagicMock()
+        resp = MagicMock()
+        resp.content = "[]"
+        mock_llm.batch.return_value = [resp, resp, resp]
+
+        state = _gu_state(["GU-0001", "GU-0002", "GU-0003"])
+        collect_node(state, search_tool=tool, llm=mock_llm)
+
+        assert mock_llm.batch.call_count == 1
+        assert not mock_llm.invoke.called

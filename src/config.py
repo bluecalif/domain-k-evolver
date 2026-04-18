@@ -28,6 +28,7 @@ class LLMConfig:
     max_tokens: int = 4096
     request_timeout: int = 60
     api_key: str = ""
+    llm_batch_size: int = 12
 
     @classmethod
     def from_env(cls) -> LLMConfig:
