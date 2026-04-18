@@ -7,6 +7,12 @@ Usage:
     python scripts/analyze_saturation.py
     python scripts/analyze_saturation.py --trials stage-e-on stage-e-off
     python scripts/analyze_saturation.py --output dev/active/phase-si-p6-consolidation/debug-history.md
+
+    # D2 진단 옵션 (A1-D1 gu_trace.jsonl 필요)
+    python scripts/analyze_saturation.py --trace-frozen 3 --trials stage-e-on
+    python scripts/analyze_saturation.py --query-patterns --trials stage-e-on
+    python scripts/analyze_saturation.py --cycle-diff 5 10 --trials stage-e-on
+    python scripts/analyze_saturation.py --compare-trials stage-e-on stage-e-off
 """
 
 import argparse
@@ -49,6 +55,40 @@ def load_knowledge_units(trial: str, cycle: int) -> list[dict]:
         return []
     with open(path, encoding="utf-8") as f:
         return json.load(f)
+
+
+def load_gu_trace(trial: str) -> list[dict]:
+    """gu_trace.jsonl 로드 (A1-D1 진단 로깅 결과)."""
+    path = BENCH_ROOT / trial / "telemetry" / "gu_trace.jsonl"
+    if not path.exists():
+        return []
+    rows = []
+    with open(path, encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if line:
+                try:
+                    rows.append(json.loads(line))
+                except json.JSONDecodeError:
+                    pass
+    return rows
+
+
+def load_cycles_jsonl(trial: str) -> list[dict]:
+    """cycles.jsonl 로드 (telemetry emit 결과)."""
+    path = BENCH_ROOT / trial / "telemetry" / "cycles.jsonl"
+    if not path.exists():
+        return []
+    rows = []
+    with open(path, encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if line:
+                try:
+                    rows.append(json.loads(line))
+                except json.JSONDecodeError:
+                    pass
+    return rows
 
 
 def available_snapshot_cycles(trial: str) -> list[int]:
@@ -196,6 +236,323 @@ def entity_dedup_rate(trial: str, cycles: list[int]) -> dict:
 
 
 # ---------------------------------------------------------------------------
+# D2 진단 분석 함수
+# ---------------------------------------------------------------------------
+
+def report_trace_frozen(trial: str, min_cycles: int) -> str:
+    """--trace-frozen N: N cycle 이상 open 상태인 GU 목록 + 쿼리/yield 요약."""
+    lines = [f"## trace-frozen (min={min_cycles}c) — {trial}\n"]
+
+    trace = load_gu_trace(trial)
+    if not trace:
+        lines.append("> [INFO] gu_trace.jsonl 없음 — gap_map 스냅샷으로 대체\n")
+        return _trace_frozen_from_snapshots(trial, min_cycles, lines)
+
+    # GU별 cycle 집합 수집
+    gu_cycles: dict[str, list[int]] = {}
+    gu_meta: dict[str, dict] = {}
+    gu_search: dict[str, list[int]] = {}
+
+    for row in trace:
+        gu_id = row.get("gu_id", "")
+        cycle = row.get("cycle", 0)
+        resolved = row.get("resolved", False)
+
+        if gu_id not in gu_cycles:
+            gu_cycles[gu_id] = []
+            gu_search[gu_id] = []
+            gu_meta[gu_id] = {
+                "entity_key": row.get("entity_key", ""),
+                "field": row.get("field", ""),
+                "is_wildcard": row.get("is_wildcard", False),
+            }
+        if not resolved:
+            gu_cycles[gu_id].append(cycle)
+        gu_search[gu_id].append(row.get("search_yield", 0))
+
+    frozen_gus = {
+        gu_id: cycles
+        for gu_id, cycles in gu_cycles.items()
+        if len(cycles) >= min_cycles
+    }
+
+    if not frozen_gus:
+        lines.append(f"> {min_cycles}c 이상 open GU 없음\n")
+        return "\n".join(lines)
+
+    lines.append(f"**{min_cycles}c 이상 open GU: {len(frozen_gus)}개**\n")
+    rows = []
+    for gu_id, open_cycles in sorted(frozen_gus.items(), key=lambda x: -len(x[1])):
+        meta = gu_meta[gu_id]
+        yields = gu_search.get(gu_id, [])
+        avg_yield = round(sum(yields) / len(yields), 1) if yields else 0
+        rows.append([
+            gu_id,
+            meta["entity_key"],
+            meta["field"],
+            "Y" if meta["is_wildcard"] else "N",
+            len(open_cycles),
+            avg_yield,
+        ])
+    lines.append(fmt_table(
+        ["gu_id", "entity_key", "field", "wildcard", "open_cycles", "avg_yield"],
+        rows,
+    ))
+    lines.append("\n")
+    return "\n".join(lines)
+
+
+def _trace_frozen_from_snapshots(trial: str, min_cycles: int, lines: list) -> str:
+    """gu_trace 없을 때 gap_map 스냅샷에서 long-open GU 추적."""
+    snap_cycles = available_snapshot_cycles(trial)
+    if not snap_cycles:
+        lines.append("> [SKIP] 스냅샷 없음\n")
+        return "\n".join(lines)
+
+    # GU별 open cycle 집합 집계
+    gu_open_cycles: dict[str, list[int]] = {}
+    gu_meta: dict[str, dict] = {}
+
+    for c in snap_cycles:
+        gm = load_gap_map(trial, c)
+        for gu in gm:
+            gu_id = gu.get("gu_id", "")
+            if gu.get("status") == "open":
+                gu_open_cycles.setdefault(gu_id, []).append(c)
+                if gu_id not in gu_meta:
+                    target = gu.get("target", {})
+                    ek = target.get("entity_key", "")
+                    gu_meta[gu_id] = {
+                        "entity_key": ek,
+                        "field": target.get("field", ""),
+                        "is_wildcard": "*" in ek,
+                    }
+
+    frozen_gus = {
+        gid: cs for gid, cs in gu_open_cycles.items() if len(cs) >= min_cycles
+    }
+
+    if not frozen_gus:
+        lines.append(f"> {min_cycles}c 이상 open GU 없음 (스냅샷 기준)\n")
+        return "\n".join(lines)
+
+    lines.append(f"**{min_cycles}c 이상 open GU (스냅샷 기준): {len(frozen_gus)}개**\n")
+    rows = []
+    for gu_id, open_cycles in sorted(frozen_gus.items(), key=lambda x: -len(x[1])):
+        meta = gu_meta.get(gu_id, {})
+        rows.append([
+            gu_id,
+            meta.get("entity_key", ""),
+            meta.get("field", ""),
+            "Y" if meta.get("is_wildcard") else "N",
+            len(open_cycles),
+        ])
+    lines.append(fmt_table(
+        ["gu_id", "entity_key", "field", "wildcard", "open_snap_count"],
+        rows,
+    ))
+    lines.append("\n")
+    return "\n".join(lines)
+
+
+def report_query_patterns(trial: str) -> str:
+    """--query-patterns: wildcard vs concrete search yield 분포."""
+    lines = [f"## query-patterns — {trial}\n"]
+
+    trace = load_gu_trace(trial)
+    if not trace:
+        lines.append("> [INFO] gu_trace.jsonl 없음 — bench 실행 후 재시도\n")
+        return "\n".join(lines)
+
+    wildcard_yields: list[int] = []
+    concrete_yields: list[int] = []
+    wildcard_zero = 0
+    concrete_zero = 0
+
+    per_cycle: dict[int, dict] = {}
+    for row in trace:
+        cycle = row.get("cycle", 0)
+        is_wc = row.get("is_wildcard", False)
+        sy = row.get("search_yield", 0)
+        if is_wc:
+            wildcard_yields.append(sy)
+            if sy == 0:
+                wildcard_zero += 1
+        else:
+            concrete_yields.append(sy)
+            if sy == 0:
+                concrete_zero += 1
+
+        entry = per_cycle.setdefault(cycle, {
+            "wc_count": 0, "wc_yield": 0, "cc_count": 0, "cc_yield": 0,
+        })
+        if is_wc:
+            entry["wc_count"] += 1
+            entry["wc_yield"] += sy
+        else:
+            entry["cc_count"] += 1
+            entry["cc_yield"] += sy
+
+    def avg(lst: list) -> float:
+        return round(sum(lst) / len(lst), 2) if lst else 0.0
+
+    lines.append("### 전체 요약\n")
+    summary_rows = [
+        ["wildcard", len(wildcard_yields), avg(wildcard_yields),
+         f"{wildcard_zero}/{len(wildcard_yields)}" if wildcard_yields else "-"],
+        ["concrete", len(concrete_yields), avg(concrete_yields),
+         f"{concrete_zero}/{len(concrete_yields)}" if concrete_yields else "-"],
+    ]
+    lines.append(fmt_table(["type", "count", "avg_yield", "zero_yield"], summary_rows))
+    lines.append("\n")
+
+    lines.append("\n### cycle별 wildcard / concrete yield\n")
+    cycle_rows = []
+    for c in sorted(per_cycle):
+        e = per_cycle[c]
+        wc_avg = round(e["wc_yield"] / e["wc_count"], 1) if e["wc_count"] else 0
+        cc_avg = round(e["cc_yield"] / e["cc_count"], 1) if e["cc_count"] else 0
+        cycle_rows.append([c, e["wc_count"], wc_avg, e["cc_count"], cc_avg])
+    lines.append(fmt_table(
+        ["cycle", "wc_targets", "wc_avg_yield", "cc_targets", "cc_avg_yield"],
+        cycle_rows,
+    ))
+    lines.append("\n")
+    return "\n".join(lines)
+
+
+def report_cycle_diff(trial: str, c1: int, c2: int) -> str:
+    """--cycle-diff C1 C2: 두 cycle 간 gap_map 변화 상세."""
+    lines = [f"## cycle-diff ({c1} → {c2}) — {trial}\n"]
+
+    gm1 = load_gap_map(trial, c1)
+    gm2 = load_gap_map(trial, c2)
+    if not gm1 and not gm2:
+        lines.append(f"> [SKIP] cycle {c1}, {c2} 스냅샷 없음\n")
+        return "\n".join(lines)
+    if not gm1:
+        lines.append(f"> [WARN] cycle {c1} 스냅샷 없음 — cycle {c2}만 표시\n")
+    if not gm2:
+        lines.append(f"> [WARN] cycle {c2} 스냅샷 없음 — cycle {c1}만 표시\n")
+
+    id_to_c1 = {g.get("gu_id"): g for g in gm1}
+    id_to_c2 = {g.get("gu_id"): g for g in gm2}
+    all_ids = sorted(set(id_to_c1) | set(id_to_c2))
+
+    changes = []
+    for gu_id in all_ids:
+        g1 = id_to_c1.get(gu_id)
+        g2 = id_to_c2.get(gu_id)
+        s1 = g1.get("status", "-") if g1 else "new"
+        s2 = g2.get("status", "-") if g2 else "gone"
+        if s1 == s2:
+            continue  # 변화 없는 GU 생략
+        g = g1 or g2
+        target = g.get("target", {})
+        ek = target.get("entity_key", "")
+        changes.append([gu_id, ek, target.get("field", ""), s1, s2])
+
+    summary_c1 = {
+        "open": sum(1 for g in gm1 if g.get("status") == "open"),
+        "resolved": sum(1 for g in gm1 if g.get("status") == "resolved"),
+        "total": len(gm1),
+    }
+    summary_c2 = {
+        "open": sum(1 for g in gm2 if g.get("status") == "open"),
+        "resolved": sum(1 for g in gm2 if g.get("status") == "resolved"),
+        "total": len(gm2),
+    }
+
+    lines.append("### 요약\n")
+    s_rows = [
+        [f"c{c1}", summary_c1["open"], summary_c1["resolved"], summary_c1["total"]],
+        [f"c{c2}", summary_c2["open"], summary_c2["resolved"], summary_c2["total"]],
+        ["delta", summary_c2["open"] - summary_c1["open"],
+         summary_c2["resolved"] - summary_c1["resolved"],
+         summary_c2["total"] - summary_c1["total"]],
+    ]
+    lines.append(fmt_table(["cycle", "open", "resolved", "total"], s_rows))
+    lines.append("\n")
+
+    if changes:
+        lines.append(f"\n### 상태 변화 GU ({len(changes)}개)\n")
+        lines.append(fmt_table(["gu_id", "entity_key", "field", f"c{c1}", f"c{c2}"], changes))
+    else:
+        lines.append(f"\n> 상태 변화 없음 (c{c1} → c{c2})\n")
+    lines.append("\n")
+    return "\n".join(lines)
+
+
+def report_compare_trials(trial_a: str, trial_b: str) -> str:
+    """--compare-trials A B: 두 trial의 frozen GU 집합 + open GU entity_key 비교."""
+    lines = [f"## compare-trials: {trial_a} vs {trial_b}\n"]
+
+    def get_last_open_gus(trial: str) -> dict[str, dict]:
+        snaps = available_snapshot_cycles(trial)
+        if not snaps:
+            return {}
+        gm = load_gap_map(trial, snaps[-1])
+        return {
+            g.get("gu_id", ""): g for g in gm if g.get("status") == "open"
+        }
+
+    open_a = get_last_open_gus(trial_a)
+    open_b = get_last_open_gus(trial_b)
+
+    def ek_set(gus: dict) -> set:
+        result = set()
+        for g in gus.values():
+            t = g.get("target", {})
+            result.add(f"{t.get('entity_key', '')}:{t.get('field', '')}")
+        return result
+
+    eks_a = ek_set(open_a)
+    eks_b = ek_set(open_b)
+    only_a = sorted(eks_a - eks_b)
+    only_b = sorted(eks_b - eks_a)
+    common = sorted(eks_a & eks_b)
+
+    lines.append(f"**{trial_a}**: open={len(open_a)} GU | **{trial_b}**: open={len(open_b)} GU\n")
+    lines.append(f"공통 open entity:field = {len(common)}, {trial_a}만 = {len(only_a)}, {trial_b}만 = {len(only_b)}\n")
+
+    def fmt_list(items: list, max_n: int = 20) -> str:
+        shown = items[:max_n]
+        rest = len(items) - max_n
+        out = "\n".join(f"  - {x}" for x in shown)
+        if rest > 0:
+            out += f"\n  - ... 외 {rest}개"
+        return out
+
+    if only_a:
+        lines.append(f"\n### {trial_a}에만 존재 ({len(only_a)}개)\n")
+        lines.append(fmt_list(only_a))
+        lines.append("\n")
+    if only_b:
+        lines.append(f"\n### {trial_b}에만 존재 ({len(only_b)}개)\n")
+        lines.append(fmt_list(only_b))
+        lines.append("\n")
+    if common:
+        lines.append(f"\n### 공통 open ({len(common)}개)\n")
+        lines.append(fmt_list(common))
+        lines.append("\n")
+
+    # gu_trace 기반 wildcard 비율 비교
+    for trial in (trial_a, trial_b):
+        trace = load_gu_trace(trial)
+        if not trace:
+            continue
+        wc = sum(1 for r in trace if r.get("is_wildcard") and not r.get("resolved"))
+        cc = sum(1 for r in trace if not r.get("is_wildcard") and not r.get("resolved"))
+        wc_yield_zero = sum(
+            1 for r in trace if r.get("is_wildcard") and r.get("search_yield", 0) == 0
+        )
+        lines.append(f"\n**{trial} frozen GU 구성** (gu_trace 기준): "
+                     f"wildcard={wc}, concrete={cc}, wildcard_zero_yield={wc_yield_zero}\n")
+
+    return "\n".join(lines)
+
+
+# ---------------------------------------------------------------------------
 # Report formatting
 # ---------------------------------------------------------------------------
 
@@ -331,12 +688,49 @@ def build_report(trials: list[str]) -> str:
 # ---------------------------------------------------------------------------
 
 def main():
+    import io
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
     parser = argparse.ArgumentParser(description="KU saturation 진단 (P6-A1)")
     parser.add_argument("--trials", nargs="+", default=DEFAULT_TRIALS, help="분석할 trial 이름")
     parser.add_argument("--output", default=None, help="결과를 기록할 파일 경로 (없으면 stdout만)")
+
+    # D2 진단 옵션
+    parser.add_argument("--trace-frozen", type=int, metavar="N",
+                        help="N cycle 이상 open 상태인 GU 목록 + yield 요약 (--trials로 trial 지정)")
+    parser.add_argument("--query-patterns", action="store_true",
+                        help="wildcard vs concrete search yield 분포 (--trials로 trial 지정)")
+    parser.add_argument("--cycle-diff", nargs=2, type=int, metavar=("C1", "C2"),
+                        help="두 cycle 간 gap_map 변화 상세 (--trials로 trial 지정)")
+    parser.add_argument("--compare-trials", nargs=2, metavar=("A", "B"),
+                        help="두 trial의 frozen GU 집합 비교 (--trials 무시)")
+
     args = parser.parse_args()
 
-    report = build_report(args.trials)
+    # D2 모드: 특정 옵션이 지정된 경우 해당 분석만 수행
+    d2_sections: list[str] = []
+
+    if args.compare_trials:
+        trial_a, trial_b = args.compare_trials
+        d2_sections.append(report_compare_trials(trial_a, trial_b))
+
+    if args.trace_frozen is not None:
+        for trial in args.trials:
+            d2_sections.append(report_trace_frozen(trial, args.trace_frozen))
+
+    if args.query_patterns:
+        for trial in args.trials:
+            d2_sections.append(report_query_patterns(trial))
+
+    if args.cycle_diff:
+        c1, c2 = args.cycle_diff
+        for trial in args.trials:
+            d2_sections.append(report_cycle_diff(trial, c1, c2))
+
+    if d2_sections:
+        report = "\n".join(d2_sections)
+    else:
+        report = build_report(args.trials)
+
     print(report)
 
     if args.output:
