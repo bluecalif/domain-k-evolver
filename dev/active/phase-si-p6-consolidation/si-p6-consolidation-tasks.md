@@ -121,7 +121,7 @@ Size: S:8 / M:13 / L:2 / XL:0
 
 **입력**: `telemetry/gu_trace.jsonl` (D1에서 신규 생성)
 
-- [ ] P6-A1-D2 완료 — commit: TBD
+- [x] P6-A1-D2 완료 — commit: 5232155
 
 ---
 
@@ -142,7 +142,7 @@ Size: S:8 / M:13 / L:2 / XL:0
 - hard-concrete GU 누적 확정 → `critique.py` age-based deferred (A4 재설계)
 - seed fallback wildcard 확정 → `seed.py` Case B 개선 (A2 연계)
 
-- [ ] P6-A1-D3 완료 — commit: TBD
+- [x] P6-A1-D3 완료 — commit: TBD (dev-docs 커밋에 포함)
 
 ---
 
@@ -385,7 +385,7 @@ Size: S:8 / M:13 / L:2 / XL:0
 - fallback: batch 실패 시 단발 invoke 유지 (안전한 degradation)
 - LLMCallCounter 배치 호출 집계 (`batch_call_count` metric)
 
-- [ ] P6-B1 완료 — commit: TBD
+- [x] P6-B1 완료 — commit: ca94645
 
 ---
 
