@@ -20,6 +20,38 @@
 
 <!-- P6 진행 중 이슈 발생 시 여기에 추가 -->
 
+---
+
+### 2026-04-18 A1 후속 조사: Wildcard Entity 동결 원인 분석 (가설 단계)
+
+**증상**: stage-e-on c10-c13 4사이클 완전 동결 (open=20 불변). `adjacent_gap` GU 신규 생성 0.
+
+**코드 추적 결과 (`integrate.py:524-533`)**:
+- `adjacent_gap` 생성은 `plan.py`가 아닌 `integrate.py`의 `_generate_dynamic_gus`에서 발생
+- 생성 조건: `for claim in claims` 루프 내부 → **claims=0이면 호출 자체 불가**
+- dynamic_cap = `min(max(4, ceil(open_count*0.2)), 12)` = open=20 → cap=4
+
+**Wildcard Entity_Key 기원 (`seed.py`)**:
+- Case A (정상): `WILDCARD_FIELDS = {"tips", "etiquette"}` → `{domain}:{cat}:*` GU 의도적 생성
+- Case B (버그 후보): `ENTITY_SPECIFIC_FIELDS` (`price`, `hours`, `how_to_use`, `where_to_buy` 등) 인데 `known_entities == []`이면 wildcard fallback (`seed.py:293-306`)
+
+**plan.py:268의 쿼리 생성 문제**:
+```python
+slug = entity_key.split(":")[-1]  # "japan-travel:connectivity:*" → "*"
+queries = ["* how_to_use", "* how_to_use 2026"]  # 의미 없는 쿼리
+```
+Tavily API로 `"* how_to_use"` 전송 → 의미 없는 결과 → claims=0 가능성.
+
+**stage-e-off 차이 가설**:
+- stage-e-on: External Anchor(universe_probe) 활성화 → 새 attraction entity GU flood (Shirakawa, Himeji 등) → 이 GU들도 collect로 해소 어려움 → wildcard 6개 + hard-concrete GU 14개 = open 20 고정
+- stage-e-off: External Anchor 비활성화 → 일반 concrete GU만 존재 → collect가 일부 매 cycle 해소 → 성장 지속
+
+**교훈**: 코드 읽기만으로는 실제 claims=0인지, search yield가 얼마인지 확인 불가. **실 데이터 없이 fix 구현 위험**.
+
+**결정 (D-162)**: 진단 로깅 추가 → 실 bench 재실행 → 데이터로 root cause 확정 후 fix 구현.
+
+**다음 스텝**: A1-D1 (진단 로깅) → A1-D2 (분석 스크립트) → A1-D3 (실 bench + 확정)
+
 
 ---
 <!-- analyze_saturation.py output -->

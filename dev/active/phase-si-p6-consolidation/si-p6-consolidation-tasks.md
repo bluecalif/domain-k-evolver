@@ -1,20 +1,21 @@
 # Silver P6: Consolidation & Knowledge DB Release — Tasks
-> Last Updated: 2026-04-18 (rev: F-Gate 추가, A1~A13 재번호)
-> Status: Planning (0/20)
+> Last Updated: 2026-04-18 (rev: A1 완료, A1-Diag 서브스테이지 추가)
+> Status: In Progress (1/23)
 
 ## Summary
 
 | Stage | Tasks | Done | Status |
 |-------|-------|------|--------|
-| P6-A Inside (KU saturation) | 4 (A1~A4) | 0 | 대기 |
+| P6-A Inside (KU saturation) | 4 (A1~A4) | 1 | 진행 중 |
+| **P6-A1-Diag (진단 로깅 → root cause 확정)** | **3 (D1~D3)** | **0** | **착수 대기 (A1 완료 선행)** |
 | P6-A Outside (Stage E 보강) | 2 (A5~A6) | 0 | 대기 |
 | **P6-A Forecastability (F-Gate)** | **5 (A7~A11)** | **0** | **대기 (신규, D-158)** |
 | P6-A Gate (50c trial) | 2 (A12~A13) | 0 | 대기 |
 | P6-B Performance | 3 (B1~B3) | 0 | 대기 |
 | P6-C KB Release | 4 (C1~C4) | 0 | 대기 |
-| **합계** | **20** | **0** | — |
+| **합계** | **23** | **1** | — |
 
-Size: S:7 / M:11 / L:2 / XL:0
+Size: S:8 / M:13 / L:2 / XL:0
 
 테스트 목표: 821 (현재) → ≥ **840** (+19 예상)
 
@@ -67,15 +68,84 @@ Size: S:7 / M:11 / L:2 / XL:0
 - KU 카테고리별 포화도 (Gini 추이)
 - **gap_map delta = 0 cycle 수** — stage-e-on c10-c13 4사이클 완전 동결 현상 정량화
 
-**파일**: `scripts/analyze_saturation.py` [NEW] (API 미호출, 기존 데이터 분석). A11에서 forecast 모드 확장.
+**파일**: `scripts/analyze_saturation.py` (신규, API 미호출, 기존 데이터 분석). A11에서 forecast 모드 확장.
 
-- [ ] P6-A1 완료 — commit: TBD
+- [x] P6-A1 완료 — commit: `398cf9f`
+
+**A1 진단 결론** (debug-history 참조):
+- stage-e-on c11-c13 연속 동결: open=20개 고정 (delta=0 × 3)
+- 동결 GU 중 wildcard entity (`*`) 포함 다수 확인
+- **현재 분석은 코드 읽기 기반 가설** — 진단 로깅(A1-D1~D3) 완료 후 실 데이터로 확정 필요
+
+---
+
+## Stage A1-Diag: Root Cause 실증 (진단 로깅 → 실 Bench)
+
+> **선행**: A1 완료 (✅ `398cf9f`) → D1~D3 순서대로 실행 → A2~A4 scope 최종 결정
+
+### P6-A1-D1 진단 로깅 추가 `[M]`
+
+**목적**: 어느 GU가 왜 미해소되는지 cycle 단위로 추적 가능하게 만들기
+
+**수정 파일**:
+- `src/obs/telemetry.py` — `_build_snapshot`에 `cycle_trace` 블록 추가
+  - `targets_selected`: 선정된 GU별 `{gu_id, entity_key, field, is_wildcard, age_cycles}`
+  - `queries_by_gu`: GU별 실제 쿼리 텍스트 (plan이 생성한 것)
+  - `search_yield_by_gu`: GU별 search results 개수
+  - `claims_by_gu`: GU별 claim 생성 개수
+  - `resolved_gus`: 이 cycle에서 resolved된 GU 목록
+  - `adjacent_gap_generated`: 신규 adjacent_gap GU 개수
+- `src/obs/telemetry.py` — `emit_gu_trace()` 신규 함수: `telemetry/gu_trace.jsonl`에 open GU별 행 append
+- `src/orchestrator.py` — cycle 루프에 `cycle_ctx` dict 수집 훅 추가 (node 동작 변경 없음)
+- `src/nodes/collect.py` — `_collect_single_gu` return에 `search_count` 포함
+- `src/nodes/integrate.py` — return dict에 `_diag_adjacent_gap_count`, `_diag_resolved_gus` 추가
+
+**주의**: 외부 인터페이스 (`current_claims`, `collect_failure_rate`) 및 기존 node 동작 불변. 로깅만 추가.
+
+- [ ] P6-A1-D1 완료 — commit: TBD
+
+---
+
+### P6-A1-D2 분석 스크립트 확장 `[S]`
+
+**파일**: `scripts/analyze_saturation.py` 확장
+
+**추가 옵션**:
+- `--trace-frozen [N]`: N cycle 이상 연속 open인 GU 목록 + 쿼리/yield/원인 요약
+- `--query-patterns`: wildcard vs concrete의 search/claims yield 분포 비교
+- `--cycle-diff C1 C2`: 두 cycle 간 gap_map 변화 (resolved/added/unchanged)
+- `--compare-trials <A> <B>`: 두 trial의 frozen GU 집합 비교
+
+**입력**: `telemetry/gu_trace.jsonl` (D1에서 신규 생성)
+
+- [ ] P6-A1-D2 완료 — commit: TBD
+
+---
+
+### P6-A1-D3 실 Bench 재실행 + Root Cause 확정 `[M]`
+
+> **API 비용 주의**: 5c smoke ≈ $0.35 + 15c full ≈ $1. 실행 전 사전 확인 필수.
+
+**실행 순서**:
+1. 5c smoke run (stage-e-off 설정) → `gu_trace.jsonl` 생성 확인
+2. 15c full run (stage-e-on 설정) → `--trace-frozen 3`으로 동결 GU 분석
+3. 다음 질문에 **실제 숫자로** 답:
+   - 동결 GU 중 wildcard / hard-concrete / 기타 각 몇 개?
+   - wildcard 쿼리의 실제 search yield (0인지 아닌지)
+   - adjacent_gap_generated 추이 (c10 이후 0이 되는 시점)
+
+**결과 → A2~A4 scope 결정**:
+- wildcard query yield=0 확정 → `plan.py` slug 수정 우선 (A3)
+- hard-concrete GU 누적 확정 → `critique.py` age-based deferred (A4 재설계)
+- seed fallback wildcard 확정 → `seed.py` Case B 개선 (A2 연계)
+
+- [ ] P6-A1-D3 완료 — commit: TBD
 
 ---
 
 ### P6-A2 Plateau-driven re-seed `[M]`
 
-**전제**: A1 root cause = 신규 entity/topic 부재 확인 시 실행
+**전제**: **A1-D3 완료 후** root cause = 신규 entity/topic 부재 확인 시 실행
 
 **파일**: `src/nodes/seed.py` 확장
 
@@ -91,7 +161,7 @@ Size: S:7 / M:11 / L:2 / XL:0
 
 ### P6-A3 Field 다양화 강화 `[M]`
 
-**전제**: A1 root cause = 동일 entity에 편중된 field 확인 시 실행
+**전제**: **A1-D3 완료 후** root cause 확정 시 실행. wildcard query yield=0 확인 시 `plan.py:268` slug 수정도 포함
 
 **파일**: `src/nodes/plan.py` 확장
 
@@ -106,7 +176,7 @@ Size: S:7 / M:11 / L:2 / XL:0
 
 ### P6-A4 Active KU 재해소 `[M]`
 
-**전제**: A1 root cause = stale/disputed KU가 GU 생성을 막고 있는 경우 (stage-e-on c10-c13 동결의 주 용의자)
+**전제**: **A1-D3 완료 후** root cause = hard-to-resolve GU 누적 또는 unresolvable GU open pool 점거 확인 시 실행
 
 **파일**: `src/nodes/critique.py` 확장
 

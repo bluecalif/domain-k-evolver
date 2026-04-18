@@ -8,6 +8,11 @@
 
 | 파일 | 내용 | P6 관련성 |
 |------|------|-----------|
+| `src/obs/telemetry.py` | `_build_snapshot`, `emit_cycle` — A1-D1 `cycle_trace` 블록 추가 대상 | A1-D1 |
+| `src/orchestrator.py` | cycle 루프 — A1-D1 `cycle_ctx` 수집 훅 삽입 위치 | A1-D1 |
+| `src/nodes/collect.py` | `_collect_single_gu` — search_count 반환 확장 | A1-D1 |
+| `src/nodes/integrate.py:524-533` | `new_dynamic_gus` → return에 `_diag_*` 메타필드 추가 | A1-D1 |
+| `scripts/analyze_saturation.py` | 기존 분석 스크립트 — A1-D2에서 `--trace-frozen` 등 확장 | A1-D2 |
 | `bench/silver/japan-travel/stage-e-on/trajectory/` | 15c 실행 결과 — KU 성장률 분석 | A1 saturation 진단 |
 | `bench/silver/japan-travel/stage-e-off/trajectory/` | stage-e-off 비교 baseline | A1 |
 | `bench/silver/japan-travel/p2-smart-remodel/trajectory/` (있는 경우) | p2-remodel 성장률 — A-Inside 효과 baseline | A1 |
@@ -109,7 +114,9 @@
 | D-160 | Trigger telemetry는 **log 파싱 아니라 JSON 필드 emit** (A10 `trigger_event`). optional 필드로 schema backward compat 유지 | A11 forecast 자동화를 위해 구조화 필요 |
 | D-161 | **Forecast 모델 금지 사항**: Prophet/ARIMA 등 블랙박스 모델 사용 금지. 선형/지수 projection + damping + bootstrap confidence 한정 | 투명성/설명가능성 우선. 예측 정확도 < forecast 논리 검증가능성 |
 
-### 미결 결정사항 (P6-A1 완료 후 결정)
+| D-162 | **진단 로깅 우선 전략**: A1 코드 분석은 가설 수준. 진단 로깅(telemetry `cycle_trace` + `gu_trace.jsonl`) → 실 bench 재실행 → 데이터로 root cause 확정 후 A2~A4 fix 구현. 가설 기반 일괄 fix 금지 | A1 후속 조사 (2026-04-18): claims=0 여부, search yield, wildcard 쿼리 효과 실측 불가 |
+
+### 미결 결정사항 (A1-D3 완료 후 결정)
 
 | # | 결정 | 트리거 |
 |---|------|--------|

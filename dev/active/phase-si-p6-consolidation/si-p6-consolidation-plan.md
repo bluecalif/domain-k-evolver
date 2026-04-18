@@ -1,6 +1,6 @@
 # Silver P6: Consolidation & Knowledge DB Release — Plan
-> Last Updated: 2026-04-18 (rev: F-Gate 추가, task 재번호)
-> Status: Planning
+> Last Updated: 2026-04-18 (rev: A1 완료, A1-Diag 서브스테이지 추가)
+> Status: In Progress
 
 ## 1. Summary (개요)
 
@@ -63,12 +63,15 @@
 
 **A-Inside: Core Loop (KU sustained growth)**
 
-| # | Task | 내용 | Size |
-|---|------|------|------|
-| A1 | KU saturation 진단 | c11-15 정체 root cause: parse_yield / GU 생성 정체 / entity dedup 과다 + **gap_map delta=0 cycle 수** 측정 | M |
-| A2 | Plateau-driven re-seed | plateau 감지 시 LLM-driven new seed pack 자동 생성 (`seed_node` 확장) | M |
-| A3 | Field 다양화 강화 | 같은 entity_key 내 미충족 field를 우선 GU로 생성 (`plan_node` 확장) | M |
-| A4 | Active KU 재해소 | disputed/stale KU → GU 재투입 (critique-refresh 1회 → 반복 재해소) | M |
+| # | Task | 내용 | Size | 상태 |
+|---|------|------|------|------|
+| A1 | KU saturation 진단 | c11-15 정체: parse_yield / GU 생성 정체 / entity dedup + gap_map delta=0 측정 | M | ✅ `398cf9f` |
+| A1-D1 | 진단 로깅 추가 | `cycle_trace` + `gu_trace.jsonl` — GU별 쿼리/yield/resolve 추적 | M | 대기 |
+| A1-D2 | 분석 스크립트 확장 | `--trace-frozen`, `--query-patterns`, `--cycle-diff`, `--compare-trials` | S | 대기 |
+| A1-D3 | 실 Bench + root cause 확정 | 5c smoke + 15c full → 동결 GU 실측 → A2~A4 scope 결정 | M | 대기 |
+| A2 | Plateau-driven re-seed | plateau 감지 시 LLM-driven new seed pack 자동 생성 (`seed_node` 확장) | M | A1-D3 후 |
+| A3 | Field 다양화 강화 | 같은 entity_key 내 미충족 field 우선 GU 생성 + wildcard query 수정 | M | A1-D3 후 |
+| A4 | Active KU 재해소 | unresolvable GU open pool 점거 해소 — age-based deferred 또는 wildcard 대체 | M | A1-D3 후 |
 
 **A-Outside: Stage E 보강**
 
@@ -117,13 +120,14 @@
 
 | Stage | Tasks | S | M | L |
 |-------|-------|---|---|---|
-| P6-A Inside | A1~A4 | 0 | 4 | 0 |
+| P6-A Inside (A1 포함) | A1~A4 | 0 | 4 | 0 |
+| **P6-A1-Diag (신규)** | D1~D3 | 1 | 2 | 0 |
 | P6-A Outside | A5~A6 | 1 | 1 | 0 |
 | P6-A Forecastability | A7~A11 | 3 | 2 | 0 |
 | P6-A Gate | A12~A13 | 1 | 0 | 1 |
 | P6-B | B1~B3 | 1 | 1 | 1 |
 | P6-C | C1~C4 | 1 | 3 | 0 |
-| **합계** | **20** | **7** | **11** | **2** |
+| **합계** | **23** | **8** | **13** | **2** |
 
 ---
 
