@@ -1,6 +1,6 @@
 # Project Overall Context
-> Last Updated: 2026-04-17
-> Status: Bronze 완료 (468) → SI-P0 완료 (510) → P1 완료 (544) → P3R 완료 (608, D-125) → Gap-Res 완료 (610, D-129) → P2 PASS (613, D-132/133) → P4 완료 (797, D-147~D-150) → **SI-P5 착수 (Telemetry & Dashboard)**
+> Last Updated: 2026-04-18
+> Status: Bronze 완료 (468) → SI-P0~P5 완료 (821) → **SI-P6 (Consolidation & KB Release) 착수**
 
 ## 1. 핵심 파일
 
@@ -54,8 +54,9 @@
 | Silver P3R | `dev/active/phase-si-p3r-snippet-refactor/` | ✅ **완료** (8/8, Gate PASS, D-125, 608 tests) |
 | **Gap-Res Investigation** | `dev/active/phase-gap-resolution-investigation/` | ✅ **완료** (12/12, D-129~D-131) |
 | Silver P4 | `dev/active/phase-si-p4-coverage/` | ✅ **완료** (42/42, 797 tests, VP4 PASS 4/5, D-147~D-150 해소) |
-| Silver P5 | `dev/active/phase-si-p5-telemetry-dashboard/` | **Planning** (0/14) — P3R + P4 ✅ |
-| Silver P6 | `dev/active/phase-si-p6-multidomain/` | P1~P5 전부 (Silver exit gate) |
+| Silver P5 | `dev/active/phase-si-p5-telemetry-dashboard/` | ✅ **완료** (15/15, Gate PASS, 821 tests) |
+| Silver P6 | `dev/active/phase-si-p6-consolidation/` | **Planning** (0/16) — P5 ✅ |
+| M1 Multi-Domain | `dev/active/phase-m1-multidomain/` (예정) | suspended — P6 완료 후 활성화 |
 
 ### Bronze 구현 파일 (현행)
 | 파일 | 내용 |
@@ -213,6 +214,10 @@ class EvolverState(TypedDict):
 | D-151 후보 | telemetry schema 버저닝: `telemetry.v1` 고정, v2 필요 시 별도 schema 파일 | P5 |
 | D-152 후보 | Dashboard 실행 방식: CLAUDE.md Scripts Policy — `run_readiness.py --serve-dashboard` 옵션 통합 or `uvicorn` 직접 실행 (신규 스크립트 금지) | P5 |
 | D-153 후보 | 100-cycle fixture: 실 trial 데이터 우선 (stub 금지 원칙), 부재 시 gen_fixture.py 허용 검토 | P5 |
+| D-154 | 기존 P6(Multi-Domain)을 **M1**으로 분리 (suspended). 신규 P6 = Consolidation & KB Release (A→B→C) | P6 재구조화 |
+| D-155 | KU saturation 작업을 P6-A Inside에 흡수 (별도 phase 없음) | P6-A |
+| D-156 | D-151 후보(slug collision) → P6-A5로 확정 실행 | P6-A Outside |
+| D-157 | P6-A 실행 순서: 진단 우선(A1) → Inside(A2~A4) → Outside(A5~A7) → 50c trial(A8) | P6-A |
 
 ---
 

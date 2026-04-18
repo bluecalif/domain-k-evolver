@@ -1,6 +1,6 @@
 # Project Overall Tasks
-> Last Updated: 2026-04-17
-> Status: Bronze 완료 (85/85) · Silver P0 (32) · P1 (12) · P3R (8) · P2 (14) · Gap-Res (12) · P4 (42) · **P5 완료 (15/15)** · 814 tests
+> Last Updated: 2026-04-18
+> Status: Bronze 완료 (85/85) · Silver P0 (32) · P1 (12) · P3R (8) · P2 (14) · Gap-Res (12) · P4 (42) · **P5 완료 (15/15, Gate PASS)** · **P6 착수 예정** · 821 tests
 
 ## Summary
 
@@ -28,10 +28,11 @@
 | P3 Acquisition Expansion | 22 | 7 | 13 | 2 | — | **REVOKED** (D-120) |
 | P3R Snippet-First Refactor | 8 | — | — | — | **8/8** ✅ | PASS (D-125, 608 tests) |
 | P4 Coverage Intelligence | **42** | 27 | 15 | 3 | **42/42** ✅ | **Gate PASS (VP4 4/5, D-147~D-150 해소, 797 tests)** |
-| P5 Telemetry & Dashboard | 15 | 4 | 9 | 1 | **15/15** ✅ | **Gate 판정 대기** (814 tests, S10 PASS, LOC 691) |
-| P6 Multi-Domain | 7 | 2 | 3 | 2 | 0/7 | 대기 |
+| P5 Telemetry & Dashboard | 15 | 4 | 9 | 1 | **15/15** ✅ | **Gate PASS** (821 tests, S10 PASS, LOC 986) |
+| P6 Consolidation & KB Release | TBD | — | — | — | 0 | 착수 예정 (A→B→C) |
+| M1 Multi-Domain (suspended) | 7 | 2 | 3 | 2 | 0/7 | P6 완료 후 활성화 |
 | X Cross-phase | 7 | 7 | 0 | 0 | 0/7 | — |
-| **Silver 합계** | **127** | — | — | — | **67/127** | — |
+| **Silver 합계** | **134+** | — | — | — | **67/134+** | — |
 
 ### Investigation Phase (Gap-Resolution)
 
@@ -39,7 +40,7 @@
 |-------|-------|---|---|------|--------|
 | Gap-Res Investigation | 12 | 8 | 4 | 12/12 | 완료 (D-131) |
 
-**총계: Bronze 85 + Silver (P5 15 포함) 167 + Investigation 12 = 264 tasks · 현재 테스트 814**
+**총계: Bronze 85 + Silver (P5 15 포함) 167+ + Investigation 12 = 264+ tasks · 현재 테스트 821**
 
 참조 문서:
 - 단일 진실 소스: `docs/silver-masterplan-v2.md` §4 Phase 표
@@ -423,9 +424,9 @@
 ## Phase P5: Telemetry Contract & Dashboard (15 tasks)
 
 > **목표**: Telemetry schema v1 + FastAPI 운영 대시보드 (≤ 2000 LOC)
-> **Gate**: schema validate, 100-cycle fixture 모든 view ≤ 10s, stub 금지, LOC 하드리밋, S10 pass, operator-guide 5+ 페이지, 테스트 ≥ 812
+> **Gate**: **PASS** (2026-04-18) — schema 7/7, 100c load 1.49s, stub 0, LOC 986, S10 PASS, operator-guide 184줄, 821 tests
 > **제약**: P5-A (telemetry schema) 가 P5-B (UI) **엄격 선행** (D-77)
-> **Dev-docs**: `dev/active/phase-si-p5-telemetry-dashboard/`
+> **Dev-docs**: `dev/active/phase-si-p5-telemetry-dashboard/` | `readiness-report.md` 완료
 
 ### P5-Prep. state.py TypedDict 보완 [Stage A 착수 전 필수]
 - [ ] **P5-Prep** `src/state.py` EvolverState에 `reach_history`, `probe_history`, `pivot_history` 3 필드 추가 `[S]`
@@ -453,24 +454,64 @@
 
 ---
 
-## Phase P6: Multi-Domain Validation (7 tasks)
+## Phase P6: Consolidation & Knowledge DB Release (착수 예정)
 
+> **목표**: KU saturation 해소 + Performance 최적화 + japan-travel KB 외부 패키징
+> **순서**: P6-A (Pain Point) → P6-B (Performance) → P6-C (KB Release)
+> **Gate**: P6-A: stage-e-on 50c rerun KU ≥ 250, gap_resolution ≥ 0.85 / P6-C: 외부 import e2e PASS
+> **Dev-docs**: `dev/active/phase-si-p6-consolidation/` (생성 예정)
+
+### P6-A. Pain Point Resolution (Inside + Outside)
+
+**Inside — Core Loop (KU sustained growth)**:
+- [ ] **P6-A1** KU saturation 진단 — c11-15 정체 root cause (parse_yield / GU 정체 / dedup 과다) `[M]`
+- [ ] **P6-A2** Plateau-driven re-seed — plateau 감지 시 LLM-driven new seed pack `[M]`
+- [ ] **P6-A3** Field 다양화 강화 — 같은 entity_key 내 미충족 field 우선 GU 생성 `[M]`
+- [ ] **P6-A4** Active KU 재해소 — disputed/stale KU → GU 재투입 `[M]`
+
+**Outside — Stage E 보강**:
+- [ ] **P6-A5** Universe probe slug 정규화 + 유사도 필터 (D-151, collision_active 반복 방지) `[M]`
+- [ ] **P6-A6** Probe accept rate 튜닝 — 15c에 1개 → 5c당 1개 목표 `[S]`
+- [ ] **P6-A7** Exploration pivot 50c trial 발동 검증 `[S]`
+
+**검증 (P6-A gate)**:
+- [ ] **P6-A8** stage-e-on-50c trial 생성 + 실행 → KU ≥ 250, gap_resolution ≥ 0.85 `[L]`
+- [ ] **P6-A9** COMPARISON-v2.md 작성 `[S]`
+
+### P6-B. Performance Optimization
+
+- [ ] **P6-B1** LLM 호출 batch (Claim별 단발 → 배치) `[M]`
+- [ ] **P6-B2** state_io 증분 저장 (매 cycle 전체 rewrite → delta write) `[M]`
+- [ ] **P6-B3** cycle wall_clock 측정 + 목표 설정 `[S]`
+
+### P6-C. Knowledge DB Release
+
+- [ ] **P6-C1** japan-travel state → external-consumable schema (read-only) `[M]`
+- [ ] **P6-C2** 외부 프로젝트 import 가능 packaging (`evolver-kb-japan-travel`) `[M]`
+- [ ] **P6-C3** minimal query API or static export (KU lookup, GU enumeration) `[M]`
+- [ ] **P6-C4** Operator guide "외부 사용자용" 섹션 추가 `[S]`
+
+---
+
+## Phase M1: Multi-Domain Validation (suspended, 7 tasks)
+
+> **상태**: P6 완료 후 별도 trigger 시 활성화 (D-135)
 > **목표**: 2차 도메인 Smoke + framework-vs-domain delta memo
 > **Gate**: 10 cycle Gate #5 동등 (VP1 ≥ 4/5, VP2 ≥ 5/6, VP3 ≥ 4/6), framework 수정 ≤ 5, 한글 에러 0, S11 pass
-> **선정 기준**: japan-travel 대비 {time horizon, hierarchy depth, source language} 3축 중 2축 이질 (D-80)
+> **Dev-docs**: `dev/active/phase-m1-multidomain/` (phase-si-p6-multidomain 에서 rename)
 
-### P6-A. 도메인 선정
-- [ ] **P6-A1** 후보 3 개 중 1 개 선택 `[S]`
-- [ ] **P6-A2** `trial-card.md` 선정 rationale `[S]`
-- [ ] **P6-A3** skeleton + seed pack 작성 `[M]`
+### M1-A. 도메인 선정
+- [ ] **M1-A1** 후보 3 개 중 1 개 선택 `[S]`
+- [ ] **M1-A2** `trial-card.md` 선정 rationale `[S]`
+- [ ] **M1-A3** skeleton + seed pack 작성 `[M]`
 
-### P6-B. Smoke validation
-- [ ] **P6-B1** 10 cycle smoke run `[L]`
-- [ ] **P6-B2** Readiness report (Gate #5 동등) `[M]`
-- [ ] **P6-B3** Framework-vs-domain delta memo (≤ 5건) `[M]`
+### M1-B. Smoke validation
+- [ ] **M1-B1** 10 cycle smoke run `[L]`
+- [ ] **M1-B2** Readiness report (Gate #5 동등) `[M]`
+- [ ] **M1-B3** Framework-vs-domain delta memo (≤ 5건) `[M]`
 
-### P6-C. 검증 파일
-- [ ] **P6-C1** `test_multidomain/test_smoke_run.py` (S11) `[M]`
+### M1-C. 검증 파일
+- [ ] **M1-C1** `test_multidomain/test_smoke_run.py` (S11) `[M]`
 
 ---
 
