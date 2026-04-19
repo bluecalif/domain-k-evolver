@@ -1,26 +1,26 @@
 # Silver P6: Consolidation & Knowledge DB Release — Tasks
-> Last Updated: 2026-04-18 (rev: B1 선행 실행 결정 — A1-D3 15c bench 전 배치 최적화 먼저)
-> Status: In Progress (1/23)
+> Last Updated: 2026-04-19 (rev: A1-D4 완료 — Path-γ 확정, D-164 부분 무효, D-167 신규)
+> Status: In Progress (5/24)
 
 ## Summary
 
 | Stage | Tasks | Done | Status |
 |-------|-------|------|--------|
-| **P6-B1 (선행)** | **1** | **0** | **진행 중 (A1-D3 bench 전 최적화 우선)** |
+| **P6-B1 (선행)** | **1** | **1** | 완료 (ca94645) |
 | P6-A Inside (KU saturation) | 4 (A1~A4) | 1 | 진행 중 |
-| **P6-A1-Diag (진단 로깅 → root cause 확정)** | **3 (D1~D3)** | **2** | **D3 대기 (B1 완료 후)** |
+| **P6-A1-Diag (진단 로깅 → root cause 확정)** | **4 (D1~D4)** | **4** | **완료 (D-167 신규, D-164 부분 무효)** |
 | P6-A Outside (Stage E 보강) | 2 (A5~A6) | 0 | 대기 |
 | **P6-A Forecastability (F-Gate)** | **5 (A7~A11)** | **0** | **대기 (신규, D-158)** |
 | P6-A Gate (50c trial) | 2 (A12~A13) | 0 | 대기 |
-| P6-B Performance | 3 (B1~B3) | 0 | 대기 |
+| P6-B Performance | 3 (B1~B3) | 1 | 진행 중 |
 | P6-C KB Release | 4 (C1~C4) | 0 | 대기 |
-| **합계** | **23** | **1** | — |
+| **합계** | **24** | **4** | — |
 
-> **실행 순서 변경**: P6-B1 (LLM batch) → A1-D3 smoke 재실행 → A1-D3 15c full bench → A2~A4
+> **실행 순서**: A1-D3 완료 → **A1-D4 (matrix 2×2 진단)** → A2~A4 scope 실증 기반 확정 → A5~A11
 
-Size: S:8 / M:13 / L:2 / XL:0
+Size: S:8 / M:14 / L:2 / XL:0
 
-테스트 목표: 821 (현재) → ≥ **840** (+19 예상)
+테스트 목표: 824 (현재) → ≥ **840** (+16 예상, A1-D4 는 코드 변경 없음)
 
 ---
 
@@ -143,6 +143,54 @@ Size: S:8 / M:13 / L:2 / XL:0
 - seed fallback wildcard 확정 → `seed.py` Case B 개선 (A2 연계)
 
 - [x] P6-A1-D3 완료 — commit: TBD (dev-docs 커밋에 포함)
+
+---
+
+### P6-A1-D4 Stage-E × Remodel 2×2 matrix 진단 `[M]`
+
+> **API 비용 주의**: 15c 신규 trial (stage-e-off + remodel-off) ≈ $1. 실행 전 사전 확인 필수.
+> **선행**: A1-D3 완료 (`cdd4504`). D-163/D-164/D-165 outside view 기반.
+
+**배경**: `stage-e-compare-analysis.md` (outside view) 로 D-164/D-165 를 도출했으나, telemetry 재확인 결과 **p6-diag-off-15c 와 p6-diag-full-15c 모두 cycle 10부터 remodel 이 자연 발동**되고 있었음 (`hitl_queue.remodel=1` 실증). 즉 기존 비교는 "remodel 통제 상태의 Stage-E 효과"였고, **remodel 자체의 순효과**는 분리되지 않았다.
+
+**목적**: `--audit-interval 0` 신규 trial 로 2×2 matrix 의 한 축을 채워 **inside view (remodel 순효과)** 를 확보. outside view 와 교차하여 A2 scope (A2b aging vs A2c filter) 우선순위를 **실증 기반**으로 확정.
+
+**실행 순서**:
+
+1. **Trial 실행** (silver-trial-scaffold skill 로 디렉터리 생성):
+   ```bash
+   python scripts/run_readiness.py \
+     --trial-id p6-diag-off-remodel-off-15c \
+     --domain japan-travel \
+     --cycles 15 \
+     --no-external-anchor \
+     --audit-interval 0
+   ```
+2. **1차 sanity**: `telemetry/cycles.jsonl` 에서 **모든 cycle `hitl_queue.remodel = 0`** 확인
+3. **분석** (`stage-e-remodel-matrix.md` §3~§6 채우기):
+   - 3-카테고리 분류 (NO-ANSWER / NO-INT / NO-SEL) A vs B 비교
+   - KU 성장, target_count 추이, adjacent_gap_generated
+   - A/C 의 remodel 발동 cycle 10 에서 Smart Criteria 3-way OR 중 어떤 조건이 true 였는지 재구성
+4. **판정** (matrix §6.1 표 기준 Path-α/β/γ):
+   - Path-α (B ≈ A, |Δ|<5pp): A2b 최우선, remodel safety net 유지
+   - Path-β (B 의 NO-SEL ≫ A): A2c 만 구현, remodel 기능 확인
+   - Path-γ (B ≪ A): A2 보류, remodel.py merge 기준 재검토
+5. **D-166 debug-history 본문 확정** + MEMORY.md 한 줄 추가
+6. **commit**: `[si-p6] P6-A1-D4: stage-e × remodel 2×2 matrix (D-166)`
+
+**산출물**:
+- `bench/silver/japan-travel/p6-diag-off-remodel-off-15c/` (telemetry + trial-card + readiness-report)
+- `dev/active/phase-si-p6-consolidation/stage-e-remodel-matrix.md` §3~§6 실측 수치 반영
+- `dev/active/phase-si-p6-consolidation/debug-history.md` D-166 본문
+- `bench/silver/INDEX.md` row 추가
+
+**효과 / 이점**:
+- A2 scope 의 A2b vs A2c 우선순위를 **실증 기반**으로 확정 → 구현 재작업 리스크 제거
+- P6-A F-Gate (A11) 의 "Remodel ≥ 2회 실발동" 기준을 **"발동 빈도"가 아닌 "outcome delta"** 로 재정의해야 하는지 판정
+- P5 Gate PASS (b122a23) 의 "remodel 자연 발동" 성과가 **진정한 KU 성장에 기여했는지** 사후 검증
+- Phase X (multi-domain) 로 넘어가기 전 remodel 메커니즘의 단일 도메인 효용 확정
+
+- [x] P6-A1-D4 완료 — commit: TBD (본 커밋에 포함). **결과: Path-γ 확정, D-167 신규 (remodel-induced exploit_budget shrinkage), D-164 부분 무효**. open A=25 → B=9, gap_res 0.805→0.926, NO-SEL -36pp
 
 ---
 

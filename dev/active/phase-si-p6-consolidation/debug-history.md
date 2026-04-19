@@ -169,6 +169,101 @@ slug = entity_key.split(":")[-1]  # "japan-travel:dining:*" → "*"
 **commit**: TBD
 
 ---
+
+### 2026-04-19 D-167 — Remodel-induced exploit_budget shrinkage (dominant root cause)
+
+**증상**: A (p6-diag-off-15c, remodel-on) 에서 c12+ target_count=3 고착 + open=25 완전 정체. B (p6-diag-off-remodel-off-15c, `--audit-interval 0`) 에서 동일 조건·시드로 c12+ target=9,8,10,5 유지 + open 22→9 정상 해소.
+
+**실측** (stage-e-remodel-matrix.md §3.2 표):
+
+| cycle | A target | B target | A open | B open | A remodel |
+|---:|---:|---:|---:|---:|---:|
+| c09 | 8 | 7 | 23 | 24 | 0 |
+| c10 | 10 | 10 | 25 | 19 | 1 (최초 발동) |
+| c11 | 5 | 8 | 25 | 22 | 1 |
+| c12 | 3 | 9 | 25 | 22 | 1 |
+| c13 | 3 | 8 | 25 | 20 | 1 |
+| c14 | 3 | 10 | 25 | 12 | 1 |
+| c15 | 3 | 5 | 25 | 9 | 1 |
+
+c1-c9 target 일치 (±2), c10 에서 remodel 최초 발동 직후 c11 부터 A target 급격 수축.
+
+**원인 (확정)**:
+- c10 에서 `hitl_queue.remodel := 1` (orchestrator `_maybe_run_remodel` 경로)
+- c11+ 매 cycle `hitl_queue.remodel` 이 1 로 유지 (audit_interval=5 재평가)
+- plan 단계가 hitl_queue 우선 처리 로직에 따라 exploit-mode 로 진입, `target_count` 를 3 까지 수축
+- tail (medium, convenience) GU (c15 open=25 중 23건) 이 선택 불가 → NO-SEL 92%
+
+**3-카테고리 비교**:
+
+| 카테고리 | A (off+remodel-on) | B (off+remodel-off) | Δ |
+|---|---:|---:|---:|
+| open total | 25 | 9 | -64% |
+| NO-SELECTION | 23 (92%) | 5 (56%) | -36pp |
+| NO-ANSWER (wildcard) | 0 | 2 (22%) | +2 |
+| NO-INTEGRATION | 2 (8%) | 2 (22%) | = |
+
+**D-164 판정 변경**:
+- 이전: "plan.py:158-161 priority sort 구조 결함" (dominant root cause)
+- 변경: **부분 무효**. sort 로직 자체는 정상. tail 도달 가능 target_count 만 주어지면 해소됨 (B c14 open 20→12, c15 12→9 실증)
+- → D-167 이 dominant. D-164 tail 적체 현상은 secondary.
+
+**D-165 재확인**:
+- B open=9 중 GU-0102 (attraction:Fukuoka/hours), GU-0030 (regulation:visit-japan-web/price) 가 city+hours, free+price malformed 패턴으로 재현
+- adjacent_gap entity-type filter (A2c) 유효성 유지
+
+**A2 scope 재확정**:
+- **A2c (filter)**: 유지, 최우선
+- **A2b (plan.py aging)**: 보류 — plan.py 자체 결함 아님
+- **신규**: `_maybe_run_remodel` → plan `target_count` 경로 추적 (`src/orchestrator.py:511-570`, `src/nodes/plan.py`, `src/nodes/mode.py`) — D-133 `min_overlap_count` 재검토는 취소 (merge 품질 아님)
+
+**의미 (matrix §5.6 (4) 요약)**:
+1. "remodel 발동" vs "remodel outcome delta" 구분 필요 — P5 Gate 는 전자만 측정
+2. 단일 도메인 15c 범위에서 remodel 은 적극적 역효과 (-10 resolved, -12.1pp gap_res)
+3. Phase 4 "Self-Governing Evolver" premise 단일 도메인 근거 약화 — 50c trial 에서 "수축이 noise 정제에 기여" 가설 별도 검증 필요
+
+**commit**: TBD
+
+**참조**: `dev/active/phase-si-p6-consolidation/stage-e-remodel-matrix.md` §3.2, §5.6, §6
+
+---
+
+### 2026-04-19 D-166 — Stage-E × Remodel 독립 변수 식별 (matrix 진단 실행)
+
+**증상**: D-164 를 도출한 outside view 비교 (on vs off) 에서 **remodel 변수 미통제** 의심. "stage-e-off 가 remodel 을 받지 못한 결과 NO-SEL 92% 까지 악화됐다"는 대안 가설이 반박되지 않은 상태.
+
+**조사** (2026-04-19):
+- `bench/silver/japan-travel/p6-diag-off-15c/telemetry/cycles.jsonl` → cycle 10 이후 `hitl_queue.remodel = 1` 기록 (15개 cycle 중 6개)
+- `bench/silver/japan-travel/p6-diag-full-15c/telemetry/cycles.jsonl` → cycle 10 이후 동일하게 `remodel = 1` 기록
+- `src/orchestrator.py:466-509` `_should_remodel` 경로 추적 → Stage-E (external_anchor) 상태를 remodel 판정에서 참조하지 않음 (완전 독립)
+- `scripts/run_readiness.py:193-198` `--audit-interval 0` 플래그로 audit+remodel 전부 비활성 가능 확인
+
+**판정 (예비)**:
+- 기존 outside view (D-164) 는 "remodel 이 동일 조건으로 발동된 상태에서의 Stage-E 비교" → **여전히 유효한 공정 비교**
+- 그러나 **remodel 순효과**는 분리되지 않음 → 신규 trial (`p6-diag-off-remodel-off-15c`, `--audit-interval 0`) 1개로 2×2 matrix 완성 필요
+- 4번째 조합 (stage-e-on + remodel-off) 은 **비용 대비 한계 효용 낮음** (Stage-E × Remodel 독립성이 A↔B 에서 확인되면 생략 가능)
+
+**후속 작업** (P6-A1-D4):
+- trial 실행 → `stage-e-remodel-matrix.md` §3~§6 실측 채움
+- 판정 Path-α/β/γ 중 1택 후 D-166 본문 확정 (현재 entry 는 예비)
+- **중요 discussion (matrix §5 참조)**: "remodel 발동은 되지만 성능 개선이 없다" 시나리오 (Path-α) 는 다음 의미를 가짐
+  - P5 Gate PASS (b122a23) 의 "remodel 자연 발동" 성과가 outcome delta 를 만들지 못한 **표면적 성공**이었을 가능성
+  - P6-A F-Gate (A11) 를 "발동 빈도" → "outcome delta" 기준으로 재설계해야 함
+  - Phase 4 "Self-Governing Evolver" premise (remodel 이 정책 자가조정의 핵심) 재검토 필요 — 단일 도메인에서 효과 불분명하면 multi-domain 기대 근거 약화
+
+**교훈**:
+- 비교 실험 설계 시 **모든 자유 변수의 활성 상태를 실측 검증** 필수. 코드상 독립이어도 실행 시점에 통제 여부가 결과 해석을 바꿈.
+- "자연 발동 빈도" 는 mechanism 이 살아있음을 보이는 지표이지, mechanism 이 outcome 에 기여한다는 증거가 아님. Gate 설계 시 outcome delta 기준 병행 필수.
+
+**참조 문서**:
+- `dev/active/phase-si-p6-consolidation/stage-e-remodel-matrix.md` (설계 + discussion)
+- P6-A1-D4 task (`si-p6-consolidation-tasks.md`)
+
+**commit**: TBD — D-167 과 함께 확정 (P6-A1-D4 완료)
+
+**보강 (2026-04-19 trial 실행 후)**: 예비 §판정 중 "Path-γ (remodel 역효과)" 가 **극적으로 초과 관측됨** (NO-SEL -36pp, open -64%). 사전 예상한 메커니즘 (remodel merge 가 entity 혼탁 유발) 이 아닌, **remodel 발동 자체가 plan 의 exploit_budget 을 수축** 시키는 **상위 레이어 경로** 가 진짜 원인. 상세는 D-167 엔트리 참조.
+
+---
 <!-- analyze_saturation.py output -->
 
 # KU Saturation 진단 리포트 (P6-A1)

@@ -1,5 +1,5 @@
 # Silver P6: Consolidation & Knowledge DB Release — Plan
-> Last Updated: 2026-04-18 (rev: A1 완료, A1-Diag 서브스테이지 추가)
+> Last Updated: 2026-04-19 (rev: A1-D4 추가 — stage-e × remodel 2×2 matrix 진단 선행)
 > Status: In Progress
 
 ## 1. Summary (개요)
@@ -39,6 +39,7 @@
 | KU saturation | c11-15: stage-e-on 0.5/cyc, stage-e-off 4.0/cyc, p2-remodel 5.2/cyc | COMPARISON.md |
 | stage-e-on c10-c13 gap_map 완전 동결 | open=20, resolved=76 불변 4사이클 (probe slug collision 단독 설명 불가) | snapshot 실측 (2026-04-18) |
 | Smart Remodel 15c 발동 2회 | p2-remodel c10 (drought, 67 merges) + c15 (drought, 1 source_policy) | p2-smart-remodel run.log |
+| Stage-E × Remodel 변수 미분리 | p6-diag-off/full 모두 cycle 10부터 remodel 자연 발동 — outside view 는 공정하나 remodel 순효과 미분리 (D-166 예비) | `cycles.jsonl` `hitl_queue.remodel` 실측 (2026-04-19) |
 | Smart Remodel 임계값 하드코딩 | `src/orchestrator.py:454-458` (GROWTH_STAGNATION=5, DROUGHT=30) | 코드 실측 |
 | Exploration Pivot 임계값 하드코딩 | `src/nodes/exploration_pivot.py:25-26` (WINDOW=5, THRESHOLD=0.1), 실 trial 15c 내 0회 발동 | 코드 실측 |
 | LLM 단발 호출 지점 | `src/nodes/collect.py:130` — GU당 parse 개별 invoke (ThreadPool 병렬이나 batch API 아님) | 코드 실측 |
