@@ -572,6 +572,32 @@ def integrate_node(
     prev_dist = state.get("integration_result_dist")
     integration_result_dist = accumulate_integration_dist(prev_dist, resolve_outcomes, cycle)
 
+    # S2-T2: per-cycle stagnation 신호 계산 + 누적
+    added_count = sum(1 for c in claims if c.get("integration_result") == "added")
+    conflict_hold_count = sum(1 for c in claims if c.get("integration_result") == "conflict_hold")
+    condition_split_count = sum(1 for c in claims if c.get("integration_result") == "condition_split")
+    added_ratio = added_count / total_claims if total_claims > 0 else 0.0
+
+    prev_signals = state.get("ku_stagnation_signals") or {}
+    added_history = list(prev_signals.get("added_history", []))
+    conflict_hold_history = list(prev_signals.get("conflict_hold_history", []))
+    condition_split_history = list(prev_signals.get("condition_split_history", []))
+
+    added_history.append({
+        "cycle": cycle,
+        "added": added_count,
+        "total_claims": total_claims,
+        "added_ratio": round(added_ratio, 4),
+    })
+    conflict_hold_history.append({"cycle": cycle, "conflict_hold": conflict_hold_count})
+    condition_split_history.append({"cycle": cycle, "condition_split": condition_split_count})
+
+    ku_stagnation_signals = {
+        "added_history": added_history,
+        "conflict_hold_history": conflict_hold_history,
+        "condition_split_history": condition_split_history,
+    }
+
     return {
         "knowledge_units": kus,
         "gap_map": gap_map,
@@ -579,6 +605,7 @@ def integrate_node(
         "dispute_queue": dispute_queue,
         "conflict_ledger": conflict_ledger,
         "integration_result_dist": integration_result_dist,
+        "ku_stagnation_signals": ku_stagnation_signals,
         "_diag_adjacent_gap_count": len(new_dynamic_gus),
         "_diag_resolved_gus": diag_resolved_gus,
     }

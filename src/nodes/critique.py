@@ -29,6 +29,7 @@ def _analyze_failure_modes(
     skeleton: dict,
     today: date | None = None,
     integration_result_dist: dict | None = None,
+    ku_stagnation_signals: dict | None = None,
 ) -> list[dict]:
     """6대 실패모드 분석 → 처방 목록."""
     if today is None:
@@ -114,6 +115,54 @@ def _analyze_failure_modes(
                 "conv_rate": conv_rate,
             })
             rx_counter += 1
+
+    # 6. S2-T2: KU stagnation 3종 trigger
+    if ku_stagnation_signals:
+        added_history = ku_stagnation_signals.get("added_history", [])
+        conflict_hold_history = ku_stagnation_signals.get("conflict_hold_history", [])
+        condition_split_history = ku_stagnation_signals.get("condition_split_history", [])
+
+        # Trigger 1: added_ratio < 0.3 최근 3c 평균
+        if len(added_history) >= 3:
+            recent = added_history[-3:]
+            avg_ratio = sum(e["added_ratio"] for e in recent) / 3
+            if avg_ratio < 0.3:
+                prescriptions.append({
+                    "rx_id": f"RX-{rx_counter:04d}",
+                    "type": "ku_stagnation:added_low",
+                    "description": (
+                        f"최근 3c added_ratio 평균={avg_ratio:.3f} < 0.3: KU 추가율 저조"
+                    ),
+                    "avg_added_ratio": round(avg_ratio, 4),
+                    "window": [e["cycle"] for e in recent],
+                })
+                rx_counter += 1
+
+        # Trigger 2: conflict_hold 증가 추세 (최근 2~3c)
+        if len(conflict_hold_history) >= 2:
+            recent_holds = [e["conflict_hold"] for e in conflict_hold_history[-3:]]
+            if recent_holds[-1] > recent_holds[0]:
+                prescriptions.append({
+                    "rx_id": f"RX-{rx_counter:04d}",
+                    "type": "ku_stagnation:conflict_rising",
+                    "description": (
+                        f"conflict_hold 증가 추세: {recent_holds[0]}→{recent_holds[-1]}"
+                    ),
+                    "conflict_hold_trend": recent_holds,
+                })
+                rx_counter += 1
+
+        # Trigger 3: condition_split 부재 최근 3c
+        if len(condition_split_history) >= 3:
+            recent_splits = [e["condition_split"] for e in condition_split_history[-3:]]
+            if all(s == 0 for s in recent_splits):
+                prescriptions.append({
+                    "rx_id": f"RX-{rx_counter:04d}",
+                    "type": "ku_stagnation:no_condition_split",
+                    "description": "최근 3c condition_split=0: 조건 다변화 부재",
+                    "window": [e["cycle"] for e in condition_split_history[-3:]],
+                })
+                rx_counter += 1
 
     return prescriptions
 
@@ -501,8 +550,13 @@ def critique_node(
     # S2-T1: integration_result_dist 읽기 (제어 입력)
     integration_result_dist = state.get("integration_result_dist")
 
+    # S2-T2: ku_stagnation_signals 읽기 (제어 입력)
+    ku_stagnation_signals = state.get("ku_stagnation_signals")
+
     # 실패모드 분석 (dispute resolution 후 — 해소된 KU는 consistency 처방 불필요)
-    prescriptions = _analyze_failure_modes(kus, gap_map, skeleton, today, integration_result_dist)
+    prescriptions = _analyze_failure_modes(
+        kus, gap_map, skeleton, today, integration_result_dist, ku_stagnation_signals,
+    )
 
     # 해소된 dispute에 대한 처방 추가
     rx_counter = len(prescriptions) + 1

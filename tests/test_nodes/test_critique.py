@@ -522,3 +522,113 @@ class TestIntegrationBottleneck:
                 "no_source_gu": 0, "invalid_result": 0, "other": 7}
         rxs = _analyze_failure_modes([], [], {"categories": []}, integration_result_dist=dist)
         assert not any(rx["type"] == "integration_bottleneck" for rx in rxs)
+
+
+# ---------------------------------------------------------------------------
+# S2-T2: KU stagnation trigger
+# ---------------------------------------------------------------------------
+
+def _make_added_history(ratios: list[float]) -> list[dict]:
+    return [
+        {"cycle": i + 1, "added": int(r * 10), "total_claims": 10, "added_ratio": r}
+        for i, r in enumerate(ratios)
+    ]
+
+
+def _make_conflict_hold_history(holds: list[int]) -> list[dict]:
+    return [{"cycle": i + 1, "conflict_hold": h} for i, h in enumerate(holds)]
+
+
+def _make_condition_split_history(splits: list[int]) -> list[dict]:
+    return [{"cycle": i + 1, "condition_split": s} for i, s in enumerate(splits)]
+
+
+class TestKuStagnationTrigger:
+    def test_added_low_trigger_fires(self) -> None:
+        """최근 3c added_ratio < 0.3 → ku_stagnation:added_low 처방."""
+        signals = {
+            "added_history": _make_added_history([0.1, 0.2, 0.1]),
+            "conflict_hold_history": _make_conflict_hold_history([0, 0, 0]),
+            "condition_split_history": _make_condition_split_history([1, 1, 1]),
+        }
+        rxs = _analyze_failure_modes([], [], {"categories": []}, ku_stagnation_signals=signals)
+        types = [rx["type"] for rx in rxs]
+        assert "ku_stagnation:added_low" in types
+
+    def test_added_low_trigger_does_not_fire_when_high(self) -> None:
+        """최근 3c added_ratio >= 0.3 → ku_stagnation:added_low 없음."""
+        signals = {
+            "added_history": _make_added_history([0.4, 0.5, 0.3]),
+            "conflict_hold_history": _make_conflict_hold_history([0, 0, 0]),
+            "condition_split_history": _make_condition_split_history([0, 0, 0]),
+        }
+        rxs = _analyze_failure_modes([], [], {"categories": []}, ku_stagnation_signals=signals)
+        assert not any(rx["type"] == "ku_stagnation:added_low" for rx in rxs)
+
+    def test_added_low_requires_3_cycles(self) -> None:
+        """history < 3c → added_low 발동 안 함."""
+        signals = {
+            "added_history": _make_added_history([0.1, 0.1]),  # 2c만
+            "conflict_hold_history": _make_conflict_hold_history([0, 0]),
+            "condition_split_history": _make_condition_split_history([0, 0]),
+        }
+        rxs = _analyze_failure_modes([], [], {"categories": []}, ku_stagnation_signals=signals)
+        assert not any(rx["type"] == "ku_stagnation:added_low" for rx in rxs)
+
+    def test_conflict_rising_trigger_fires(self) -> None:
+        """conflict_hold 증가 추세 → ku_stagnation:conflict_rising 처방."""
+        signals = {
+            "added_history": _make_added_history([0.5, 0.5]),
+            "conflict_hold_history": _make_conflict_hold_history([1, 5]),  # 증가
+            "condition_split_history": _make_condition_split_history([1, 1]),
+        }
+        rxs = _analyze_failure_modes([], [], {"categories": []}, ku_stagnation_signals=signals)
+        assert any(rx["type"] == "ku_stagnation:conflict_rising" for rx in rxs)
+
+    def test_conflict_rising_no_fire_when_flat(self) -> None:
+        """conflict_hold 평탄 → conflict_rising 없음."""
+        signals = {
+            "added_history": _make_added_history([0.5, 0.5]),
+            "conflict_hold_history": _make_conflict_hold_history([3, 3]),
+            "condition_split_history": _make_condition_split_history([1, 1]),
+        }
+        rxs = _analyze_failure_modes([], [], {"categories": []}, ku_stagnation_signals=signals)
+        assert not any(rx["type"] == "ku_stagnation:conflict_rising" for rx in rxs)
+
+    def test_no_condition_split_trigger_fires(self) -> None:
+        """최근 3c condition_split=0 → ku_stagnation:no_condition_split 처방."""
+        signals = {
+            "added_history": _make_added_history([0.5, 0.5, 0.5]),
+            "conflict_hold_history": _make_conflict_hold_history([0, 0, 0]),
+            "condition_split_history": _make_condition_split_history([0, 0, 0]),
+        }
+        rxs = _analyze_failure_modes([], [], {"categories": []}, ku_stagnation_signals=signals)
+        assert any(rx["type"] == "ku_stagnation:no_condition_split" for rx in rxs)
+
+    def test_no_condition_split_no_fire_when_present(self) -> None:
+        """최근 3c 중 하나라도 condition_split > 0 → no_condition_split 없음."""
+        signals = {
+            "added_history": _make_added_history([0.5, 0.5, 0.5]),
+            "conflict_hold_history": _make_conflict_hold_history([0, 0, 0]),
+            "condition_split_history": _make_condition_split_history([0, 1, 0]),
+        }
+        rxs = _analyze_failure_modes([], [], {"categories": []}, ku_stagnation_signals=signals)
+        assert not any(rx["type"] == "ku_stagnation:no_condition_split" for rx in rxs)
+
+    def test_none_signals_no_stagnation_prescriptions(self) -> None:
+        """ku_stagnation_signals=None → stagnation 처방 없음."""
+        rxs = _analyze_failure_modes([], [], {"categories": []}, ku_stagnation_signals=None)
+        stagnation = [rx for rx in rxs if rx["type"].startswith("ku_stagnation")]
+        assert stagnation == []
+
+    def test_multiple_triggers_can_fire_simultaneously(self) -> None:
+        """여러 trigger 동시 발동 가능."""
+        signals = {
+            "added_history": _make_added_history([0.1, 0.1, 0.1]),  # added_low
+            "conflict_hold_history": _make_conflict_hold_history([1, 5]),  # conflict_rising
+            "condition_split_history": _make_condition_split_history([0, 0, 0]),  # no_condition_split
+        }
+        rxs = _analyze_failure_modes([], [], {"categories": []}, ku_stagnation_signals=signals)
+        types = {rx["type"] for rx in rxs}
+        assert "ku_stagnation:added_low" in types
+        assert "ku_stagnation:no_condition_split" in types

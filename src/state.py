@@ -242,6 +242,12 @@ class EvolverState(TypedDict, total=False):
     #  "cycle_history": [{"cycle": int, "resolved": int, ...}]}
     integration_result_dist: dict
 
+    # SI-P7 S2-T2: KU stagnation 신호 (per-cycle added/conflict_hold/condition_split 이력)
+    # {"added_history": [{"cycle": int, "added": int, "total_claims": int, "added_ratio": float}],
+    #  "conflict_hold_history": [{"cycle": int, "conflict_hold": int}],
+    #  "condition_split_history": [{"cycle": int, "condition_split": int}]}
+    ku_stagnation_signals: dict
+
     # Diagnostic fields (진단 전용, orchestrator가 cycle마다 읽고 제거)
     _diag_search_by_gu: dict | None       # collect: {gu_id: search_result_count}
     _diag_adjacent_gap_count: int | None  # integrate: 신규 dynamic GU 수

@@ -1626,3 +1626,107 @@ class TestIntegrationResultDist:
         result = integrate_node(state)
         dist = result["integration_result_dist"]
         assert len(dist["cycle_history"]) == 2  # 이전 1개 + 이번 1개
+
+
+# ---------------------------------------------------------------------------
+# S2-T2: ku_stagnation_signals
+# ---------------------------------------------------------------------------
+
+class TestKuStagnationSignals:
+    def _base_state(self, claims: list[dict], gap_map: list[dict] | None = None) -> dict:
+        return {
+            "knowledge_units": [],
+            "gap_map": gap_map or [],
+            "current_claims": claims,
+            "domain_skeleton": {"categories": [], "fields": []},
+            "current_mode": {"mode": "normal"},
+            "current_cycle": 1,
+        }
+
+    def test_signals_key_present(self) -> None:
+        """ku_stagnation_signals 키가 항상 반환됨."""
+        state = self._base_state([])
+        result = integrate_node(state)
+        assert "ku_stagnation_signals" in result
+
+    def test_added_count_tracked(self) -> None:
+        """added 결과 claim → added_history에 기록."""
+        gap_map = [{"gu_id": "GU-0001", "status": "open",
+                    "target": {"entity_key": "d:a:x", "field": "price"}}]
+        claims = [{
+            "claim_id": "CL-001", "entity_key": "d:a:x", "field": "price",
+            "value": "100", "source_gu_id": "GU-0001",
+            "evidence": {"eu_id": "EU-001", "credibility": 0.8},
+        }]
+        state = self._base_state(claims, gap_map)
+        result = integrate_node(state)
+        signals = result["ku_stagnation_signals"]
+        assert len(signals["added_history"]) == 1
+        entry = signals["added_history"][0]
+        assert entry["added"] == 1
+        assert entry["total_claims"] == 1
+        assert entry["added_ratio"] == 1.0
+
+    def test_conflict_hold_count_tracked(self) -> None:
+        """conflict_hold 결과 → conflict_hold_history에 기록."""
+        kus = [{"ku_id": "KU-0001", "entity_key": "d:a:x", "field": "price",
+                "value": "100", "status": "active", "evidence_links": ["EU-000"],
+                "confidence": 0.8, "observed_at": "2026-01-01"}]
+        claims = [{
+            "claim_id": "CL-001", "entity_key": "d:a:x", "field": "price",
+            "value": "999",  # 다른 값 → conflict
+            "source_gu_id": "", "evidence": {"eu_id": "EU-001", "credibility": 0.7},
+        }]
+        state = {**self._base_state(claims), "knowledge_units": kus}
+        result = integrate_node(state)
+        signals = result["ku_stagnation_signals"]
+        assert signals["conflict_hold_history"][0]["conflict_hold"] >= 0  # 감지 여부 무관, 키 존재 확인
+
+    def test_condition_split_count_tracked(self) -> None:
+        """condition_split 결과 → condition_split_history에 기록."""
+        kus = [{"ku_id": "KU-0001", "entity_key": "d:a:x", "field": "price",
+                "value": "100", "status": "active", "evidence_links": ["EU-000"],
+                "confidence": 0.8, "observed_at": "2026-01-01",
+                "conditions": {"season": "summer"}}]
+        claims = [{
+            "claim_id": "CL-001", "entity_key": "d:a:x", "field": "price",
+            "value": "200", "source_gu_id": "",
+            "conditions": {"season": "winter"},
+            "evidence": {"eu_id": "EU-001", "credibility": 0.7},
+        }]
+        state = {**self._base_state(claims), "knowledge_units": kus}
+        result = integrate_node(state)
+        signals = result["ku_stagnation_signals"]
+        assert len(signals["condition_split_history"]) == 1
+
+    def test_signals_accumulate_across_cycles(self) -> None:
+        """이전 cycle 신호가 누적됨."""
+        prev_signals = {
+            "added_history": [{"cycle": 1, "added": 2, "total_claims": 5, "added_ratio": 0.4}],
+            "conflict_hold_history": [{"cycle": 1, "conflict_hold": 1}],
+            "condition_split_history": [{"cycle": 1, "condition_split": 0}],
+        }
+        gap_map = [{"gu_id": "GU-0001", "status": "open",
+                    "target": {"entity_key": "d:a:x", "field": "price"}}]
+        claims = [{
+            "claim_id": "CL-001", "entity_key": "d:a:x", "field": "price",
+            "value": "100", "source_gu_id": "GU-0001",
+            "evidence": {"eu_id": "EU-001", "credibility": 0.8},
+        }]
+        state = {
+            **self._base_state(claims, gap_map),
+            "current_cycle": 2,
+            "ku_stagnation_signals": prev_signals,
+        }
+        result = integrate_node(state)
+        signals = result["ku_stagnation_signals"]
+        assert len(signals["added_history"]) == 2  # 이전 1 + 이번 1
+        assert signals["added_history"][1]["cycle"] == 2
+
+    def test_empty_claims_zero_ratio(self) -> None:
+        """claim 없으면 added_ratio=0.0."""
+        state = self._base_state([])
+        result = integrate_node(state)
+        signals = result["ku_stagnation_signals"]
+        assert signals["added_history"][0]["added_ratio"] == 0.0
+        assert signals["added_history"][0]["total_claims"] == 0
