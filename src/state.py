@@ -236,6 +236,12 @@ class EvolverState(TypedDict, total=False):
     deferred_targets: list[str]  # gu_id 목록 (FIFO)
     defer_reason: dict  # {reason_str: count}, e.g. {"budget_exceeded": 3}
 
+    # SI-P7 S2-T1: integration_result 분포 (per-cycle + 누적 history)
+    # {"resolved": int, "no_source_gu": int, "invalid_result": int, "other": int,
+    #  "conv_rate": float, "total_claims": int,
+    #  "cycle_history": [{"cycle": int, "resolved": int, ...}]}
+    integration_result_dist: dict
+
     # Diagnostic fields (진단 전용, orchestrator가 cycle마다 읽고 제거)
     _diag_search_by_gu: dict | None       # collect: {gu_id: search_result_count}
     _diag_adjacent_gap_count: int | None  # integrate: 신규 dynamic GU 수

@@ -15,6 +15,7 @@ from src.nodes.critique import (
     _generate_balance_gus,
     _generate_refresh_gus,
     critique_node,
+    INTEGRATION_CONV_RATE_THRESHOLD,
 )
 
 BENCH = Path("bench/japan-travel/state")
@@ -467,3 +468,57 @@ class TestAdaptiveRefreshCap:
         ]
         gus = _generate_refresh_gus(kus, [], max_gu_id=0, today=date(2026, 3, 7))
         assert len(gus) == 20  # adaptive: 60//3 = 20
+
+
+# ---------------------------------------------------------------------------
+# S2-T1: integration_bottleneck 처방
+# ---------------------------------------------------------------------------
+
+class TestIntegrationBottleneck:
+    def test_low_conv_rate_generates_prescription(self) -> None:
+        """conv_rate < 0.3 → integration_bottleneck 처방 생성."""
+        dist = {"conv_rate": 0.1, "total_claims": 20, "resolved": 2,
+                "no_source_gu": 5, "invalid_result": 3, "other": 10}
+        rxs = _analyze_failure_modes([], [], {"categories": []}, integration_result_dist=dist)
+        assert any(rx["type"] == "integration_bottleneck" for rx in rxs)
+
+    def test_high_conv_rate_no_prescription(self) -> None:
+        """conv_rate >= 0.3 → integration_bottleneck 처방 없음."""
+        dist = {"conv_rate": 0.5, "total_claims": 10, "resolved": 5,
+                "no_source_gu": 0, "invalid_result": 0, "other": 5}
+        rxs = _analyze_failure_modes([], [], {"categories": []}, integration_result_dist=dist)
+        assert not any(rx["type"] == "integration_bottleneck" for rx in rxs)
+
+    def test_zero_claims_no_prescription(self) -> None:
+        """total_claims == 0 → 처방 없음."""
+        dist = {"conv_rate": 0.0, "total_claims": 0, "resolved": 0,
+                "no_source_gu": 0, "invalid_result": 0, "other": 0}
+        rxs = _analyze_failure_modes([], [], {"categories": []}, integration_result_dist=dist)
+        assert not any(rx["type"] == "integration_bottleneck" for rx in rxs)
+
+    def test_bottleneck_machine_rule_generated(self) -> None:
+        """conv_rate < 0.3 → machine_rules에 integration_bottleneck 규칙 포함."""
+        state = {
+            "knowledge_units": [],
+            "gap_map": [],
+            "domain_skeleton": {"categories": [], "fields": [], "axes": []},
+            "current_cycle": 3,
+            "metrics": {},
+            "integration_result_dist": {
+                "conv_rate": 0.1, "total_claims": 20, "resolved": 2,
+                "no_source_gu": 5, "invalid_result": 3, "other": 10,
+                "cycle_history": [],
+            },
+        }
+        result = critique_node(state, today=date(2026, 4, 21))
+        rules = result["current_critique"]["machine_rules"]
+        bottleneck_rules = [r for r in rules if r.get("action") == "integration_bottleneck"]
+        assert len(bottleneck_rules) == 1
+        assert bottleneck_rules[0]["value"] == 0.1
+
+    def test_threshold_boundary(self) -> None:
+        """conv_rate = THRESHOLD → 처방 없음 (미만이어야 발동)."""
+        dist = {"conv_rate": INTEGRATION_CONV_RATE_THRESHOLD, "total_claims": 10, "resolved": 3,
+                "no_source_gu": 0, "invalid_result": 0, "other": 7}
+        rxs = _analyze_failure_modes([], [], {"categories": []}, integration_result_dist=dist)
+        assert not any(rx["type"] == "integration_bottleneck" for rx in rxs)

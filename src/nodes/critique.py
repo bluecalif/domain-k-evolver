@@ -20,11 +20,15 @@ from src.utils.metrics import (
 HIGH_RISK_LEVELS = {"safety", "financial", "policy"}
 
 
+INTEGRATION_CONV_RATE_THRESHOLD = 0.3  # S2-T1: conv_rate 이하 시 bottleneck 처방
+
+
 def _analyze_failure_modes(
     kus: list[dict],
     gap_map: list[dict],
     skeleton: dict,
     today: date | None = None,
+    integration_result_dist: dict | None = None,
 ) -> list[dict]:
     """6대 실패모드 분석 → 처방 목록."""
     if today is None:
@@ -94,6 +98,22 @@ def _analyze_failure_modes(
             "description": f"카테고리 커버리지 부족: {len(covered_cats)}/{len(categories)}",
         })
         rx_counter += 1
+
+    # 5. S2-T1: integration conv_rate 저조 → integration_bottleneck 처방
+    if integration_result_dist:
+        conv_rate = integration_result_dist.get("conv_rate", 1.0)
+        total_claims = integration_result_dist.get("total_claims", 0)
+        if total_claims > 0 and conv_rate < INTEGRATION_CONV_RATE_THRESHOLD:
+            prescriptions.append({
+                "rx_id": f"RX-{rx_counter:04d}",
+                "type": "integration_bottleneck",
+                "description": (
+                    f"integration conv_rate={conv_rate:.3f} < {INTEGRATION_CONV_RATE_THRESHOLD} "
+                    f"(claims={total_claims}, resolved={integration_result_dist.get('resolved', 0)})"
+                ),
+                "conv_rate": conv_rate,
+            })
+            rx_counter += 1
 
     return prescriptions
 
@@ -339,6 +359,18 @@ def _generate_machine_rules(
             "value": round(cr, 4),
         })
 
+    # S2-T1: integration conv_rate < 0.3 → integration_bottleneck
+    int_dist = state.get("integration_result_dist") or {}
+    int_conv = int_dist.get("conv_rate", 1.0)
+    if int_conv < 0.3:
+        rules.append({
+            "rule": "integration_conv_rate<0.3",
+            "condition": f"conv_rate={int_conv:.3f}",
+            "action": "integration_bottleneck",
+            "target": "collect_quality",
+            "value": round(int_conv, 4),
+        })
+
     # 6. evidence_rate < 0.90 → collect_evidence
     er = rates.get("evidence_rate", 1.0)
     if er < 0.90:
@@ -466,8 +498,11 @@ def critique_node(
     conflict_ledger = state.get("conflict_ledger", [])
     dispute_log = resolve_disputes(kus, llm=llm, conflict_ledger=conflict_ledger)
 
+    # S2-T1: integration_result_dist 읽기 (제어 입력)
+    integration_result_dist = state.get("integration_result_dist")
+
     # 실패모드 분석 (dispute resolution 후 — 해소된 KU는 consistency 처방 불필요)
-    prescriptions = _analyze_failure_modes(kus, gap_map, skeleton, today)
+    prescriptions = _analyze_failure_modes(kus, gap_map, skeleton, today, integration_result_dist)
 
     # 해소된 dispute에 대한 처방 추가
     rx_counter = len(prescriptions) + 1

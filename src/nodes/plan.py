@@ -24,6 +24,9 @@ EXTERNAL_NOVELTY_STAGNATION_THRESHOLD = 0.1   # 5c 연속 < 0.1 → stagnation
 EXTERNAL_NOVELTY_STAGNATION_WINDOW = 5
 
 
+INTEGRATION_LOW_CONV_THRESHOLD = 0.3  # S2-T1: conv_rate 이하 시 integration:low_conversion
+
+
 def _assign_reason_code(
     gu: dict,
     coverage_map: dict | None,
@@ -32,6 +35,7 @@ def _assign_reason_code(
     cycle: int,
     *,
     external_novelty_history: list[float] | None = None,
+    integration_result_dist: dict | None = None,
 ) -> str:
     """GU 에 reason_code 부여 (P4-B1 + SI-P4 Stage E).
 
@@ -100,6 +104,13 @@ def _assign_reason_code(
     trigger = gu.get("trigger", "")
     if trigger and "audit" in trigger.lower():
         return "audit:merge_pending"
+
+    # S2-T1: integration low_conversion (cycle-level 신호 — fallback 직전)
+    if integration_result_dist:
+        conv_rate = integration_result_dist.get("conv_rate", 1.0)
+        total_claims = integration_result_dist.get("total_claims", 0)
+        if total_claims > 0 and conv_rate < INTEGRATION_LOW_CONV_THRESHOLD:
+            return f"integration:low_conversion(conv={conv_rate:.2f})"
 
     # 6. fallback
     if cycle == 0:
@@ -279,6 +290,7 @@ def plan_node(
     coverage_map = state.get("coverage_map")
     novelty_history = state.get("novelty_history")
     external_novelty_history = state.get("external_novelty_history")
+    integration_result_dist = state.get("integration_result_dist")
     cycle = state.get("current_cycle", 0)
 
     # P4-B3: remodel pending 확인
@@ -352,10 +364,16 @@ def plan_node(
             reason_codes[gu_id] = _assign_reason_code(
                 gu, coverage_map, novelty_history, has_remodel_pending, cycle,
                 external_novelty_history=external_novelty_history,
+                integration_result_dist=integration_result_dist,
             )
         else:
             reason_codes[gu_id] = "seed:initial"
     plan["reason_codes"] = reason_codes
+    if integration_result_dist:
+        plan["integration_signal"] = {
+            "conv_rate": integration_result_dist.get("conv_rate", 1.0),
+            "total_claims": integration_result_dist.get("total_claims", 0),
+        }
 
     # P4-B3: remodel pending → target count 감소
     if has_remodel_pending:

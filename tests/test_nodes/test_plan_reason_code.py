@@ -8,6 +8,7 @@ from src.nodes.plan import (
     _assign_reason_code,
     _boost_deficit_categories,
     plan_node,
+    INTEGRATION_LOW_CONV_THRESHOLD,
 )
 
 
@@ -315,3 +316,90 @@ class TestCritiqueMachineRules:
         rules = result["current_critique"]["machine_rules"]
         gini_rules = [r for r in rules if "gini" in r.get("rule", "")]
         assert len(gini_rules) >= 1
+
+
+# ---------------------------------------------------------------------------
+# S2-T1: integration:low_conversion reason code
+# ---------------------------------------------------------------------------
+
+class TestIntegrationLowConversion:
+    """S2-T1: integration:low_conversion reason code 테스트."""
+
+    def test_low_conv_reason_code(self):
+        """conv_rate < 0.3 → integration:low_conversion(conv=...) reason code."""
+        gu = _make_gu("GU-1", "d:cat:a", "price")
+        dist = {"conv_rate": 0.1, "total_claims": 20}
+        code = _assign_reason_code(gu, None, None, False, 5,
+                                   integration_result_dist=dist)
+        assert code.startswith("integration:low_conversion")
+        assert "conv=" in code
+
+    def test_high_conv_no_override(self):
+        """conv_rate >= 0.3 → integration:low_conversion 미발동."""
+        gu = _make_gu("GU-1", "d:cat:a", "price")
+        dist = {"conv_rate": 0.5, "total_claims": 10}
+        code = _assign_reason_code(gu, None, None, False, 5,
+                                   integration_result_dist=dist)
+        assert not code.startswith("integration:low_conversion")
+
+    def test_zero_claims_no_override(self):
+        """total_claims == 0 → 미발동."""
+        gu = _make_gu("GU-1", "d:cat:a", "price")
+        dist = {"conv_rate": 0.0, "total_claims": 0}
+        code = _assign_reason_code(gu, None, None, False, 5,
+                                   integration_result_dist=dist)
+        assert not code.startswith("integration:low_conversion")
+
+    def test_deficit_overrides_integration(self):
+        """deficit > 0.5 가 integration:low_conversion 보다 우선."""
+        gu = _make_gu("GU-1", "d:food:ramen", "price")
+        cm = _make_coverage_map({
+            "food": {"ku_count": 1, "deficit_score": 0.9, "field_coverage": {}},
+        })
+        dist = {"conv_rate": 0.1, "total_claims": 20}
+        code = _assign_reason_code(gu, cm, None, False, 5,
+                                   integration_result_dist=dist)
+        assert code.startswith("deficit:")
+
+    def test_plan_node_integration_signal(self):
+        """plan_node: integration_result_dist 있으면 integration_signal 추가."""
+        state = {
+            "gap_map": [_make_gu("GU-1", "d:cat:a", "price")],
+            "current_mode": {"mode": "normal", "explore_budget": 0, "exploit_budget": 1},
+            "domain_skeleton": {"domain": "d", "categories": [{"slug": "cat"}], "axes": []},
+            "knowledge_units": [],
+            "coverage_map": None,
+            "novelty_history": [],
+            "current_cycle": 3,
+            "remodel_report": None,
+            "integration_result_dist": {
+                "conv_rate": 0.1, "total_claims": 20,
+                "resolved": 2, "no_source_gu": 5, "invalid_result": 3, "other": 10,
+                "cycle_history": [],
+            },
+        }
+        result = plan_node(state)
+        plan = result["current_plan"]
+        assert "integration_signal" in plan
+        assert plan["integration_signal"]["conv_rate"] == 0.1
+
+    def test_plan_node_low_conv_reason_code(self):
+        """plan_node: conv_rate < 0.3 → GU reason_code = integration:low_conversion."""
+        state = {
+            "gap_map": [_make_gu("GU-1", "d:cat:a", "price")],
+            "current_mode": {"mode": "normal", "explore_budget": 0, "exploit_budget": 1},
+            "domain_skeleton": {"domain": "d", "categories": [{"slug": "cat"}], "axes": []},
+            "knowledge_units": [],
+            "coverage_map": None,
+            "novelty_history": [],
+            "current_cycle": 3,
+            "remodel_report": None,
+            "integration_result_dist": {
+                "conv_rate": 0.15, "total_claims": 20,
+                "resolved": 3, "no_source_gu": 4, "invalid_result": 3, "other": 10,
+                "cycle_history": [],
+            },
+        }
+        result = plan_node(state)
+        rc = result["current_plan"]["reason_codes"]
+        assert rc["GU-1"].startswith("integration:low_conversion")

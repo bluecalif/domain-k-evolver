@@ -242,6 +242,54 @@ def compute_axis_coverage(
 
 
 # ---------------------------------------------------------------------------
+# Integration Result Distribution (S2-T1)
+# ---------------------------------------------------------------------------
+
+def accumulate_integration_dist(
+    prev_dist: dict | None,
+    cycle_outcomes: dict,
+    cycle: int,
+) -> dict:
+    """per-cycle integration_result 분포를 누적 state 에 반영.
+
+    Args:
+        prev_dist: 이전 state 의 integration_result_dist (없으면 None).
+        cycle_outcomes: 이번 cycle 결과 {"resolved", "no_source_gu", "invalid_result", "other"}.
+        cycle: 현재 cycle 번호.
+
+    Returns:
+        새 integration_result_dist dict.
+    """
+    resolved = cycle_outcomes.get("resolved", 0)
+    no_source_gu = cycle_outcomes.get("no_source_gu", 0)
+    invalid_result = cycle_outcomes.get("invalid_result", 0)
+    other = cycle_outcomes.get("other", 0)
+    total = resolved + no_source_gu + invalid_result + other
+    conv_rate = resolved / total if total > 0 else 0.0
+
+    history: list[dict] = list((prev_dist or {}).get("cycle_history", []))
+    history.append({
+        "cycle": cycle,
+        "resolved": resolved,
+        "no_source_gu": no_source_gu,
+        "invalid_result": invalid_result,
+        "other": other,
+        "conv_rate": round(conv_rate, 3),
+        "total_claims": total,
+    })
+
+    return {
+        "resolved": resolved,
+        "no_source_gu": no_source_gu,
+        "invalid_result": invalid_result,
+        "other": other,
+        "conv_rate": round(conv_rate, 3),
+        "total_claims": total,
+        "cycle_history": history,
+    }
+
+
+# ---------------------------------------------------------------------------
 # Deficit Ratios
 # ---------------------------------------------------------------------------
 

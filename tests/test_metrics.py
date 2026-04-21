@@ -12,6 +12,7 @@ from pathlib import Path
 import pytest
 
 from src.utils.metrics import (
+    accumulate_integration_dist,
     avg_confidence,
     assess_health,
     compute_axis_coverage,
@@ -311,3 +312,49 @@ class TestDeficitRatios:
         skeleton = {"axes": [{"name": "geo", "anchors": ["tokyo", "osaka"]}]}
         result = compute_deficit_ratios(coverage, skeleton)
         assert result["geo"] == pytest.approx(0.5)
+
+
+# ---------------------------------------------------------------------------
+# S2-T1: accumulate_integration_dist
+# ---------------------------------------------------------------------------
+
+class TestAccumulateIntegrationDist:
+    def test_first_cycle_no_prev(self) -> None:
+        outcomes = {"resolved": 4, "no_source_gu": 2, "invalid_result": 1, "other": 3}
+        dist = accumulate_integration_dist(None, outcomes, cycle=1)
+        assert dist["resolved"] == 4
+        assert dist["no_source_gu"] == 2
+        assert dist["invalid_result"] == 1
+        assert dist["other"] == 3
+        assert dist["total_claims"] == 10
+        assert dist["conv_rate"] == pytest.approx(0.4)
+        assert len(dist["cycle_history"]) == 1
+        assert dist["cycle_history"][0]["cycle"] == 1
+
+    def test_accumulates_history(self) -> None:
+        outcomes1 = {"resolved": 5, "no_source_gu": 0, "invalid_result": 0, "other": 5}
+        dist1 = accumulate_integration_dist(None, outcomes1, cycle=1)
+        outcomes2 = {"resolved": 3, "no_source_gu": 1, "invalid_result": 2, "other": 4}
+        dist2 = accumulate_integration_dist(dist1, outcomes2, cycle=2)
+        assert len(dist2["cycle_history"]) == 2
+        assert dist2["cycle_history"][1]["cycle"] == 2
+        assert dist2["resolved"] == 3  # 이번 cycle 값
+        assert dist2["conv_rate"] == pytest.approx(0.3)  # 3/10
+
+    def test_zero_claims(self) -> None:
+        outcomes = {"resolved": 0, "no_source_gu": 0, "invalid_result": 0, "other": 0}
+        dist = accumulate_integration_dist(None, outcomes, cycle=1)
+        assert dist["conv_rate"] == 0.0
+        assert dist["total_claims"] == 0
+
+    def test_history_preserved_across_cycles(self) -> None:
+        prev = {
+            "resolved": 2, "no_source_gu": 0, "invalid_result": 0, "other": 8,
+            "conv_rate": 0.2, "total_claims": 10,
+            "cycle_history": [{"cycle": 1, "resolved": 2, "no_source_gu": 0,
+                                "invalid_result": 0, "other": 8, "conv_rate": 0.2, "total_claims": 10}],
+        }
+        outcomes = {"resolved": 6, "no_source_gu": 1, "invalid_result": 1, "other": 2}
+        dist = accumulate_integration_dist(prev, outcomes, cycle=2)
+        assert len(dist["cycle_history"]) == 2
+        assert dist["cycle_history"][0]["cycle"] == 1  # 기존 history 보존

@@ -15,6 +15,7 @@ from typing import Any
 from src.state import EvolverState
 from src.utils.entity_resolver import canonicalize_entity_key
 from src.utils.llm_parse import extract_json
+from src.utils.metrics import accumulate_integration_dist
 
 logger = logging.getLogger(__name__)
 
@@ -327,7 +328,7 @@ def integrate_node(
     # parse_yield gap 조사 — GU resolve 성공/실패 분류 (D-126)
     resolve_outcomes = {
         "resolved": 0,
-        "no_source_gu_id": 0,
+        "no_source_gu": 0,
         "invalid_result": 0,
         "other": 0,
     }
@@ -511,7 +512,7 @@ def integrate_node(
         if _int_result not in _resolvable_results:
             resolve_outcomes["invalid_result"] += 1
         elif not source_gu_id:
-            resolve_outcomes["no_source_gu_id"] += 1
+            resolve_outcomes["no_source_gu"] += 1
         else:
             _resolved = False
             for gu in gap_map:
@@ -553,17 +554,23 @@ def integrate_node(
     # Conflict-preserving: disputed KU 삭제 금지 (이 노드에서는 삭제 자체를 하지 않음)
 
     total_claims = len(claims)
+    conv_rate = resolve_outcomes["resolved"] / total_claims if total_claims > 0 else 0.0
     if total_claims > 0:
         logger.info(
             "integrate_result: claims=%d resolved=%d no_source_gu=%d "
             "invalid_result=%d other=%d conv_rate=%.3f",
             total_claims,
             resolve_outcomes["resolved"],
-            resolve_outcomes["no_source_gu_id"],
+            resolve_outcomes["no_source_gu"],
             resolve_outcomes["invalid_result"],
             resolve_outcomes["other"],
-            resolve_outcomes["resolved"] / total_claims,
+            conv_rate,
         )
+
+    # S2-T1: per-cycle 분포를 state에 누적
+    cycle = state.get("current_cycle", 0)
+    prev_dist = state.get("integration_result_dist")
+    integration_result_dist = accumulate_integration_dist(prev_dist, resolve_outcomes, cycle)
 
     return {
         "knowledge_units": kus,
@@ -571,6 +578,7 @@ def integrate_node(
         "current_claims": claims,
         "dispute_queue": dispute_queue,
         "conflict_ledger": conflict_ledger,
+        "integration_result_dist": integration_result_dist,
         "_diag_adjacent_gap_count": len(new_dynamic_gus),
         "_diag_resolved_gus": diag_resolved_gus,
     }

@@ -1533,3 +1533,96 @@ class TestS6ConflictLedgerPersistence:
         )
         result = integrate_node(state)
         assert "conflict_ledger" in result
+
+
+# ---------------------------------------------------------------------------
+# S2-T1: integration_result_dist 반환
+# ---------------------------------------------------------------------------
+
+class TestIntegrationResultDist:
+    def test_dist_returned_on_resolve(self) -> None:
+        """GU resolve 시 integration_result_dist 반환."""
+        state = {
+            "knowledge_units": [],
+            "gap_map": [
+                {"gu_id": "GU-0001", "status": "open",
+                 "target": {"entity_key": "d:a:x", "field": "price"}},
+            ],
+            "current_claims": [
+                {
+                    "claim_id": "CL-001",
+                    "entity_key": "d:a:x",
+                    "field": "price",
+                    "value": "1000",
+                    "source_gu_id": "GU-0001",
+                    "evidence": {"eu_id": "EU-001", "credibility": 0.8},
+                },
+            ],
+            "domain_skeleton": {"categories": [], "fields": []},
+            "current_mode": {"mode": "normal"},
+            "current_cycle": 1,
+        }
+        result = integrate_node(state)
+        dist = result["integration_result_dist"]
+        assert dist["resolved"] == 1
+        assert dist["total_claims"] == 1
+        assert dist["conv_rate"] == 1.0
+        assert len(dist["cycle_history"]) == 1
+        assert dist["cycle_history"][0]["cycle"] == 1
+
+    def test_dist_no_source_gu(self) -> None:
+        """source_gu_id 없으면 no_source_gu 카운트."""
+        state = {
+            "knowledge_units": [],
+            "gap_map": [],
+            "current_claims": [
+                {
+                    "claim_id": "CL-001",
+                    "entity_key": "d:a:x",
+                    "field": "price",
+                    "value": "1000",
+                    "source_gu_id": "",
+                    "evidence": {"eu_id": "EU-001", "credibility": 0.8},
+                },
+            ],
+            "domain_skeleton": {"categories": [], "fields": []},
+            "current_mode": {"mode": "normal"},
+            "current_cycle": 2,
+        }
+        result = integrate_node(state)
+        dist = result["integration_result_dist"]
+        assert dist["no_source_gu"] == 1
+        assert dist["resolved"] == 0
+
+    def test_dist_accumulates_history(self) -> None:
+        """이전 cycle 의 integration_result_dist 가 누적됨."""
+        prev_dist = {
+            "resolved": 5, "no_source_gu": 0, "invalid_result": 0, "other": 5,
+            "conv_rate": 0.5, "total_claims": 10,
+            "cycle_history": [{"cycle": 1, "resolved": 5, "no_source_gu": 0,
+                                "invalid_result": 0, "other": 5, "conv_rate": 0.5, "total_claims": 10}],
+        }
+        state = {
+            "knowledge_units": [],
+            "gap_map": [
+                {"gu_id": "GU-0001", "status": "open",
+                 "target": {"entity_key": "d:a:x", "field": "price"}},
+            ],
+            "current_claims": [
+                {
+                    "claim_id": "CL-001",
+                    "entity_key": "d:a:x",
+                    "field": "price",
+                    "value": "1000",
+                    "source_gu_id": "GU-0001",
+                    "evidence": {"eu_id": "EU-001", "credibility": 0.8},
+                },
+            ],
+            "domain_skeleton": {"categories": [], "fields": []},
+            "current_mode": {"mode": "normal"},
+            "current_cycle": 2,
+            "integration_result_dist": prev_dist,
+        }
+        result = integrate_node(state)
+        dist = result["integration_result_dist"]
+        assert len(dist["cycle_history"]) == 2  # 이전 1개 + 이번 1개
