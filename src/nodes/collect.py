@@ -205,7 +205,13 @@ def collect_node(
 
     target_gap_ids = plan.get("target_gaps", [])
     queries = plan.get("queries", {})
-    budget = plan.get("budget", _compute_search_budget(plan, mode))
+    plan_budget = plan.get("budget", _compute_search_budget(plan, mode))
+    cycle_cap = (
+        search_config.max_search_calls_per_cycle
+        if search_config is not None
+        else plan_budget
+    )
+    budget = min(plan_budget, cycle_cap)
 
     gu_by_id = {gu.get("gu_id"): gu for gu in gap_map}
 

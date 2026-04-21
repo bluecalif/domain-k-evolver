@@ -6,6 +6,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
+from src.config import SearchConfig
 from src.nodes.collect import collect_node
 from src.tools.search import MockSearchTool
 
@@ -375,3 +376,49 @@ class TestCollectBatch:
 
         assert mock_llm.batch.call_count == 1
         assert not mock_llm.invoke.called
+
+
+class TestMaxSearchCallsPerCycle:
+    def test_cycle_cap_defers_overflow(self) -> None:
+        """S1-T5: max_search_calls_per_cycle 초과 GU → deferred_targets 기록."""
+        tool = MockSearchTool()
+        # 5개 GU × 2 queries = 10 calls 필요, cycle cap = 4
+        cfg = SearchConfig(max_search_calls_per_cycle=4)
+        state = {
+            "gap_map": [
+                {"gu_id": f"GU-{i:04d}", "status": "open",
+                 "target": {"entity_key": f"d:a:x{i}", "field": "price"},
+                 "risk_level": "convenience"}
+                for i in range(1, 6)
+            ],
+            "current_plan": {
+                "target_gaps": [f"GU-{i:04d}" for i in range(1, 6)],
+                "queries": {f"GU-{i:04d}": [f"q{i}a", f"q{i}b"] for i in range(1, 6)},
+                "budget": 1000,  # plan budget 크게 — cycle cap 이 지배
+            },
+            "current_mode": {"mode": "normal"},
+        }
+        result = collect_node(state, search_tool=tool, search_config=cfg)
+        assert len(tool.search_calls) <= 4
+        assert len(result["deferred_targets"]) > 0
+
+    def test_cycle_cap_larger_than_plan_budget_uses_plan(self) -> None:
+        """cycle cap > plan budget 이면 plan budget 이 실질 제한."""
+        tool = MockSearchTool()
+        cfg = SearchConfig(max_search_calls_per_cycle=1000)
+        state = {
+            "gap_map": [
+                {"gu_id": f"GU-{i:04d}", "status": "open",
+                 "target": {"entity_key": f"d:a:x{i}", "field": "price"},
+                 "risk_level": "convenience"}
+                for i in range(1, 6)
+            ],
+            "current_plan": {
+                "target_gaps": [f"GU-{i:04d}" for i in range(1, 6)],
+                "queries": {f"GU-{i:04d}": [f"q{i}a", f"q{i}b"] for i in range(1, 6)},
+                "budget": 4,
+            },
+            "current_mode": {"mode": "normal"},
+        }
+        result = collect_node(state, search_tool=tool, search_config=cfg)
+        assert len(tool.search_calls) <= 4
