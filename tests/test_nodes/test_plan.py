@@ -7,7 +7,13 @@ from pathlib import Path
 
 import pytest
 
-from src.nodes.plan import CYCLE_CAP, _select_targets, plan_node
+from src.nodes.plan import (
+    CYCLE_CAP,
+    _is_stagnation_active,
+    _rewrite_query_stagnation,
+    _select_targets,
+    plan_node,
+)
 
 BENCH = Path("bench/japan-travel/state")
 
@@ -258,3 +264,170 @@ class TestDeferredTargetsPriority:
         assert plan["deferred_first_count"] == 0
         assert plan["prev_deferred_count"] == 0
         assert len(plan["target_gaps"]) == 3
+
+
+# ---------------------------------------------------------------------------
+# S2-T4: α stagnation query rewrite + β aggressive_mode_remaining
+# ---------------------------------------------------------------------------
+
+def _make_stagnation_signals(ratios: list[float]) -> dict:
+    return {
+        "added_history": [
+            {"cycle": i + 1, "added": int(r * 10), "total_claims": 10, "added_ratio": r}
+            for i, r in enumerate(ratios)
+        ],
+        "conflict_hold_history": [{"cycle": i + 1, "conflict_hold": 0} for i in range(len(ratios))],
+        "condition_split_history": [{"cycle": i + 1, "condition_split": 0} for i in range(len(ratios))],
+    }
+
+
+class TestIsStagnationActive:
+    def test_aggressive_mode_remaining_takes_priority(self) -> None:
+        assert _is_stagnation_active(None, None, 2) is True
+
+    def test_critique_prescription_detected(self) -> None:
+        critique = {"prescriptions": [{"type": "ku_stagnation:added_low"}]}
+        assert _is_stagnation_active(critique, None, 0) is True
+
+    def test_signals_fallback_detected(self) -> None:
+        signals = _make_stagnation_signals([0.1, 0.1, 0.1])
+        assert _is_stagnation_active(None, signals, 0) is True
+
+    def test_no_stagnation_when_all_off(self) -> None:
+        signals = _make_stagnation_signals([0.5, 0.6, 0.7])
+        assert _is_stagnation_active(None, signals, 0) is False
+
+    def test_no_stagnation_when_remaining_zero_and_no_signals(self) -> None:
+        assert _is_stagnation_active(None, None, 0) is False
+
+
+class TestRewriteQueryStagnation:
+    def test_returns_three_queries(self) -> None:
+        queries = _rewrite_query_stagnation("jr-pass", "price", "japan-travel")
+        assert len(queries) == 3
+
+    def test_queries_contain_domain(self) -> None:
+        queries = _rewrite_query_stagnation("jr-pass", "price", "japan-travel")
+        assert any("japan-travel" in q for q in queries)
+
+    def test_queries_contain_slug(self) -> None:
+        queries = _rewrite_query_stagnation("shinkansen", "schedule", "japan-travel")
+        assert any("shinkansen" in q for q in queries)
+
+
+class TestPlanNodeStagnationAlpha:
+    def _base_gu(self, gu_id: str) -> dict:
+        return {
+            "gu_id": gu_id, "status": "open", "gap_type": "missing",
+            "target": {"entity_key": f"japan-travel:transport:{gu_id}", "field": "price"},
+            "expected_utility": "high", "risk_level": "financial",
+            "resolution_criteria": "price 수집",
+        }
+
+    def test_stagnation_alpha_flag_in_plan(self) -> None:
+        """stagnation 활성 시 plan에 stagnation_alpha_active=True."""
+        state = {
+            "gap_map": [self._base_gu("GU-0001")],
+            "domain_skeleton": {"domain": "japan-travel", "categories": [], "fields": []},
+            "current_mode": {"mode": "normal"},
+            "current_critique": {"prescriptions": [{"type": "ku_stagnation:added_low"}]},
+            "aggressive_mode_remaining": 0,
+        }
+        result = plan_node(state)
+        assert result["current_plan"].get("stagnation_alpha_active") is True
+
+    def test_stagnation_alpha_rewrites_queries(self) -> None:
+        """stagnation 시 쿼리에 'new' 또는 'alternatives' 포함."""
+        state = {
+            "gap_map": [self._base_gu("GU-0001")],
+            "domain_skeleton": {"domain": "japan-travel", "categories": [], "fields": []},
+            "current_mode": {"mode": "normal"},
+            "aggressive_mode_remaining": 2,
+        }
+        result = plan_node(state)
+        plan = result["current_plan"]
+        queries = plan.get("queries", {})
+        all_queries = [q for qs in queries.values() for q in qs]
+        assert any("new" in q or "alternatives" in q or "recommendations" in q for q in all_queries)
+
+    def test_no_stagnation_uses_normal_queries(self) -> None:
+        """stagnation 없으면 stagnation_alpha_active 플래그 없음."""
+        state = {
+            "gap_map": [self._base_gu("GU-0001")],
+            "domain_skeleton": {"domain": "japan-travel", "categories": [], "fields": []},
+            "current_mode": {"mode": "normal"},
+            "aggressive_mode_remaining": 0,
+        }
+        result = plan_node(state)
+        plan = result["current_plan"]
+        assert not plan.get("stagnation_alpha_active")
+        # 기본 쿼리는 "new"/"alternatives"/"recommendations" 없음
+        queries = plan.get("queries", {})
+        all_queries = [q for qs in queries.values() for q in qs]
+        assert not any("alternatives" in q or "recommendations" in q for q in all_queries)
+
+    def test_aggressive_mode_remaining_recorded_in_plan(self) -> None:
+        """stagnation 시 plan에 aggressive_mode_remaining 기록."""
+        state = {
+            "gap_map": [self._base_gu("GU-0001")],
+            "domain_skeleton": {"domain": "japan-travel", "categories": [], "fields": []},
+            "current_mode": {"mode": "normal"},
+            "aggressive_mode_remaining": 2,
+        }
+        result = plan_node(state)
+        assert result["current_plan"].get("aggressive_mode_remaining") == 2
+
+
+class TestCritiqueAggressiveMode:
+    """critique_node β: stagnation:added_low 발동 시 aggressive_mode_remaining=3."""
+
+    def test_stagnation_sets_aggressive_remaining(self) -> None:
+        from datetime import date
+        from src.nodes.critique import critique_node
+
+        signals = _make_stagnation_signals([0.1, 0.1, 0.1])
+        state = {
+            "knowledge_units": [],
+            "gap_map": [],
+            "domain_skeleton": {"categories": [], "fields": [], "axes": []},
+            "current_cycle": 5,
+            "metrics": {},
+            "ku_stagnation_signals": signals,
+            "aggressive_mode_remaining": 0,
+        }
+        result = critique_node(state, today=date(2026, 4, 22))
+        assert result.get("aggressive_mode_remaining") == 3
+
+    def test_no_stagnation_no_aggressive_remaining(self) -> None:
+        from datetime import date
+        from src.nodes.critique import critique_node
+
+        signals = _make_stagnation_signals([0.8, 0.8, 0.8])
+        state = {
+            "knowledge_units": [],
+            "gap_map": [],
+            "domain_skeleton": {"categories": [], "fields": [], "axes": []},
+            "current_cycle": 5,
+            "metrics": {},
+            "ku_stagnation_signals": signals,
+            "aggressive_mode_remaining": 0,
+        }
+        result = critique_node(state, today=date(2026, 4, 22))
+        assert "aggressive_mode_remaining" not in result
+
+
+class TestEntityDiscoveryStub:
+    def test_decrements_remaining(self) -> None:
+        from src.nodes.entity_discovery import entity_discovery_node
+        result = entity_discovery_node({"aggressive_mode_remaining": 3})
+        assert result["aggressive_mode_remaining"] == 2
+
+    def test_no_change_when_zero(self) -> None:
+        from src.nodes.entity_discovery import entity_discovery_node
+        result = entity_discovery_node({"aggressive_mode_remaining": 0})
+        assert result == {}
+
+    def test_decrements_to_zero(self) -> None:
+        from src.nodes.entity_discovery import entity_discovery_node
+        result = entity_discovery_node({"aggressive_mode_remaining": 1})
+        assert result["aggressive_mode_remaining"] == 0

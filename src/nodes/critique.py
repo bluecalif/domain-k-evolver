@@ -696,4 +696,16 @@ def critique_node(
     if conflict_ledger:
         result["conflict_ledger"] = conflict_ledger
 
+    # S2-T4: β aggressive mode — ku_stagnation:added_low 발동 시 remaining 설정
+    stagnation_fired = any(
+        rx.get("type") == "ku_stagnation:added_low" for rx in prescriptions
+    )
+    prev_remaining = state.get("aggressive_mode_remaining", 0)
+    if stagnation_fired:
+        # trigger cycle + 다음 2c = 3 cycles (이미 활성이면 리셋)
+        result["aggressive_mode_remaining"] = 3
+    elif prev_remaining > 0:
+        # 기존 활성 유지 (decrement은 entity_discovery_node 담당)
+        pass  # state 변경 없음 — entity_discovery가 처리
+
     return result

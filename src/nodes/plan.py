@@ -26,6 +26,46 @@ EXTERNAL_NOVELTY_STAGNATION_WINDOW = 5
 
 INTEGRATION_LOW_CONV_THRESHOLD = 0.3  # S2-T1: conv_rate 이하 시 integration:low_conversion
 
+STAGNATION_ADDED_RATIO_WINDOW = 3   # S2-T4 α: stagnation 판정 최소 window
+STAGNATION_ADDED_RATIO_THRESHOLD = 0.3
+
+
+def _is_stagnation_active(
+    critique: dict | None,
+    ku_stagnation_signals: dict | None,
+    aggressive_mode_remaining: int,
+) -> bool:
+    """α query 재작성 활성화 여부 판정.
+
+    우선순위:
+    1. aggressive_mode_remaining > 0 (β mode 활성 중)
+    2. critique 처방에 ku_stagnation:added_low 존재
+    3. ku_stagnation_signals 직접 확인 (critique 없는 fallback)
+    """
+    if aggressive_mode_remaining > 0:
+        return True
+    if critique:
+        for rx in critique.get("prescriptions", []):
+            if rx.get("type") == "ku_stagnation:added_low":
+                return True
+    if ku_stagnation_signals:
+        added_history = ku_stagnation_signals.get("added_history", [])
+        if len(added_history) >= STAGNATION_ADDED_RATIO_WINDOW:
+            recent = added_history[-STAGNATION_ADDED_RATIO_WINDOW:]
+            avg = sum(e["added_ratio"] for e in recent) / STAGNATION_ADDED_RATIO_WINDOW
+            if avg < STAGNATION_ADDED_RATIO_THRESHOLD:
+                return True
+    return False
+
+
+def _rewrite_query_stagnation(slug: str, field: str, domain: str) -> list[str]:
+    """α: stagnation 시 new concrete entity 발굴 쿼리 재작성."""
+    return [
+        f"new {domain} {slug} options 2026",
+        f"best {slug} alternatives {field}",
+        f"popular {domain} {slug} recommendations",
+    ]
+
 
 def _assign_reason_code(
     gu: dict,
@@ -226,8 +266,14 @@ def _build_plan_from_targets(
     explore_targets: list[dict],
     exploit_targets: list[dict],
     mode_decision: dict,
+    *,
+    is_stagnation: bool = False,
+    domain: str = "unknown",
 ) -> dict:
-    """LLM 없이 결정론적 Plan 생성 (fallback / mock용)."""
+    """LLM 없이 결정론적 Plan 생성 (fallback / mock용).
+
+    is_stagnation=True 시 α 쿼리 재작성 적용.
+    """
     all_targets = explore_targets + exploit_targets
     target_gap_ids = [gu.get("gu_id") for gu in all_targets]
 
@@ -242,12 +288,16 @@ def _build_plan_from_targets(
         field = target.get("field", "")
         criteria = gu.get("resolution_criteria", "")
 
-        # 기본 쿼리 생성
         slug = entity_key.split(":")[-1] if ":" in entity_key else entity_key
-        queries[gu_id] = [
-            f"{slug} {field}",
-            f"{slug} {field} 2026",
-        ]
+
+        # S2-T4 α: stagnation 시 new entity 발굴 쿼리로 재작성
+        if is_stagnation:
+            queries[gu_id] = _rewrite_query_stagnation(slug, field, domain)
+        else:
+            queries[gu_id] = [
+                f"{slug} {field}",
+                f"{slug} {field} 2026",
+            ]
         acceptance_tests[gu_id] = criteria
         source_strategy[gu_id] = "official_first"
 
@@ -291,7 +341,12 @@ def plan_node(
     novelty_history = state.get("novelty_history")
     external_novelty_history = state.get("external_novelty_history")
     integration_result_dist = state.get("integration_result_dist")
+    ku_stagnation_signals = state.get("ku_stagnation_signals")
+    aggressive_mode_remaining = state.get("aggressive_mode_remaining", 0)
     cycle = state.get("current_cycle", 0)
+
+    # S2-T4 α: stagnation 활성 여부 판정
+    is_stagnation = _is_stagnation_active(critique, ku_stagnation_signals, aggressive_mode_remaining)
 
     # P4-B3: remodel pending 확인
     remodel_report = state.get("remodel_report")
@@ -332,6 +387,8 @@ def plan_node(
     import logging
     _logger = logging.getLogger(__name__)
 
+    domain = skeleton.get("domain", "unknown")
+
     if llm is not None:
         # LLM 호출
         prompt = _build_plan_prompt(
@@ -343,15 +400,26 @@ def plan_node(
         from src.utils.llm_parse import extract_json
         try:
             plan = extract_json(response.content)
+            # S2-T4 α: LLM plan의 쿼리도 stagnation 시 재작성
+            if is_stagnation and "queries" in plan:
+                for gu in explore_targets + exploit_targets:
+                    gu_id = gu.get("gu_id", "")
+                    target = gu.get("target", {})
+                    entity_key = target.get("entity_key", "")
+                    field = target.get("field", "")
+                    slug = entity_key.split(":")[-1] if ":" in entity_key else entity_key
+                    plan["queries"][gu_id] = _rewrite_query_stagnation(slug, field, domain)
         except (ValueError, AttributeError):
             # fallback
             plan = _build_plan_from_targets(
                 explore_targets, exploit_targets, mode_decision,
+                is_stagnation=is_stagnation, domain=domain,
             )
             _logger.warning("plan: LLM parse failed → fallback (targets=%d)", len(all_targets))
     else:
         plan = _build_plan_from_targets(
             explore_targets, exploit_targets, mode_decision,
+            is_stagnation=is_stagnation, domain=domain,
         )
 
     # P4-B1: reason_code 부여 (모든 target 에 필수)
@@ -378,6 +446,11 @@ def plan_node(
     # P4-B3: remodel pending → target count 감소
     if has_remodel_pending:
         plan["remodel_pending_note"] = "remodel 대기 중 — target 보수화 권장"
+
+    # S2-T4 α: stagnation 활성 여부 플래그 기록
+    if is_stagnation:
+        plan["stagnation_alpha_active"] = True
+        plan["aggressive_mode_remaining"] = aggressive_mode_remaining
 
     tg = plan.get("target_gaps", [])
     q = plan.get("queries", {})

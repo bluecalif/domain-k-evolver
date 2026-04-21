@@ -248,6 +248,10 @@ class EvolverState(TypedDict, total=False):
     #  "condition_split_history": [{"cycle": int, "condition_split": int}]}
     ku_stagnation_signals: dict
 
+    # SI-P7 S2-T4: β aggressive mode 잔여 cycle 수 (0=비활성, >0=활성 중)
+    # critique에서 ku_stagnation:added_low 발동 시 3 설정, entity_discovery가 매 cycle 1씩 감소
+    aggressive_mode_remaining: int
+
     # Diagnostic fields (진단 전용, orchestrator가 cycle마다 읽고 제거)
     _diag_search_by_gu: dict | None       # collect: {gu_id: search_result_count}
     _diag_adjacent_gap_count: int | None  # integrate: 신규 dynamic GU 수
