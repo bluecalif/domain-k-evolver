@@ -18,6 +18,24 @@
         "keywords": ["노드", "엣지", "StateGraph", "EvolverState", "seed_node", "plan_node", "collect_node", "integrate_node", "critique_node", "plan_modify_node", "hitl_gate", "LangGraph", "파이프라인"],
         "intentPatterns": ["노드.*구현", "엣지.*설정", "State.*정의", "graph.*빌드", "파이프라인.*구축", "HITL.*게이트"]
       }
+    },
+    "silver-structural-redesign": {
+      "type": "domain",
+      "enforcement": "suggest",
+      "priority": "high",
+      "promptTriggers": {
+        "keywords": ["SI-P7", "si-p7", "structural redesign", "S1~S5", "S5a", "S5b", "entity discovery node", "entity_candidates", "condition_split", "field_adjacency", "adjacent rule engine", "integration_result 제어 입력", "deferred_targets", "defer/queue", "rule yield tracker", "aggressive mode", "β mode", "virtual entity 제거", "balance-N", "alias pre-filter", "_CC suffix", "si-p7-*"],
+        "intentPatterns": ["SI-P7.*구현", "S[1-5][a-b]?-T\\d+", "entity.*discovery.*노드", "condition_split.*재정의", "adjacent.*rule.*engine", "aggressive.*mode", "defer.*queue", "candidate.*승격", "entity_candidates.*수명"]
+      }
+    },
+    "silver-e2e-test-layering": {
+      "type": "domain",
+      "enforcement": "suggest",
+      "priority": "high",
+      "promptTriggers": {
+        "keywords": ["L1", "L2", "L3", "e2e 테스트", "mock 금지", "real API first", "trial-id", "si-p7-*-smoke", "p7-*-on", "p7-*-off", "single-cycle e2e", "real snapshot fixture", "15c A/B", "Gate 공식 판정", "task checkpoint"],
+        "intentPatterns": ["e2e.*검증", "mock.*금지", "real.*API.*테스트", "single.*cycle.*smoke", "15c.*trial", "축.*완료.*판정", "task.*checkpoint", "si-p7-.*-smoke"]
+      }
     }
   }
 }

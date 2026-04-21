@@ -1,216 +1,198 @@
 # Session Compact
 
-> Generated: 2026-04-19 (P6-A1-D4 이후 inflection point)
+> Generated: 2026-04-21
 > Source: Conversation compaction via /compact-and-go
 
-## Goal (이 시점까지)
+## Goal
 
-Stage-E × Remodel 2×2 matrix 진단 → Path-γ (remodel 역효과) 확정 → 다음 세션에서 **세 갈래 재정렬** (POR / Remodel / Explore-Pivot) 논의 준비.
+이전 세션에서 확정된 SI-P7 구조 설계 5축 (S1~S5, Q1~Q14) baseline (`docs/structural-redesign-tasks_CC.md`) 을 **v2 로 개선**한다. 보강 항목:
+
+1. `docs/phase-next-refactor-task-review_codex.md` (다른 연구자 검토) 유용 사항 통합
+2. **중간 단계별 e2e 검증 전략** 정교화 (mock 금지, real API)
+3. **Entity Discovery Node 타당성·구체성 재검토** (사용자 질의 포함)
+4. 필요한 skill 정의 (`skill-creator` 사용)
+5. **F1~F4 순차 풀이** 제안
 
 ---
 
-## Completed (누적)
+## Completed
 
-### 이전 세션 (commit `cdd4504`)
-- [x] stage-e-compare-analysis.md (10 섹션) + D-163/D-164/D-165
-- [x] NO-SEL 23 (off) 전수 분류
-
-### 이번 세션 (commit `a8dfe0e`, 132 files)
-- [x] **B trial 실행 완료**: `p6-diag-off-remodel-off-15c` (`--audit-interval 0`, 15 cycles, exit 0)
-- [x] **Path-γ 확정 (극적 초과)**:
-  - open c15: A=25 → **B=9** (-64%)
-  - gap_resolution c15: 0.805 → **0.926** (+12.1pp)
-  - NO-SEL 비율: 92% → **56%** (-36pp)
-  - target_count c12~c15: A=**3 고착** vs B=**5~10 유지**
-- [x] **D-166 확정** (Stage-E × Remodel 독립성 — 기존 on/off 모두 c10+ remodel 자연 발동)
-- [x] **D-167 신규** (Remodel-induced exploit_budget shrinkage = dominant root cause)
-- [x] D-164 부분 무효 판정 (plan.py sort 자체 결함 아님)
-- [x] MEMORY.md + INDEX.md 갱신, tasks.md 5/24
-
-### 다음 세션 첫머리 이전 미완
-- [x] **D-167 코드 경로 부분 조사 (진행 중)**:
-  - `target_count` 가 cycles.jsonl 에 기록되는 값 = `len(plan["target_gaps"])` (telemetry.py:147, cycle_ctx)
-  - mode.py 공식은 open=25 시 `max(10, ceil(25*0.5))=13` 산출. **3 은 mode.py 가 만든 값 아님**
-  - `plan.py:319-321` `has_remodel_pending` 은 `status=="pending"` 만 매치 → hitl auto-approve 는 `status=="approved"` → **matches False**
-  - 결론 미완: target_count 10→5→3 수축 경로가 plan 내부 어디인지 아직 특정 안 됨 (LLM 응답 필터링? `_extract_cycle_ctx` 에서 gu_id 소실?)
+- [x] `docs/session-compact.md` (이전) 읽기
+- [x] `docs/structural-redesign-tasks_CC.md` baseline 전문 확인
+- [x] `docs/phase-next-refactor-task-review_codex.md` 전문 확인 (codex 검토)
+- [x] `docs/entity-acquisition-strategy-draft.md` 재확인
+- [x] 코드 현황 검증:
+  - `src/nodes/plan.py:155-161` 정렬 로직 (S1 제거 대상)
+  - `src/nodes/collect.py:218-230` budget skip (S1 defer/queue 변경 대상)
+  - `src/nodes/integrate.py:80-132` `_detect_conflict` (S2 condition_split 재설계 대상)
+  - `src/nodes/integrate.py:176-253` `_generate_dynamic_gus` (S3 rule engine 대상)
+  - `src/nodes/critique.py:187-269` `_generate_balance_gus` (S4 virtual entity 제거 대상)
+- [x] 기존 skill 목록 확인 (`evolver-framework`, `langgraph-dev`, `silver-*` 6건)
+- [x] **Plan 파일 v2 작성** (`C:\Users\User\.claude\plans\ancient-seeking-sphinx.md`) — Part A/B/C/D/E 전문
+- [x] F2/C3 사용자 지적 재검토:
+  - **F2 β**: "매 cycle 실행" (D-173) 과 구별되는 **aggressive mode** 로 재정의
+  - **C3**: C3-b (후속 GU 지연) → **C3-a (전체: 적재+승격+후속 GU)** 로 정정. 이유: S5a loop 미완성 시 F2 β 및 15c trial 측정 불가
+- [x] **D-183 (C5=F3) 확정**: graph 삽입 위치 = **B** (plan_modify → entity_discovery → plan)
 
 ---
 
 ## Current State
 
-**브랜치**: `main` | **최신 commit**: `a8dfe0e` | **테스트**: 824 passed
+**브랜치**: `main` | **Plan Mode**: 종료됨 (ExitPlanMode 자동 발생)
+**테스트**: 변경 없음 (plan 만 작성, 코드·doc 수정 안 함)
 
-### 3-Trial 매트릭스 (c15 요약)
+### Changed Files (신규만)
+- `C:\Users\User\.claude\plans\ancient-seeking-sphinx.md` — Plan v2 전문 (Part A/B/C/D/E + Decisions)
 
-| 지표 | A (off+remodel-on) | B (off+remodel-off, **POR**) | C (on+remodel-on) |
-|---|---:|---:|---:|
-| open | 25 | **9** | 18 |
-| resolved | 103 | **113** | 78 |
-| gap_resolution | 0.805 | **0.926** | 0.812 |
-| target_count c12~c15 | **3 고착** | 5~10 유지 | 5~8 |
-| NO-SELECTION | 92% | **56%** | 61% |
-| dispute_queue | 133 | 109 | 97 |
-
-### 미커밋 잔존
-- bash.exe.stackdump, p0-20260412-baseline/telemetry, p6-b1-smoke-5c, p6-diag-full-15c, p6-diag-smoke-5c
-- docs/data-generation-end-to-end-review.md, docs/si-p5-review-hangul.md
+### 핵심 baseline (기존)
+- `docs/structural-redesign-tasks_CC.md` — SI-P7 task breakdown (S1~S5 + F1~F4), **v2 로 개선 필요**
 
 ---
 
-## Key Decisions (누적)
+## Remaining / TODO
 
-- **D-163**: wildcard slug = 부분원인 (28% / 0%)
-- **D-164**: NO-SEL dominant — **D-167 에 의해 부분 무효** (plan.py sort 자체 결함 아님)
-- **D-165**: adjacent_gap entity-type 무관 field 양산 (city+hours, free+price) — B 에서 재확인 (2/9)
-- **D-166**: Stage-E × Remodel 독립성 — 기존 on/off 모두 c10+ 자연 발동
-- **D-167**: **Remodel-induced exploit_budget shrinkage = dominant root cause** — B 에서 target 5-10 유지 입증
+### 즉시 다음 액션 (우선순위 순)
 
----
+1. **F2 조합 최종 확정** — α + β(aggressive mode) 제안 사용자 승인 받기 (β 재정의 후 재확인 필요)
+2. **C1 질문 답변 받기** — Entity Discovery target 선정 신호
+   - C1-a: `coverage_map.deficit_score` 공유 (S4 와)
+   - C1-b: 독립 `entity_coverage_deficit`
+   - C1-c: critique 신호 `added_entity_ratio<X`
+3. **C2 질문 답변 받기** — candidate 수명 정책
+   - C2-a (제안): `last_seen+5c → stale`, `+10c → purge`, 재등장 시 갱신
+   - C2-b: 다른 수치
+   - C2-c: 정책 불필요 (영속)
+4. **C4 질문 답변 받기** — 유사 후보 alias pre-filter
+   - C4-a (제안): similarity ≥ 0.85 이면 candidate 차단 → alias 제안 경로 (S5b)
+   - C4-b: candidate 로 들이고 승격 단계에서 alias 판정
+   - C4-c: 완전 분리 유지
 
-# ▶ Next Session Agenda — Inflection Point 3-Track 재정렬
+### baseline v2 작성 (C1~C4 해소 후)
+- [ ] `docs/structural-redesign-tasks_CC.md` **v2 갱신**
+  - Part A 전체: S1 defer/queue, S2 integration_result 제어 입력, condition_split 재설계, S3 rule engine + yield tracker, S4 virtual 즉시 제거, S5a 전체 범위 (C3-a), S5b duplicate→entity fragmentation 신호, 권장 착수 순서
+  - Part B 전체: L1/L2/L3 테스트 레이어, task 단위 checkpoint 테이블, trial-id 규약
+  - Part C 결과 반영: C1~C5 결정 + β aggressive mode 정의
 
-> **CRUCIAL**: 이번 inflection point 는 "A2c 직진" 이 아닌 **근본 전략 재검토**. 다음 세션에서 아래 3 track 을 이 순서로 논의.
+### skill-creator 로 신설
+- [ ] `.claude/skills/silver-structural-redesign/SKILL.md`
+- [ ] `.claude/skills/silver-e2e-test-layering/SKILL.md`
+- [ ] `.claude/skills/skill-rules.json` 두 항목 추가
 
-## Track 1. POR (Point of Reference) 확정 — `remodel-off`
+### dev-docs 스캐폴딩 (이후)
+- [ ] `dev/active/phase-si-p7-structural-redesign/` 신설
+- [ ] `si-p7-plan_CC.md`, `si-p7-context_CC.md`, `si-p7-tasks_CC.md`, `si-p7-debug-history_CC.md` (모두 `_CC` suffix)
 
-### 1-1. POR 선언
-- **현재 baseline = `--audit-interval 0` (remodel 완전 비활성)**
-- Silver P6 모든 후속 비교·튜닝은 POR 대비 delta 로 판정
-- **Remodel 은 "proper renovation 전까지 금지"** — P2 Gate 통과 이력 있더라도 현 시점부터 off 가 기본값
-
-### 1-2. POR Pain Points 리뷰 (다음 세션 1순위)
-POR 에서 여전히 해소되지 않은 9 건 (c15 open) 세부 분류:
-
-| 카테고리 | 건수 | 원인 추정 |
-|---|---:|---|
-| NO-ANSWER (wildcard) | 2/9 | GU-0121, GU-0122 (transport:*) — D-163 잔여 |
-| NO-INTEGRATION (malformed) | 2/9 | GU-0102 (Fukuoka/hours), GU-0030 (visit-japan-web/price) — **D-165 재확인** |
-| NO-SELECTION | 5/9 | suica/where_to_buy, ic-card/how_to_use, shinkansen/price·how_to_use, airport-transfer/how_to_use (medium/convenience) |
-
-**리뷰 포인트**:
-1. 5 건 NO-SEL 은 POR 에서도 tail 에 남음 → aging / priority 보강이 필요한가, 아니면 **15c 범위의 자연 잔여**로 수용 가능한가 판단
-2. 2 건 NO-INT (D-165) 는 A2c-1 (filter) 로 해결 가능 — 이 fix 는 **remodel 과 무관**하므로 Track 1 안에서 진행 가능
-3. 2 건 wildcard → query fallback 전략으로 처리 가능한가
-
-### 1-3. POR 내 작업 범위
-Remodel 을 건드리지 않는 개선만:
-- **A2c-1** (adjacent_gap entity-type filter) — B 에서 malformed 2/9 재확인 → **여전히 유효**
-- D-163 wildcard query fallback (선택)
-- aging penalty (A2b) — 효과 크지 않을 가능성, 검토 후 결정
-
-### 1-4. Pain Point 검토 결과 → Track 2 전이 조건
-Pain point 정량 분석이 "POR 만으로는 KU evolution 한계" 를 증명하면 → Track 2 (remodel revive) 발동.
-증명 못 하면 → POR 가 target state, remodel 영구 비활성.
+### 구현 단계 (F1, F4 는 구현 중 결정)
+- [ ] F1 (budget 완전 제거) — S1-T6 smoke 5c 실험 후 결정
+- [ ] F4 (auto-alias 0.90 / auto-merge 0.95 임계치) — 실 벤치로 tuning
 
 ---
 
-## Track 2. Remodel 의 본래 목적 부활 — **CRUCIAL**
+## Key Decisions
 
-### 2-1. 현재 관측된 side effect (이미 확인)
-- `exploit_budget shrinkage` → target_count 10→5→3 수축 → open 25 고착
-- outcome delta 음수: -10 resolved, -12.1pp gap_resolution, +36pp NO-SEL
-- 단일 도메인 15c 범위에서 "개선 없음" 이 아닌 **적극적 역효과**
+### 이번 세션 신규
 
-### 2-2. Countermeasure (수정 필요)
-이전 세션에서 제안했던 조치:
-- D-167 코드 경로 식별 → 수축 유발 라인에서 완화
-- `target_count = max(5, ceil(open*0.5))` 최소 하한 강제 (회귀 가드)
-- 또는 `hitl_queue.remodel` 플래그가 plan 단계에 전파되지 않도록 차단
+- **D-181 (F2)**: aggressive feedback = **α (plan query "new concrete entity" 재작성) + β (aggressive mode)**. β 는 "매 cycle 실행" (D-173) 과 구별되는 **mode 전환**:
+  - discovery target 1-2 → 3-5개 확장
+  - rule-first → LLM-assisted 즉시 활성
+  - candidate 적재 임계 완화 (source_count≥1 임시 적재, 승격은 표준 유지)
+  - 후속 GU 우선순위 상향
+  - 지속: trigger cycle + 다음 2c
+  - **상태**: 사용자 승인 대기 (재정의 후 확인)
+- **D-182 (C3)**: S5a 이번 phase 범위 = **C3-a (전체: 적재 + 승격 + 후속 GU 자동 오픈)**. codex §6 (다음 phase 로 분할) 기각. 이유: S5a loop 미완성이면 F2 β 및 15c trial 측정 불가. 사용자 지적 수용.
+- **D-183 (C5 = F3)**: entity_discovery graph 위치 = **B (plan_modify → entity_discovery → plan)**. candidate 적재 중심 설계에 자연. ✅
+- **D-184~186 (C1/C2/C4)**: 예정
+- **D-187**: 테스트 3-layer (L1 단위, L2 single-cycle e2e, L3 15c A/B). **mock 금지**, fixture 는 real snapshot 만. L3 만 Gate 공식 판정. **예정**
+- **D-188**: 2개 신규 skill 도입 예정 (silver-structural-redesign, silver-e2e-test-layering). **예정**
 
-**수정 필요 포인트** (사용자 지시):
-- 위 조치는 "remodel 이 있을 때 수축 방지" 에 국한. **remodel 의 효과 자체를 복원하지 않음**.
-- 단순 "부작용 제거" → target baseline 복원에 그침. **PASS 요건 미달**.
+### 이전 세션 (유지)
 
-### 2-3. ⚠ 부활의 CRUCIAL POINT
-> **Remodel 은 KU evolution 을 유의미하게 개선해야 한다.**
-> "부작용 제거 후 중립" 이 아닌 "적극적 기여" 가 설계 목적.
-
-구체적으로 다음 중 하나 이상을 달성해야 remodel 부활 정당화:
-- (a) **KU 순증 가속**: remodel-on 이 remodel-off 대비 15c 안에서 active KU +N% 이상
-- (b) **카테고리 균형 개선**: category_gini 가 POR 보다 유의미하게 낮음
-- (c) **충돌/노후 해소**: merge/split/reclassify 가 conflict_rate 또는 staleness 해소에 순기여
-- (d) **Plateau 돌파**: POR 가 자연 수렴하는 cycle 이후에도 remodel-on 이 추가 탐색 가능
-
-**현재 A trial 은 (a)(b)(c)(d) 전부 negative** — 부활을 위해서는 remodel 의 설계 자체 재검토 필요:
-- `_should_remodel` 3-way OR criteria 재조정 (너무 빈번한가?)
-- `_apply_remodel_proposals` merge 가 오히려 target_count 수축의 원인? → merge 후 gap_map 축소의 2차 효과 조사
-- remodel 발동 조건을 **outcome-gated** 로 (사전 시뮬레이션에서 순기여 예상 시만 적용)
-- 또는 **merge 를 제외한 proposal types** (reclassify, alias_canonicalize, source_policy) 만 허용
-
-### 2-4. 다음 세션 논의 포인트
-1. 위 (a)~(d) 중 현재 Silver 가 필요로 하는 최우선 효과는?
-2. Remodel 부활을 위한 A/B/C 설계 스케치 (각각 trial 으로 검증 필요)
-3. "Proper renovation" 의 범위 — 코드 수정이냐, criteria 수정이냐, 아예 trigger 재설계냐
+- D-171 ~ D-180 (5축 구조 + Q1~Q14 + `_CC` suffix 규칙)
+- D-163~D-170 (POR pain-point / Remodel shrinkage)
 
 ---
 
-## Track 3. Explore-Pivot (Universe Probe) 역할 재검토
-
-### 3-1. 현재 상태
-- Stage-E (External Anchor / Universe Probe) 는 `--no-external-anchor` 로 3-trial 모두에서 비활성
-- 외부 anchor 가 없는 상태에서 A/B/C 비교 완료 → universe_probe 단독 효과는 **이번 데이터로 판정 불가**
-- 과거 (stage-e-compare-analysis.md §5) 에서 on/off 비교 시 outside view 는 **remodel 변수에 오염** 상태 (D-166 에 의해 판정)
-
-### 3-2. Remodel 재설계와의 관계
-- Remodel 이 "KU evolution 가속" 으로 부활하려면 **탐색 소스가 필요** → explore_pivot 이 그 소스 후보
-- 현재 explore_pivot 의 역할:
-  - universe_probe: 외부 snippet 으로 domain skeleton 을 넓힘
-  - 새 entity 후보를 KU 에 투입 → remodel 이 이를 merge/split/reclassify 하는 재료 공급
-- **논리 연쇄**: explore_pivot (탐색) → KU/entity 증가 → remodel (재조직) → KU evolution 가속
-- Remodel 이 "부활" 하려면 explore_pivot 이 **의미 있는 신규 재료를 공급하는 상태**여야 함
-
-### 3-3. 다음 세션 리뷰 포인트
-1. **현재 explore_pivot 효과 측정**: D-167 조사 후 remodel 부작용 제거 상태에서 stage-e-on vs off 15c trial 1회 재실행 (예산 $1)
-   - remodel 비활성 조건에서 explore_pivot 순효과 분리 가능
-2. **기여 정량**: explore_pivot on 이 domain_skeleton entity 수, novelty, axis_coverage 에 순기여하는가
-3. **역할 결정**:
-   - (α) explore_pivot 을 remodel 의 전제조건으로 고정 — remodel renovation 에 편입
-   - (β) explore_pivot 독립 track — POR 에 통합, remodel 과 분리
-   - (γ) 현재 조건에서는 기여 부족 → 폐기 또는 연기
-
-### 3-4. Dev Direction 결정 기준
-- 리뷰 결과 (α) → explore-pivot + remodel 을 단일 묶음 renovation 으로 추진
-- (β) → POR 에 안정 기여 시 채택, 없으면 보류
-- (γ) → Silver P6 범위 내 폐기, P7+ 로 재검토
-
----
-
-## Context (다음 세션용)
+## Context
 
 다음 세션에서는 답변에 한국어를 사용하세요.
 
-### 핵심 파일
-- **매트릭스 분석**: `dev/active/phase-si-p6-consolidation/stage-e-remodel-matrix.md`
-- **debug-history**: D-166/D-167 확정본
-- **POR (B trial) 데이터**: `bench/silver/japan-travel/p6-diag-off-remodel-off-15c/`
-- **A (remodel-on, side effect 증거)**: `bench/silver/japan-travel/p6-diag-off-15c/`
-- **D-167 조사 대상**: `src/orchestrator.py:511-576` (`_maybe_run_remodel`, `_apply_remodel_proposals`), `src/nodes/plan.py:306-397` (plan_node, has_remodel_pending), `src/nodes/mode.py:180-250` (target_count 공식)
+### codex 검토 주요 반영 사항
 
-### D-167 조사 진행 상황 (다음 세션 이어서)
-- `target_count` (cycles.jsonl) = `len(plan["target_gaps"])` — telemetry/orchestrator._extract_cycle_ctx 경로 확정
-- mode.py 공식은 3 을 만들지 않음 (open=25 → formula=13)
-- `has_remodel_pending` 은 "pending" 만 매치 → auto-approve 후 "approved" → False
-- **미확정**: LLM 응답이 target 을 줄이는가? `_extract_cycle_ctx` 에서 gu_by_id 필터로 빠지는가? `_boost_deficit_categories` 또는 다른 경로?
+**Part A (baseline v2 에 직접 반영)**:
+- A1. S1: "drop" → **"defer/queue"**. budget 초과 target 은 drop 금지, `deferred_targets` state 에 기록. 다음 cycle 우선 소진. `executed/deferred/defer_reason` 메트릭
+- A2. S2: `integration_result` 를 로그가 아닌 **다음 cycle plan 제어 입력** 으로 승격. plan reason code 추가 (`collect_defer_excess`, `integration_added_low`, `adjacent_yield_low`, `entity_discovery_insufficient`)
+- A3. S2 condition_split: 현재 구현 (`integrate.py:99-100`) 은 "conditions 필드 있으면 split" 수준. **값 구조/axis_tags 차이 기반 재설계** 필요
+- A4. S3 adjacent: **rule engine** (source_field → next_field 맵) + rule yield tracker (낮은 yield rule 약화) + `recent_conflict_fields` 배제
+- A5. S4 virtual entity: **과도기 옵션 없이 즉시 제거** (S5a 같은 phase 도입)
+- A6. S5a 범위: C3-a 확정 (codex §6 기각)
+- A7. S5b: duplicate KU 를 **entity 파편화 신호** 로 격상, fragmentation report metric 추가
+- A8. 권장 착수 순서: `S1+S2(제어 루프) → S2-T5~T8+S3+S4(품질) → S5a(entity)`
 
-### Track 1 Pain Points 데이터
-- POR open 9 건: NO-ANSWER 2 (transport:*), NO-INT 2 (Fukuoka/hours, visit-japan-web/price), NO-SEL 5 (suica/where_to_buy, ic-card/how_to_use, shinkansen/price·how_to_use, airport-transfer/how_to_use)
-- 모두 medium/convenience 우선순위
+**Part B (테스트 3-layer)**:
 
-### Track 2 Remodel 부활 후보 설계
-- Option A: Criteria 보수화 (trigger 간격 10c → 15c)
-- Option B: Proposal type 제한 (merge 제외)
-- Option C: Outcome-gated (사전 시뮬레이션 필수)
-- Option D: Outer-loop 이관 (inner loop 에서 제거)
+| 레이어 | 시점 | 목적 | mock |
+|---|---|---|---|
+| L1 | task 직후 | 단위 함수 로직 | fixture real snapshot, stub 금지 |
+| L2 | task 묶음 | single-cycle e2e | real API 필수 (D-34) |
+| L3 | 축 완료 | 15c A/B Gate 판정 | real API 필수 |
+
+Task 단위 checkpoint 테이블 이미 plan v2 에 포함 (S1-T4 defer, S2-T1 distribution, S2-T6 condition_split, S3-T4/T7, S4-T1, S5a-T6/T7, S5b-T3).
+
+**Part D (skill 신설)**:
+- `silver-structural-redesign`: SI-P7 5축 가이드 + codex 통합 + F1~F4 handling + `_CC` suffix 규칙
+- `silver-e2e-test-layering`: L1/L2/L3 + trial-id 규약 + mock 금지 원칙
+
+**Part E (F1~F4 순차 풀이)**:
+```
+1. F2 (본 플로우, α+β aggressive mode — 승인 대기)
+2. C1~C5 질문 답변 (C3/C5 확정됨. C1/C2/C4 대기)
+3. baseline v2 작성 (Part A/B/C 반영)
+4. skill-creator 로 2개 skill 신설
+5. dev-docs 스캐폴딩
+6. F1/F4 는 구현 중 결정
+```
+
+### 핵심 참고 파일 (읽기 우선순위)
+
+1. **`C:\Users\User\.claude\plans\ancient-seeking-sphinx.md`** ← **plan v2 전문, 가장 먼저 읽기**
+2. `docs/structural-redesign-tasks_CC.md` — 기존 baseline (v1)
+3. `docs/phase-next-refactor-task-review_codex.md` — codex 검토
+4. `docs/entity-acquisition-strategy-draft.md` — S5 근거
+5. `docs/core-pipeline-spec-v1.md` — 기준 문서
+
+### 제약/주의사항
+
+- **D-34**: 실 벤치 trial (real API, 15c A/B) 필수. 합성 E2E 만으로 gate 불가
+- **D-129**: `target_count` cap 재도입 금지
+- **D-168**: Track 1 Pain Point 9건 개별 리뷰로 돌아가지 말 것
+- **파일명 (D-180)**: 본 설계 산출 doc 은 `_CC` suffix 필수
+- **mock 금지 (D-187 예정)**: fixture 는 real snapshot 만, function stub 금지
+- **Remodel**: 본 설계 범위 외, 별도 재설계 예정
+
+### 미커밋 잔존 (untracked)
+- `bash.exe.stackdump` (무시)
+- `bench/silver/japan-travel/p0-20260412-baseline/telemetry/`
+- `bench/silver/japan-travel/p6-b1-smoke-5c/`, `p6-diag-full-15c/`, `p6-diag-smoke-5c/`
+- `docs/phase-next-refactor-task-review_codex.md` (codex 검토 문서)
+- `docs/structural-redesign-tasks_CC.md` (기존 baseline)
+- `docs/session-compact.md` (본 파일로 갱신)
 
 ---
 
 ## Next Action
 
-**다음 세션 시작 시 수행할 것**:
+**다음 세션 시작 시 수행할 것:**
 
-1. 이 session-compact.md Track 1/2/3 을 그대로 반영하여 논의 진입
-2. 사용자와 **Track 1 Pain Point 리뷰부터** 시작 (POR 9 건 세부 분석 + A2c-1 즉시 진행 여부 결정)
-3. Track 1 결과에 따라 Track 2 발동 조건 확인 → Track 2 발동 시 Remodel 부활 설계 (CRUCIAL)
-4. Track 3 은 Track 2 설계안과 연동하여 마지막 리뷰
-
-**직접적 code action 은 Track 1 Pain Point 리뷰 완료 후에만 시작.** D-167 조사 미완 이어받기보다 **3-Track 재정렬이 우선**.
+1. `C:\Users\User\.claude\plans\ancient-seeking-sphinx.md` 읽고 plan v2 전문 + Decisions (D-181~188) 확인
+2. 사용자에게 **F2 β aggressive mode 정의** 재확인 요청 (D-181 승인 대기)
+   - 제안: α + β(aggressive mode) — discovery target 확장/LLM query 즉시 활성/candidate 임계 완화/GU 상향
+3. **C1 질문** 진행 (하나씩 이어서) — Entity Discovery target 선정 신호
+   - 제안: C1-a (coverage_map.deficit_score S4 와 공유)
+4. C1 해소 후 C2 (candidate 수명), 이어서 C4 (유사 후보 pre-filter) 질문
+5. C1~C4 확정 후 **`docs/structural-redesign-tasks_CC.md` v2 작성**:
+   - Part A 전체 반영 (S1 defer, S2 제어 입력+condition_split 재설계, S3 rule engine, S4 virtual 즉시 제거, S5a 전체, S5b fragmentation, 착수 순서)
+   - Part B 전체 반영 (L1/L2/L3 + task checkpoint + trial-id 규약)
+   - Part C 결과 반영 (C1~C5 + β aggressive mode 정의)
+6. **skill-creator** 로 `silver-structural-redesign` + `silver-e2e-test-layering` 2개 skill 신설
+7. **`dev/active/phase-si-p7-structural-redesign/`** dev-docs 스캐폴딩 (`_CC` suffix 4개)
+8. 구현 착수 (codex 권장 순서: S1+S2 → S2+S3+S4 → S5a)
