@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from src.nodes.plan import _select_targets, plan_node
+from src.nodes.plan import CYCLE_CAP, _select_targets, plan_node
 
 BENCH = Path("bench/japan-travel/state")
 
@@ -129,3 +129,48 @@ class TestPlanNode:
         # open GU가 없으므로 target이 비어있음 → 정상 (target 0개)
         result = plan_node(state)
         assert len(result["current_plan"]["target_gaps"]) == 0
+
+
+# ---------------------------------------------------------------------------
+# D-129 Regression Guard (S1-T7) — plan-side
+# ---------------------------------------------------------------------------
+
+class TestD129RegressionGuardPlan:
+    """D-129: _select_targets 에서 exploit_budget 으로 target 수를 cap하지 않음.
+
+    위반 패턴:
+      - _select_targets 내부에서 open_gus = open_gus[:exploit_budget] 복귀
+      - mode_decision 의 exploit_budget 이 cap 역할 재도입
+    """
+
+    def test_exploit_budget_does_not_cap_targets(self) -> None:
+        """exploit_budget=3 이어도 open GU 가 10개면 10개 모두 반환해야 함."""
+        gap_map = [
+            {"gu_id": f"GU-{i:04d}", "status": "open",
+             "target": {"entity_key": f"d:a:x{i}", "field": "f"},
+             "risk_level": "convenience"}
+            for i in range(10)
+        ]
+        mode = {"mode": "normal", "explore_budget": 0, "exploit_budget": 3}
+        _, exploit = _select_targets(gap_map, mode)
+        assert len(exploit) == 10, (
+            f"D-129 regression (plan): exploit_budget=3 이 cap 역할을 함. "
+            f"expected 10, got {len(exploit)}"
+        )
+
+    def test_cap_field_controls_selection(self) -> None:
+        """mode_decision 의 cap 필드만이 target 수를 제한해야 함."""
+        gap_map = [
+            {"gu_id": f"GU-{i:04d}", "status": "open",
+             "target": {"entity_key": f"d:a:x{i}", "field": "f"},
+             "risk_level": "convenience"}
+            for i in range(20)
+        ]
+        mode_no_cap = {"mode": "normal"}
+        mode_with_cap = {"mode": "normal", "cap": 7}
+
+        _, exploit_no_cap = _select_targets(gap_map, mode_no_cap)
+        _, exploit_with_cap = _select_targets(gap_map, mode_with_cap)
+
+        assert len(exploit_no_cap) == 20, f"cap 미지정 → CYCLE_CAP({CYCLE_CAP}) 이내 전체 반환해야 함"
+        assert len(exploit_with_cap) == 7, f"cap=7 → 7개만 반환해야 함"

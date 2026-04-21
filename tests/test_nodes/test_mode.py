@@ -8,6 +8,7 @@ from pathlib import Path
 import pytest
 
 from src.nodes.mode import (
+    CYCLE_CAP,
     _compute_budget,
     _compute_trigger_t1,
     _compute_trigger_t3,
@@ -292,6 +293,102 @@ class TestModeNode:
             assert tc == 50, (
                 f"normal target_count regression: expected 50 (min(50,100)), got {tc}"
             )
+
+
+# ---------------------------------------------------------------------------
+# D-129 Regression Guard (S1-T7)
+# ---------------------------------------------------------------------------
+
+class TestD129RegressionGuard:
+    """D-129: target_count 상한 재도입 방지.
+
+    Phase 5(b122a23) 에서 의도적으로 제거된 per-mode cap 이
+    재도입되지 않도록 보호하는 전용 regression suite.
+
+    위반 패턴:
+      - mode.py 에 max(4, ceil(open*0.2)) / max(10, ceil(open*0.6)) 복귀
+      - CYCLE_CAP 을 10 이하로 낮춤
+      - cap 을 mode 별로 다르게 설정
+    """
+
+    def test_cycle_cap_constant_is_100(self) -> None:
+        """CYCLE_CAP 상수가 100 이어야 함 — 낮추면 D-129 위반."""
+        assert CYCLE_CAP == 100, f"CYCLE_CAP regression: expected 100, got {CYCLE_CAP}"
+
+    def test_cap_equals_open_count_below_cycle_cap(self) -> None:
+        """open < CYCLE_CAP 일 때 cap == open (비율 공식 아님)."""
+        for open_n in (1, 5, 15, 30, 99):
+            gap_map = [
+                {"status": "open", "target": {"entity_key": f"d:a:x{i}"}, "risk_level": "convenience"}
+                for i in range(open_n)
+            ]
+            state = {
+                "gap_map": gap_map,
+                "domain_skeleton": {"axes": [{"name": "category", "anchors": ["a"], "required": True}],
+                                    "categories": [{"slug": "a"}]},
+                "knowledge_units": [{"status": "active", "evidence_links": ["EU-1", "EU-2"],
+                                     "confidence": 0.95}],
+                "current_cycle": 1,
+                "jump_history": [],
+            }
+            result = mode_node(state)
+            cap = result["current_mode"]["cap"]
+            assert cap == open_n, (
+                f"D-129 regression (open={open_n}): cap={cap}, expected {open_n}. "
+                "비율 공식이 재도입됐을 가능성."
+            )
+
+    def test_cap_clamped_at_cycle_cap_above_100(self) -> None:
+        """open > CYCLE_CAP 이면 cap == CYCLE_CAP (100)."""
+        gap_map = [
+            {"status": "open", "target": {"entity_key": f"d:a:x{i}"}, "risk_level": "convenience"}
+            for i in range(150)
+        ]
+        state = {
+            "gap_map": gap_map,
+            "domain_skeleton": {"axes": [{"name": "category", "anchors": ["a"], "required": True}],
+                                 "categories": [{"slug": "a"}]},
+            "knowledge_units": [{"status": "active", "evidence_links": ["EU-1", "EU-2"],
+                                  "confidence": 0.95}],
+            "current_cycle": 1,
+            "jump_history": [],
+        }
+        result = mode_node(state)
+        cap = result["current_mode"]["cap"]
+        assert cap == CYCLE_CAP, (
+            f"D-129 regression: open=150, expected cap={CYCLE_CAP}, got {cap}"
+        )
+
+    def test_normal_and_jump_use_same_cap_formula(self) -> None:
+        """normal / jump 양 mode 의 cap 공식이 동일해야 함 (mode 별 비율 복귀 방지)."""
+        open_n = 40
+        gap_map_base = [
+            {"status": "open", "target": {"entity_key": f"d:a:x{i}"}, "risk_level": "convenience"}
+            for i in range(open_n)
+        ]
+
+        # normal mode
+        state_normal = {
+            "gap_map": gap_map_base,
+            "domain_skeleton": {"axes": [{"name": "category", "anchors": ["a"], "required": True}],
+                                 "categories": [{"slug": "a"}]},
+            "knowledge_units": [{"status": "active", "evidence_links": ["EU-1", "EU-2"],
+                                  "confidence": 0.95}],
+            "current_cycle": 1,
+            "jump_history": [],
+        }
+        r_normal = mode_node(state_normal)
+
+        # jump mode (T7 staleness trigger)
+        state_jump = {**state_normal, "metrics": {"rates": {"staleness_risk": 50}}}
+        r_jump = mode_node(state_jump)
+
+        cap_normal = r_normal["current_mode"]["cap"]
+        cap_jump = r_jump["current_mode"]["cap"]
+        assert cap_normal == cap_jump == open_n, (
+            f"D-129 regression: cap diverged by mode — normal={cap_normal}, jump={cap_jump}. "
+            "per-mode 비율 공식이 재도입됐을 가능성."
+        )
 
 
 # ---------------------------------------------------------------------------
