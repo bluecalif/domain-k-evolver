@@ -12,9 +12,8 @@ from typing import Any
 
 from src.state import EvolverState
 
-# --- 우선순위 정렬 키 ---
-_UTILITY_ORDER = {"critical": 0, "high": 1, "medium": 2, "low": 3}
-_RISK_ORDER = {"safety": 0, "financial": 1, "policy": 2, "convenience": 3, "informational": 4}
+# --- S1: cycle cap (safety upper bound, 정렬/예산 상한 제거 — D-129, Q1/Q2) ---
+CYCLE_CAP = 100
 
 # --- P4: Reason Code 상수 ---
 DEFICIT_THRESHOLD = 0.5     # deficit_score 초과 시 deficit reason
@@ -131,11 +130,7 @@ def _boost_deficit_categories(
             return -cat_info.get("deficit_score", 0)  # 높은 deficit = 낮은 정렬값
         return 0
 
-    return sorted(open_gus, key=lambda g: (
-        deficit_key(g),
-        _UTILITY_ORDER.get(g.get("expected_utility", "low"), 99),
-        _RISK_ORDER.get(g.get("risk_level", "informational"), 99),
-    ))
+    return sorted(open_gus, key=deficit_key)
 
 
 def _select_targets(
@@ -143,54 +138,26 @@ def _select_targets(
     mode_decision: dict,
     axis_coverage: list[dict] | None = None,
 ) -> tuple[list[dict], list[dict]]:
-    """explore/exploit Target 선정.
+    """open GU 전체 반환 (cycle cap 만 적용, 정렬 없음 — S1-T1/T2, Q1/Q2).
+
+    explore/exploit 분리는 jump mode 에서 expansion_mode 기반으로만 유지.
+    budget 상한 제거: collect.py 가 defer/queue 로 처리.
 
     Returns:
         (explore_targets, exploit_targets)
     """
     mode = mode_decision.get("mode", "normal")
-    explore_budget = mode_decision.get("explore_budget", 0)
-    exploit_budget = mode_decision.get("exploit_budget", 0)
+    cap = mode_decision.get("cap", CYCLE_CAP)
 
     open_gus = [gu for gu in gap_map if gu.get("status") == "open"]
-
-    # 우선순위 정렬
-    open_gus.sort(key=lambda g: (
-        _UTILITY_ORDER.get(g.get("expected_utility", "low"), 99),
-        _RISK_ORDER.get(g.get("risk_level", "informational"), 99),
-    ))
+    open_gus = open_gus[:cap]
 
     if mode == "normal":
-        # Normal: exploit만
-        exploit_targets = open_gus[:exploit_budget]
-        return [], exploit_targets
+        return [], open_gus
 
-    # Jump Mode: explore + exploit 분리
-    # explore: deficit 축 기반 (axis_tags가 없거나 coverage가 낮은 영역)
-    # 단순화: expansion_mode == "jump"인 GU를 explore로 분류
-    explore_candidates = [
-        gu for gu in open_gus
-        if gu.get("expansion_mode") == "jump"
-    ]
-    exploit_candidates = [
-        gu for gu in open_gus
-        if gu.get("expansion_mode") != "jump"
-    ]
-
-    explore_targets = explore_candidates[:explore_budget]
-    exploit_targets = exploit_candidates[:exploit_budget]
-
-    # explore가 부족하면 exploit에서 보충, 반대도 마찬가지
-    remaining_explore = explore_budget - len(explore_targets)
-    if remaining_explore > 0:
-        extra = [g for g in exploit_candidates[exploit_budget:] if g not in explore_targets]
-        explore_targets.extend(extra[:remaining_explore])
-
-    remaining_exploit = exploit_budget - len(exploit_targets)
-    if remaining_exploit > 0:
-        extra = [g for g in explore_candidates[explore_budget:] if g not in exploit_targets]
-        exploit_targets.extend(extra[:remaining_exploit])
-
+    # Jump Mode: expansion_mode 기반 분류 (budget 상한 없음)
+    explore_targets = [gu for gu in open_gus if gu.get("expansion_mode") == "jump"]
+    exploit_targets = [gu for gu in open_gus if gu.get("expansion_mode") != "jump"]
     return explore_targets, exploit_targets
 
 
@@ -325,8 +292,6 @@ def plan_node(
     # _select_targets 내부에서 정렬 전 적용
     open_gus_for_boost = [gu for gu in gap_map if gu.get("status") == "open"]
     boosted = _boost_deficit_categories(open_gus_for_boost, coverage_map)
-    # boost 결과를 gap_map 순서에 반영 (open GU 순서만 변경)
-    boosted_ids = [gu.get("gu_id") for gu in boosted]
     non_open = [gu for gu in gap_map if gu.get("status") != "open"]
     gap_map_ordered = boosted + non_open
 

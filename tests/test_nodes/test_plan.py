@@ -29,32 +29,26 @@ def skeleton() -> dict:
 # ---------------------------------------------------------------------------
 
 class TestSelectTargets:
-    def test_normal_mode_exploit_only(self, gap_map: list[dict]) -> None:
-        mode = {"mode": "normal", "explore_budget": 0, "exploit_budget": 5}
+    def test_normal_mode_returns_all_open(self, gap_map: list[dict]) -> None:
+        """S1-T2: normal mode → explore 없음, 모든 open GU 반환 (budget 상한 없음)."""
+        open_count = sum(1 for gu in gap_map if gu.get("status") == "open")
+        mode = {"mode": "normal"}
         explore, exploit = _select_targets(gap_map, mode)
         assert len(explore) == 0
-        assert len(exploit) == 5
+        assert len(exploit) == open_count
 
     def test_jump_mode_split(self, gap_map: list[dict]) -> None:
-        mode = {"mode": "jump", "explore_budget": 3, "exploit_budget": 5}
+        """S1-T2: jump mode → explore + exploit = 모든 open GU (budget 상한 없음)."""
+        open_count = sum(1 for gu in gap_map if gu.get("status") == "open")
+        mode = {"mode": "jump"}
         explore, exploit = _select_targets(gap_map, mode)
-        assert len(explore) <= 3
-        assert len(exploit) <= 5
+        assert len(explore) + len(exploit) == open_count
 
     def test_targets_are_open(self, gap_map: list[dict]) -> None:
         mode = {"mode": "normal", "explore_budget": 0, "exploit_budget": 8}
         _, exploit = _select_targets(gap_map, mode)
         for gu in exploit:
             assert gu["status"] == "open"
-
-    def test_priority_ordering(self, gap_map: list[dict]) -> None:
-        mode = {"mode": "normal", "explore_budget": 0, "exploit_budget": 10}
-        _, exploit = _select_targets(gap_map, mode)
-        utility_order = {"critical": 0, "high": 1, "medium": 2, "low": 3}
-        for i in range(len(exploit) - 1):
-            curr = utility_order.get(exploit[i].get("expected_utility", "low"), 99)
-            next_ = utility_order.get(exploit[i + 1].get("expected_utility", "low"), 99)
-            assert curr <= next_
 
 
 # ---------------------------------------------------------------------------
@@ -65,10 +59,12 @@ class TestPlanNode:
     def test_deterministic_plan(
         self, gap_map: list[dict], skeleton: dict,
     ) -> None:
+        """S1-T2: plan target_gaps = 모든 open GU (exploit_budget 상한 무시)."""
+        open_count = sum(1 for gu in gap_map if gu.get("status") == "open")
         state = {
             "gap_map": gap_map,
             "domain_skeleton": skeleton,
-            "current_mode": {"mode": "normal", "explore_budget": 0, "exploit_budget": 5},
+            "current_mode": {"mode": "normal"},
         }
         result = plan_node(state)
         plan = result["current_plan"]
@@ -76,7 +72,7 @@ class TestPlanNode:
         assert "target_gaps" in plan
         assert "queries" in plan
         assert "budget" in plan
-        assert len(plan["target_gaps"]) == 5
+        assert len(plan["target_gaps"]) == open_count
 
     def test_all_targets_are_open_gus(
         self, gap_map: list[dict], skeleton: dict,

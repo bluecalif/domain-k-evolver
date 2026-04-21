@@ -12,7 +12,9 @@ from typing import Any
 from src.state import EvolverState
 from src.utils.metrics import compute_axis_coverage, compute_deficit_ratios
 
-# --- 우선순위 상수 ---
+# --- S1: cycle cap (target_count 비율 공식 대체 — Q1/Q2) ---
+CYCLE_CAP = 100
+
 HIGH_RISK_LEVELS = {"safety", "financial", "policy"}
 
 
@@ -201,13 +203,9 @@ def mode_node(state: EvolverState) -> dict:
     # Mode 결정
     mode = "jump" if triggers else "normal"
 
-    # target_count 계산 (D-129: Phase 5 b122a23 복원 — cap 재도입 금지)
-    if mode == "normal":
-        cap = max(4, ceil(open_count * 0.2))
-        target_count = max(4, ceil(open_count * 0.4))
-    else:
-        cap = max(10, ceil(open_count * 0.6))
-        target_count = max(10, ceil(open_count * 0.5))
+    # target_count 계산 — CYCLE_CAP 상한 (S1-T3, D-129 safety cap만, 기능적 제한 없음)
+    cap = min(open_count, CYCLE_CAP)
+    target_count = cap
 
     # Convergence Guard: 연속 2 Cycle Jump 감지
     convergence_warning = False

@@ -217,8 +217,7 @@ class TestModeNode:
             assert 2 in result["jump_history"]
 
     def test_cap_bounds(self) -> None:
-        """cap 하한: normal ≥4, jump ≥10."""
-        # Normal with few open
+        """cap = min(open_count, CYCLE_CAP) — 하한 없음, open 수 그대로 (S1-T3)."""
         state = {
             "gap_map": [
                 {"status": "open", "target": {"entity_key": "d:a:x"}, "risk_level": "convenience"},
@@ -235,14 +234,10 @@ class TestModeNode:
         }
         result = mode_node(state)
         cap = result["current_mode"]["cap"]
-        assert cap >= 4
+        assert cap == 3
 
     def test_target_count_no_upper_cap_jump(self) -> None:
-        """D-129 regression guard: jump target_count = ceil(open*0.5), no upper cap.
-
-        b12545d 에서 재도입된 JUMP_TARGET_CAP=10 을 Phase 5(b122a23) 공식으로 복원.
-        open=67 기준 target_count=34 (10 아님) 이어야 함.
-        """
+        """S1-T3: jump target_count = min(open, CYCLE_CAP) = 67 (이전 비율 공식 34 아님)."""
         gap_map = [
             {"status": "open", "target": {"entity_key": f"d:a:x{i}"}, "risk_level": "convenience"}
             for i in range(67)
@@ -266,12 +261,12 @@ class TestModeNode:
         md = result["current_mode"]
         assert md["mode"] == "jump", f"expected jump, got {md['mode']}"
         tc = md["explore_budget"] + md["exploit_budget"]
-        assert tc == 34, (
-            f"jump target_count regression: expected 34 (ceil(67*0.5)), got {tc}"
+        assert tc == 67, (
+            f"jump target_count regression: expected 67 (min(67,100)), got {tc}"
         )
 
     def test_target_count_no_upper_cap_normal(self) -> None:
-        """D-129 regression guard: normal target_count = ceil(open*0.4), no cap."""
+        """S1-T3: normal target_count = min(open, CYCLE_CAP) = 50 (이전 비율 공식 20 아님)."""
         gap_map = [
             {"status": "open", "target": {"entity_key": f"d:a:x{i}"}, "risk_level": "convenience"}
             for i in range(50)
@@ -294,8 +289,8 @@ class TestModeNode:
         md = result["current_mode"]
         if md["mode"] == "normal":
             tc = md["explore_budget"] + md["exploit_budget"]
-            assert tc == 20, (
-                f"normal target_count regression: expected 20 (ceil(50*0.4)), got {tc}"
+            assert tc == 50, (
+                f"normal target_count regression: expected 50 (min(50,100)), got {tc}"
             )
 
 
