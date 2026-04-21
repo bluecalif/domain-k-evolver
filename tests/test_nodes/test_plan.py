@@ -174,3 +174,87 @@ class TestD129RegressionGuardPlan:
 
         assert len(exploit_no_cap) == 20, f"cap 미지정 → CYCLE_CAP({CYCLE_CAP}) 이내 전체 반환해야 함"
         assert len(exploit_with_cap) == 7, f"cap=7 → 7개만 반환해야 함"
+
+
+# ---------------------------------------------------------------------------
+# S1-T8: deferred_targets 우선 소진 (선-FIFO)
+# ---------------------------------------------------------------------------
+
+class TestDeferredTargetsPriority:
+    """이전 cycle 에서 defer 된 GU 가 다음 cycle plan 에서 앞에 배치되는지 검증."""
+
+    def _make_gu(self, gu_id: str, entity_key: str = None) -> dict:
+        return {
+            "gu_id": gu_id,
+            "status": "open",
+            "target": {"entity_key": entity_key or f"d:a:{gu_id}", "field": "f"},
+            "risk_level": "convenience",
+        }
+
+    def test_deferred_gus_placed_first(self) -> None:
+        """deferred_targets 에 있는 GU 가 plan target_gaps 앞에 위치해야 함."""
+        deferred_ids = ["GU-0003", "GU-0004"]
+        gap_map = [self._make_gu(f"GU-{i:04d}") for i in range(1, 6)]
+        state = {
+            "gap_map": gap_map,
+            "domain_skeleton": {},
+            "current_mode": {"mode": "normal"},
+            "deferred_targets": deferred_ids,
+        }
+        result = plan_node(state)
+        target_gaps = result["current_plan"]["target_gaps"]
+
+        # 처음 2개가 deferred GU 여야 함 (FIFO 순서 보존)
+        assert target_gaps[:2] == deferred_ids, (
+            f"deferred_targets 가 앞에 배치되지 않음: {target_gaps[:4]}"
+        )
+
+    def test_deferred_fifo_order_preserved(self) -> None:
+        """deferred 순서(FIFO)가 plan 에서 보존되어야 함."""
+        deferred_ids = ["GU-0005", "GU-0002", "GU-0004"]
+        gap_map = [self._make_gu(f"GU-{i:04d}") for i in range(1, 6)]
+        state = {
+            "gap_map": gap_map,
+            "domain_skeleton": {},
+            "current_mode": {"mode": "normal"},
+            "deferred_targets": deferred_ids,
+        }
+        result = plan_node(state)
+        target_gaps = result["current_plan"]["target_gaps"]
+
+        # deferred 3개가 FIFO 순서로 앞에
+        assert target_gaps[:3] == deferred_ids
+
+    def test_plan_metrics_include_deferred_counts(self) -> None:
+        """plan 에 executed/prev_deferred/deferred_first 카운트 포함 여부."""
+        deferred_ids = ["GU-0001", "GU-0002"]
+        gap_map = [self._make_gu(f"GU-{i:04d}") for i in range(1, 4)]
+        state = {
+            "gap_map": gap_map,
+            "domain_skeleton": {},
+            "current_mode": {"mode": "normal"},
+            "deferred_targets": deferred_ids,
+        }
+        result = plan_node(state)
+        plan = result["current_plan"]
+
+        assert "executed_target_count" in plan
+        assert "prev_deferred_count" in plan
+        assert "deferred_first_count" in plan
+        assert plan["prev_deferred_count"] == 2
+        assert plan["deferred_first_count"] == 2
+
+    def test_no_prev_deferred_normal_order(self) -> None:
+        """deferred_targets 없으면 기존 순서 유지."""
+        gap_map = [self._make_gu(f"GU-{i:04d}") for i in range(1, 4)]
+        state = {
+            "gap_map": gap_map,
+            "domain_skeleton": {},
+            "current_mode": {"mode": "normal"},
+            "deferred_targets": [],
+        }
+        result = plan_node(state)
+        plan = result["current_plan"]
+        assert plan["deferred_first_count"] == 0
+        assert plan["prev_deferred_count"] == 0
+        assert len(plan["target_gaps"]) == 3

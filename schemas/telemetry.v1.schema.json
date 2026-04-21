@@ -4,7 +4,7 @@
   "title": "Telemetry V1",
   "description": "Evolver cycle 단위 telemetry snapshot 계약. orchestrator cycle 루프 끝에서 emit.",
   "type": "object",
-  "required": ["trial_id", "phase", "cycle", "mode", "timestamp", "metrics", "gaps", "failures", "audit_summary", "hitl_queue", "dispute_queue_size"],
+  "required": ["trial_id", "phase", "cycle", "mode", "timestamp", "metrics", "gaps", "failures", "audit_summary", "hitl_queue", "dispute_queue_size", "deferred_targets", "defer_reason"],
   "additionalProperties": false,
   "properties": {
     "trial_id": {
@@ -98,6 +98,16 @@
       "type": "integer",
       "minimum": 0,
       "description": "현재 dispute_queue 길이"
+    },
+    "deferred_targets": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "이번 cycle 에서 budget 초과로 defer 된 GU 수 (S1-T8)"
+    },
+    "defer_reason": {
+      "type": "object",
+      "description": "defer 사유별 카운트 {reason: count} (S1-T8)",
+      "additionalProperties": { "type": "integer", "minimum": 0 }
     },
     "cycle_trace": {
       "type": ["object", "null"],

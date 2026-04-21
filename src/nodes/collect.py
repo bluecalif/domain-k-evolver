@@ -345,13 +345,16 @@ def collect_node(
     if domain_ent > 0:
         logger.info("collect diversity: domain_entropy=%.3f", domain_ent)
 
+    defer_reason: dict[str, int] = {}
     if deferred_ids:
+        defer_reason["budget_exceeded"] = len(deferred_ids)
         logger.info("collect: %d GU deferred (budget=%d exceeded)", len(deferred_ids), budget)
 
     return {
         "current_claims": all_claims,
         "collect_failure_rate": round(failure_rate, 3),
         "deferred_targets": deferred_ids,
+        "defer_reason": defer_reason,
         "_diag_search_by_gu": diag_search_by_gu,
     }
 

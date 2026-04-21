@@ -288,12 +288,21 @@ def plan_node(
         and remodel_report.get("approval", {}).get("status") == "pending"
     )
 
-    # P4-B4: Gini 불균형 시 소수 카테고리 우선
-    # _select_targets 내부에서 정렬 전 적용
-    open_gus_for_boost = [gu for gu in gap_map if gu.get("status") == "open"]
-    boosted = _boost_deficit_categories(open_gus_for_boost, coverage_map)
+    # S1-T8: 이전 cycle 에서 defer 된 GU 를 선-FIFO 로 앞에 배치
+    prev_deferred = state.get("deferred_targets") or []
+    prev_deferred_set = set(prev_deferred)
+
+    open_gus_all = [gu for gu in gap_map if gu.get("status") == "open"]
+    deferred_open = sorted(
+        (gu for gu in open_gus_all if gu.get("gu_id") in prev_deferred_set),
+        key=lambda g: prev_deferred.index(g["gu_id"]),
+    )
+    remaining_open = [gu for gu in open_gus_all if gu.get("gu_id") not in prev_deferred_set]
+
+    # P4-B4: Gini 불균형 시 소수 카테고리 우선 (deferred 이외 GU 에만 적용)
+    boosted_remaining = _boost_deficit_categories(remaining_open, coverage_map)
     non_open = [gu for gu in gap_map if gu.get("status") != "open"]
-    gap_map_ordered = boosted + non_open
+    gap_map_ordered = deferred_open + boosted_remaining + non_open
 
     # Target 선정
     explore_targets, exploit_targets = _select_targets(
@@ -356,7 +365,15 @@ def plan_node(
     q = plan.get("queries", {})
     no_query = [gid for gid in tg if not q.get(gid)]
     rc = plan.get("reason_codes", {})
-    _logger.info("plan: targets=%d, queries=%d, no_query=%d, reason_codes=%d",
-                 len(tg), len(q), len(no_query), len(rc))
+
+    # S1-T8: 실행/defer 카운트 메트릭
+    plan["executed_target_count"] = len(tg)
+    plan["prev_deferred_count"] = len(prev_deferred)
+    plan["deferred_first_count"] = len(deferred_open)
+
+    _logger.info(
+        "plan: targets=%d (deferred_first=%d, prev_deferred=%d), queries=%d, no_query=%d",
+        len(tg), len(deferred_open), len(prev_deferred), len(q), len(no_query),
+    )
 
     return {"current_plan": plan}

@@ -127,6 +127,8 @@ def _build_snapshot(
             "exception": int(state.get("hitl_exception_count", 0)),
         },
         "dispute_queue_size": len(dispute_queue),
+        "deferred_targets": len(state.get("deferred_targets") or []),
+        "defer_reason": state.get("defer_reason") or {},
         "cycle_trace": _build_cycle_trace(cycle_ctx) if cycle_ctx else None,
     }
 
