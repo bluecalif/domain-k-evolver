@@ -134,6 +134,7 @@ def load_state(domain_path: str | Path) -> EvolverState:
         "novelty_history": [],
         "external_novelty_history": ext_history,
         "external_observation_keys": ext_keys,
+        "deferred_targets": [],
     }
     return state
 

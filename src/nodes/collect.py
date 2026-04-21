@@ -213,6 +213,7 @@ def collect_node(
         return {"current_claims": []}
 
     tasks: list[tuple[dict, list[str]]] = []
+    deferred_ids: list[str] = []
     search_calls_used = 0
     for gu_id in target_gap_ids:
         gu = gu_by_id.get(gu_id)
@@ -223,8 +224,8 @@ def collect_node(
         needed = len(gu_queries)
 
         if search_calls_used + needed > budget:
-            if gu.get("expected_utility") in ("low", "medium"):
-                continue
+            deferred_ids.append(gu_id)
+            continue
 
         tasks.append((gu, gu_queries))
         search_calls_used += needed
@@ -338,9 +339,13 @@ def collect_node(
     if domain_ent > 0:
         logger.info("collect diversity: domain_entropy=%.3f", domain_ent)
 
+    if deferred_ids:
+        logger.info("collect: %d GU deferred (budget=%d exceeded)", len(deferred_ids), budget)
+
     return {
         "current_claims": all_claims,
         "collect_failure_rate": round(failure_rate, 3),
+        "deferred_targets": deferred_ids,
         "_diag_search_by_gu": diag_search_by_gu,
     }
 
