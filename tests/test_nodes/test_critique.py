@@ -13,6 +13,7 @@ from src.nodes.critique import (
     _check_convergence,
     _compute_refresh_cap,
     _generate_balance_gus,
+    _identify_deficit_categories,
     _generate_refresh_gus,
     critique_node,
     INTEGRATION_CONV_RATE_THRESHOLD,
@@ -347,6 +348,8 @@ class TestGenerateRefreshGus:
 # ---------------------------------------------------------------------------
 
 class TestGenerateBalanceGus:
+    """S4-T1: _generate_balance_gus 는 항상 빈 리스트 반환 (virtual entity 제거)."""
+
     _SKELETON = {
         "domain": "test",
         "categories": [
@@ -361,74 +364,85 @@ class TestGenerateBalanceGus:
         ],
     }
 
-    def test_generates_gus_for_underrepresented_category(self) -> None:
-        kus = [
-            {"ku_id": f"KU-{i}", "entity_key": f"test:transport:e{i}",
-             "field": "price", "status": "active"}
-            for i in range(8)
-        ] + [
-            {"ku_id": "KU-20", "entity_key": "test:dining:e20",
-             "field": "price", "status": "active"},
-        ]
-        # transport=8 (ok), dining=1 (need 4), payment=0 (need 5)
-        gus = _generate_balance_gus(kus, [], self._SKELETON, max_gu_id=0)
-        assert len(gus) > 0
-        triggers = {gu["trigger"] for gu in gus}
-        assert triggers == {"E:category_balance"}
-        # dining GUs (applicable fields: hours, price → min(4, 2)=2)
-        dining_gus = [gu for gu in gus if "dining" in gu["target"]["entity_key"]]
-        assert len(dining_gus) == 2
-        # payment GUs (applicable fields: how_to_use, price → min(5, 2)=2)
-        payment_gus = [gu for gu in gus if "payment" in gu["target"]["entity_key"]]
-        assert len(payment_gus) == 2
-
-    def test_no_gus_when_all_sufficient(self) -> None:
-        kus = []
-        for cat in ["transport", "dining", "payment"]:
-            for i in range(6):
-                kus.append({
-                    "ku_id": f"KU-{cat}-{i}", "entity_key": f"test:{cat}:e{i}",
-                    "field": "price", "status": "active",
-                })
-        gus = _generate_balance_gus(kus, [], self._SKELETON, max_gu_id=0)
-        assert len(gus) == 0
-
-    def test_category_specific_fields_prioritized(self) -> None:
-        kus = [
-            {"ku_id": "KU-1", "entity_key": "test:dining:e1",
-             "field": "price", "status": "active"},
-        ]
-        gus = _generate_balance_gus(kus, [], self._SKELETON, max_gu_id=0)
-        dining_gus = [gu for gu in gus if "dining" in gu["target"]["entity_key"]]
-        # dining-specific 필드 (hours)가 먼저 나와야 함
-        fields = [gu["target"]["field"] for gu in dining_gus]
-        assert fields[0] == "hours"  # category-specific first
-
-    def test_expansion_mode_jump(self) -> None:
+    def test_always_returns_empty(self) -> None:
+        """S4-T1: virtual balance-N 제거 — 항상 빈 리스트."""
         kus = []
         gus = _generate_balance_gus(kus, [], self._SKELETON, max_gu_id=0)
-        for gu in gus:
-            assert gu["expansion_mode"] == "jump"
+        assert gus == []
 
-    def test_critique_node_adds_balance_gus(self) -> None:
-        kus = [
-            {"ku_id": f"KU-{i}", "entity_key": f"test:transport:e{i}",
-             "field": "price", "status": "active",
-             "evidence_links": ["EU-1", "EU-2"], "confidence": 0.9,
-             "observed_at": "2026-03-01", "validity": {"ttl_days": 180}}
-            for i in range(8)
-        ]
+    def test_no_balance_entity_in_gap_map_after_critique(self) -> None:
+        """critique 실행 후 gap_map에 balance-* entity GU 없음."""
         state = {
-            "knowledge_units": kus,
+            "knowledge_units": [],
             "gap_map": [],
             "domain_skeleton": self._SKELETON,
             "current_cycle": 1,
             "metrics": {"rates": {}},
         }
         result = critique_node(state, today=date(2026, 3, 7))
-        assert "gap_map" in result
-        balance = [gu for gu in result["gap_map"] if gu.get("trigger") == "E:category_balance"]
-        assert len(balance) > 0
+        gap_map = result.get("gap_map", [])
+        balance = [gu for gu in gap_map
+                   if "balance-" in gu.get("target", {}).get("entity_key", "")]
+        assert balance == []
+
+
+class TestIdentifyDeficitCategories:
+    """S4-T2: _identify_deficit_categories — coverage_map.deficit_score 기반."""
+
+    _SKELETON = {
+        "categories": [
+            {"slug": "transport"},
+            {"slug": "dining"},
+            {"slug": "payment"},
+        ],
+    }
+
+    def test_returns_deficit_categories(self) -> None:
+        coverage_map = {
+            "transport": {"deficit_score": 0.8, "ku_count": 2},
+            "dining": {"deficit_score": 0.3, "ku_count": 7},
+            "payment": {"deficit_score": 0.9, "ku_count": 1},
+        }
+        result = _identify_deficit_categories(coverage_map, self._SKELETON)
+        cats = [r["category"] for r in result]
+        assert "transport" in cats
+        assert "payment" in cats
+        assert "dining" not in cats  # 0.3 < 0.5 threshold
+
+    def test_sorted_by_deficit_desc(self) -> None:
+        coverage_map = {
+            "transport": {"deficit_score": 0.7, "ku_count": 3},
+            "dining": {"deficit_score": 0.2, "ku_count": 8},
+            "payment": {"deficit_score": 0.9, "ku_count": 1},
+        }
+        result = _identify_deficit_categories(coverage_map, self._SKELETON)
+        scores = [r["deficit_score"] for r in result]
+        assert scores == sorted(scores, reverse=True)
+
+    def test_none_coverage_map_returns_empty(self) -> None:
+        result = _identify_deficit_categories(None, self._SKELETON)
+        assert result == []
+
+    def test_deficit_categories_in_critique_report(self) -> None:
+        """critique_node 결과에 deficit_categories 포함."""
+        state = {
+            "knowledge_units": [],
+            "gap_map": [],
+            "domain_skeleton": self._SKELETON,
+            "current_cycle": 1,
+            "metrics": {},
+            "coverage_map": {
+                "transport": {"deficit_score": 0.8, "ku_count": 2},
+                "dining": {"deficit_score": 0.2, "ku_count": 8},
+                "payment": {"deficit_score": 0.9, "ku_count": 1},
+            },
+        }
+        result = critique_node(state, today=date(2026, 3, 7))
+        report = result["current_critique"]
+        assert "deficit_categories" in report
+        cats = [d["category"] for d in report["deficit_categories"]]
+        assert "transport" in cats
+        assert "payment" in cats
 
 
 # ---------------------------------------------------------------------------

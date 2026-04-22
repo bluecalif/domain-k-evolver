@@ -168,7 +168,7 @@ def _analyze_failure_modes(
 
 
 REFRESH_GU_CAP_DEFAULT = 10  # D-55: cycle당 refresh GU 기본 상한
-MIN_KU_PER_CAT = 5   # D-56: 카테고리당 최소 KU 수
+CATEGORY_DEFICIT_THRESHOLD = 0.5  # S4-T2: deficit_score 임계치 (MIN_KU_PER_CAT 대체)
 
 
 def _compute_refresh_cap(stale_count: int) -> int:
@@ -253,89 +253,45 @@ def _generate_refresh_gus(
     return new_gus
 
 
+def _identify_deficit_categories(
+    coverage_map: dict | None,
+    skeleton: dict,
+    threshold: float = CATEGORY_DEFICIT_THRESHOLD,
+) -> list[dict]:
+    """S4-T2: coverage_map.deficit_score > threshold 인 카테고리 목록 반환.
+
+    S5a entity_discovery 에 전달할 deficit 카테고리 신호.
+    반환: [{"category": str, "deficit_score": float, "ku_count": int}, ...]
+    """
+    if not coverage_map:
+        return []
+    categories = [c["slug"] for c in skeleton.get("categories", [])]
+    deficit_cats = []
+    for cat in categories:
+        cat_info = coverage_map.get(cat)
+        if isinstance(cat_info, dict) and cat_info.get("deficit_score", 0) > threshold:
+            deficit_cats.append({
+                "category": cat,
+                "deficit_score": cat_info["deficit_score"],
+                "ku_count": cat_info.get("ku_count", 0),
+            })
+    return sorted(deficit_cats, key=lambda x: -x["deficit_score"])
+
+
 def _generate_balance_gus(
     kus: list[dict],
     gap_map: list[dict],
     skeleton: dict,
     max_gu_id: int,
     today: date | None = None,
+    coverage_map: dict | None = None,
 ) -> list[dict]:
-    """min_ku < MIN_KU_PER_CAT인 카테고리 → 균형 GU 생성.
+    """S4-T1: virtual balance-N entity 생성 완전 제거.
 
-    category-specific 필드 우선, expansion_mode="jump".
+    S4-T4 (S5a validated entity 연동) 전까지 빈 리스트 반환.
+    deficit 카테고리 감지는 _identify_deficit_categories 로 분리.
     """
-    if today is None:
-        today = date.today()
-
-    categories = [c["slug"] for c in skeleton.get("categories", [])]
-    if not categories:
-        return []
-
-    # 카테고리별 active KU 수
-    cat_counts: dict[str, int] = {c: 0 for c in categories}
-    for ku in kus:
-        if ku.get("status") != "active":
-            continue
-        parts = ku.get("entity_key", "").split(":")
-        cat = parts[1] if len(parts) >= 3 else ""
-        if cat in cat_counts:
-            cat_counts[cat] += 1
-
-    # 기존 open GU 슬롯
-    existing_open_slots = {
-        (gu.get("target", {}).get("entity_key"), gu.get("target", {}).get("field"))
-        for gu in gap_map
-        if gu.get("status") == "open"
-    }
-
-    fields = skeleton.get("fields", [])
-    new_gus: list[dict] = []
-
-    for cat, count in cat_counts.items():
-        if count >= MIN_KU_PER_CAT:
-            continue
-        needed = MIN_KU_PER_CAT - count
-        # category-specific 필드 우선
-        applicable = [
-            f["name"] for f in fields
-            if cat in f.get("categories", [])
-        ] + [
-            f["name"] for f in fields
-            if "*" in f.get("categories", [])
-        ]
-        # 중복 제거, 순서 유지
-        seen: set[str] = set()
-        unique_fields: list[str] = []
-        for fn in applicable:
-            if fn not in seen:
-                seen.add(fn)
-                unique_fields.append(fn)
-
-        generated = 0
-        for fn in unique_fields:
-            if generated >= needed:
-                break
-            entity_key = f"{skeleton.get('domain', 'unknown')}:{cat}:balance-{generated}"
-            slot = (entity_key, fn)
-            if slot in existing_open_slots:
-                continue
-            max_gu_id += 1
-            new_gus.append({
-                "gu_id": f"GU-{max_gu_id:04d}",
-                "gap_type": "missing",
-                "target": {"entity_key": entity_key, "field": fn},
-                "expected_utility": "high",
-                "risk_level": "informational",
-                "resolution_criteria": f"{cat} 카테고리 균형 보충: {fn}",
-                "status": "open",
-                "trigger": "E:category_balance",
-                "trigger_source": f"cat:{cat}",
-                "expansion_mode": "jump",
-                "created_at": today.isoformat(),
-            })
-            generated += 1
-
-    return new_gus
+    return []
 
 
 def _generate_machine_rules(
@@ -571,7 +527,11 @@ def critique_node(
         })
         rx_counter += 1
 
-    # Category 균형 GU 생성 (Task 5.7)
+    # S4-T2: deficit 카테고리 감지 (coverage_map.deficit_score 기반)
+    coverage_map = state.get("coverage_map") or {}
+    deficit_categories = _identify_deficit_categories(coverage_map, skeleton)
+
+    # S4-T1: balance GU 생성 (virtual entity 제거됨 → 항상 빈 리스트)
     max_gu_id = 0
     for gu in gap_map:
         gu_id_str = gu.get("gu_id", "")
@@ -581,19 +541,7 @@ def critique_node(
                 max_gu_id = max(max_gu_id, num)
             except ValueError:
                 pass
-    balance_gus = _generate_balance_gus(kus, gap_map, skeleton, max_gu_id, today)
-    if balance_gus:
-        gap_map = list(gap_map)
-        gap_map.extend(balance_gus)
-        # max_gu_id 업데이트
-        for gu in balance_gus:
-            gu_id_str = gu.get("gu_id", "")
-            if gu_id_str.startswith("GU-"):
-                try:
-                    num = int(gu_id_str.replace("GU-", ""))
-                    max_gu_id = max(max_gu_id, num)
-                except ValueError:
-                    pass
+    balance_gus = _generate_balance_gus(kus, gap_map, skeleton, max_gu_id, today, coverage_map)
 
     # Stale KU → Refresh GU 자동생성 (Task 5.5)
     refresh_gus = _generate_refresh_gus(kus, gap_map, max_gu_id, today)
@@ -658,6 +606,7 @@ def critique_node(
         "machine_rules": machine_rules,
         "convergence": convergence,
         "deficit_ratios": deficits,
+        "deficit_categories": deficit_categories,  # S4-T2: S5a entity_discovery 신호
     }
 
     # AxisCoverageEntry 리스트 변환
