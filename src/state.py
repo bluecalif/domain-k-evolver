@@ -252,6 +252,14 @@ class EvolverState(TypedDict, total=False):
     # critique에서 ku_stagnation:added_low 발동 시 3 설정, entity_discovery가 매 cycle 1씩 감소
     aggressive_mode_remaining: int
 
+    # SI-P7 S3-T2: 최근 conflict_hold 발생 필드 blocklist (N=3 cycle 유지)
+    # [{"field": str, "since_cycle": int}]
+    recent_conflict_fields: list[dict]
+
+    # SI-P7 S3-T7: adjacency rule yield tracker
+    # {rule_id: [{"cycle": int, "attempted": int, "resolved": int}]}
+    adjacency_yield: dict
+
     # Diagnostic fields (진단 전용, orchestrator가 cycle마다 읽고 제거)
     _diag_search_by_gu: dict | None       # collect: {gu_id: search_result_count}
     _diag_adjacent_gap_count: int | None  # integrate: 신규 dynamic GU 수

@@ -64,107 +64,97 @@
     {
       "name": "price",
       "type": "object",
-      "categories": [
-        "*"
-      ],
+      "categories": ["*"],
       "description": "가격 정보",
-      "condition_axes": ["season", "route", "pass_type", "traveler_type"]
+      "condition_axes": ["season", "route", "pass_type", "traveler_type"],
+      "default_risk": "financial",
+      "default_utility": "high"
     },
     {
       "name": "hours",
       "type": "string",
-      "categories": [
-        "attraction",
-        "dining"
-      ],
+      "categories": ["attraction", "dining"],
       "description": "운영시간",
-      "condition_axes": ["season", "day_of_week"]
+      "condition_axes": ["season", "day_of_week"],
+      "default_risk": "convenience",
+      "default_utility": "high"
     },
     {
       "name": "policy",
       "type": "string",
-      "categories": [
-        "regulation",
-        "pass-ticket"
-      ],
+      "categories": ["regulation", "pass-ticket"],
       "description": "규정/조건",
-      "condition_axes": ["traveler_type", "route"]
+      "condition_axes": ["traveler_type", "route"],
+      "default_risk": "policy",
+      "default_utility": "high"
     },
     {
       "name": "location",
       "type": "object",
-      "categories": [
-        "attraction",
-        "dining",
-        "accommodation"
-      ],
-      "description": "위치"
+      "categories": ["attraction", "dining", "accommodation"],
+      "description": "위치",
+      "default_risk": "convenience",
+      "default_utility": "medium"
     },
     {
       "name": "duration",
       "type": "string",
-      "categories": [
-        "transport",
-        "pass-ticket"
-      ],
+      "categories": ["transport", "pass-ticket"],
       "description": "소요/유효기간",
-      "condition_axes": ["pass_type", "route"]
+      "condition_axes": ["pass_type", "route"],
+      "default_risk": "convenience",
+      "default_utility": "medium"
     },
     {
       "name": "eligibility",
       "type": "string",
-      "categories": [
-        "pass-ticket",
-        "regulation"
-      ],
+      "categories": ["pass-ticket", "regulation"],
       "description": "이용 자격",
-      "condition_axes": ["traveler_type", "nationality"]
+      "condition_axes": ["traveler_type", "nationality"],
+      "default_risk": "policy",
+      "default_utility": "critical"
     },
     {
       "name": "how_to_use",
       "type": "string",
-      "categories": [
-        "transport",
-        "payment",
-        "connectivity"
-      ],
-      "description": "이용 방법"
+      "categories": ["transport", "payment", "connectivity"],
+      "description": "이용 방법",
+      "default_risk": "convenience",
+      "default_utility": "medium"
     },
     {
       "name": "etiquette",
       "type": "string",
-      "categories": [
-        "dining",
-        "accommodation"
-      ],
-      "description": "에티켓/매너"
+      "categories": ["dining", "accommodation"],
+      "description": "에티켓/매너",
+      "default_risk": "convenience",
+      "default_utility": "low"
     },
     {
       "name": "tips",
       "type": "string",
-      "categories": [
-        "*"
-      ],
-      "description": "실용 팁"
+      "categories": ["*"],
+      "description": "실용 팁",
+      "default_risk": "informational",
+      "default_utility": "low"
     },
     {
       "name": "acceptance",
       "type": "string",
-      "categories": [
-        "payment"
-      ],
+      "categories": ["payment"],
       "description": "사용 가능 범위",
-      "condition_axes": ["geography", "traveler_type"]
+      "condition_axes": ["geography", "traveler_type"],
+      "default_risk": "financial",
+      "default_utility": "high"
     },
     {
       "name": "where_to_buy",
       "type": "string",
-      "categories": [
-        "pass-ticket",
-        "connectivity"
-      ],
+      "categories": ["pass-ticket", "connectivity"],
       "description": "구매처/방법",
-      "condition_axes": ["geography"]
+      "condition_axes": ["geography"],
+      "default_risk": "convenience",
+      "default_utility": "medium"
     }
   ],
   "relations": [
@@ -267,5 +257,59 @@
   "canonical_key_rule": {
     "format": "japan-travel:{category}:{slug}",
     "slug_rules": "영문 소문자, 하이픈 구분, 공식 영문 명칭 기반"
+  },
+  "field_adjacency": {
+    "_comment": "S3-T3: field adjacency rule engine seed. {source_field: [next_fields]}. category override가 _global보다 우선.",
+    "_global": {
+      "price": ["how_to_use", "where_to_buy", "policy"],
+      "hours": ["price", "location", "tips"],
+      "policy": ["eligibility", "how_to_use", "price"],
+      "location": ["hours", "tips", "price"],
+      "tips": ["price", "how_to_use", "policy"],
+      "how_to_use": ["policy", "tips", "where_to_buy"],
+      "where_to_buy": ["price", "how_to_use", "acceptance"],
+      "eligibility": ["policy", "where_to_buy", "price"],
+      "acceptance": ["where_to_buy", "how_to_use", "policy"],
+      "duration": ["price", "policy", "eligibility"],
+      "etiquette": ["tips", "hours", "price"]
+    },
+    "transport": {
+      "price": ["duration", "how_to_use", "where_to_buy"],
+      "duration": ["price", "policy", "how_to_use"],
+      "how_to_use": ["price", "policy", "where_to_buy"]
+    },
+    "pass-ticket": {
+      "price": ["duration", "eligibility", "where_to_buy"],
+      "eligibility": ["price", "policy", "where_to_buy"],
+      "duration": ["price", "eligibility", "policy"]
+    },
+    "dining": {
+      "price": ["hours", "location", "etiquette"],
+      "hours": ["price", "location", "tips"],
+      "etiquette": ["tips", "price", "hours"]
+    },
+    "accommodation": {
+      "price": ["location", "hours", "tips"],
+      "location": ["price", "hours", "tips"]
+    },
+    "attraction": {
+      "price": ["hours", "location", "tips"],
+      "hours": ["price", "location", "tips"],
+      "location": ["hours", "price", "tips"]
+    },
+    "payment": {
+      "acceptance": ["where_to_buy", "how_to_use", "policy"],
+      "how_to_use": ["acceptance", "policy", "where_to_buy"],
+      "where_to_buy": ["acceptance", "how_to_use"]
+    },
+    "connectivity": {
+      "price": ["how_to_use", "where_to_buy", "policy"],
+      "how_to_use": ["price", "where_to_buy", "tips"],
+      "where_to_buy": ["price", "how_to_use"]
+    },
+    "regulation": {
+      "policy": ["eligibility", "how_to_use", "price"],
+      "eligibility": ["policy", "price", "how_to_use"]
+    }
   }
 }

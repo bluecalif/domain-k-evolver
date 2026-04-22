@@ -223,6 +223,38 @@ def _copy_axis_tags(source_gu: dict | None) -> dict:
     return {}
 
 
+def _get_adjacency_fields(
+    category: str,
+    source_field: str,
+    skeleton: dict,
+) -> list[str]:
+    """S3-T4: field_adjacency rule engine에서 인접 필드 목록 조회.
+
+    category override → _global 순으로 조회.
+    미정의 시 빈 리스트 반환.
+    """
+    adjacency = skeleton.get("field_adjacency", {})
+    cat_map = adjacency.get(category, {})
+    if source_field in cat_map:
+        return list(cat_map[source_field])
+    global_map = adjacency.get("_global", {})
+    return list(global_map.get(source_field, []))
+
+
+def _get_field_defaults(field_name: str, skeleton: dict) -> tuple[str, str]:
+    """S3-T5/T6: skeleton fields에서 default_risk + default_utility 조회.
+
+    반환: (risk_level, expected_utility). 미정의 시 fallback 값.
+    """
+    for f in skeleton.get("fields", []):
+        if f.get("name") == field_name:
+            return (
+                f.get("default_risk", "convenience"),
+                f.get("default_utility", "medium"),
+            )
+    return ("convenience", "medium")
+
+
 def _generate_dynamic_gus(
     claim: dict,
     gap_map: list[dict],
@@ -230,14 +262,28 @@ def _generate_dynamic_gus(
     mode: str,
     open_count: int,
     kus: list[dict] | None = None,
+    conflict_blocklist: set[str] | None = None,
 ) -> list[dict]:
     """동적 GU 발견 (Trigger A: 인접 Gap).
 
-    Claim의 entity_key/field가 기존 Gap Map에 없는 슬롯 참조 시 missing GU 생성.
-    과다 필드(count > mean×1.5) GU 생성 억제 (D-56).
+    S3 개선:
+    - T1: category별 mean × 1.5 suppress
+    - T2/T8: conflict_blocklist — source field + next field 모두 차단
+    - T4: field_adjacency rule engine 참조
+    - T5/T6: skeleton default_risk/default_utility 사용
     """
     entity_key = claim.get("entity_key", "")
     field = claim.get("field", "")
+
+    parts = entity_key.split(":")
+    if len(parts) < 3:
+        return []
+
+    category = parts[1]
+
+    # S3-T8: source field 자체가 conflict blocklist에 있으면 adj 생성 안 함
+    if conflict_blocklist and field in conflict_blocklist:
+        return []
 
     # 기존 GU에 이미 있는 슬롯
     existing_slots = {
@@ -245,55 +291,64 @@ def _generate_dynamic_gus(
         for gu in gap_map
     }
 
-    new_gus: list[dict] = []
+    # S3-T4: field_adjacency rule engine 참조 (정의된 경우), 미정의 시 전체 applicable 사용
+    adj_fields = _get_adjacency_fields(category, field, skeleton)
+    if not adj_fields:
+        # fallback: skeleton categories 기반 전체 applicable
+        fields_meta = skeleton.get("fields", [])
+        adj_fields = [
+            f["name"] for f in fields_meta
+            if "*" in f.get("categories", []) or category in f.get("categories", [])
+        ]
 
-    # 같은 entity의 다른 필드 중 Gap Map에 없는 것
-    categories = [c["slug"] for c in skeleton.get("categories", [])]
-    parts = entity_key.split(":")
-    if len(parts) < 3:
-        return []
-
-    category = parts[1]
-    fields = skeleton.get("fields", [])
-    applicable_fields = [
-        f["name"] for f in fields
-        if "*" in f.get("categories", []) or category in f.get("categories", [])
-    ]
-
-    # Field 다양성 억제: 과다 필드 제외 (D-56)
+    # S3-T1: category별 field suppress (mean × 1.5)
     suppressed_fields: set[str] = set()
     if kus:
-        field_counts: dict[str, int] = {}
+        cat_field_counts: dict[str, int] = {}
         for ku in kus:
             if ku.get("status") != "active":
                 continue
+            ku_parts = ku.get("entity_key", "").split(":")
+            ku_cat = ku_parts[1] if len(ku_parts) >= 3 else ""
+            if ku_cat != category:
+                continue
             f = ku.get("field", "")
-            field_counts[f] = field_counts.get(f, 0) + 1
-        if field_counts:
-            mean_count = sum(field_counts.values()) / len(field_counts)
+            cat_field_counts[f] = cat_field_counts.get(f, 0) + 1
+        if cat_field_counts:
+            mean_count = sum(cat_field_counts.values()) / len(cat_field_counts)
             threshold = mean_count * 1.5
-            suppressed_fields = {f for f, c in field_counts.items() if c > threshold}
+            suppressed_fields = {f for f, c in cat_field_counts.items() if c > threshold}
 
     # 부모 claim entity_key에서 geography 추론
     geo = _infer_geography(entity_key, skeleton)
     gu_axis_tags = {"geography": geo} if geo else {}
 
-    for adj_field in applicable_fields:
+    new_gus: list[dict] = []
+    for adj_field in adj_fields:
         if adj_field == field:
+            continue
+        # S3-T2: next field도 conflict blocklist 차단
+        if conflict_blocklist and adj_field in conflict_blocklist:
             continue
         if adj_field in suppressed_fields:
             continue
         slot = (entity_key, adj_field)
         if slot not in existing_slots:
+            # S3-T5/T6: skeleton default_risk/default_utility 사용
+            risk_level, expected_utility = _get_field_defaults(adj_field, skeleton)
+            # rule_id: yield tracker용 (S3-T7)
+            adj_rule_id = f"{category}:{field}→{adj_field}"
+
             gu = {
                 "gap_type": "missing",
                 "target": {"entity_key": entity_key, "field": adj_field},
-                "expected_utility": "medium",
-                "risk_level": "convenience",
+                "expected_utility": expected_utility,
+                "risk_level": risk_level,
                 "resolution_criteria": f"{parts[-1]} {adj_field} 정보 수집",
                 "status": "open",
                 "trigger": "A:adjacent_gap",
                 "trigger_source": claim.get("claim_id", ""),
+                "adj_rule_id": adj_rule_id,
                 "created_at": date.today().isoformat(),
             }
             if gu_axis_tags:
@@ -341,6 +396,19 @@ def integrate_node(
     mode = mode_decision.get("mode", "normal")
     dispute_queue = list(state.get("dispute_queue", []))
     conflict_ledger = list(state.get("conflict_ledger", []))
+    cycle = state.get("current_cycle", 0)
+
+    # S3-T2: recent_conflict_fields 로드 + 만료 항목 제거 (N=3 cycle window)
+    CONFLICT_BLOCKLIST_WINDOW = 3
+    raw_conflict_fields = list(state.get("recent_conflict_fields") or [])
+    raw_conflict_fields = [
+        e for e in raw_conflict_fields
+        if cycle - e.get("since_cycle", 0) < CONFLICT_BLOCKLIST_WINDOW
+    ]
+    conflict_blocklist: set[str] = {e["field"] for e in raw_conflict_fields}
+
+    # S3-T7: adjacency_yield 로드
+    adjacency_yield = dict(state.get("adjacency_yield") or {})
 
     open_count = sum(1 for gu in gap_map if gu.get("status") == "open")
     dynamic_cap = _compute_dynamic_gu_cap(mode, open_count)
@@ -453,6 +521,11 @@ def integrate_node(
 
                     updates.append(existing_ku)
                     claim["integration_result"] = "conflict_hold"
+
+                    # S3-T2: conflict_hold 필드를 blocklist에 추가 (N=3 cycle)
+                    if field not in conflict_blocklist:
+                        conflict_blocklist.add(field)
+                        raw_conflict_fields.append({"field": field, "since_cycle": cycle})
 
                     # Silver HITL-D: dispute_queue 에 비블로킹 append
                     dispute_queue.append({
@@ -578,9 +651,12 @@ def integrate_node(
                 diag_resolved_gus.append(source_gu_id)
             resolve_outcomes["resolved" if _resolved else "other"] += 1
 
-        # 동적 GU 발견 (Trigger A)
+        # 동적 GU 발견 (Trigger A) + S3 개선 전달
         if len(new_dynamic_gus) < dynamic_cap:
-            discovered = _generate_dynamic_gus(claim, gap_map + new_dynamic_gus, skeleton, mode, open_count, kus=kus)
+            discovered = _generate_dynamic_gus(
+                claim, gap_map + new_dynamic_gus, skeleton, mode, open_count,
+                kus=kus, conflict_blocklist=conflict_blocklist,
+            )
             remaining = dynamic_cap - len(new_dynamic_gus)
             for dgu in discovered[:remaining]:
                 max_gu_id += 1
@@ -589,8 +665,35 @@ def integrate_node(
                     dgu["expansion_mode"] = "jump"
                 new_dynamic_gus.append(dgu)
 
+        # S3-T7: 이번 cycle에 해소된 adj GU의 rule yield 기록
+        _int_result = claim.get("integration_result")
+        if _int_result in ("added", "updated", "condition_split", "refreshed") and source_gu_id:
+            for gu in gap_map:
+                if gu.get("gu_id") == source_gu_id and gu.get("trigger") == "A:adjacent_gap":
+                    rule_id = gu.get("adj_rule_id", "")
+                    if rule_id:
+                        history = adjacency_yield.setdefault(rule_id, [])
+                        # 이번 cycle entry 찾기 또는 신규 추가
+                        entry = next((e for e in history if e.get("cycle") == cycle), None)
+                        if entry is None:
+                            entry = {"cycle": cycle, "attempted": 0, "resolved": 0}
+                            history.append(entry)
+                        entry["resolved"] += 1
+                    break
+
     # 동적 GU를 gap_map에 추가
     gap_map.extend(new_dynamic_gus)
+
+    # S3-T7: 이번 cycle에 새로 생성된 adj GU attempted 카운트
+    for dgu in new_dynamic_gus:
+        rule_id = dgu.get("adj_rule_id", "")
+        if rule_id:
+            history = adjacency_yield.setdefault(rule_id, [])
+            entry = next((e for e in history if e.get("cycle") == cycle), None)
+            if entry is None:
+                entry = {"cycle": cycle, "attempted": 0, "resolved": 0}
+                history.append(entry)
+            entry["attempted"] += 1
 
     # 불변원칙 검증
     # Claim→KU 착지성
@@ -621,7 +724,6 @@ def integrate_node(
         )
 
     # S2-T1: per-cycle 분포를 state에 누적
-    cycle = state.get("current_cycle", 0)
     prev_dist = state.get("integration_result_dist")
     integration_result_dist = accumulate_integration_dist(prev_dist, resolve_outcomes, cycle)
 
@@ -659,6 +761,8 @@ def integrate_node(
         "conflict_ledger": conflict_ledger,
         "integration_result_dist": integration_result_dist,
         "ku_stagnation_signals": ku_stagnation_signals,
+        "recent_conflict_fields": raw_conflict_fields,   # S3-T2
+        "adjacency_yield": adjacency_yield,               # S3-T7
         "_diag_adjacent_gap_count": len(new_dynamic_gus),
         "_diag_resolved_gus": diag_resolved_gus,
     }

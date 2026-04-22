@@ -18,6 +18,8 @@ from src.nodes.integrate import (
     _infer_geography,
     _find_matching_ku,
     _value_structure_type,
+    _get_adjacency_fields,
+    _get_field_defaults,
 )
 from tests.conftest import make_minimal_state
 
@@ -1913,3 +1915,211 @@ class TestDetectConflictAxisTags:
         )
         # axis_tags 없으면 Rule 2c 건너뜀 → hold
         assert result == "hold"
+
+
+# ---------------------------------------------------------------------------
+# S3: Adjacent Rule Engine
+# ---------------------------------------------------------------------------
+
+_ADJ_SKELETON = {
+    "categories": [{"slug": "transport"}, {"slug": "dining"}],
+    "fields": [
+        {"name": "price", "categories": ["*"], "default_risk": "financial", "default_utility": "high"},
+        {"name": "duration", "categories": ["transport"], "default_risk": "convenience", "default_utility": "medium"},
+        {"name": "hours", "categories": ["dining"], "default_risk": "convenience", "default_utility": "high"},
+        {"name": "tips", "categories": ["*"], "default_risk": "informational", "default_utility": "low"},
+    ],
+    "field_adjacency": {
+        "_global": {
+            "price": ["tips"],
+        },
+        "transport": {
+            "price": ["duration", "tips"],
+        },
+        "dining": {
+            "hours": ["price", "tips"],
+        },
+    },
+    "axes": [],
+}
+
+
+class TestGetAdjacencyFields:
+    def test_category_override_used(self) -> None:
+        """category-specific rule 이 _global보다 우선."""
+        result = _get_adjacency_fields("transport", "price", _ADJ_SKELETON)
+        assert result == ["duration", "tips"]
+
+    def test_global_fallback(self) -> None:
+        """category-specific rule 없으면 _global 사용."""
+        result = _get_adjacency_fields("dining", "price", _ADJ_SKELETON)
+        assert result == ["tips"]
+
+    def test_no_rule_returns_empty(self) -> None:
+        """어떤 rule도 없으면 빈 리스트."""
+        result = _get_adjacency_fields("dining", "duration", _ADJ_SKELETON)
+        assert result == []
+
+    def test_empty_skeleton_returns_empty(self) -> None:
+        result = _get_adjacency_fields("transport", "price", {})
+        assert result == []
+
+
+class TestGetFieldDefaults:
+    def test_known_field_returns_defaults(self) -> None:
+        risk, utility = _get_field_defaults("price", _ADJ_SKELETON)
+        assert risk == "financial"
+        assert utility == "high"
+
+    def test_wildcard_field_matched(self) -> None:
+        risk, utility = _get_field_defaults("tips", _ADJ_SKELETON)
+        assert risk == "informational"
+        assert utility == "low"
+
+    def test_unknown_field_returns_fallback(self) -> None:
+        risk, utility = _get_field_defaults("nonexistent", _ADJ_SKELETON)
+        assert risk == "convenience"
+        assert utility == "medium"
+
+
+class TestGenerateDynamicGusS3:
+    """S3 신규 동작 (conflict_blocklist, adj rule engine, suppress)."""
+
+    def _make_claim(self, entity_key: str, field: str) -> dict:
+        return {
+            "claim_id": "CL-001",
+            "entity_key": entity_key,
+            "field": field,
+            "value": "test",
+            "integration_result": "added",
+        }
+
+    def test_source_field_in_blocklist_returns_empty(self) -> None:
+        """S3-T8: source field이 conflict blocklist에 있으면 생성 안 함."""
+        claim = self._make_claim("d:transport:jr-pass", "price")
+        result = _generate_dynamic_gus(claim, [], _ADJ_SKELETON, "normal", 0, conflict_blocklist={"price"})
+        assert result == []
+
+    def test_adj_field_in_blocklist_skipped(self) -> None:
+        """S3-T2: next field이 conflict blocklist에 있으면 그 필드만 skip."""
+        claim = self._make_claim("d:transport:jr-pass", "price")
+        result = _generate_dynamic_gus(claim, [], _ADJ_SKELETON, "normal", 0, conflict_blocklist={"duration"})
+        # duration skip → tips만 남음
+        fields = [g["target"]["field"] for g in result]
+        assert "duration" not in fields
+        assert "tips" in fields
+
+    def test_adj_rule_engine_used(self) -> None:
+        """S3-T4: field_adjacency에서 next fields 결정."""
+        claim = self._make_claim("d:transport:jr-pass", "price")
+        result = _generate_dynamic_gus(claim, [], _ADJ_SKELETON, "normal", 0)
+        fields = [g["target"]["field"] for g in result]
+        assert set(fields) == {"duration", "tips"}
+
+    def test_adj_rule_id_set(self) -> None:
+        """S3-T7: adj_rule_id가 rule_id 형식으로 설정됨."""
+        claim = self._make_claim("d:transport:jr-pass", "price")
+        result = _generate_dynamic_gus(claim, [], _ADJ_SKELETON, "normal", 0)
+        rule_ids = {g["adj_rule_id"] for g in result}
+        assert "transport:price→duration" in rule_ids
+        assert "transport:price→tips" in rule_ids
+
+    def test_skeleton_defaults_applied(self) -> None:
+        """S3-T5/T6: skeleton default_risk/default_utility가 GU에 반영됨."""
+        claim = self._make_claim("d:transport:jr-pass", "price")
+        result = _generate_dynamic_gus(claim, [], _ADJ_SKELETON, "normal", 0)
+        dur_gu = next(g for g in result if g["target"]["field"] == "duration")
+        assert dur_gu["risk_level"] == "convenience"
+        assert dur_gu["expected_utility"] == "medium"
+
+    def test_suppress_overrepresented_field(self) -> None:
+        """S3-T1: category 내 평균×1.5 초과 field suppress."""
+        claim = self._make_claim("d:dining:ramen-ya", "hours")
+        kus = [
+            # price: 4 KU, tips: 1 KU → mean=2.5, threshold=3.75 → price(4>3.75) suppressed
+            {"entity_key": "d:dining:ramen-ya", "field": "price", "status": "active"},
+            {"entity_key": "d:dining:ramen-ya", "field": "price", "status": "active"},
+            {"entity_key": "d:dining:ramen-ya", "field": "price", "status": "active"},
+            {"entity_key": "d:dining:sushi-taro", "field": "price", "status": "active"},
+            {"entity_key": "d:dining:ramen-ya", "field": "tips", "status": "active"},
+        ]
+        result = _generate_dynamic_gus(claim, [], _ADJ_SKELETON, "normal", 0, kus=kus)
+        fields = [g["target"]["field"] for g in result]
+        assert "price" not in fields
+
+    def test_existing_slot_skipped(self) -> None:
+        """이미 GU가 있는 슬롯은 생성 안 함."""
+        claim = self._make_claim("d:transport:jr-pass", "price")
+        existing_gu = {
+            "target": {"entity_key": "d:transport:jr-pass", "field": "duration"},
+            "status": "open",
+        }
+        result = _generate_dynamic_gus(claim, [existing_gu], _ADJ_SKELETON, "normal", 0)
+        fields = [g["target"]["field"] for g in result]
+        assert "duration" not in fields
+
+
+class TestConflictBlocklistStateFlow:
+    """integrate_node: recent_conflict_fields 상태 반영."""
+
+    def _base_state(self, cycle: int = 1, recent_conflict_fields: list | None = None) -> dict:
+        return {
+            "knowledge_units": [],
+            "gap_map": [],
+            "current_claims": [],
+            "domain_skeleton": {"categories": [], "fields": []},
+            "current_mode": {"mode": "normal"},
+            "current_cycle": cycle,
+            "recent_conflict_fields": recent_conflict_fields or [],
+        }
+
+    def test_recent_conflict_fields_returned(self) -> None:
+        """recent_conflict_fields 키가 항상 반환됨."""
+        state = self._base_state()
+        result = integrate_node(state)
+        assert "recent_conflict_fields" in result
+
+    def test_expired_entries_removed(self) -> None:
+        """CONFLICT_BLOCKLIST_WINDOW=3 — since_cycle이 3+ 지난 항목 제거."""
+        old_entry = {"field": "price", "since_cycle": 1}
+        state = self._base_state(cycle=5, recent_conflict_fields=[old_entry])
+        result = integrate_node(state)
+        # cycle=5, since_cycle=1 → diff=4 ≥ 3 → 제거됨
+        assert old_entry not in result["recent_conflict_fields"]
+
+    def test_fresh_entries_kept(self) -> None:
+        """최근 항목은 유지됨."""
+        fresh_entry = {"field": "price", "since_cycle": 4}
+        state = self._base_state(cycle=5, recent_conflict_fields=[fresh_entry])
+        result = integrate_node(state)
+        # diff=1 < 3 → 유지
+        assert any(e["field"] == "price" for e in result["recent_conflict_fields"])
+
+
+class TestAdjacencyYieldStateFlow:
+    """integrate_node: adjacency_yield 상태 반영."""
+
+    def _base_state(self) -> dict:
+        return {
+            "knowledge_units": [],
+            "gap_map": [],
+            "current_claims": [],
+            "domain_skeleton": {"categories": [], "fields": []},
+            "current_mode": {"mode": "normal"},
+            "current_cycle": 1,
+        }
+
+    def test_adjacency_yield_returned(self) -> None:
+        """adjacency_yield 키가 항상 반환됨."""
+        state = self._base_state()
+        result = integrate_node(state)
+        assert "adjacency_yield" in result
+
+    def test_adjacency_yield_accumulates(self) -> None:
+        """이전 state의 adjacency_yield가 유지됨."""
+        prev_yield = {"transport:price→duration": [{"cycle": 0, "attempted": 2, "resolved": 1}]}
+        state = self._base_state()
+        state["adjacency_yield"] = prev_yield
+        result = integrate_node(state)
+        # 이전 데이터 보존
+        assert "transport:price→duration" in result["adjacency_yield"]
