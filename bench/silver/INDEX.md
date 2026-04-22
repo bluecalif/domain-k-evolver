@@ -15,3 +15,5 @@
 | p0-20260412-baseline | japan-travel | p0 | 2026-04-12 | P0 Foundation Hardening — fresh seed + 15 cycle + Orchestrator | complete | VP1=5/5 VP2=5/6 VP3=5/6 PASS | Gate PASS. R3_multi_evidence, R6_closed_loop non-critical FAIL |
 | p5-infra | japan-travel | p5 | 2026-04-18 | Telemetry Contract & Dashboard — schema+emitter+7 views | complete | G5-1~6 PASS S10 PASS | 코드/인프라 phase, 전용 trial 없음. 821 tests, LOC 986 |
 | p6-diag-off-remodel-off-15c | japan-travel | p6 | 2026-04-19 | P6-A1-D4 matrix B 조합 — stage-e off + remodel off 15c (inside view 비교용) | complete | VP1=5/5 VP2=5/6 VP3=1/6 (의도된 FAIL) | Path-γ 확정, D-167. gap_res 0.926 (A 0.805), open 9 (A 25), NO-SEL -36pp |
+| p7-ab-on | japan-travel | p7 | 2026-04-22 | SI-P7 Step A+B 전체 on — S1+S2+S3+S4 합산 효과 측정 | complete | VP1=3/5 VP2=4/6 VP3=5/6 FAIL | GU 고갈: cycle3 이후 open=0. KU=82 정체. gap_res=1.0 (misleading). S5a 없이는 동작 불가 |
+| p7-ab-off | japan-travel | p7 | 2026-04-22 | SI-P7 Step A+B baseline off — P7 이전 코드 (c300b3c) | complete | VP1=5/5 VP2=5/6 VP3=5/6 PASS | baseline. KU=141, GU=117, late_discovery=21, min_ku_per_cat=8 |

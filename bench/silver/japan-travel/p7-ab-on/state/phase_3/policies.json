@@ -1,0 +1,73 @@
+{
+  "credibility_priors": {
+    "official": 0.95,
+    "public": 0.8,
+    "platform": 0.65,
+    "personal": 0.4
+  },
+  "ttl_defaults": {
+    "price": 365,
+    "policy": 303,
+    "regulation": 303,
+    "hours": 202,
+    "how_to_use": 365,
+    "location": 365,
+    "etiquette": 365,
+    "tips": 365
+  },
+  "cross_validation": {
+    "safety": {
+      "min_independent_sources": 2,
+      "min_credibility": 0.8,
+      "min_sources": 3
+    },
+    "financial": {
+      "min_independent_sources": 2,
+      "min_credibility": 0.7
+    },
+    "policy": {
+      "min_independent_sources": 2,
+      "min_credibility": 0.8
+    },
+    "convenience": {
+      "min_independent_sources": 1,
+      "min_credibility": 0.7
+    },
+    "informational": {
+      "min_independent_sources": 1,
+      "min_credibility": 0.6
+    }
+  },
+  "conflict_resolution": {
+    "source_priority": [
+      "official",
+      "public",
+      "platform",
+      "personal"
+    ],
+    "same_type_rule": "newest_first",
+    "condition_divergence": "condition_split",
+    "unresolvable": "hold_and_collect_more"
+  },
+  "version": 2,
+  "change_history": [
+    {
+      "version": 1,
+      "cycle": 5,
+      "patches_applied": [
+        "PP-001",
+        "PP-002"
+      ],
+      "timestamp": "2026-04-22T07:44:55.658858+00:00"
+    },
+    {
+      "version": 2,
+      "cycle": 10,
+      "patches_applied": [
+        "PP-001",
+        "PP-002"
+      ],
+      "timestamp": "2026-04-22T07:47:08.833411+00:00"
+    }
+  ]
+}

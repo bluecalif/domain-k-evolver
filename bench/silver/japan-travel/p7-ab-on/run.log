@@ -1,0 +1,639 @@
+2026-04-22 16:33:12,337 [INFO] run_readiness: 벤치마크 실행: 15 cycles (audit_interval=None, external_anchor=None)
+2026-04-22 16:33:22,591 [INFO] run_readiness: Seed state 로드: bench\japan-travel\state-snapshots\cycle-0-snapshot (KU=13, GU=28)
+2026-04-22 16:33:22,592 [INFO] src.orchestrator: Orchestrator 시작: domain=japan-travel, max_cycles=15
+2026-04-22 16:33:22,592 [INFO] src.orchestrator: === Cycle 1/15 시작 (KU=13, GU=28) ===
+2026-04-22 16:33:22,637 [INFO] src.nodes.mode: mode: normal | open=29 → target_count=29 (explore=0, exploit=29) triggers=none
+2026-04-22 16:33:59,314 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:33:59,480 [INFO] src.nodes.plan: plan: targets=29 (deferred_first=0, prev_deferred=0), queries=29, no_query=0
+2026-04-22 16:33:59,481 [INFO] src.nodes.collect: collect: 9 GU search 병렬 (workers=5)
+2026-04-22 16:34:13,206 [INFO] src.nodes.collect: collect: batch LLM 9 prompts (1회 호출)
+2026-04-22 16:34:15,816 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:34:20,729 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:34:20,773 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:34:22,069 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:34:29,101 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:34:35,295 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:34:35,401 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:34:37,327 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:34:40,377 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:34:40,388 [INFO] src.nodes.collect: parse[GU-0001]: claims=2 (resp_len=1751)
+2026-04-22 16:34:40,389 [INFO] src.nodes.collect: parse_yield: gu=GU-0001 snippets=15 claims=2 path=llm
+2026-04-22 16:34:40,389 [INFO] src.nodes.collect: collect: GU-0001 → 2 claims
+2026-04-22 16:34:40,390 [INFO] src.nodes.collect: parse[GU-0002]: claims=3 (resp_len=2246)
+2026-04-22 16:34:40,390 [INFO] src.nodes.collect: parse_yield: gu=GU-0002 snippets=15 claims=3 path=llm
+2026-04-22 16:34:40,390 [INFO] src.nodes.collect: collect: GU-0002 → 3 claims
+2026-04-22 16:34:40,390 [INFO] src.nodes.collect: parse[GU-0004]: claims=1 (resp_len=809)
+2026-04-22 16:34:40,390 [INFO] src.nodes.collect: parse_yield: gu=GU-0004 snippets=15 claims=1 path=llm
+2026-04-22 16:34:40,390 [INFO] src.nodes.collect: collect: GU-0004 → 1 claims
+2026-04-22 16:34:40,390 [INFO] src.nodes.collect: parse[GU-0003]: claims=4 (resp_len=4174)
+2026-04-22 16:34:40,391 [INFO] src.nodes.collect: parse_yield: gu=GU-0003 snippets=15 claims=4 path=llm
+2026-04-22 16:34:40,391 [INFO] src.nodes.collect: collect: GU-0003 → 4 claims
+2026-04-22 16:34:40,391 [INFO] src.nodes.collect: parse[GU-0005]: claims=5 (resp_len=3128)
+2026-04-22 16:34:40,391 [INFO] src.nodes.collect: parse_yield: gu=GU-0005 snippets=15 claims=5 path=llm
+2026-04-22 16:34:40,391 [INFO] src.nodes.collect: collect: GU-0005 → 5 claims
+2026-04-22 16:34:40,391 [INFO] src.nodes.collect: parse[GU-0006]: claims=7 (resp_len=4746)
+2026-04-22 16:34:40,391 [INFO] src.nodes.collect: parse_yield: gu=GU-0006 snippets=15 claims=7 path=llm
+2026-04-22 16:34:40,391 [INFO] src.nodes.collect: collect: GU-0006 → 7 claims
+2026-04-22 16:34:40,392 [INFO] src.nodes.collect: parse[GU-0008]: claims=2 (resp_len=1387)
+2026-04-22 16:34:40,392 [INFO] src.nodes.collect: parse_yield: gu=GU-0008 snippets=15 claims=2 path=llm
+2026-04-22 16:34:40,392 [INFO] src.nodes.collect: collect: GU-0008 → 2 claims
+2026-04-22 16:34:40,392 [INFO] src.nodes.collect: parse[GU-0009]: claims=7 (resp_len=5717)
+2026-04-22 16:34:40,392 [INFO] src.nodes.collect: parse_yield: gu=GU-0009 snippets=15 claims=7 path=llm
+2026-04-22 16:34:40,392 [INFO] src.nodes.collect: collect: GU-0009 → 7 claims
+2026-04-22 16:34:40,392 [INFO] src.nodes.collect: parse[GU-0007]: claims=4 (resp_len=3029)
+2026-04-22 16:34:40,392 [INFO] src.nodes.collect: parse_yield: gu=GU-0007 snippets=15 claims=4 path=llm
+2026-04-22 16:34:40,392 [INFO] src.nodes.collect: collect: GU-0007 → 4 claims
+2026-04-22 16:34:40,393 [INFO] src.nodes.collect: parse_yield_summary: targets=9 completed=9 avg_claims=3.89 zero_claims=0 zero_ratio=0.000 total_claims=35
+2026-04-22 16:34:40,393 [INFO] src.nodes.collect: collect diversity: domain_entropy=4.444
+2026-04-22 16:34:40,393 [INFO] src.nodes.collect: collect: 20 GU deferred (budget=29 exceeded)
+2026-04-22 16:34:42,342 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:34:42,349 [INFO] src.nodes.integrate: Conflict check [japan-travel:regulation:tourist-visa/eligibility]: 'All foreign nationals or people who need to obtain' vs 'Visa applications and inquiries at the Embassy of ' → update (The new value provides a more specific detail about visa application acceptance at the Embassy of Japan in Washington DC, specifying residency requirements, which complements rather than contradicts the broader eligibility criteria in the existing value.)
+2026-04-22 16:34:43,741 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:34:43,745 [INFO] src.nodes.integrate: Conflict check [japan-travel:regulation:customs-allowance/eligibility]: 'Any item whose overseas market value is under 10,0' vs 'There is no duty-free allowance for articles havin' → conflict (The existing value states items under 10,000 yen are duty-free, while the new value states there is no duty-free allowance for items over 200,000 yen, implying different thresholds and potentially conflicting rules.)
+2026-04-22 16:34:45,359 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:34:45,361 [INFO] src.nodes.integrate: Conflict check [japan-travel:regulation:customs-allowance/eligibility]: 'Any item whose overseas market value is under 10,0' vs 'Personal effects and unaccompanied baggage that ar' → update (The new value provides additional information about personal effects and unaccompanied baggage being free of duties, complementing the existing value about items under 10,000 yen, thus expanding the eligibility criteria rather than contradicting it.)
+2026-04-22 16:34:46,367 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:34:46,378 [INFO] src.nodes.integrate: Conflict check [japan-travel:regulation:emergency/eligibility]: 'Foreign visitors in Japan can access emergency med' vs 'In Japan, foreign travelers without insurance must' → update (The new value provides additional details about payment requirements and insurance recommendations, complementing the existing information about emergency medical services available to foreign visitors.)
+2026-04-22 16:34:47,684 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:34:47,689 [INFO] src.nodes.integrate: Conflict check [japan-travel:regulation:emergency/eligibility]: 'Foreign visitors in Japan can access emergency med' vs 'Private medical insurance purchased after entering' → update (The new value provides additional, more detailed information about insurance coverage and payment methods for emergency medical care, complementing the existing description of emergency services available to foreign visitors.)
+2026-04-22 16:34:49,680 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:34:49,681 [INFO] src.nodes.integrate: Conflict check [japan-travel:regulation:emergency/eligibility]: 'Foreign visitors in Japan can access emergency med' vs 'Emergency services in Japan can be accessed by dia' → update (The new value provides additional practical details on how to access emergency services (phone numbers and language support), complementing the existing value's description of the types of emergency medical assistance available to foreign visitors.)
+2026-04-22 16:34:50,904 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:34:50,909 [INFO] src.nodes.integrate: Conflict check [japan-travel:accommodation:*/price]: 'Budget accommodation price range in Kyoto: ¥2,000 ' vs 'Luxury accommodation price range in Kyoto: from ¥1' → update (The new value provides price information for a different accommodation category (luxury) rather than contradicting the existing budget price range.)
+2026-04-22 16:34:52,528 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:34:52,534 [INFO] src.nodes.integrate: Conflict check [japan-travel:accommodation:*/price]: 'Budget accommodation price range in Kyoto: ¥2,000 ' vs 'Ryokan average cost: between ¥15,000 and ¥30,000 p' → update (The new value specifies the average cost for ryokan accommodations, which are typically more expensive and include meals, while the existing value refers to budget accommodations; the new value provides more detailed and specific pricing information rather than contradicting the existing range.)
+2026-04-22 16:34:54,086 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:34:54,090 [INFO] src.nodes.integrate: Conflict check [japan-travel:accommodation:*/price]: 'Budget accommodation price range in Kyoto: ¥2,000 ' vs 'Average price for a cheap hotel room in Kyoto: $79' → conflict (The existing value indicates a budget price range of ¥2,000 to ¥8,000 (~$15 to $60 USD), while the new value states an average price of $79 USD, which is higher and not consistent with the budget range.)
+2026-04-22 16:34:55,476 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:34:55,487 [INFO] src.nodes.integrate: Conflict check [japan-travel:accommodation:*/price]: 'Budget accommodation price range in Kyoto: ¥2,000 ' vs 'Kyoto hotels starting from US$36' → equivalent (The existing value provides a price range for budget accommodations in Kyoto in yen, while the new value states hotel prices starting from approximately the same amount converted to US dollars; both describe similar price levels for accommodations.)
+2026-04-22 16:34:57,313 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:34:57,325 [INFO] src.nodes.integrate: Conflict check [japan-travel:attraction:tokyo-disney-resort/price]: 'Tokyo Disney Resort – $240 for 4 days, $40/day, $6' vs '2-day 1-night trip to Tokyo Disney Resort cost aro' → conflict (The existing value provides per-person ticket prices for Tokyo Disney Resort, while the new value gives a total cost for a 2-day 1-night trip for three people, which is significantly higher and likely includes additional expenses, making the values not directly compatible.)
+2026-04-22 16:34:58,562 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:34:58,567 [INFO] src.nodes.integrate: Conflict check [japan-travel:attraction:tokyo-disney-resort/price]: 'Tokyo Disney Resort – $240 for 4 days, $40/day, $6' vs 'Three days at both Tokyo Disney parks with two nig' → conflict (The existing value provides prices in USD for 4 days and daily rates without hotel costs, while the new value gives a total price in yen for 3 days including hotel stay; the differing durations, inclusions, and currencies indicate conflicting price information.)
+2026-04-22 16:34:59,958 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:34:59,977 [INFO] src.nodes.integrate: Conflict check [japan-travel:payment:ic-card/price]: 'The Suica card initially costs ¥1000, of which ¥50' vs 'The Pasmo card costs ¥500 as a non-refundable depo' → conflict (The existing value describes the Suica card price with a refundable deposit of ¥500 included in a total of ¥1000, while the new value describes the Pasmo card price with a non-refundable deposit of ¥500 plus additional charge amount; these are different cards with different pricing structures.)
+2026-04-22 16:35:01,904 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:35:01,910 [INFO] src.nodes.integrate: Conflict check [japan-travel:pass-ticket:jr-pass/policy]: 'The Japan Rail Pass is valid on almost all trains ' vs 'Japan Rail Pass holders must pay a supplement fee ' → conflict (The existing value states the JR Pass is valid on almost all JR trains including shinkansen, implying free use, while the new value states a supplement fee is required for Nozomi and Mizuho trains, indicating a restriction and additional cost.)
+2026-04-22 16:35:03,287 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:35:03,291 [INFO] src.nodes.integrate: Conflict check [japan-travel:pass-ticket:jr-pass/policy]: 'The Japan Rail Pass is valid on almost all trains ' vs 'Japan Rail Pass holders can make seat reservations' → update (The new value provides additional information about seat reservations for JR trains, complementing the existing value about the pass's validity on trains without contradicting it.)
+2026-04-22 16:35:04,354 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:35:04,358 [INFO] src.nodes.integrate: Conflict check [japan-travel:pass-ticket:jr-pass/policy]: 'The Japan Rail Pass is valid on almost all trains ' vs 'The Japan Rail Pass is available only to non-Japan' → update (The new value specifies eligibility criteria for the Japan Rail Pass, while the existing value describes its validity on trains; the new information complements rather than contradicts the existing policy.)
+2026-04-22 16:35:05,464 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:35:05,475 [INFO] src.nodes.integrate: Conflict check [japan-travel:pass-ticket:jr-pass/policy]: 'The Japan Rail Pass is valid on almost all trains ' vs 'Japanese citizens eligible to purchase the Japan R' → update (The new value provides additional details about the purchase process and eligibility for Japanese citizens, while the existing value describes the validity of the pass on trains; both relate to the policy but cover different aspects.)
+2026-04-22 16:35:06,973 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:35:06,976 [INFO] src.nodes.integrate: Conflict check [japan-travel:pass-ticket:jr-pass/policy]: 'The Japan Rail Pass is valid on almost all trains ' vs 'To pick up or exchange the Japan Rail Pass in Japa' → update (The new value provides additional information about visa eligibility for picking up or exchanging the Japan Rail Pass, while the existing value describes the train validity policy; they address different aspects of the overall policy without contradiction.)
+2026-04-22 16:35:08,040 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:35:08,043 [INFO] src.nodes.integrate: Conflict check [japan-travel:pass-ticket:jr-pass/policy]: 'The Japan Rail Pass is valid on almost all trains ' vs 'When exchanging the Japan Rail Pass voucher for th' → update (The new value provides additional information about the policy regarding the starting date selection when exchanging the voucher, complementing the existing usage coverage details without contradicting them.)
+2026-04-22 16:35:09,049 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:35:09,058 [INFO] src.nodes.integrate: Conflict check [japan-travel:dining:*/price]: 'Jug of beer (500ml) = ¥500; Afternoon snack (baker' vs 'Dinner at a mid-range restaurant costs between ¥2,' → update (The new values provide price ranges for meals at mid-range restaurants, complementing the existing specific item prices without contradiction.)
+2026-04-22 16:35:10,049 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:35:10,053 [INFO] src.nodes.integrate: Conflict check [japan-travel:dining:*/price]: 'Jug of beer (500ml) = ¥500; Afternoon snack (baker' vs 'Restaurant lunch budget for most Japanese people i' → update (The existing value provides specific item prices, while the new value gives general budget ranges for meals, which complements and expands the pricing information rather than contradicting it.)
+2026-04-22 16:35:11,051 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:35:11,053 [INFO] src.nodes.integrate: Conflict check [japan-travel:dining:*/price]: 'Jug of beer (500ml) = ¥500; Afternoon snack (baker' vs 'Full omakase sushi experience typically costs betw' → update (The new value provides additional, more detailed price information about sushi dining options, complementing rather than contradicting the existing prices for beer and snacks.)
+2026-04-22 16:35:11,053 [INFO] src.nodes.integrate: integrate_result: claims=35 resolved=9 no_source_gu=0 invalid_result=6 other=20 conv_rate=0.257
+2026-04-22 16:35:11,054 [INFO] src.nodes.dispute_resolver: Dispute resolved: KU-0015 (japan-travel:regulation:customs-allowance/eligibility) — evidence majority (3 evidence vs 1 disputes)
+2026-04-22 16:35:11,054 [INFO] src.nodes.dispute_resolver: Dispute resolved: KU-0018 (japan-travel:accommodation:*/price) — evidence majority (5 evidence vs 1 disputes)
+2026-04-22 16:35:11,054 [INFO] src.nodes.dispute_resolver: Dispute resolved: KU-0019 (japan-travel:attraction:tokyo-disney-resort/price) — evidence majority (3 evidence vs 1 disputes)
+2026-04-22 16:35:11,054 [INFO] src.nodes.dispute_resolver: Dispute resolved: KU-0024 (japan-travel:payment:ic-card/price) — evidence majority (2 evidence vs 1 disputes)
+2026-04-22 16:35:11,054 [INFO] src.nodes.dispute_resolver: Dispute resolved: KU-0025 (japan-travel:pass-ticket:jr-pass/policy) — evidence majority (7 evidence vs 1 disputes)
+2026-04-22 16:35:11,056 [INFO] src.orchestrator:   Graph 완료: 108.5s (KU 13→26, GU 28→35)
+2026-04-22 16:35:11,057 [INFO] src.orchestrator:   Novelty=1.000, ext_novelty=1.000, cat_gini=0.413, field_gini=0.323, domains/100ku=42.3
+2026-04-22 16:35:11,105 [INFO] src.orchestrator: Snapshot 저장: bench\silver\japan-travel\p7-ab-on\state-snapshots\cycle-1-snapshot
+2026-04-22 16:35:11,106 [WARNING] src.obs.telemetry: trial-card.md 없음: bench\silver\japan-travel\p7-ab-on (telemetry emit 계속)
+2026-04-22 16:35:11,110 [INFO] src.orchestrator:   Cycle 1 완료: 108.5s (graph=108.5s, audit=0.0s, remodel=0.0s) | 누적 108.5s
+2026-04-22 16:35:11,110 [INFO] src.orchestrator: === Cycle 2/15 시작 (KU=26, GU=35) ===
+2026-04-22 16:35:11,134 [INFO] src.nodes.mode: mode: jump | open=26 → target_count=26 (explore=15, exploit=11) triggers=['T3:high_risk_blindspot']
+2026-04-22 16:36:11,140 [INFO] openai._base_client: Retrying request to /chat/completions in 0.478715 seconds
+2026-04-22 16:36:55,370 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:36:55,444 [INFO] src.nodes.plan: plan: targets=26 (deferred_first=20, prev_deferred=20), queries=26, no_query=0
+2026-04-22 16:36:55,445 [INFO] src.nodes.collect: collect: 26 GU search 병렬 (workers=5)
+2026-04-22 16:37:34,559 [INFO] src.nodes.collect: collect: batch LLM 26 prompts (1회 호출)
+2026-04-22 16:37:47,755 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:37:51,487 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:37:57,102 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:37:57,798 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:37:59,256 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:38:00,973 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:38:02,515 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:38:04,208 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:38:04,952 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:38:05,785 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:38:12,401 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:38:12,822 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:38:15,872 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:38:17,574 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:38:21,946 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:38:25,244 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:38:26,292 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:38:32,033 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:38:32,254 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:38:34,630 [INFO] openai._base_client: Retrying request to /chat/completions in 0.463594 seconds
+2026-04-22 16:38:36,488 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:38:39,724 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:38:43,126 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:38:44,052 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:38:44,915 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:38:52,817 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:39:35,107 [INFO] openai._base_client: Retrying request to /chat/completions in 0.968301 seconds
+2026-04-22 16:40:36,123 [INFO] openai._base_client: Retrying request to /chat/completions in 1.712294 seconds
+2026-04-22 16:41:35,557 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:41:35,724 [INFO] src.nodes.collect: parse[GU-0010]: claims=7 (resp_len=6072)
+2026-04-22 16:41:35,725 [INFO] src.nodes.collect: parse_yield: gu=GU-0010 snippets=15 claims=7 path=llm
+2026-04-22 16:41:35,725 [INFO] src.nodes.collect: collect: GU-0010 → 7 claims
+2026-04-22 16:41:35,726 [INFO] src.nodes.collect: parse[GU-0014]: claims=4 (resp_len=2690)
+2026-04-22 16:41:35,726 [INFO] src.nodes.collect: parse_yield: gu=GU-0014 snippets=15 claims=4 path=llm
+2026-04-22 16:41:35,727 [INFO] src.nodes.collect: collect: GU-0014 → 4 claims
+2026-04-22 16:41:35,727 [INFO] src.nodes.collect: parse[GU-0011]: claims=5 (resp_len=3563)
+2026-04-22 16:41:35,728 [INFO] src.nodes.collect: parse_yield: gu=GU-0011 snippets=15 claims=5 path=llm
+2026-04-22 16:41:35,728 [INFO] src.nodes.collect: collect: GU-0011 → 5 claims
+2026-04-22 16:41:35,729 [INFO] src.nodes.collect: parse[GU-0013]: claims=7 (resp_len=5577)
+2026-04-22 16:41:35,730 [INFO] src.nodes.collect: parse_yield: gu=GU-0013 snippets=15 claims=7 path=llm
+2026-04-22 16:41:35,730 [INFO] src.nodes.collect: collect: GU-0013 → 7 claims
+2026-04-22 16:41:35,731 [INFO] src.nodes.collect: parse[GU-0012]: claims=8 (resp_len=6054)
+2026-04-22 16:41:35,732 [INFO] src.nodes.collect: parse_yield: gu=GU-0012 snippets=15 claims=8 path=llm
+2026-04-22 16:41:35,732 [INFO] src.nodes.collect: collect: GU-0012 → 8 claims
+2026-04-22 16:41:35,734 [INFO] src.nodes.collect: parse[GU-0015]: claims=24 (resp_len=12567)
+2026-04-22 16:41:35,735 [INFO] src.nodes.collect: parse_yield: gu=GU-0015 snippets=15 claims=24 path=llm
+2026-04-22 16:41:35,735 [INFO] src.nodes.collect: collect: GU-0015 → 24 claims
+2026-04-22 16:41:35,735 [INFO] src.nodes.collect: parse[GU-0016]: claims=4 (resp_len=3689)
+2026-04-22 16:41:35,736 [INFO] src.nodes.collect: parse_yield: gu=GU-0016 snippets=15 claims=4 path=llm
+2026-04-22 16:41:35,736 [INFO] src.nodes.collect: collect: GU-0016 → 4 claims
+2026-04-22 16:41:35,736 [INFO] src.nodes.collect: parse[GU-0018]: claims=10 (resp_len=7314)
+2026-04-22 16:41:35,737 [INFO] src.nodes.collect: parse_yield: gu=GU-0018 snippets=15 claims=10 path=llm
+2026-04-22 16:41:35,737 [INFO] src.nodes.collect: collect: GU-0018 → 10 claims
+2026-04-22 16:41:35,737 [INFO] src.nodes.collect: parse[GU-0019]: claims=5 (resp_len=4331)
+2026-04-22 16:41:35,738 [INFO] src.nodes.collect: parse_yield: gu=GU-0019 snippets=15 claims=5 path=llm
+2026-04-22 16:41:35,738 [INFO] src.nodes.collect: collect: GU-0019 → 5 claims
+2026-04-22 16:41:35,738 [INFO] src.nodes.collect: parse[GU-0017]: claims=3 (resp_len=2615)
+2026-04-22 16:41:35,739 [INFO] src.nodes.collect: parse_yield: gu=GU-0017 snippets=15 claims=3 path=llm
+2026-04-22 16:41:35,739 [INFO] src.nodes.collect: collect: GU-0017 → 3 claims
+2026-04-22 16:41:35,739 [INFO] src.nodes.collect: parse[GU-0021]: claims=9 (resp_len=5508)
+2026-04-22 16:41:35,740 [INFO] src.nodes.collect: parse_yield: gu=GU-0021 snippets=15 claims=9 path=llm
+2026-04-22 16:41:35,740 [INFO] src.nodes.collect: collect: GU-0021 → 9 claims
+2026-04-22 16:41:35,740 [INFO] src.nodes.collect: parse[GU-0022]: claims=6 (resp_len=5079)
+2026-04-22 16:41:35,740 [INFO] src.nodes.collect: parse_yield: gu=GU-0022 snippets=15 claims=6 path=llm
+2026-04-22 16:41:35,740 [INFO] src.nodes.collect: collect: GU-0022 → 6 claims
+2026-04-22 16:41:35,741 [INFO] src.nodes.collect: parse[GU-0023]: claims=1 (resp_len=739)
+2026-04-22 16:41:35,741 [INFO] src.nodes.collect: parse_yield: gu=GU-0023 snippets=15 claims=1 path=llm
+2026-04-22 16:41:35,741 [INFO] src.nodes.collect: collect: GU-0023 → 1 claims
+2026-04-22 16:41:35,741 [INFO] src.nodes.collect: parse[GU-0020]: claims=5 (resp_len=3697)
+2026-04-22 16:41:35,742 [INFO] src.nodes.collect: parse_yield: gu=GU-0020 snippets=15 claims=5 path=llm
+2026-04-22 16:41:35,742 [INFO] src.nodes.collect: collect: GU-0020 → 5 claims
+2026-04-22 16:41:35,742 [INFO] src.nodes.collect: parse[GU-0024]: claims=5 (resp_len=3347)
+2026-04-22 16:41:35,742 [INFO] src.nodes.collect: parse_yield: gu=GU-0024 snippets=15 claims=5 path=llm
+2026-04-22 16:41:35,742 [INFO] src.nodes.collect: collect: GU-0024 → 5 claims
+2026-04-22 16:41:35,743 [INFO] src.nodes.collect: parse[GU-0025]: claims=6 (resp_len=4990)
+2026-04-22 16:41:35,743 [INFO] src.nodes.collect: parse_yield: gu=GU-0025 snippets=15 claims=6 path=llm
+2026-04-22 16:41:35,743 [INFO] src.nodes.collect: collect: GU-0025 → 6 claims
+2026-04-22 16:41:35,743 [INFO] src.nodes.collect: parse[GU-0026]: claims=2 (resp_len=1614)
+2026-04-22 16:41:35,744 [INFO] src.nodes.collect: parse_yield: gu=GU-0026 snippets=15 claims=2 path=llm
+2026-04-22 16:41:35,744 [INFO] src.nodes.collect: collect: GU-0026 → 2 claims
+2026-04-22 16:41:35,744 [INFO] src.nodes.collect: parse[GU-0027]: claims=1 (resp_len=723)
+2026-04-22 16:41:35,744 [INFO] src.nodes.collect: parse_yield: gu=GU-0027 snippets=15 claims=1 path=llm
+2026-04-22 16:41:35,744 [INFO] src.nodes.collect: collect: GU-0027 → 1 claims
+2026-04-22 16:41:35,745 [INFO] src.nodes.collect: parse[GU-0029]: claims=8 (resp_len=6190)
+2026-04-22 16:41:35,745 [INFO] src.nodes.collect: parse_yield: gu=GU-0029 snippets=15 claims=8 path=llm
+2026-04-22 16:41:35,745 [INFO] src.nodes.collect: collect: GU-0029 → 8 claims
+2026-04-22 16:41:35,746 [INFO] src.nodes.collect: parse[GU-0028]: claims=10 (resp_len=7630)
+2026-04-22 16:41:35,746 [INFO] src.nodes.collect: parse_yield: gu=GU-0028 snippets=15 claims=10 path=llm
+2026-04-22 16:41:35,746 [INFO] src.nodes.collect: collect: GU-0028 → 10 claims
+2026-04-22 16:41:35,746 [INFO] src.nodes.collect: parse[GU-0030]: claims=4 (resp_len=2512)
+2026-04-22 16:41:35,746 [INFO] src.nodes.collect: parse_yield: gu=GU-0030 snippets=15 claims=4 path=llm
+2026-04-22 16:41:35,746 [INFO] src.nodes.collect: collect: GU-0030 → 4 claims
+2026-04-22 16:41:35,747 [INFO] src.nodes.collect: parse[GU-0032]: claims=4 (resp_len=3286)
+2026-04-22 16:41:35,747 [INFO] src.nodes.collect: parse_yield: gu=GU-0032 snippets=15 claims=4 path=llm
+2026-04-22 16:41:35,747 [INFO] src.nodes.collect: collect: GU-0032 → 4 claims
+2026-04-22 16:41:35,747 [INFO] src.nodes.collect: parse[GU-0031]: claims=4 (resp_len=2837)
+2026-04-22 16:41:35,747 [INFO] src.nodes.collect: parse_yield: gu=GU-0031 snippets=15 claims=4 path=llm
+2026-04-22 16:41:35,748 [INFO] src.nodes.collect: collect: GU-0031 → 4 claims
+2026-04-22 16:41:35,748 [INFO] src.nodes.collect: parse[GU-0033]: claims=6 (resp_len=5012)
+2026-04-22 16:41:35,748 [INFO] src.nodes.collect: parse_yield: gu=GU-0033 snippets=15 claims=6 path=llm
+2026-04-22 16:41:35,748 [INFO] src.nodes.collect: collect: GU-0033 → 6 claims
+2026-04-22 16:41:35,748 [INFO] src.nodes.collect: parse[GU-0034]: JSON extract failed (JSON parse failed: Expecting value: line 28 column 18 (char 1212)
+Candidate: [
+  {
+    "claim_id": "CL-GU0034-01",
+    "entity_key": "japan-travel:pass-ticket:jr-pass",
+    "field": "tips",
+    "value": "Purchase the Japan Rail Pass on the official Japan Rail Pass Reservation website using your passport and credit card before arriving in Japan.",
+    "source_gu_id": "GU-0034) → deterministic fallback
+2026-04-22 16:41:35,749 [INFO] src.nodes.collect: parse_yield: gu=GU-0034 snippets=15 claims=2 path=fallback
+2026-04-22 16:41:35,749 [INFO] src.nodes.collect: collect: GU-0034 → 2 claims
+2026-04-22 16:41:35,749 [INFO] src.nodes.collect: parse[GU-0035]: claims=2 (resp_len=2269)
+2026-04-22 16:41:35,749 [INFO] src.nodes.collect: parse_yield: gu=GU-0035 snippets=15 claims=2 path=llm
+2026-04-22 16:41:35,749 [INFO] src.nodes.collect: collect: GU-0035 → 2 claims
+2026-04-22 16:41:35,749 [INFO] src.nodes.collect: parse_yield_summary: targets=26 completed=26 avg_claims=5.85 zero_claims=0 zero_ratio=0.000 total_claims=152
+2026-04-22 16:41:35,750 [INFO] src.nodes.collect: collect diversity: domain_entropy=4.998
+2026-04-22 16:41:37,119 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:41:37,126 [INFO] src.nodes.integrate: Conflict check [japan-travel:pass-ticket:suica/policy]: 'The only card-type IC card currently available for' vs 'Suica cards are designed and sold by Japan Rail (J' → conflict (The existing value states that the only card-type IC card available for travelers to purchase is the Welcome Suica, implying exclusivity, while the new value indicates that Suica cards can be purchased from ticket machines in most Tokyo JR stations and travel centers, suggesting broader availability beyond just the Welcome Suica.)
+2026-04-22 16:41:38,086 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:41:38,093 [INFO] src.nodes.integrate: Conflict check [japan-travel:pass-ticket:suica/policy]: 'The only card-type IC card currently available for' vs 'Suica cards are interoperable with Pasmo, Icoca, a' → update (The new value provides additional information about Suica card interoperability and usage, complementing the existing value about the Welcome Suica card availability without contradicting it.)
+2026-04-22 16:41:39,190 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:41:39,197 [INFO] src.nodes.integrate: Conflict check [japan-travel:pass-ticket:suica/policy]: 'The only card-type IC card currently available for' vs 'When riding trains that require a supplement fee, ' → update (The new value provides additional details about using the Suica card for supplement fees on certain trains, complementing the existing information about purchasing the Welcome Suica card.)
+2026-04-22 16:41:40,197 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:41:40,208 [INFO] src.nodes.integrate: Conflict check [japan-travel:pass-ticket:suica/policy]: 'The only card-type IC card currently available for' vs 'Mobile Suica apps are targeted at residents of Jap' → update (The new value provides additional detail about Mobile Suica apps being targeted at residents and difficult for visitors to use, complementing the existing information about the Welcome Suica card available for travelers.)
+2026-04-22 16:41:41,278 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:41:41,281 [INFO] src.nodes.integrate: Conflict check [japan-travel:pass-ticket:suica/policy]: 'The only card-type IC card currently available for' vs 'IC cards can only be returned to the issuing compa' → update (The new value provides additional information about the return policy of IC cards, complementing the existing value about purchase availability without contradicting it.)
+2026-04-22 16:41:42,641 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:41:42,648 [INFO] src.nodes.integrate: Conflict check [japan-travel:pass-ticket:suica/policy]: 'The only card-type IC card currently available for' vs 'The Welcome Suica card can be used nationwide on t' → update (The new value provides additional details about the usage limitations of the Welcome Suica card, complementing the existing information about its availability.)
+2026-04-22 16:41:43,963 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:41:43,986 [INFO] src.nodes.integrate: Conflict check [japan-travel:attraction:*/hours]: 'Many convenience stores such as 7-Eleven, FamilyMa' vs 'Most retail shops and department stores open aroun' → update (The new value provides additional information about the hours of most retail shops and department stores, which complements the existing information about convenience stores operating 24 hours, rather than contradicting it.)
+2026-04-22 16:41:44,877 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:41:44,883 [INFO] src.nodes.integrate: Conflict check [japan-travel:attraction:*/hours]: 'Many convenience stores such as 7-Eleven, FamilyMa' vs 'Most post offices operate from 9:00 AM to 5:00 PM ' → conflict (The existing value states that many convenience stores operate 24 hours daily including holidays, while the new value states that most post offices operate limited hours on weekdays and are closed on weekends and holidays, which are contradictory operating hours for the same 'hours' field.)
+2026-04-22 16:41:45,941 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:41:45,948 [INFO] src.nodes.integrate: Conflict check [japan-travel:attraction:*/hours]: 'Many convenience stores such as 7-Eleven, FamilyMa' vs 'Most museums are closed on Mondays.' → conflict (The existing value states that many convenience stores operate 24 hours daily, while the new value states that most museums are closed on Mondays, indicating different and conflicting hours for different types of attractions.)
+2026-04-22 16:41:46,929 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:41:46,935 [INFO] src.nodes.integrate: Conflict check [japan-travel:accommodation:*/location]: 'Ryokan inns can be found across Japan, including p' vs 'Business hotels are located in good locations acro' → equivalent (Both values describe types of accommodations located across Japan, highlighting different accommodation types and locations without contradiction.)
+2026-04-22 16:41:48,019 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:41:48,025 [INFO] src.nodes.integrate: Conflict check [japan-travel:accommodation:*/location]: 'Ryokan inns can be found across Japan, including p' vs 'Shinjuku district in Tokyo has many hotels includi' → update (The new value provides additional information about accommodation locations in Japan (specifically in Tokyo) without contradicting the existing value about Ryokan inns in Kyoto and Kawaguchiko.)
+2026-04-22 16:41:48,973 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:41:48,977 [INFO] src.nodes.integrate: Conflict check [japan-travel:accommodation:*/location]: 'Ryokan inns can be found across Japan, including p' vs 'Ryokan Yachiyo is located in Kyoto' → update (The new value provides a more specific location (Ryokan Yachiyo in Kyoto) within the broader existing information about Ryokan inns being found across Japan including Kyoto.)
+2026-04-22 16:41:50,006 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:41:50,014 [INFO] src.nodes.integrate: Conflict check [japan-travel:accommodation:*/location]: 'Ryokan inns can be found across Japan, including p' vs 'Hotel Konanso, a ryokan, is located in Kawaguchiko' → update (The new value provides a more specific example of a ryokan location within Kawaguchiko, refining the general statement about ryokans across Japan.)
+2026-04-22 16:41:51,105 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:41:51,111 [INFO] src.nodes.integrate: Conflict check [japan-travel:accommodation:*/tips]: 'Ryokan are traditional Japanese-style inns with Ja' vs 'Minshuku are Japanese-style bed and breakfast lodg' → conflict (The existing value describes ryokan, while the new value describes minshuku; these are distinct types of accommodations with different characteristics.)
+2026-04-22 16:41:52,189 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:41:52,194 [INFO] src.nodes.integrate: Conflict check [japan-travel:accommodation:*/tips]: 'Ryokan are traditional Japanese-style inns with Ja' vs 'Business hotels in Japan offer small, simple Weste' → conflict (The existing value describes ryokan offering traditional Japanese experiences, while the new value describes business hotels providing Western-style rooms without traditional experiences; these represent different, contrasting accommodation types and experiences.)
+2026-04-22 16:41:53,280 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:41:53,288 [INFO] src.nodes.integrate: Conflict check [japan-travel:accommodation:*/tips]: 'Ryokan are traditional Japanese-style inns with Ja' vs 'Guesthouses (also called hostels in Japan) are ide' → conflict (The existing value describes ryokan accommodations, while the new value describes guesthouses/hostels; these are different types of accommodations with distinct characteristics and purposes.)
+2026-04-22 16:41:54,261 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:41:54,267 [INFO] src.nodes.integrate: Conflict check [japan-travel:accommodation:*/tips]: 'Ryokan are traditional Japanese-style inns with Ja' vs 'Shukubo are traditional accommodations located in ' → conflict (The existing value describes ryokan, traditional Japanese inns, while the new value describes shukubo, temple lodgings; these are distinct types of accommodations and not interchangeable.)
+2026-04-22 16:41:55,356 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:41:55,368 [INFO] src.nodes.integrate: Conflict check [japan-travel:accommodation:*/tips]: 'Ryokan are traditional Japanese-style inns with Ja' vs 'Pensions are similar to minshuku but offer rooms i' → conflict (The existing value describes ryokan as traditional Japanese-style inns with Japanese-style rooms, while the new value describes pensions as offering Western-style rooms, indicating different types of accommodations rather than the same information.)
+2026-04-22 16:41:56,355 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:41:56,366 [INFO] src.nodes.integrate: Conflict check [japan-travel:accommodation:*/tips]: 'Ryokan are traditional Japanese-style inns with Ja' vs 'There are around 80,000 ryokans in Japan, many loc' → update (The new value provides additional details about ryokans, such as their number, typical locations, and features, without contradicting the existing description.)
+2026-04-22 16:41:57,603 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:41:57,605 [INFO] src.nodes.integrate: Conflict check [japan-travel:accommodation:*/etiquette]: 'When eating noodle dishes in Japan, local culture ' vs 'Most western hotels in Japan do not require tippin' → conflict (The two values address different aspects of etiquette (noodle eating vs. tipping), so they do not align or update each other and thus represent distinct, unrelated information rather than equivalent or updated content.)
+2026-04-22 16:41:59,105 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:41:59,106 [INFO] src.nodes.integrate: Conflict check [japan-travel:accommodation:*/etiquette]: 'When eating noodle dishes in Japan, local culture ' vs 'Many hotels, especially ryokans, require guests to' → conflict (The existing value describes etiquette related to eating noodle dishes, while the new value addresses shoe removal etiquette in accommodations; these refer to different aspects of etiquette and thus conflict as they cannot both fully describe the same slot value.)
+2026-04-22 16:42:00,307 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:42:00,312 [INFO] src.nodes.integrate: Conflict check [japan-travel:accommodation:*/etiquette]: 'When eating noodle dishes in Japan, local culture ' vs 'Shoes should not be worn inside hotel rooms, espec' → conflict (The two values address different etiquette rules related to accommodation in Japan, but they do not contradict each other; however, since they pertain to different behaviors, they are not equivalent or updates.)
+2026-04-22 16:42:02,011 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:42:02,021 [INFO] src.nodes.integrate: Conflict check [japan-travel:accommodation:*/etiquette]: 'When eating noodle dishes in Japan, local culture ' vs 'Ryokans often provide geta (wooden sandals) to wea' → conflict (The two values describe different aspects of etiquette related to accommodation in Japan that do not overlap or relate to the same specific behavior, thus they are not semantically conflicting but rather unrelated. However, since they address different etiquette topics, they cannot be considered updates or equivalent.)
+2026-04-22 16:42:03,031 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:42:03,088 [INFO] src.nodes.integrate: Conflict check [japan-travel:accommodation:*/etiquette]: 'When eating noodle dishes in Japan, local culture ' vs 'In communal baths at hotels, ryokans, and sento, b' → conflict (The two values describe different etiquette practices in Japan related to accommodation but pertain to distinct contexts (eating noodles vs. bathing), thus they do not align as the same knowledge slot value and are semantically conflicting.)
+2026-04-22 16:42:04,362 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:42:04,369 [INFO] src.nodes.integrate: Conflict check [japan-travel:accommodation:*/etiquette]: 'When eating noodle dishes in Japan, local culture ' vs 'Photography is strictly prohibited in changing roo' → conflict (The two values address different aspects of etiquette in accommodation settings (dining behavior vs. photography rules), so they do not align or update the same information and thus are semantically conflicting as answers to the same slot.)
+2026-04-22 16:42:05,790 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:42:05,798 [INFO] src.nodes.integrate: Conflict check [japan-travel:accommodation:*/etiquette]: 'When eating noodle dishes in Japan, local culture ' vs 'Do not leave suitcases or large luggage behind at ' → conflict (The two values address different aspects of etiquette related to accommodation and dining, thus they do not align or update the same information but rather provide unrelated guidance under the same slot.)
+2026-04-22 16:42:07,068 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:42:07,076 [INFO] src.nodes.integrate: Conflict check [japan-travel:attraction:*/tips]: 'Many popular attractions in Japan become unbearabl' vs 'Use your jet lag to your advantage by visiting maj' → equivalent (Both values advise visiting attractions early in the day to avoid crowds; the new value adds the tip of using jet lag to one's advantage but conveys the same core advice.)
+2026-04-22 16:42:08,221 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:42:08,227 [INFO] src.nodes.integrate: Conflict check [japan-travel:attraction:*/tips]: 'Many popular attractions in Japan become unbearabl' vs 'Pick up tickets, buy train tickets, and make train' → update (The new value provides additional, complementary advice about avoiding long lines for tickets and reservations, expanding on the existing tip about avoiding crowds by visiting early.)
+2026-04-22 16:42:09,443 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:42:09,447 [INFO] src.nodes.integrate: Conflict check [japan-travel:attraction:*/tips]: 'Many popular attractions in Japan become unbearabl' vs 'Japanese convenience stores offer a huge variety o' → conflict (The existing and new values provide tips about different topics: crowd management at attractions versus food options at convenience stores, so they do not address the same knowledge slot content and thus conflict as alternative tips.)
+2026-04-22 16:42:10,406 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:42:10,408 [INFO] src.nodes.integrate: Conflict check [japan-travel:connectivity:*/tips]: 'Travelers should review coverage maps during trip ' vs 'Using Japan eSIM plans is recommended for traveler' → update (The new value provides a more specific recommendation about using Japan eSIM plans for travelers moving between regions, complementing the existing advice about reviewing coverage maps for reliable mobile internet access.)
+2026-04-22 16:42:11,876 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:42:11,881 [INFO] src.nodes.integrate: Conflict check [japan-travel:connectivity:*/tips]: 'Travelers should review coverage maps during trip ' vs 'Carrying a power bank helps maintain mobile intern' → update (The new value adds additional practical advice (carrying a power bank) that complements the existing tip about reviewing coverage maps, enhancing the overall guidance on maintaining mobile internet access.)
+2026-04-22 16:42:13,165 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:42:13,178 [INFO] src.nodes.integrate: Conflict check [japan-travel:connectivity:*/tips]: 'Travelers should review coverage maps during trip ' vs 'The Japan Wi-Fi Auto-Connect app simplifies access' → update (The new value provides additional, complementary information about simplifying access to free Wi-Fi, enhancing the existing tip about reviewing coverage maps for reliable mobile internet access.)
+2026-04-22 16:42:14,034 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:42:14,040 [INFO] src.nodes.integrate: Conflict check [japan-travel:connectivity:*/tips]: 'Travelers should review coverage maps during trip ' vs 'Having a backup connectivity option such as a prep' → update (The new value adds additional practical advice about backup connectivity options, complementing the existing tip about reviewing coverage maps rather than contradicting it.)
+2026-04-22 16:42:14,986 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:42:14,996 [INFO] src.nodes.integrate: Conflict check [japan-travel:connectivity:*/tips]: 'Travelers should review coverage maps during trip ' vs 'Pocket Wi-Fi offers greater flexibility for travel' → update (The new value provides additional, complementary information about connectivity options (pocket Wi-Fi) that enhances the existing tip about reviewing coverage maps, without contradicting it.)
+2026-04-22 16:42:15,977 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:42:15,982 [INFO] src.nodes.integrate: Conflict check [japan-travel:connectivity:*/tips]: 'Travelers should review coverage maps during trip ' vs 'Renting mobile WiFi in Japan is practical because ' → update (The new value provides additional practical advice about renting mobile WiFi as a universal solution, complementing the existing tip about reviewing coverage maps for reliable mobile internet access.)
+2026-04-22 16:42:18,181 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:42:18,188 [INFO] src.nodes.integrate: Conflict check [japan-travel:connectivity:*/tips]: 'Travelers should review coverage maps during trip ' vs 'NINJA WiFi provides 24/7 support to help travelers' → update (The new value provides additional, complementary information about a specific service (NINJA WiFi) offering 24/7 support, enhancing the existing general tip about reviewing coverage maps for reliable connectivity.)
+2026-04-22 16:42:19,174 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:42:19,183 [INFO] src.nodes.integrate: Conflict check [japan-travel:connectivity:*/tips]: 'Travelers should review coverage maps during trip ' vs 'Reliable internet connectivity in Japan improves s' → update (The new value provides additional benefits of reliable internet connectivity in Japan, complementing the existing advice about reviewing coverage maps without contradicting it.)
+2026-04-22 16:42:20,086 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:42:20,094 [INFO] src.nodes.integrate: Conflict check [japan-travel:connectivity:*/tips]: 'Travelers should review coverage maps during trip ' vs 'Planning ahead by ordering a SIM card or pocket Wi' → update (The new value provides additional, more proactive advice (ordering SIM or pocket Wi-Fi in advance) that complements and expands on the existing tip about reviewing coverage maps.)
+2026-04-22 16:42:20,940 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:42:20,948 [INFO] src.nodes.integrate: Conflict check [japan-travel:connectivity:sim-card/where_to_buy]: 'Some convenience stores and electronics shops in J' vs 'Major Japanese airports offer prepaid SIM cards an' → update (The new value provides additional, more detailed information about purchasing SIM cards at major Japanese airports, complementing the existing information about convenience stores and electronics shops.)
+2026-04-22 16:42:22,016 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:42:22,023 [INFO] src.nodes.integrate: Conflict check [japan-travel:connectivity:sim-card/where_to_buy]: 'Some convenience stores and electronics shops in J' vs 'You can buy data-only SIM cards at BIC Camera Yura' → update (The new value provides a more specific and detailed location for purchasing SIM cards, complementing the existing general information about convenience stores and electronics shops.)
+2026-04-22 16:42:23,118 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:42:23,127 [INFO] src.nodes.integrate: Conflict check [japan-travel:connectivity:sim-card/where_to_buy]: 'Some convenience stores and electronics shops in J' vs 'You can buy eSIMs or data-only SIM cards online fo' → update (The new value provides additional specific information about buying eSIMs or data-only SIM cards online for airport pickup, complementing the existing information about convenience stores and electronics shops.)
+2026-04-22 16:42:24,399 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:42:24,404 [INFO] src.nodes.integrate: Conflict check [japan-travel:connectivity:sim-card/where_to_buy]: 'Some convenience stores and electronics shops in J' vs 'BIC Camera shops across Japan have the best select' → update (The new value provides more specific and detailed information about where to buy SIM cards, specifying BIC Camera shops and additional services, which complements rather than contradicts the existing general statement.)
+2026-04-22 16:42:25,374 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:42:25,380 [INFO] src.nodes.integrate: Conflict check [japan-travel:connectivity:sim-card/how_to_use]: 'Insert the SIM card into your phone upon arrival i' vs 'You can activate your prepaid Japan SIM card as so' → update (The new value provides an additional detail about activating the SIM card specifically at the airport terminal upon arrival, complementing the existing instructions about inserting and configuring the SIM card.)
+2026-04-22 16:42:26,714 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:42:26,718 [INFO] src.nodes.integrate: Conflict check [japan-travel:connectivity:sim-card/how_to_use]: 'Insert the SIM card into your phone upon arrival i' vs 'For stress-free use, order a Japan SIM card online' → update (The new value provides additional information about how to obtain the SIM card before arrival, complementing the existing instructions on how to use it upon arrival.)
+2026-04-22 16:42:28,089 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:42:28,094 [INFO] src.nodes.integrate: Conflict check [japan-travel:dining:*/location]: 'Naruto Taiyaki Honpo, a chain with locations throu' vs 'Patisserie Marion Crepes food truck in Tokyo's Har' → conflict (The existing value refers to a chain with multiple locations throughout Japan, while the new value specifies a different, single food truck location in Tokyo's Harajuku neighborhood; these are distinct and incompatible location values.)
+2026-04-22 16:42:29,136 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:42:29,138 [INFO] src.nodes.integrate: Conflict check [japan-travel:dining:*/location]: 'Naruto Taiyaki Honpo, a chain with locations throu' vs 'Japanese convenience stores throughout Japan' → conflict (The existing value specifies a particular chain (Naruto Taiyaki Honpo), while the new value refers broadly to Japanese convenience stores; these are different types of locations and thus conflict.)
+2026-04-22 16:42:30,312 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:42:30,316 [INFO] src.nodes.integrate: Conflict check [japan-travel:dining:*/location]: 'Naruto Taiyaki Honpo, a chain with locations throu' vs 'Restaurants around train stations, entertainment d' → conflict (The existing value specifies a particular chain (Naruto Taiyaki Honpo) with locations throughout Japan, while the new value describes a general category of restaurants in specific areas of Tokyo, which does not align with the specific chain or its nationwide presence.)
+2026-04-22 16:42:31,584 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:42:31,591 [INFO] src.nodes.integrate: Conflict check [japan-travel:dining:*/location]: 'Naruto Taiyaki Honpo, a chain with locations throu' vs 'Marunouchi Building, top two floors, Marunouchi si' → conflict (The existing value refers to a chain with multiple locations throughout Japan, while the new value specifies a single, specific location within the Marunouchi Building at Tokyo Station, which contradicts the general location description.)
+2026-04-22 16:42:32,918 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:42:32,925 [INFO] src.nodes.integrate: Conflict check [japan-travel:dining:*/location]: 'Naruto Taiyaki Honpo, a chain with locations throu' vs 'Tsukiji Outer Market, Tokyo' → conflict (The existing value refers to a chain with multiple locations across Japan, while the new value specifies a single, distinct location in Tokyo; these are different and not equivalent.)
+2026-04-22 16:42:35,147 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:42:35,153 [INFO] src.nodes.integrate: Conflict check [japan-travel:dining:*/location]: 'Naruto Taiyaki Honpo, a chain with locations throu' vs 'Kaiten Sushi Toriton, Tokyo' → conflict (The existing value refers to a chain with multiple locations throughout Japan, while the new value specifies a different restaurant located in Tokyo; they are distinct dining locations.)
+2026-04-22 16:42:36,578 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:42:36,585 [INFO] src.nodes.integrate: Conflict check [japan-travel:dining:*/location]: 'Naruto Taiyaki Honpo, a chain with locations throu' vs 'Ginza Kagari, Tokyo' → conflict (The existing value refers to a chain with multiple locations throughout Japan, while the new value specifies a single, different location in Tokyo; these are distinct and not equivalent.)
+2026-04-22 16:42:37,436 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:42:37,445 [INFO] src.nodes.integrate: Conflict check [japan-travel:dining:*/location]: 'Naruto Taiyaki Honpo, a chain with locations throu' vs 'Nihonbashi Kaisen Donburi Tsujihan, Tokyo' → conflict (The two values refer to different dining locations; one is a chain with multiple locations, the other is a specific restaurant in Tokyo.)
+2026-04-22 16:42:38,934 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:42:38,942 [INFO] src.nodes.integrate: Conflict check [japan-travel:dining:*/etiquette]: 'Kaiseki is Japan’s most refined dining, almost syn' vs 'In Japanese dining, it is polite to keep chopstick' → update (The new value provides additional specific etiquette details about chopstick use, complementing the existing general description of Kaiseki dining etiquette without contradicting it.)
+2026-04-22 16:42:40,064 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:42:40,072 [INFO] src.nodes.integrate: Conflict check [japan-travel:dining:*/etiquette]: 'Kaiseki is Japan’s most refined dining, almost syn' vs 'If dining at a restaurant without reservations and' → update (The new value provides additional etiquette advice related to dining behavior in casual settings, complementing the existing information about formal Kaiseki dining etiquette rather than contradicting it.)
+2026-04-22 16:42:42,383 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:42:42,389 [INFO] src.nodes.integrate: Conflict check [japan-travel:dining:*/etiquette]: 'Kaiseki is Japan’s most refined dining, almost syn' vs 'If you know the chef or have been introduced by a ' → update (The new value adds additional culturally relevant etiquette information about gift-giving in dining contexts, complementing rather than contradicting the existing description of Kaiseki etiquette.)
+2026-04-22 16:42:43,540 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:42:43,551 [INFO] src.nodes.integrate: Conflict check [japan-travel:dining:*/etiquette]: 'Kaiseki is Japan’s most refined dining, almost syn' vs 'Most Japanese restaurants specialize in serving on' → conflict (The existing value describes Kaiseki dining etiquette as highly refined and formal, while the new value states that most Japanese restaurants specialize in a single type of cuisine, which is a different and unrelated claim about restaurant specialization rather than dining etiquette.)
+2026-04-22 16:42:44,566 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:42:44,570 [INFO] src.nodes.integrate: Conflict check [japan-travel:dining:*/etiquette]: 'Kaiseki is Japan’s most refined dining, almost syn' vs 'Most restaurants in Japan serve dishes with chopst' → update (The new value provides additional, broader information about general dining etiquette in Japan, complementing the existing value which focuses specifically on Kaiseki dining etiquette.)
+2026-04-22 16:42:45,580 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:42:45,587 [INFO] src.nodes.integrate: Conflict check [japan-travel:dining:*/hours]: 'Many convenience stores such as 7-Eleven, FamilyMa' vs 'Typical dinner time in Japan generally falls betwe' → update (The existing value describes operating hours of stores and restaurants, while the new value specifies typical dinner times; the new information adds detail about dining habits rather than contradicting operating hours.)
+2026-04-22 16:42:46,689 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:42:46,696 [INFO] src.nodes.integrate: Conflict check [japan-travel:dining:*/hours]: 'Many convenience stores such as 7-Eleven, FamilyMa' vs 'Izakaya (Japanese pub) hours are usually 5:00 PM t' → update (The new value provides more specific information about izakaya hours, which complements rather than contradicts the existing general information about convenience stores and chain restaurants operating 24 hours.)
+2026-04-22 16:42:47,872 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:42:47,878 [INFO] src.nodes.integrate: Conflict check [japan-travel:dining:*/hours]: 'Many convenience stores such as 7-Eleven, FamilyMa' vs 'Many sushi restaurants close in the afternoon or b' → update (The new value provides more specific information about sushi restaurant hours, which complements rather than contradicts the existing general statement about convenience stores and some chain restaurants operating 24 hours.)
+2026-04-22 16:42:49,571 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:42:49,577 [INFO] src.nodes.integrate: Conflict check [japan-travel:dining:*/hours]: 'Many convenience stores such as 7-Eleven, FamilyMa' vs 'At pretty much all restaurants in Japan, the 'L.O.' → update (The new value provides additional detail about restaurant closing procedures (last order times) without contradicting the existing information about 24-hour operation of convenience stores and some chains.)
+2026-04-22 16:42:50,944 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:42:50,953 [INFO] src.nodes.integrate: Conflict check [japan-travel:pass-ticket:suica/duration]: 'Each Suica is valid for 180 days from the issuance' vs 'Regular Suica cards expire 10 years after last use' → update (The existing value refers specifically to Welcome Suica Mobile cards with a 180-day validity, while the new value provides information about regular Suica cards expiring 10 years after last use, offering a more detailed and broader context.)
+2026-04-22 16:42:52,187 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:42:52,197 [INFO] src.nodes.integrate: Conflict check [japan-travel:pass-ticket:suica/duration]: 'Each Suica is valid for 180 days from the issuance' vs 'Regular Suica cards have a validity period of up t' → update (The existing value refers specifically to Welcome Suica Mobile cards with a 180-day validity, while the new value provides information about regular Suica cards having up to 10 years validity from last use, offering a more detailed and broader perspective.)
+2026-04-22 16:42:53,236 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:42:53,240 [INFO] src.nodes.integrate: Conflict check [japan-travel:pass-ticket:suica/duration]: 'Each Suica is valid for 180 days from the issuance' vs 'Suica cards expire 10 years after their last use; ' → conflict (The existing value states validity is 180 days from issuance, while the new value states expiration is 10 years after last use, which are incompatible validity periods.)
+2026-04-22 16:42:54,325 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:42:54,331 [INFO] src.nodes.integrate: Conflict check [japan-travel:pass-ticket:suica/duration]: 'Each Suica is valid for 180 days from the issuance' vs 'The regular Suica cards expire 10 years after last' → update (The new value provides a more detailed and general validity period for regular Suica cards, while the existing value specifies the validity for Welcome Suica Mobile cards, indicating different types with different durations rather than a contradiction.)
+2026-04-22 16:42:55,338 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:42:55,346 [INFO] src.nodes.integrate: Conflict check [japan-travel:payment:*/tips]: 'Credit cards such as Visa, JCB, and Mastercard are' vs 'Popular contactless payment smartphone apps or QR ' → update (The new value provides additional, more detailed information about popular contactless payment methods, complementing the existing information about credit cards and cash usage.)
+2026-04-22 16:42:56,199 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:42:56,200 [INFO] src.nodes.integrate: Conflict check [japan-travel:payment:*/tips]: 'Credit cards such as Visa, JCB, and Mastercard are' vs 'IC travel cards are available for tourists in Japa' → update (The new value provides additional, complementary information about payment options (IC travel cards) that does not contradict the existing information about credit cards and cash usage.)
+2026-04-22 16:42:56,932 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:42:56,936 [INFO] src.nodes.integrate: Conflict check [japan-travel:payment:*/tips]: 'Credit cards such as Visa, JCB, and Mastercard are' vs 'Seven Bank ATMs located in 7-Eleven stores are a c' → update (The new value provides additional, complementary information about convenient cash withdrawal options, enhancing the existing advice about payment methods in Japan.)
+2026-04-22 16:42:58,018 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:42:58,021 [INFO] src.nodes.integrate: Conflict check [japan-travel:payment:*/tips]: 'Credit cards such as Visa, JCB, and Mastercard are' vs 'Foreigners often choose English-friendly payment a' → update (The new value provides additional, more detailed information about payment options for foreigners, complementing rather than contradicting the existing information about credit cards and cash.)
+2026-04-22 16:42:58,834 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:42:58,841 [INFO] src.nodes.integrate: Conflict check [japan-travel:payment:*/tips]: 'Credit cards such as Visa, JCB, and Mastercard are' vs 'It is generally better to exchange yen currency in' → update (The new value provides additional, complementary advice about currency exchange, which enhances the existing payment tips without contradicting them.)
+2026-04-22 16:42:59,977 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:42:59,984 [INFO] src.nodes.integrate: Conflict check [japan-travel:payment:ic-card/acceptance]: 'Some stores inside and around train stations, many' vs 'IC cards like Suica, Welcome Suica, and Icoca are ' → update (The new value provides a broader and more positive description of IC card acceptance, emphasizing nationwide usability and ease of payment, which expands on the existing value's more limited scope.)
+2026-04-22 16:43:00,936 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:43:00,944 [INFO] src.nodes.integrate: Conflict check [japan-travel:transport:*/tips]: 'Use the Japan Rail Pass as a cost-effective travel' vs 'When local trains or buses are used, avoid eating ' → update (The new value provides additional etiquette advice related to eating and drinking on local versus long-distance trains, complementing the existing tip about using the Japan Rail Pass without contradicting it.)
+2026-04-22 16:43:01,961 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:43:01,969 [INFO] src.nodes.integrate: Conflict check [japan-travel:transport:*/tips]: 'Use the Japan Rail Pass as a cost-effective travel' vs 'Use IC cards such as Suica or Pasmo for seamless p' → update (The new value provides additional, complementary travel tips about using IC cards for seamless payments, expanding on the existing advice about the Japan Rail Pass without contradicting it.)
+2026-04-22 16:43:02,945 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:43:02,950 [INFO] src.nodes.integrate: Conflict check [japan-travel:transport:*/tips]: 'Use the Japan Rail Pass as a cost-effective travel' vs 'Japan's taxis are spotlessly clean and reliably tr' → update (The new value provides additional travel tips about taxis, complementing the existing information about the Japan Rail Pass without contradicting it.)
+2026-04-22 16:43:04,056 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:43:04,058 [INFO] src.nodes.integrate: Conflict check [japan-travel:transport:*/tips]: 'Use the Japan Rail Pass as a cost-effective travel' vs 'Many cities in Japan offer day passes for unlimite' → update (The new value provides additional information about local day passes for unlimited travel, complementing the existing tip about the Japan Rail Pass rather than contradicting it.)
+2026-04-22 16:43:05,700 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:43:05,710 [INFO] src.nodes.integrate: Conflict check [japan-travel:transport:*/tips]: 'Use the Japan Rail Pass as a cost-effective travel' vs 'If parts of Japan are not accessible by rail, driv' → update (The new value complements the existing tip by providing additional advice for areas not accessible by rail, rather than contradicting the use of the Japan Rail Pass.)
+2026-04-22 16:43:07,274 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:43:07,278 [INFO] src.nodes.integrate: Conflict check [japan-travel:transport:*/tips]: 'Use the Japan Rail Pass as a cost-effective travel' vs 'When using public transportation in Japan, follow ' → update (The new value provides additional tips on public transportation etiquette, complementing the existing value about using the Japan Rail Pass without contradicting it.)
+2026-04-22 16:43:08,409 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:43:08,411 [INFO] src.nodes.integrate: Conflict check [japan-travel:transport:*/tips]: 'Use the Japan Rail Pass as a cost-effective travel' vs 'Renting a bicycle offers a very different view of ' → conflict (The existing and new values recommend different modes of transport (train pass vs. bicycle) as travel tips, which represent distinct and potentially conflicting travel approaches rather than the same information.)
+2026-04-22 16:43:09,466 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:43:09,470 [INFO] src.nodes.integrate: Conflict check [japan-travel:transport:airport-transfer/duration]: 'Taxi ride from Haneda Airport to Tokyo takes aroun' vs 'Taxi ride from Kansai International Airport to Osa' → conflict (The two values refer to different airport transfers with different durations, thus they provide conflicting information for the same 'duration' slot.)
+2026-04-22 16:43:10,374 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:43:10,377 [INFO] src.nodes.integrate: Conflict check [japan-travel:transport:airport-transfer/duration]: 'Taxi ride from Haneda Airport to Tokyo takes aroun' vs 'Haneda Airport Limousine Bus takes about 30-40 min' → conflict (The two values refer to different modes of transport (taxi vs limousine bus) with the same duration, implying conflicting information about the duration for the same airport transfer.)
+2026-04-22 16:43:11,347 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:43:11,349 [INFO] src.nodes.integrate: Conflict check [japan-travel:transport:airport-transfer/duration]: 'Taxi ride from Haneda Airport to Tokyo takes aroun' vs 'Kansai International Airport Limousine Bus takes 4' → conflict (The two values refer to different airport transfers with different durations and locations, thus they provide conflicting information for the same 'duration' field.)
+2026-04-22 16:43:12,332 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:43:12,341 [INFO] src.nodes.integrate: Conflict check [japan-travel:transport:airport-transfer/duration]: 'Taxi ride from Haneda Airport to Tokyo takes aroun' vs 'Osaka Itami Airport Limousine Bus takes 20-30 minu' → conflict (The two values refer to different airport transfers with different durations and locations, thus providing conflicting information for the same 'duration' slot.)
+2026-04-22 16:43:13,285 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:43:13,292 [INFO] src.nodes.integrate: Conflict check [japan-travel:regulation:tourist-visa/price]: 'Single-entry tourist visa fee is $20.00' vs 'Multiple and double-entry tourist visa fee is $40.' → update (The new value provides additional information about multiple and double-entry visa fees, complementing the existing single-entry visa fee without contradiction.)
+2026-04-22 16:43:14,449 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:43:14,452 [INFO] src.nodes.integrate: Conflict check [japan-travel:regulation:customs-allowance/price]: 'Duty-free allowance applies to items with a total ' vs 'Tourists can bring goods for personal use purchase' → equivalent (Both values state that items with a total market value under 200,000 yen are duty-free; the new value specifies tourists and personal use but does not contradict the existing value.)
+2026-04-22 16:43:15,535 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:43:15,540 [INFO] src.nodes.integrate: Conflict check [japan-travel:regulation:customs-allowance/price]: 'Duty-free allowance applies to items with a total ' vs 'Items not listed can be duty-free if their total v' → update (The new value provides additional details about the tax rates applied to items exceeding 200,000 yen, complementing the existing information rather than contradicting it.)
+2026-04-22 16:43:16,830 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:43:16,834 [INFO] src.nodes.integrate: Conflict check [japan-travel:regulation:customs-allowance/price]: 'Duty-free allowance applies to items with a total ' vs 'Any item whose overseas market value is under 10,0' → conflict (The existing value sets the duty-free allowance threshold at a total market value under 200,000 yen, while the new value sets a much lower threshold of 10,000 yen per item and excludes such items from the total calculation, which contradicts the original allowance criteria.)
+2026-04-22 16:43:17,823 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:43:17,828 [INFO] src.nodes.integrate: Conflict check [japan-travel:regulation:tourist-visa/tips]: 'If you qualify for the Japan e-visa, the applicati' vs 'Applying for a tourist visa to Japan requires subm' → update (The new value provides additional details about the tourist visa application requirements, complementing the existing information about the e-visa process rather than contradicting it.)
+2026-04-22 16:43:19,699 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:43:19,707 [INFO] src.nodes.integrate: Conflict check [japan-travel:regulation:tourist-visa/tips]: 'If you qualify for the Japan e-visa, the applicati' vs 'The visa application process typically takes appro' → update (The new value provides additional information about the typical processing time, complementing the existing value's focus on the online application process and ease.)
+2026-04-22 16:43:20,709 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:43:20,714 [INFO] src.nodes.integrate: Conflict check [japan-travel:regulation:tourist-visa/tips]: 'If you qualify for the Japan e-visa, the applicati' vs 'For a hassle-free Japan tourist visa application, ' → update (The new value provides additional practical advice on using third-party services to simplify the visa application process, complementing the existing information about the e-visa's online application.)
+2026-04-22 16:43:21,645 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:43:21,654 [INFO] src.nodes.integrate: Conflict check [japan-travel:regulation:customs-allowance/tips]: 'When entering Japan, travelers must submit a Custo' vs 'Bringing meat, meat products, plants, and plant pr' → update (The new value provides additional specific restrictions related to items prohibited from entering Japan, complementing the existing general requirement to submit a Customs Declaration form.)
+2026-04-22 16:43:23,033 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:43:23,037 [INFO] src.nodes.integrate: Conflict check [japan-travel:regulation:customs-allowance/tips]: 'When entering Japan, travelers must submit a Custo' vs 'Illegal importation of meat, meat products, plants' → update (The new value provides additional, more detailed information about customs regulations and penalties related to illegal importation, complementing the existing instruction about submitting a Customs Declaration form.)
+2026-04-22 16:43:24,727 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:43:24,732 [INFO] src.nodes.integrate: Conflict check [japan-travel:regulation:customs-allowance/tips]: 'When entering Japan, travelers must submit a Custo' vs 'Any item with a total overseas market value not ex' → update (The new value provides additional specific information about duty-free allowances and value limits, complementing the existing procedural requirement to submit a Customs Declaration form.)
+2026-04-22 16:43:25,575 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:43:25,581 [INFO] src.nodes.integrate: Conflict check [japan-travel:regulation:customs-allowance/tips]: 'When entering Japan, travelers must submit a Custo' vs 'Travelers must report to Customs if they bring mea' → update (The new value provides additional specific details about customs reporting requirements, complementing the existing general instruction to submit a Customs Declaration form.)
+2026-04-22 16:43:26,690 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:43:26,698 [INFO] src.nodes.integrate: Conflict check [japan-travel:regulation:customs-allowance/tips]: 'When entering Japan, travelers must submit a Custo' vs 'Travelers can generate a QR code via Visit Japan W' → update (The new value provides additional, more recent information about using a QR code via Visit Japan Web to facilitate arrival procedures, complementing the existing requirement to submit a Customs Declaration form.)
+2026-04-22 16:43:28,153 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:43:28,157 [INFO] src.nodes.integrate: Conflict check [japan-travel:pass-ticket:jr-pass/tips]: 'Collected info for tips from How to Use the Japan ' vs 'Collected info for tips from Travel Tips | JAPAN R' → equivalent (Both values indicate collected tips for using the Japan Rail Pass from different sources, without any contradictory information.)
+2026-04-22 16:43:29,322 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:43:29,326 [INFO] src.nodes.integrate: Conflict check [japan-travel:pass-ticket:jr-pass/where_to_buy]: 'You need to purchase a JR Pass Exchange Order from' vs 'You can buy your JR Pass online on Japan Railway's' → conflict (The existing value states that the JR Pass Exchange Order must be purchased outside Japan prior to arrival and then exchanged in Japan, while the new value claims the JR Pass can be bought online and picked up directly in Japan, including at airports, which contradicts the original purchase and exchange process.)
+2026-04-22 16:43:29,327 [INFO] src.nodes.integrate: integrate_result: claims=152 resolved=26 no_source_gu=0 invalid_result=33 other=93 conv_rate=0.171
+2026-04-22 16:43:29,328 [INFO] src.nodes.dispute_resolver: Dispute resolved: KU-0027 (japan-travel:pass-ticket:suica/policy) — evidence majority (7 evidence vs 1 disputes)
+2026-04-22 16:43:29,328 [INFO] src.nodes.dispute_resolver: Dispute resolved: KU-0028 (japan-travel:attraction:*/hours) — evidence majority (4 evidence vs 1 disputes)
+2026-04-22 16:43:29,328 [INFO] src.nodes.dispute_resolver: Dispute resolved: KU-0030 (japan-travel:accommodation:*/tips) — evidence majority (7 evidence vs 1 disputes)
+2026-04-22 16:43:29,328 [INFO] src.nodes.dispute_resolver: Dispute resolved: KU-0031 (japan-travel:accommodation:*/etiquette) — evidence majority (8 evidence vs 1 disputes)
+2026-04-22 16:43:29,328 [INFO] src.nodes.dispute_resolver: Dispute resolved: KU-0056 (japan-travel:attraction:*/tips) — evidence majority (4 evidence vs 1 disputes)
+2026-04-22 16:43:29,328 [INFO] src.nodes.dispute_resolver: Dispute resolved: KU-0060 (japan-travel:dining:*/location) — evidence majority (9 evidence vs 1 disputes)
+2026-04-22 16:43:29,328 [INFO] src.nodes.dispute_resolver: Dispute resolved: KU-0061 (japan-travel:dining:*/etiquette) — evidence majority (6 evidence vs 1 disputes)
+2026-04-22 16:43:29,328 [INFO] src.nodes.dispute_resolver: Dispute resolved: KU-0064 (japan-travel:pass-ticket:suica/duration) — evidence majority (5 evidence vs 1 disputes)
+2026-04-22 16:43:29,328 [INFO] src.nodes.dispute_resolver: Dispute resolved: KU-0068 (japan-travel:transport:*/tips) — evidence majority (8 evidence vs 1 disputes)
+2026-04-22 16:43:29,329 [INFO] src.nodes.dispute_resolver: Dispute resolved: KU-0069 (japan-travel:transport:airport-transfer/duration) — evidence majority (5 evidence vs 1 disputes)
+2026-04-22 16:43:29,329 [INFO] src.nodes.dispute_resolver: Dispute resolved: KU-0078 (japan-travel:regulation:customs-allowance/price) — evidence majority (4 evidence vs 1 disputes)
+2026-04-22 16:43:29,329 [INFO] src.nodes.dispute_resolver: Dispute resolved: KU-0082 (japan-travel:pass-ticket:jr-pass/where_to_buy) — evidence majority (2 evidence vs 1 disputes)
+2026-04-22 16:43:29,331 [INFO] src.orchestrator:   Graph 완료: 498.2s (KU 26→82, GU 35→37)
+2026-04-22 16:43:29,332 [INFO] src.orchestrator:   Novelty=0.518, ext_novelty=1.000, cat_gini=0.412, field_gini=0.463, domains/100ku=41.5
+2026-04-22 16:43:29,388 [INFO] src.orchestrator: Snapshot 저장: bench\silver\japan-travel\p7-ab-on\state-snapshots\cycle-2-snapshot
+2026-04-22 16:43:29,389 [WARNING] src.obs.telemetry: trial-card.md 없음: bench\silver\japan-travel\p7-ab-on (telemetry emit 계속)
+2026-04-22 16:43:29,395 [INFO] src.orchestrator:   Cycle 2 완료: 498.3s (graph=498.2s, audit=0.0s, remodel=0.0s) | 누적 606.8s
+2026-04-22 16:43:29,395 [INFO] src.orchestrator: === Cycle 3/15 시작 (KU=82, GU=37) ===
+2026-04-22 16:43:29,418 [INFO] src.nodes.mode: mode: jump | open=2 → target_count=2 (explore=1, exploit=1) triggers=['T3:high_risk_blindspot']
+2026-04-22 16:43:35,553 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:43:35,559 [INFO] src.nodes.plan: plan: targets=2 (deferred_first=0, prev_deferred=0), queries=2, no_query=0
+2026-04-22 16:43:35,562 [INFO] src.nodes.collect: collect: 2 GU search 병렬 (workers=2)
+2026-04-22 16:43:43,228 [INFO] src.nodes.collect: collect: batch LLM 2 prompts (1회 호출)
+2026-04-22 16:43:53,101 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:43:55,417 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:43:55,426 [INFO] src.nodes.collect: parse[GU-0036]: claims=3 (resp_len=2613)
+2026-04-22 16:43:55,427 [INFO] src.nodes.collect: parse_yield: gu=GU-0036 snippets=15 claims=3 path=llm
+2026-04-22 16:43:55,427 [INFO] src.nodes.collect: collect: GU-0036 → 3 claims
+2026-04-22 16:43:55,428 [INFO] src.nodes.collect: parse[GU-0037]: claims=3 (resp_len=3080)
+2026-04-22 16:43:55,428 [INFO] src.nodes.collect: parse_yield: gu=GU-0037 snippets=15 claims=3 path=llm
+2026-04-22 16:43:55,429 [INFO] src.nodes.collect: collect: GU-0037 → 3 claims
+2026-04-22 16:43:55,429 [INFO] src.nodes.collect: parse_yield_summary: targets=2 completed=2 avg_claims=3.00 zero_claims=0 zero_ratio=0.000 total_claims=6
+2026-04-22 16:43:55,430 [INFO] src.nodes.collect: collect diversity: domain_entropy=2.252
+2026-04-22 16:43:56,295 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:43:56,302 [INFO] src.nodes.integrate: Conflict check [japan-travel:pass-ticket:suica/where_to_buy]: '{'Welcome_Suica': {'판매처': 'JR East Travel Service ' vs 'Suica cards can be purchased from ticket machines ' → update (The new value provides additional specific locations (ticket machines at main JR stations) for purchasing Suica cards, complementing the existing information about JR East Travel Service Centers without contradicting it.)
+2026-04-22 16:43:57,184 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:43:57,189 [INFO] src.nodes.integrate: Conflict check [japan-travel:pass-ticket:suica/where_to_buy]: '{'Welcome_Suica': {'판매처': 'JR East Travel Service ' vs 'You can buy a regular Suica card at any JR ticket ' → equivalent (Both values indicate that Suica cards can be purchased at JR East Travel Service Centers or JR ticket offices in the Tokyo area; the new value is a simpler restatement of the existing detailed information without contradiction.)
+2026-04-22 16:43:58,430 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:43:58,438 [INFO] src.nodes.integrate: Conflict check [japan-travel:pass-ticket:suica/where_to_buy]: '{'Welcome_Suica': {'판매처': 'JR East Travel Service ' vs 'Welcome Suica cards can be purchased at JR EAST Tr' → equivalent (Both values state that Welcome Suica cards can be purchased at JR East Travel Service Centers at major JR East stations, including Narita and Haneda airports; the new value is a simplified restatement of the existing information.)
+2026-04-22 16:43:59,490 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:43:59,493 [INFO] src.nodes.integrate: Conflict check [japan-travel:payment:ic-card/how_to_use]: 'Suica/PASMO 등 IC카드로 전철, 버스, 편의점 결제 가능. 물리 카드 재고 부족' vs 'IC cards such as Suica, Pasmo, and Icoca can be us' → update (The new value provides additional details about IC card compatibility and usage across multiple cities and their role alongside the Japan Rail Pass, complementing the existing information about specific cards, availability, and validity periods.)
+2026-04-22 16:44:00,555 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:44:00,561 [INFO] src.nodes.integrate: Conflict check [japan-travel:payment:ic-card/how_to_use]: 'Suica/PASMO 등 IC카드로 전철, 버스, 편의점 결제 가능. 물리 카드 재고 부족' vs 'To use IC cards efficiently, travelers should chec' → update (The new value provides additional practical usage tips and advice for using IC cards efficiently, complementing the existing information about card types, availability, and validity without contradicting it.)
+2026-04-22 16:44:01,592 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:44:01,600 [INFO] src.nodes.integrate: Conflict check [japan-travel:payment:ic-card/how_to_use]: 'Suica/PASMO 등 IC카드로 전철, 버스, 편의점 결제 가능. 물리 카드 재고 부족' vs 'Prepaid IC cards like Suica and PASMO can be used ' → equivalent (Both values describe the use of Suica/PASMO IC cards for payments at trains, buses, convenience stores, and other locations; the new value is a simpler restatement without conflicting information.)
+2026-04-22 16:44:01,600 [INFO] src.nodes.integrate: integrate_result: claims=6 resolved=2 no_source_gu=0 invalid_result=0 other=4 conv_rate=0.333
+2026-04-22 16:44:01,604 [INFO] src.orchestrator:   Graph 완료: 32.2s (KU 82→82, GU 37→37)
+2026-04-22 16:44:01,605 [INFO] src.orchestrator:   Novelty=0.000, ext_novelty=0.000, cat_gini=0.412, field_gini=0.463, domains/100ku=41.5
+2026-04-22 16:44:01,662 [INFO] src.orchestrator: Snapshot 저장: bench\silver\japan-travel\p7-ab-on\state-snapshots\cycle-3-snapshot
+2026-04-22 16:44:01,663 [WARNING] src.obs.telemetry: trial-card.md 없음: bench\silver\japan-travel\p7-ab-on (telemetry emit 계속)
+2026-04-22 16:44:01,668 [INFO] src.orchestrator:   Cycle 3 완료: 32.3s (graph=32.2s, audit=0.0s, remodel=0.0s) | 누적 639.1s
+2026-04-22 16:44:01,668 [INFO] src.orchestrator: === Cycle 4/15 시작 (KU=82, GU=37) ===
+2026-04-22 16:44:01,689 [INFO] src.nodes.mode: mode: jump | open=0 → target_count=0 (explore=0, exploit=0) triggers=['T3:high_risk_blindspot']
+2026-04-22 16:44:26,430 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:44:26,437 [INFO] src.nodes.plan: plan: targets=22 (deferred_first=0, prev_deferred=0), queries=22, no_query=0
+2026-04-22 16:44:26,444 [INFO] src.orchestrator:   Graph 완료: 24.8s (KU 82→82, GU 37→37)
+2026-04-22 16:44:26,445 [INFO] src.orchestrator:   Novelty=0.000, ext_novelty=0.000, cat_gini=0.412, field_gini=0.463, domains/100ku=41.5
+2026-04-22 16:44:26,502 [INFO] src.orchestrator: Snapshot 저장: bench\silver\japan-travel\p7-ab-on\state-snapshots\cycle-4-snapshot
+2026-04-22 16:44:26,503 [WARNING] src.obs.telemetry: trial-card.md 없음: bench\silver\japan-travel\p7-ab-on (telemetry emit 계속)
+2026-04-22 16:44:26,505 [INFO] src.orchestrator:   Cycle 4 완료: 24.8s (graph=24.8s, audit=0.0s, remodel=0.0s) | 누적 663.9s
+2026-04-22 16:44:26,506 [INFO] src.orchestrator: === Cycle 5/15 시작 (KU=82, GU=37) ===
+2026-04-22 16:44:26,527 [INFO] src.nodes.mode: mode: jump | open=0 → target_count=0 (explore=0, exploit=0) triggers=['T3:high_risk_blindspot']
+2026-04-22 16:44:55,641 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:44:55,647 [INFO] src.nodes.plan: plan: targets=22 (deferred_first=0, prev_deferred=0), queries=22, no_query=0
+2026-04-22 16:44:55,655 [INFO] src.orchestrator:   Graph 완료: 29.2s (KU 82→82, GU 37→37)
+2026-04-22 16:44:55,657 [INFO] src.orchestrator:   Novelty=0.000, ext_novelty=0.000, cat_gini=0.412, field_gini=0.463, domains/100ku=41.5
+2026-04-22 16:44:55,657 [INFO] src.nodes.audit: Audit 완료: cycle=5, findings=2, patches=2
+2026-04-22 16:44:55,658 [INFO] src.utils.policy_manager: Patch 적용: ttl_defaults.policy = 135 (이전: 90)
+2026-04-22 16:44:55,658 [INFO] src.utils.policy_manager: Patch 적용: cross_validation.safety.min_sources = 2 (이전: 1)
+2026-04-22 16:44:55,658 [INFO] src.orchestrator: Policy patches 적용: 2개 (cycle=5, v1)
+2026-04-22 16:44:55,658 [INFO] src.orchestrator: Executive Audit cycle=5: findings=2, patches=2
+2026-04-22 16:44:55,658 [INFO] src.orchestrator: Remodel 트리거: cycle=5, reasons=[growth_stagnation(avg=0.0<5)]
+2026-04-22 16:44:55,660 [INFO] src.nodes.remodel: Remodel 완료: audit_cycle=5, proposals=1 (source_policy)
+2026-04-22 16:44:55,675 [INFO] src.utils.state_io: Phase snapshot 저장: phase_1 → bench\silver\japan-travel\p7-ab-on\state\phase_1
+2026-04-22 16:44:55,676 [INFO] src.orchestrator: Remodel 적용: phase=1, cycle=5, proposals=1/1 applied
+2026-04-22 16:44:55,731 [INFO] src.orchestrator: Snapshot 저장: bench\silver\japan-travel\p7-ab-on\state-snapshots\cycle-5-snapshot
+2026-04-22 16:44:55,731 [WARNING] src.obs.telemetry: trial-card.md 없음: bench\silver\japan-travel\p7-ab-on (telemetry emit 계속)
+2026-04-22 16:44:55,734 [INFO] src.orchestrator:   Cycle 5 완료: 29.2s (graph=29.2s, audit=0.0s, remodel=0.0s) | 누적 693.2s
+2026-04-22 16:44:55,734 [INFO] src.orchestrator: === Cycle 6/15 시작 (KU=82, GU=37) ===
+2026-04-22 16:44:55,755 [INFO] src.nodes.mode: mode: jump | open=0 → target_count=0 (explore=0, exploit=0) triggers=['T3:high_risk_blindspot']
+2026-04-22 16:45:22,386 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:45:22,387 [INFO] src.nodes.plan: plan: targets=22 (deferred_first=0, prev_deferred=0), queries=22, no_query=0
+2026-04-22 16:45:22,393 [INFO] src.orchestrator:   Graph 완료: 26.7s (KU 82→82, GU 37→37)
+2026-04-22 16:45:22,394 [INFO] src.orchestrator:   Novelty=0.000, ext_novelty=0.000, cat_gini=0.412, field_gini=0.463, domains/100ku=41.5
+2026-04-22 16:45:22,395 [INFO] src.orchestrator: Policy patch 성능 유지 확인 (cycle=6)
+2026-04-22 16:45:22,452 [INFO] src.orchestrator: Snapshot 저장: bench\silver\japan-travel\p7-ab-on\state-snapshots\cycle-6-snapshot
+2026-04-22 16:45:22,452 [WARNING] src.obs.telemetry: trial-card.md 없음: bench\silver\japan-travel\p7-ab-on (telemetry emit 계속)
+2026-04-22 16:45:22,455 [INFO] src.orchestrator:   Cycle 6 완료: 26.7s (graph=26.7s, audit=0.0s, remodel=0.0s) | 누적 719.9s
+2026-04-22 16:45:22,455 [INFO] src.orchestrator: === Cycle 7/15 시작 (KU=82, GU=37) ===
+2026-04-22 16:45:22,476 [INFO] src.nodes.mode: mode: jump | open=0 → target_count=0 (explore=0, exploit=0) triggers=['T3:high_risk_blindspot']
+2026-04-22 16:45:46,768 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:45:46,770 [INFO] src.nodes.plan: plan: targets=22 (deferred_first=0, prev_deferred=0), queries=22, no_query=0
+2026-04-22 16:45:46,774 [INFO] src.orchestrator:   Graph 완료: 24.3s (KU 82→82, GU 37→37)
+2026-04-22 16:45:46,775 [INFO] src.orchestrator:   Novelty=0.000, ext_novelty=0.000, cat_gini=0.412, field_gini=0.463, domains/100ku=41.5
+2026-04-22 16:45:46,830 [INFO] src.orchestrator: Snapshot 저장: bench\silver\japan-travel\p7-ab-on\state-snapshots\cycle-7-snapshot
+2026-04-22 16:45:46,830 [WARNING] src.obs.telemetry: trial-card.md 없음: bench\silver\japan-travel\p7-ab-on (telemetry emit 계속)
+2026-04-22 16:45:46,833 [INFO] src.orchestrator:   Cycle 7 완료: 24.4s (graph=24.3s, audit=0.0s, remodel=0.0s) | 누적 744.2s
+2026-04-22 16:45:46,833 [INFO] src.orchestrator: === Cycle 8/15 시작 (KU=82, GU=37) ===
+2026-04-22 16:45:46,853 [INFO] src.nodes.mode: mode: jump | open=0 → target_count=0 (explore=0, exploit=0) triggers=['T3:high_risk_blindspot']
+2026-04-22 16:46:13,830 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:46:13,837 [INFO] src.nodes.plan: plan: targets=22 (deferred_first=0, prev_deferred=0), queries=22, no_query=0
+2026-04-22 16:46:13,844 [INFO] src.orchestrator:   Graph 완료: 27.0s (KU 82→82, GU 37→37)
+2026-04-22 16:46:13,845 [INFO] src.orchestrator:   Novelty=0.000, ext_novelty=0.000, cat_gini=0.412, field_gini=0.463, domains/100ku=41.5
+2026-04-22 16:46:13,901 [INFO] src.orchestrator: Snapshot 저장: bench\silver\japan-travel\p7-ab-on\state-snapshots\cycle-8-snapshot
+2026-04-22 16:46:13,901 [WARNING] src.obs.telemetry: trial-card.md 없음: bench\silver\japan-travel\p7-ab-on (telemetry emit 계속)
+2026-04-22 16:46:13,904 [INFO] src.orchestrator:   Cycle 8 완료: 27.1s (graph=27.0s, audit=0.0s, remodel=0.0s) | 누적 771.3s
+2026-04-22 16:46:13,905 [INFO] src.orchestrator: === Cycle 9/15 시작 (KU=82, GU=37) ===
+2026-04-22 16:46:13,925 [INFO] src.nodes.mode: mode: jump | open=0 → target_count=0 (explore=0, exploit=0) triggers=['T3:high_risk_blindspot']
+2026-04-22 16:46:41,250 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:46:41,256 [INFO] src.nodes.plan: plan: targets=22 (deferred_first=0, prev_deferred=0), queries=22, no_query=0
+2026-04-22 16:46:41,271 [INFO] src.orchestrator:   Graph 완료: 27.4s (KU 82→82, GU 37→37)
+2026-04-22 16:46:41,273 [INFO] src.orchestrator:   Novelty=0.000, ext_novelty=0.000, cat_gini=0.412, field_gini=0.463, domains/100ku=41.5
+2026-04-22 16:46:41,333 [INFO] src.orchestrator: Snapshot 저장: bench\silver\japan-travel\p7-ab-on\state-snapshots\cycle-9-snapshot
+2026-04-22 16:46:41,333 [WARNING] src.obs.telemetry: trial-card.md 없음: bench\silver\japan-travel\p7-ab-on (telemetry emit 계속)
+2026-04-22 16:46:41,336 [INFO] src.orchestrator:   Cycle 9 완료: 27.4s (graph=27.4s, audit=0.0s, remodel=0.0s) | 누적 798.8s
+2026-04-22 16:46:41,336 [INFO] src.orchestrator: === Cycle 10/15 시작 (KU=82, GU=37) ===
+2026-04-22 16:46:41,357 [INFO] src.nodes.mode: mode: jump | open=0 → target_count=0 (explore=0, exploit=0) triggers=['T3:high_risk_blindspot']
+2026-04-22 16:47:08,817 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:47:08,827 [INFO] src.nodes.plan: plan: targets=22 (deferred_first=0, prev_deferred=0), queries=22, no_query=0
+2026-04-22 16:47:08,831 [INFO] src.orchestrator:   Graph 완료: 27.5s (KU 82→82, GU 37→37)
+2026-04-22 16:47:08,832 [INFO] src.orchestrator:   Novelty=0.000, ext_novelty=0.000, cat_gini=0.412, field_gini=0.463, domains/100ku=41.5
+2026-04-22 16:47:08,833 [INFO] src.nodes.audit: Audit 완료: cycle=10, findings=2, patches=2
+2026-04-22 16:47:08,833 [INFO] src.utils.policy_manager: Patch 적용: ttl_defaults.regulation = 202 (이전: 135)
+2026-04-22 16:47:08,833 [INFO] src.utils.policy_manager: Patch 적용: cross_validation.safety.min_sources = 3 (이전: 2)
+2026-04-22 16:47:08,833 [INFO] src.orchestrator: Policy patches 적용: 2개 (cycle=10, v2)
+2026-04-22 16:47:08,833 [INFO] src.orchestrator: Executive Audit cycle=10: findings=2, patches=2
+2026-04-22 16:47:08,833 [INFO] src.orchestrator: Remodel 트리거: cycle=10, reasons=[growth_stagnation(avg=0.0<5) | exploration_drought(new_gu=0<30)]
+2026-04-22 16:47:08,834 [INFO] src.nodes.remodel: Remodel 완료: audit_cycle=10, proposals=1 (source_policy)
+2026-04-22 16:47:08,847 [INFO] src.utils.state_io: Phase snapshot 저장: phase_2 → bench\silver\japan-travel\p7-ab-on\state\phase_2
+2026-04-22 16:47:08,847 [INFO] src.orchestrator: Remodel 적용: phase=2, cycle=10, proposals=1/1 applied
+2026-04-22 16:47:08,904 [INFO] src.orchestrator: Snapshot 저장: bench\silver\japan-travel\p7-ab-on\state-snapshots\cycle-10-snapshot
+2026-04-22 16:47:08,904 [WARNING] src.obs.telemetry: trial-card.md 없음: bench\silver\japan-travel\p7-ab-on (telemetry emit 계속)
+2026-04-22 16:47:08,907 [INFO] src.orchestrator:   Cycle 10 완료: 27.6s (graph=27.5s, audit=0.0s, remodel=0.0s) | 누적 826.3s
+2026-04-22 16:47:08,907 [INFO] src.orchestrator: === Cycle 11/15 시작 (KU=82, GU=37) ===
+2026-04-22 16:47:08,930 [INFO] src.nodes.mode: mode: jump | open=0 → target_count=0 (explore=0, exploit=0) triggers=['T3:high_risk_blindspot']
+2026-04-22 16:47:32,264 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:47:32,267 [INFO] src.nodes.plan: plan: targets=22 (deferred_first=0, prev_deferred=0), queries=22, no_query=0
+2026-04-22 16:47:32,271 [INFO] src.orchestrator:   Graph 완료: 23.4s (KU 82→82, GU 37→37)
+2026-04-22 16:47:32,272 [INFO] src.orchestrator:   Novelty=0.000, ext_novelty=0.000, cat_gini=0.412, field_gini=0.463, domains/100ku=41.5
+2026-04-22 16:47:32,272 [INFO] src.orchestrator: Policy patch 성능 유지 확인 (cycle=11)
+2026-04-22 16:47:32,326 [INFO] src.orchestrator: Snapshot 저장: bench\silver\japan-travel\p7-ab-on\state-snapshots\cycle-11-snapshot
+2026-04-22 16:47:32,327 [WARNING] src.obs.telemetry: trial-card.md 없음: bench\silver\japan-travel\p7-ab-on (telemetry emit 계속)
+2026-04-22 16:47:32,330 [INFO] src.orchestrator:   Cycle 11 완료: 23.4s (graph=23.4s, audit=0.0s, remodel=0.0s) | 누적 849.8s
+2026-04-22 16:47:32,330 [INFO] src.orchestrator: === Cycle 12/15 시작 (KU=82, GU=37) ===
+2026-04-22 16:47:32,351 [INFO] src.nodes.mode: mode: jump | open=0 → target_count=0 (explore=0, exploit=0) triggers=['T3:high_risk_blindspot']
+2026-04-22 16:47:54,741 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:47:54,772 [INFO] src.nodes.plan: plan: targets=22 (deferred_first=0, prev_deferred=0), queries=22, no_query=0
+2026-04-22 16:47:54,777 [INFO] src.orchestrator:   Graph 완료: 22.4s (KU 82→82, GU 37→37)
+2026-04-22 16:47:54,778 [INFO] src.orchestrator:   Novelty=0.000, ext_novelty=0.000, cat_gini=0.412, field_gini=0.463, domains/100ku=41.5
+2026-04-22 16:47:54,837 [INFO] src.orchestrator: Snapshot 저장: bench\silver\japan-travel\p7-ab-on\state-snapshots\cycle-12-snapshot
+2026-04-22 16:47:54,838 [WARNING] src.obs.telemetry: trial-card.md 없음: bench\silver\japan-travel\p7-ab-on (telemetry emit 계속)
+2026-04-22 16:47:54,840 [INFO] src.orchestrator:   Cycle 12 완료: 22.5s (graph=22.4s, audit=0.0s, remodel=0.0s) | 누적 872.2s
+2026-04-22 16:47:54,840 [INFO] src.orchestrator: === Cycle 13/15 시작 (KU=82, GU=37) ===
+2026-04-22 16:47:54,862 [INFO] src.nodes.mode: mode: jump | open=0 → target_count=0 (explore=0, exploit=0) triggers=['T3:high_risk_blindspot']
+2026-04-22 16:48:16,629 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:48:16,631 [INFO] src.nodes.plan: plan: targets=22 (deferred_first=0, prev_deferred=0), queries=22, no_query=0
+2026-04-22 16:48:16,635 [INFO] src.orchestrator:   Graph 완료: 21.8s (KU 82→82, GU 37→37)
+2026-04-22 16:48:16,636 [INFO] src.orchestrator:   Novelty=0.000, ext_novelty=0.000, cat_gini=0.412, field_gini=0.463, domains/100ku=41.5
+2026-04-22 16:48:16,691 [INFO] src.orchestrator: Snapshot 저장: bench\silver\japan-travel\p7-ab-on\state-snapshots\cycle-13-snapshot
+2026-04-22 16:48:16,692 [WARNING] src.obs.telemetry: trial-card.md 없음: bench\silver\japan-travel\p7-ab-on (telemetry emit 계속)
+2026-04-22 16:48:16,695 [INFO] src.orchestrator:   Cycle 13 완료: 21.9s (graph=21.8s, audit=0.0s, remodel=0.0s) | 누적 894.1s
+2026-04-22 16:48:16,695 [INFO] src.orchestrator: === Cycle 14/15 시작 (KU=82, GU=37) ===
+2026-04-22 16:48:16,717 [INFO] src.nodes.mode: mode: jump | open=0 → target_count=0 (explore=0, exploit=0) triggers=['T3:high_risk_blindspot']
+2026-04-22 16:48:53,242 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:48:53,247 [INFO] src.nodes.plan: plan: targets=22 (deferred_first=0, prev_deferred=0), queries=22, no_query=0
+2026-04-22 16:48:53,261 [INFO] src.orchestrator:   Graph 완료: 36.6s (KU 82→82, GU 37→37)
+2026-04-22 16:48:53,263 [INFO] src.orchestrator:   Novelty=0.000, ext_novelty=0.000, cat_gini=0.412, field_gini=0.463, domains/100ku=41.5
+2026-04-22 16:48:53,324 [INFO] src.orchestrator: Snapshot 저장: bench\silver\japan-travel\p7-ab-on\state-snapshots\cycle-14-snapshot
+2026-04-22 16:48:53,325 [WARNING] src.obs.telemetry: trial-card.md 없음: bench\silver\japan-travel\p7-ab-on (telemetry emit 계속)
+2026-04-22 16:48:53,327 [INFO] src.orchestrator:   Cycle 14 완료: 36.6s (graph=36.6s, audit=0.0s, remodel=0.0s) | 누적 930.7s
+2026-04-22 16:48:53,327 [INFO] src.orchestrator: === Cycle 15/15 시작 (KU=82, GU=37) ===
+2026-04-22 16:48:53,348 [INFO] src.nodes.mode: mode: jump | open=0 → target_count=0 (explore=0, exploit=0) triggers=['T3:high_risk_blindspot']
+2026-04-22 16:49:26,875 [INFO] httpx: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-22 16:49:26,880 [INFO] src.nodes.plan: plan: targets=22 (deferred_first=0, prev_deferred=0), queries=22, no_query=0
+2026-04-22 16:49:26,896 [INFO] src.orchestrator:   Graph 완료: 33.6s (KU 82→82, GU 37→37)
+2026-04-22 16:49:26,899 [INFO] src.orchestrator:   Novelty=0.000, ext_novelty=0.000, cat_gini=0.412, field_gini=0.463, domains/100ku=41.5
+2026-04-22 16:49:26,899 [INFO] src.nodes.audit: Audit 완료: cycle=15, findings=2, patches=2
+2026-04-22 16:49:26,900 [INFO] src.utils.policy_manager: Patch 적용: ttl_defaults.hours = 303 (이전: 202)
+2026-04-22 16:49:26,900 [INFO] src.utils.policy_manager: Patch 적용: cross_validation.financial.min_sources = 2 (이전: 1)
+2026-04-22 16:49:26,900 [INFO] src.orchestrator: Policy patches 적용: 2개 (cycle=15, v3)
+2026-04-22 16:49:26,900 [INFO] src.orchestrator: Executive Audit cycle=15: findings=2, patches=2
+2026-04-22 16:49:26,900 [INFO] src.orchestrator: Remodel 트리거: cycle=15, reasons=[growth_stagnation(avg=0.0<5) | exploration_drought(new_gu=0<30)]
+2026-04-22 16:49:26,902 [INFO] src.nodes.remodel: Remodel 완료: audit_cycle=15, proposals=1 (source_policy)
+2026-04-22 16:49:26,916 [INFO] src.utils.state_io: Phase snapshot 저장: phase_3 → bench\silver\japan-travel\p7-ab-on\state\phase_3
+2026-04-22 16:49:26,916 [INFO] src.orchestrator: Remodel 적용: phase=3, cycle=15, proposals=1/1 applied
+2026-04-22 16:49:26,969 [INFO] src.orchestrator: Snapshot 저장: bench\silver\japan-travel\p7-ab-on\state-snapshots\cycle-15-snapshot
+2026-04-22 16:49:26,970 [WARNING] src.obs.telemetry: trial-card.md 없음: bench\silver\japan-travel\p7-ab-on (telemetry emit 계속)
+2026-04-22 16:49:26,973 [INFO] src.orchestrator:   Cycle 15 완료: 33.7s (graph=33.6s, audit=0.0s, remodel=0.0s) | 누적 964.4s
+2026-04-22 16:49:26,973 [INFO] src.orchestrator: Orchestrator 완료: 15 cycles
+2026-04-22 16:49:27,006 [INFO] run_readiness: 보고서 저장: bench\silver\japan-travel\p7-ab-on\readiness-report.json
+
+============================================================
+  READINESS GATE: FAIL
+============================================================
+
+  [FAIL] VP1_expansion_variability (3/5)
+    [O] R1_category_gini: 0.4116 (>= 0.45)
+    [O] R2_blind_spot: 0.0 (>= 0.4)
+    [X] R3_late_discovery: 0 (>= 2)
+    [X] R4_field_gini: 0.4634 (>= 0.45)
+    [O] R5_explore_yield: 0.9333 (>= 0.2)
+
+  [FAIL] VP2_completeness (4/6)
+    [O] R1_gap_resolution: 1.0 (>= 0.85)
+    [X] R2_min_ku_per_cat: 4 (>= 5) [CRITICAL]
+    [X] R3_multi_evidence: 0.4634 (>= 0.8)
+    [O] R4_avg_confidence: 0.8468 (>= 0.82)
+    [O] R5_health_grade: 1.6 (>= 1.4)
+    [O] R6_staleness: 0 (>= 2)
+
+  [PASS] VP3_self_governance (5/6)
+    [O] R1_audit_count: 3 (>= 2)
+    [O] R2_policy_changes: 3 (>= 1)
+    [O] R3_threshold_adapt: 3 (>= 1)
+    [O] R4_adapted_ratio: 14 (>= 3)
+    [O] R5_rollback: 0 (>= 0)
+    [X] R6_closed_loop: 0 (>= 1)
+
+  Failed: VP1_expansion_variability, VP2_completeness
+============================================================
