@@ -22,19 +22,29 @@
 - `silver-trial-scaffold` — L3 `p7-*-on|off` trial 디렉토리 생성
 - `silver-phase-gate-check` — phase 전체 완료 시 readiness-report
 
-## 현재 상태 (2026-04-21)
+## 현재 상태 (2026-04-22)
 
-- **브랜치**: `main` (구현 착수 전)
-- **테스트**: 기존 상태 유지 (Phase 5 468 tests + SI-P2 추가)
-- **Silver Phase**: SI-P2 Gate PASS (2026-04-15). SI-P7 은 그 다음.
-- **미커밋 변경**:
-  - `docs/session-compact.md` (업데이트됨)
-  - `docs/structural-redesign-tasks_CC.md` (v1 → v2)
-  - `docs/phase-next-refactor-task-review_codex.md` (신규)
-  - `.claude/skills/silver-structural-redesign/SKILL.md` (신규)
-  - `.claude/skills/silver-e2e-test-layering/SKILL.md` (신규)
-  - `.claude/skills/skill-rules.json` (2종 추가)
-  - `dev/active/phase-si-p7-structural-redesign/` (본 디렉토리)
+- **브랜치**: `main`
+- **테스트**: 926 passed, 3 skipped
+- **완료**: Step A (S1 + S2-T1/T2) + Step B (S2-T3~T8 + S3 + S4-T1/T2)
+- **다음**: S4-T3 → S5a (Step C)
+
+### 커밋 이력 (이번 phase)
+
+| 커밋 | 내용 |
+|------|------|
+| `a6bc80e` | S1-T1~T3: target 자유화 |
+| `97e2ef5` | S1-T4: collect defer |
+| `defc3a0` | S1-T5: max_search_calls_per_cycle |
+| `2db7448` | S1-T7: D-129 regression guard |
+| `4e5988c` | S1-T8: deferred_targets FIFO + telemetry |
+| `6b8d9d2` | S1-T6: budget smoke 5c |
+| `7bd9f2b` | S2-T1: integration_result_dist |
+| `c6ba740` | S2-T2: ku_stagnation_signals + 3종 trigger |
+| `87d7603` | S2-T4: F2 α+β |
+| `f3a0be0` | S2-T5~T8: condition_split 강화 |
+| `2631c38` | S4-T1/T2: balance-* 제거 + deficit_score |
+| `2d252f3` | S3: adjacent rule engine (T1~T8) |
 
 ## 관련 코드 경로 (수정 예정)
 

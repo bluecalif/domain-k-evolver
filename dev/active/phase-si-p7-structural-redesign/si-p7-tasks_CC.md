@@ -11,24 +11,19 @@
 
 ### S1 — Target / Collect 자유화 (defer/queue)
 
-- [ ] **S1-T1** `_UTILITY_ORDER`/`_RISK_ORDER` 제거, `_select_targets` 정렬 제거 (`src/nodes/plan.py`)
-- [ ] **S1-T2** `_select_targets` 가 open_gus 전체 반환 (cycle cap 만 적용)
-- [ ] **S1-T3** `mode_node` target_count 공식 → cycle cap 으로 대체 (`src/nodes/mode.py`)
-- [ ] **S1-T4** collect.py utility skip 제거 + budget 초과 시 **drop 대신 `deferred_targets` 에 기록** (`src/nodes/collect.py:218-230`)
-  - **L1**: `_calc_execution_queue()` 가 defer 반환
-  - **L2**: `si-p7-s1-t4-smoke` — budget 낮춰 defer 유발 → `state.deferred_targets ≠ 0`, `metrics.deferred_count > 0`
-- [ ] **S1-T5** `max_search_calls_per_cycle` config. **초과분은 drop 아니라 defer**
-- [ ] **S1-T6** Budget 제거 smoke 5c — F1 결정 (완전 제거 시 비용/실패율/noise 측정)
-- [ ] **S1-T7** regression guard: `target_count` cap 재도입 방지 테스트 (D-129)
-- [ ] **S1-T8** `state.deferred_targets` 필드 + 다음 cycle plan **우선 소진**. 메트릭 `executed_targets`, `deferred_targets`, `defer_reason`
+- [x] **S1-T1** `_UTILITY_ORDER`/`_RISK_ORDER` 제거, `_select_targets` 정렬 제거 (`src/nodes/plan.py`) — `a6bc80e`
+- [x] **S1-T2** `_select_targets` 가 open_gus 전체 반환 (cycle cap 만 적용) — `a6bc80e`
+- [x] **S1-T3** `mode_node` target_count 공식 → cycle cap 으로 대체 (`src/nodes/mode.py`) — `a6bc80e`
+- [x] **S1-T4** collect.py utility skip 제거 + budget 초과 시 **drop 대신 `deferred_targets` 에 기록** — `97e2ef5`
+- [x] **S1-T5** `max_search_calls_per_cycle` config. **초과분은 drop 아니라 defer** — `defc3a0`
+- [x] **S1-T6** Budget 제거 smoke 5c — F1 결정 (완전 제거 시 비용/실패율/noise 측정) — `6b8d9d2`
+- [x] **S1-T7** regression guard: `target_count` cap 재도입 방지 테스트 (D-129) — `2db7448`
+- [x] **S1-T8** `state.deferred_targets` 필드 + 다음 cycle plan **우선 소진**. 메트릭 `executed_targets`, `deferred_targets`, `defer_reason` — `4e5988c`
 
 ### S2-T1/T2 — integration_result 제어 입력화 (Step A 범위)
 
-- [ ] **S2-T1** `integration_result` 분포 카운터 + **plan_modify/critique 입력으로 주입** (`src/utils/metrics.py`, `src/nodes/critique.py`, `src/nodes/plan.py`)
-  - **L1**: `integration_result_distribution()` 정확 집계
-  - **L2**: `si-p7-s2-t1-smoke --cycles 3` → `state.metrics.integration_distribution` 3-cycle window
-- [ ] **S2-T2** `added_ratio<0.3×3c` + `conflict_hold 증가` + `condition_split 부재` **3종 trigger** → critique `rx_id=ku_stagnation:*`
-  - **Plan reason code** 추가: `collect_defer_excess`, `integration_added_low`, `adjacent_yield_low`, `entity_discovery_insufficient`
+- [x] **S2-T1** `integration_result` 분포 카운터 + **plan_modify/critique 입력으로 주입** — `7bd9f2b`
+- [x] **S2-T2** `added_ratio<0.3×3c` + `conflict_hold 증가` + `condition_split 부재` **3종 trigger** → critique `rx_id=ku_stagnation:*` — `c6ba740`
 
 ### Step A L3 검증
 
@@ -41,36 +36,28 @@
 
 ### S2-T5~T8 — condition_split 재정의
 
-- [ ] **S2-T3** 확정 (D-181 기록, 구현 불필요 — 설계 결정만)
-- [ ] **S2-T4** F2 = α + β 구현 (α query 재작성 + β mode 전환). **β 는 S5a-T11 과 동반 구현** 필요
-- [ ] **S2-T5** condition_split (a): parse prompt "조건어 추출"
-- [ ] **S2-T6** condition_split (b) **재정의**: "값 구조 차이" (axis_tags/conditions/값 format) 감지 → 자동 split
-  - **L1**: `_detect_value_shape_diff()` unit
-  - **L2**: `si-p7-s2-t6-smoke` — 조건값 claim 주입 → `integration_result.condition_split` 출현
-- [ ] **S2-T7** condition_split (c): `skeleton.fields[].condition_axes` 메타 + 누락 시 강제
-- [ ] **S2-T8** axis_tags 차이 기반 condition_split (axis 공존 판정)
+- [x] **S2-T3** 확정 (D-181 기록, 구현 불필요 — 설계 결정만)
+- [x] **S2-T4** F2 = α + β 구현 (α query 재작성 + β mode 전환) — `87d7603`
+- [x] **S2-T5** condition_split (a): parse prompt "조건어 추출" — `f3a0be0`
+- [x] **S2-T6** condition_split (b) **재정의**: "값 구조 차이" (axis_tags/conditions/값 format) 감지 → 자동 split — `f3a0be0`
+- [x] **S2-T7** condition_split (c): `skeleton.fields[].condition_axes` 메타 + 누락 시 강제 — `f3a0be0`
+- [x] **S2-T8** axis_tags 차이 기반 condition_split (axis 공존 판정) — `f3a0be0`
 
 ### S3 — adjacent rule engine
 
-- [ ] **S3-T1** suppress → category 별 `mean × 1.5`
-- [ ] **S3-T2** state `recent_conflict_fields` + blocklist 반영 (N=3 cycle)
-- [ ] **S3-T3** `domain-skeleton.json` 에 `field_adjacency` rule engine seed (`{source_field: [next_fields]}` + category override)
-- [ ] **S3-T4** `_generate_dynamic_gus` 가 rule engine 참조
-  - **L1**: `field_adjacency` 참조 logic unit
-  - **L2**: `si-p7-s3-t4-smoke` — 생성된 adj GU 의 field 가 seed 맵 내
-- [ ] **S3-T5** `fields[].default_risk`, `default_utility` skeleton 추가
-- [ ] **S3-T6** dynamic GU 가 skeleton default 사용, 고정 `medium/convenience` 제거
-- [ ] **S3-T7** **rule yield tracker** — 낮은 yield rule 약화/중지
-  - **L1**: yield 계산 unit
-  - **L2**: `si-p7-s3-t7-smoke --cycles 5` → `state.metrics.adjacency_yield[rule_id]`
-- [ ] **S3-T8** `recent_conflict_fields` N cycle 동안 source/next 양쪽 배제
+- [x] **S3-T1** suppress → category 별 `mean × 1.5` — `2d252f3`
+- [x] **S3-T2** state `recent_conflict_fields` + blocklist 반영 (N=3 cycle) — `2d252f3`
+- [x] **S3-T3** `domain-skeleton.json` 에 `field_adjacency` rule engine seed — `2d252f3`
+- [x] **S3-T4** `_generate_dynamic_gus` 가 rule engine 참조 — `2d252f3`
+- [x] **S3-T5** `fields[].default_risk`, `default_utility` skeleton 추가 — `2d252f3`
+- [x] **S3-T6** dynamic GU 가 skeleton default 사용, 고정 `medium/convenience` 제거 — `2d252f3`
+- [x] **S3-T7** **rule yield tracker** — 낮은 yield rule 약화/중지 — `2d252f3`
+- [x] **S3-T8** `recent_conflict_fields` N cycle 동안 source/next 양쪽 배제 — `2d252f3`
 
 ### S4 — category_balance (virtual entity 즉시 제거)
 
-- [ ] **S4-T1** virtual `balance-N` 생성 **전부 제거** (과도기 옵션 없음)
-  - **L1**: `_generate_balance_gus` 가 virtual entity 생성 안 함
-  - **L2**: `si-p7-s4-t1-smoke` → `state.gap_map` 에 `balance-*` 0건
-- [ ] **S4-T2** `MIN_KU_PER_CAT` 제거 → `coverage_map.deficit_score` per-cat 계산
+- [x] **S4-T1** virtual `balance-N` 생성 **전부 제거** (과도기 옵션 없음) — `2631c38`
+- [x] **S4-T2** `MIN_KU_PER_CAT` 제거 → `coverage_map.deficit_score` per-cat 계산 — `2631c38`
 - [ ] **S4-T3** field 선택 → S3 `field_adjacency` 참조로 통일
 - [ ] **S4-T4** S5a validated entity 대상으로만 balance GU 생성
 
