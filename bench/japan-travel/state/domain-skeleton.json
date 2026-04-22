@@ -67,7 +67,8 @@
       "categories": [
         "*"
       ],
-      "description": "가격 정보"
+      "description": "가격 정보",
+      "condition_axes": ["season", "route", "pass_type", "traveler_type"]
     },
     {
       "name": "hours",
@@ -76,7 +77,8 @@
         "attraction",
         "dining"
       ],
-      "description": "운영시간"
+      "description": "운영시간",
+      "condition_axes": ["season", "day_of_week"]
     },
     {
       "name": "policy",
@@ -85,7 +87,8 @@
         "regulation",
         "pass-ticket"
       ],
-      "description": "규정/조건"
+      "description": "규정/조건",
+      "condition_axes": ["traveler_type", "route"]
     },
     {
       "name": "location",
@@ -104,7 +107,8 @@
         "transport",
         "pass-ticket"
       ],
-      "description": "소요/유효기간"
+      "description": "소요/유효기간",
+      "condition_axes": ["pass_type", "route"]
     },
     {
       "name": "eligibility",
@@ -113,7 +117,8 @@
         "pass-ticket",
         "regulation"
       ],
-      "description": "이용 자격"
+      "description": "이용 자격",
+      "condition_axes": ["traveler_type", "nationality"]
     },
     {
       "name": "how_to_use",
@@ -148,7 +153,8 @@
       "categories": [
         "payment"
       ],
-      "description": "사용 가능 범위"
+      "description": "사용 가능 범위",
+      "condition_axes": ["geography", "traveler_type"]
     },
     {
       "name": "where_to_buy",
@@ -157,7 +163,8 @@
         "pass-ticket",
         "connectivity"
       ],
-      "description": "구매처/방법"
+      "description": "구매처/방법",
+      "condition_axes": ["geography"]
     }
   ],
   "relations": [

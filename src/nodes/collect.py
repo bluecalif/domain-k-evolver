@@ -440,9 +440,15 @@ Return a JSON array. Each element MUST have these fields:
     "credibility": number (0.0-1.0, official=0.9, news=0.7, forum=0.5)
   }}
 - "risk_flag": boolean (true if safety/financial/policy related)
+- "conditions": object (OPTIONAL — include ONLY when value differs by condition)
+  Examples: {{"season": "peak"}}, {{"route": "tokyo-osaka"}}, {{"pass_type": "7-day"}}
+  Condition axes to watch: season, route, traveler_type, pass_type, geography, age_group
 
 ## Rules
 - Extract ONLY claims supported by the snippets above.
 - Each claim must cite exactly one source URL.
 - If no factual information is found, return an empty array: []
+- If the same field has DIFFERENT values for different conditions (e.g. peak vs off-peak price),
+  emit ONE claim per condition with the appropriate "conditions" key set.
+- Omit "conditions" entirely if the value applies universally (no conditional qualifier).
 - Return ONLY valid JSON, no markdown fences or explanations."""

@@ -14,8 +14,10 @@ from src.nodes.integrate import (
     _find_source_gu,
     _copy_axis_tags,
     _generate_dynamic_gus,
+    _get_field_condition_axes,
     _infer_geography,
     _find_matching_ku,
+    _value_structure_type,
 )
 from tests.conftest import make_minimal_state
 
@@ -1730,3 +1732,184 @@ class TestKuStagnationSignals:
         signals = result["ku_stagnation_signals"]
         assert signals["added_history"][0]["added_ratio"] == 0.0
         assert signals["added_history"][0]["total_claims"] == 0
+
+
+# ---------------------------------------------------------------------------
+# S2-T6: 값 구조 차이 감지
+# ---------------------------------------------------------------------------
+
+class TestValueStructureType:
+    def test_list_is_set(self) -> None:
+        assert _value_structure_type(["A", "B"]) == "set"
+
+    def test_dict_with_min_max_is_range(self) -> None:
+        assert _value_structure_type({"min": 100, "max": 200}) == "range"
+
+    def test_string_tilde_range(self) -> None:
+        assert _value_structure_type("40000~60000") == "range"
+
+    def test_string_dash_range(self) -> None:
+        assert _value_structure_type("¥40,000-¥60,000") == "range"
+
+    def test_plain_string_is_scalar(self) -> None:
+        assert _value_structure_type("¥50,000") == "scalar"
+
+    def test_number_is_scalar(self) -> None:
+        assert _value_structure_type(50000) == "scalar"
+
+
+class TestDetectConflictValueStructure:
+    def _ku(self, value) -> dict:
+        return {"entity_key": "d:a:x", "field": "price", "value": value, "status": "active"}
+
+    def _claim(self, value) -> dict:
+        return {"entity_key": "d:a:x", "field": "price", "value": value}
+
+    def test_scalar_vs_range_is_condition_split(self) -> None:
+        result = _detect_conflict(self._ku("¥50,000"), self._claim("¥40,000~¥60,000"))
+        assert result == "condition_split"
+
+    def test_scalar_vs_set_is_condition_split(self) -> None:
+        result = _detect_conflict(self._ku("Visa"), self._claim(["Visa", "Mastercard", "JCB"]))
+        assert result == "condition_split"
+
+    def test_same_structure_different_value_is_hold(self) -> None:
+        result = _detect_conflict(self._ku("¥50,000"), self._claim("¥60,000"))
+        assert result == "hold"
+
+    def test_same_value_no_conflict(self) -> None:
+        result = _detect_conflict(self._ku("¥50,000"), self._claim("¥50,000"))
+        assert result is None
+
+
+# ---------------------------------------------------------------------------
+# S2-T7: condition_axes 강제 condition_split
+# ---------------------------------------------------------------------------
+
+class TestGetFieldConditionAxes:
+    def test_returns_condition_axes(self) -> None:
+        skeleton = {"fields": [{"name": "price", "condition_axes": ["season", "route"]}]}
+        assert _get_field_condition_axes("price", skeleton) == ["season", "route"]
+
+    def test_field_without_condition_axes(self) -> None:
+        skeleton = {"fields": [{"name": "location"}]}
+        assert _get_field_condition_axes("location", skeleton) == []
+
+    def test_missing_field(self) -> None:
+        skeleton = {"fields": []}
+        assert _get_field_condition_axes("price", skeleton) == []
+
+
+class TestDetectConflictConditionAxes:
+    def _ku(self, value) -> dict:
+        return {"entity_key": "d:a:x", "field": "price", "value": value, "status": "active"}
+
+    def _claim(self, value) -> dict:
+        return {"entity_key": "d:a:x", "field": "price", "value": value}
+
+    def test_condition_axes_forces_split(self) -> None:
+        result = _detect_conflict(
+            self._ku("¥50,000"), self._claim("¥60,000"),
+            condition_axes=["season", "route"],
+        )
+        assert result == "condition_split"
+
+    def test_empty_condition_axes_uses_hold(self) -> None:
+        result = _detect_conflict(
+            self._ku("¥50,000"), self._claim("¥60,000"),
+            condition_axes=[],
+        )
+        assert result == "hold"
+
+    def test_condition_axes_same_value_no_conflict(self) -> None:
+        result = _detect_conflict(
+            self._ku("¥50,000"), self._claim("¥50,000"),
+            condition_axes=["season"],
+        )
+        assert result is None
+
+
+class TestIntegrateConditionAxes:
+    """integrate_node에서 skeleton condition_axes 자동 적용."""
+
+    def test_price_field_conflict_becomes_condition_split(self) -> None:
+        """price 필드는 condition_axes 있으므로 값 충돌 → condition_split."""
+        skeleton = {"categories": [], "fields": [
+            {"name": "price", "categories": ["*"], "condition_axes": ["season"]}
+        ]}
+        kus = [{"ku_id": "KU-0001", "entity_key": "d:a:x", "field": "price",
+                "value": "¥50,000", "status": "active", "evidence_links": ["EU-000"],
+                "confidence": 0.8, "observed_at": "2026-01-01"}]
+        claims = [{"claim_id": "CL-001", "entity_key": "d:a:x", "field": "price",
+                   "value": "¥70,000", "source_gu_id": "",
+                   "evidence": {"eu_id": "EU-001", "credibility": 0.7}}]
+        state = {
+            "knowledge_units": kus,
+            "gap_map": [],
+            "current_claims": claims,
+            "domain_skeleton": skeleton,
+            "current_mode": {"mode": "normal"},
+            "current_cycle": 1,
+        }
+        result = integrate_node(state)
+        processed = result["current_claims"]
+        assert processed[0]["integration_result"] == "condition_split"
+
+    def test_location_field_no_condition_axes_uses_hold(self) -> None:
+        """location 필드는 condition_axes 없으므로 값 충돌 → hold."""
+        skeleton = {"categories": [], "fields": [
+            {"name": "location", "categories": ["attraction"]}
+        ]}
+        kus = [{"ku_id": "KU-0001", "entity_key": "d:a:x", "field": "location",
+                "value": "Tokyo", "status": "active", "evidence_links": ["EU-000"],
+                "confidence": 0.8, "observed_at": "2026-01-01"}]
+        claims = [{"claim_id": "CL-001", "entity_key": "d:a:x", "field": "location",
+                   "value": "Osaka", "source_gu_id": "",
+                   "evidence": {"eu_id": "EU-001", "credibility": 0.7}}]
+        state = {
+            "knowledge_units": kus,
+            "gap_map": [],
+            "current_claims": claims,
+            "domain_skeleton": skeleton,
+            "current_mode": {"mode": "normal"},
+            "current_cycle": 1,
+        }
+        result = integrate_node(state)
+        processed = result["current_claims"]
+        assert processed[0]["integration_result"] == "conflict_hold"
+
+
+# ---------------------------------------------------------------------------
+# S2-T8: axis_tags 차이 → condition_split
+# ---------------------------------------------------------------------------
+
+class TestDetectConflictAxisTags:
+    def _ku(self, value, axis_tags) -> dict:
+        return {"entity_key": "d:a:x", "field": "price", "value": value,
+                "status": "active", "axis_tags": axis_tags}
+
+    def _claim(self, value, axis_tags) -> dict:
+        return {"entity_key": "d:a:x", "field": "price", "value": value,
+                "axis_tags": axis_tags}
+
+    def test_different_geography_is_condition_split(self) -> None:
+        result = _detect_conflict(
+            self._ku("¥50,000", {"geography": "tokyo"}),
+            self._claim("¥40,000", {"geography": "osaka"}),
+        )
+        assert result == "condition_split"
+
+    def test_same_geography_is_hold(self) -> None:
+        result = _detect_conflict(
+            self._ku("¥50,000", {"geography": "tokyo"}),
+            self._claim("¥60,000", {"geography": "tokyo"}),
+        )
+        assert result == "hold"
+
+    def test_missing_axis_tags_skips_rule(self) -> None:
+        result = _detect_conflict(
+            {"entity_key": "d:a:x", "field": "price", "value": "¥50,000", "status": "active"},
+            {"entity_key": "d:a:x", "field": "price", "value": "¥60,000"},
+        )
+        # axis_tags 없으면 Rule 2c 건너뜀 → hold
+        assert result == "hold"

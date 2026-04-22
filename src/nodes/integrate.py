@@ -75,16 +75,45 @@ Classify as one of:
 Respond in JSON: {{"verdict": "conflict"|"update"|"equivalent", "reason": "brief explanation"}}"""
 
 
+def _value_structure_type(value: Any) -> str:
+    """값 구조 타입 분류: 'range' | 'set' | 'scalar'.
+
+    S2-T6: 구조 차이 감지용.
+    - range: dict with 'min'/'max', or str like "X~Y" / "X-Y"
+    - set: list
+    - scalar: 그 외
+    """
+    if isinstance(value, list):
+        return "set"
+    if isinstance(value, dict) and ("min" in value or "max" in value):
+        return "range"
+    if isinstance(value, str):
+        import re
+        if re.search(r"\d[\d,]*\s*[~～－—–-]\s*[¥$€£₩]?\d", value):
+            return "range"
+    return "scalar"
+
+
+def _get_field_condition_axes(field: str, skeleton: dict) -> list[str]:
+    """skeleton.fields 에서 field 의 condition_axes 조회 (S2-T7)."""
+    for f in skeleton.get("fields", []):
+        if f.get("name") == field:
+            return f.get("condition_axes", [])
+    return []
+
+
 def _detect_conflict(
     existing_ku: dict,
     claim: dict,
     *,
     llm: Any | None = None,
+    condition_axes: list[str] | None = None,
 ) -> str | None:
     """충돌 감지. 반환: 'hold' | 'condition_split' | None.
 
     Args:
         llm: LLM 인스턴스. None이면 결정론적 문자열 비교 fallback.
+        condition_axes: skeleton 에서 조회한 field 의 condition_axes (S2-T7).
     """
     existing_value = existing_ku.get("value")
     claim_value = claim.get("value")
@@ -99,6 +128,26 @@ def _detect_conflict(
     # Rule 2: conditions 있으면 condition_split
     if claim.get("conditions") or existing_ku.get("conditions"):
         return "condition_split"
+
+    # Rule 2b (S2-T6): 값 구조 차이 → condition_split
+    # 단일값 vs 범위, 단일값 vs 옵션셋은 조건부 공존으로 처리
+    existing_type = _value_structure_type(existing_value)
+    claim_type = _value_structure_type(claim_value)
+    if existing_type != claim_type:
+        return "condition_split"
+
+    # Rule 2d (S2-T7): field에 condition_axes 정의 → 값 차이 시 강제 condition_split
+    if condition_axes:
+        return "condition_split"
+
+    # Rule 2c (S2-T8): axis_tags 차이 → axis 기반 공존 (condition_split)
+    # 지역/조건이 다른 claim은 충돌이 아니라 공존
+    existing_axis = existing_ku.get("axis_tags") or {}
+    claim_axis = claim.get("axis_tags") or {}
+    if existing_axis and claim_axis:
+        for axis_key in existing_axis:
+            if axis_key in claim_axis and existing_axis[axis_key] != claim_axis[axis_key]:
+                return "condition_split"
 
     # Rule 3: LLM semantic 판정
     if llm is not None:
@@ -379,7 +428,11 @@ def integrate_node(
 
             else:
                 # 충돌 감지 (LLM semantic 비교)
-                conflict = _detect_conflict(existing_ku, claim, llm=llm)
+                # S2-T7: skeleton field의 condition_axes 조회
+                field_condition_axes = _get_field_condition_axes(field, skeleton)
+                conflict = _detect_conflict(
+                    existing_ku, claim, llm=llm, condition_axes=field_condition_axes,
+                )
 
                 if conflict == "hold":
                     # disputed 처리
