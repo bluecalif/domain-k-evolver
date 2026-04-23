@@ -346,7 +346,12 @@ def plan_node(
     cycle = state.get("current_cycle", 0)
 
     # S2-T4 α: stagnation 활성 여부 판정
-    is_stagnation = _is_stagnation_active(critique, ku_stagnation_signals, aggressive_mode_remaining)
+    # SI-P7 V3: s2 축 off 시 is_stagnation 강제 False (query_rewrite + β mode 모두 no-op)
+    s2_enabled = bool(state.get("si_p7_toggles", {}).get("s2_enabled", True))
+    if s2_enabled:
+        is_stagnation = _is_stagnation_active(critique, ku_stagnation_signals, aggressive_mode_remaining)
+    else:
+        is_stagnation = False
 
     # P4-B3: remodel pending 확인
     remodel_report = state.get("remodel_report")

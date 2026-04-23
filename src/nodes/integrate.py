@@ -109,6 +109,7 @@ def _detect_conflict(
     llm: Any | None = None,
     condition_axes: list[str] | None = None,
     reason_out: dict | None = None,
+    s2_enabled: bool = True,
 ) -> str | None:
     """충돌 감지. 반환: 'hold' | 'condition_split' | None.
 
@@ -117,6 +118,8 @@ def _detect_conflict(
         condition_axes: skeleton 에서 조회한 field 의 condition_axes (S2-T7).
         reason_out: 주어지면 condition_split 결정 시 "reason" 키에 분기 유형 기록
             ("conditions" | "value_shape" | "condition_axes" | "axis_tags"). V2 계측 용.
+        s2_enabled: SI-P7 V3 ablation. False 면 Rule 2b/2c/2d (S2-T6~T8 재정의)
+            skip — Rule 2 (conditions) 만 condition_split 로 판정. 기존 hold/LLM 경로 유지.
     """
     existing_value = existing_ku.get("value")
     claim_value = claim.get("value")
@@ -138,13 +141,13 @@ def _detect_conflict(
     # 단일값 vs 범위, 단일값 vs 옵션셋은 조건부 공존으로 처리
     existing_type = _value_structure_type(existing_value)
     claim_type = _value_structure_type(claim_value)
-    if existing_type != claim_type:
+    if s2_enabled and existing_type != claim_type:
         if reason_out is not None:
             reason_out["reason"] = "value_shape"
         return "condition_split"
 
     # Rule 2d (S2-T7): field에 condition_axes 정의 → 값 차이 시 강제 condition_split
-    if condition_axes:
+    if s2_enabled and condition_axes:
         if reason_out is not None:
             reason_out["reason"] = "condition_axes"
         return "condition_split"
@@ -153,7 +156,7 @@ def _detect_conflict(
     # 지역/조건이 다른 claim은 충돌이 아니라 공존
     existing_axis = existing_ku.get("axis_tags") or {}
     claim_axis = claim.get("axis_tags") or {}
-    if existing_axis and claim_axis:
+    if s2_enabled and existing_axis and claim_axis:
         for axis_key in existing_axis:
             if axis_key in claim_axis and existing_axis[axis_key] != claim_axis[axis_key]:
                 if reason_out is not None:
@@ -440,6 +443,10 @@ def integrate_node(
     split_events: list[dict] = []
     suppress_events: list[dict] = []
 
+    # SI-P7 V3: axis toggle (state 에서 주입, 기본값 True = 기존 동작)
+    si_p7_toggles = state.get("si_p7_toggles") or {}
+    s2_enabled = bool(si_p7_toggles.get("s2_enabled", True))
+
     open_count = sum(1 for gu in gap_map if gu.get("status") == "open")
     dynamic_cap = _compute_dynamic_gu_cap(mode, open_count)
 
@@ -533,6 +540,7 @@ def integrate_node(
                     existing_ku, claim, llm=llm,
                     condition_axes=field_condition_axes,
                     reason_out=_split_reason_info,
+                    s2_enabled=s2_enabled,
                 )
 
                 if conflict == "hold":

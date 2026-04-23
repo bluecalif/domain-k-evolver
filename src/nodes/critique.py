@@ -33,6 +33,7 @@ def _analyze_failure_modes(
     today: date | None = None,
     integration_result_dist: dict | None = None,
     ku_stagnation_signals: dict | None = None,
+    s2_enabled: bool = True,
 ) -> list[dict]:
     """6대 실패모드 분석 → 처방 목록."""
     if today is None:
@@ -103,8 +104,11 @@ def _analyze_failure_modes(
         })
         rx_counter += 1
 
+    # SI-P7 V3: s2_enabled 는 caller (critique_node) 에서 주입
+    # (state 에 si_p7_toggles 가 있으면 critique_node 가 추출해 전달)
+
     # 5. S2-T1: integration conv_rate 저조 → integration_bottleneck 처방
-    if integration_result_dist:
+    if integration_result_dist and s2_enabled:
         conv_rate = integration_result_dist.get("conv_rate", 1.0)
         total_claims = integration_result_dist.get("total_claims", 0)
         if total_claims > 0 and conv_rate < INTEGRATION_CONV_RATE_THRESHOLD:
@@ -120,7 +124,7 @@ def _analyze_failure_modes(
             rx_counter += 1
 
     # 6. S2-T2: KU stagnation 3종 trigger
-    if ku_stagnation_signals:
+    if ku_stagnation_signals and s2_enabled:
         added_history = ku_stagnation_signals.get("added_history", [])
         conflict_hold_history = ku_stagnation_signals.get("conflict_hold_history", [])
         condition_split_history = ku_stagnation_signals.get("condition_split_history", [])
@@ -512,9 +516,13 @@ def critique_node(
     # S2-T2: ku_stagnation_signals 읽기 (제어 입력)
     ku_stagnation_signals = state.get("ku_stagnation_signals")
 
+    # SI-P7 V3: axis toggle 에서 s2_enabled 추출
+    s2_enabled = bool(state.get("si_p7_toggles", {}).get("s2_enabled", True))
+
     # 실패모드 분석 (dispute resolution 후 — 해소된 KU는 consistency 처방 불필요)
     prescriptions = _analyze_failure_modes(
         kus, gap_map, skeleton, today, integration_result_dist, ku_stagnation_signals,
+        s2_enabled=s2_enabled,
     )
 
     # 해소된 dispute에 대한 처방 추가

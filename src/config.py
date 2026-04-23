@@ -68,6 +68,41 @@ class SearchConfig:
 
 
 @dataclass(frozen=True)
+class SIP7AxisToggles:
+    """SI-P7 Step A/B 축별 기능 toggle (V3 ablation 용).
+
+    기본값 전부 True = 기존 동작 유지. False 로 설정 시 해당 축 no-op.
+    `SI_P7_AXIS_OFF=s2` env var 로 비활성화 축 지정 (콤마 구분, e.g. "s2,s3").
+    """
+
+    s1_enabled: bool = True  # defer/queue, target 자유화 (S1-T1~T8)
+    s2_enabled: bool = True  # integration_injection + ku_stagnation + query_rewrite
+                             # + aggressive_mode + condition_split 재정의 (S2-T1~T8)
+    s3_enabled: bool = True  # adjacent rule engine + suppress + blocklist + yield (S3-T1~T8)
+    s4_enabled: bool = True  # virtual entity 제거 + coverage_map.deficit_score (S4-T1~T2)
+
+    @classmethod
+    def from_env(cls) -> SIP7AxisToggles:
+        off_raw = os.environ.get("SI_P7_AXIS_OFF", "").strip().lower()
+        off_axes = {a.strip() for a in off_raw.split(",") if a.strip()}
+        return cls(
+            s1_enabled="s1" not in off_axes,
+            s2_enabled="s2" not in off_axes,
+            s3_enabled="s3" not in off_axes,
+            s4_enabled="s4" not in off_axes,
+        )
+
+    def to_dict(self) -> dict[str, bool]:
+        """state 에 저장할 dict 형태 — node 에서 state 로 참조."""
+        return {
+            "s1_enabled": self.s1_enabled,
+            "s2_enabled": self.s2_enabled,
+            "s3_enabled": self.s3_enabled,
+            "s4_enabled": self.s4_enabled,
+        }
+
+
+@dataclass(frozen=True)
 class OrchestratorConfig:
     """Orchestrator 실행 설정."""
 
@@ -80,6 +115,7 @@ class OrchestratorConfig:
     bench_domain: str = "japan-travel"
     bench_path: str = "bench"
     bench_root: str = ""  # Silver: 직접 trial 경로 (설정 시 bench_path/bench_domain 무시)
+    si_p7_toggles: SIP7AxisToggles = field(default_factory=SIP7AxisToggles)  # V3 ablation
 
     @classmethod
     def from_env(cls) -> OrchestratorConfig:
@@ -93,6 +129,7 @@ class OrchestratorConfig:
             bench_domain=os.environ.get("EVOLVER_BENCH_DOMAIN", "japan-travel"),
             bench_path=os.environ.get("EVOLVER_BENCH_PATH", "bench"),
             bench_root=os.environ.get("EVOLVER_BENCH_ROOT", ""),
+            si_p7_toggles=SIP7AxisToggles.from_env(),
         )
 
 

@@ -481,6 +481,143 @@ def test_detect_conflict_reason_out_not_touched_for_non_split():
     assert reason == {}
 
 
+# === V-T7b axis toggle (V3 ablation) ===
+
+def test_sip7_axis_toggles_default_all_on():
+    """기본값: 모든 축 enabled=True (기존 동작 유지)."""
+    from src.config import SIP7AxisToggles
+
+    toggles = SIP7AxisToggles()
+    d = toggles.to_dict()
+    assert d == {
+        "s1_enabled": True,
+        "s2_enabled": True,
+        "s3_enabled": True,
+        "s4_enabled": True,
+    }
+
+
+def test_sip7_axis_toggles_from_env(monkeypatch):
+    """SI_P7_AXIS_OFF='s2' env var → s2_enabled=False."""
+    from src.config import SIP7AxisToggles
+
+    monkeypatch.setenv("SI_P7_AXIS_OFF", "s2")
+    t = SIP7AxisToggles.from_env()
+    assert t.s1_enabled is True
+    assert t.s2_enabled is False
+    assert t.s3_enabled is True
+    assert t.s4_enabled is True
+
+    # 복수 축
+    monkeypatch.setenv("SI_P7_AXIS_OFF", "s2, s3")
+    t = SIP7AxisToggles.from_env()
+    assert t.s2_enabled is False
+    assert t.s3_enabled is False
+
+    # 빈 문자열
+    monkeypatch.setenv("SI_P7_AXIS_OFF", "")
+    t = SIP7AxisToggles.from_env()
+    assert all([t.s1_enabled, t.s2_enabled, t.s3_enabled, t.s4_enabled])
+
+
+def test_detect_conflict_s2_off_skips_value_shape_split():
+    """s2_enabled=False → Rule 2b (value_shape) skip → hold 로 회귀 (baseline pre-SI-P7).
+
+    LLM=None 이므로 결정론적 fallback: 값 차이 + 조건 부재 → 'hold'.
+    """
+    from src.nodes.integrate import _detect_conflict
+
+    # s2_enabled=True → condition_split
+    r = _detect_conflict(
+        {"value": "Visa"},
+        {"value": ["Visa", "Mastercard"]},
+        s2_enabled=True,
+    )
+    assert r == "condition_split"
+
+    # s2_enabled=False → Rule 2b off → hold (기존 conflict 로 회귀)
+    r = _detect_conflict(
+        {"value": "Visa"},
+        {"value": ["Visa", "Mastercard"]},
+        s2_enabled=False,
+    )
+    assert r == "hold"
+
+
+def test_detect_conflict_s2_off_still_respects_rule2_conditions():
+    """s2_enabled=False 여도 Rule 2 (conditions) 는 여전히 condition_split.
+
+    D-181 baseline 회귀: conditions-only rule 은 SI-P7 이전부터 존재.
+    """
+    from src.nodes.integrate import _detect_conflict
+
+    r = _detect_conflict(
+        {"value": "¥50,000"},
+        {"value": "¥40,000", "conditions": {"season": "peak"}},
+        s2_enabled=False,
+    )
+    assert r == "condition_split"
+
+
+def test_detect_conflict_s2_off_skips_condition_axes_split():
+    """s2_enabled=False → Rule 2d (condition_axes) skip → hold 회귀."""
+    from src.nodes.integrate import _detect_conflict
+
+    r = _detect_conflict(
+        {"value": "A"},
+        {"value": "B"},
+        condition_axes=["region"],
+        s2_enabled=False,
+    )
+    assert r == "hold"
+
+
+def test_detect_conflict_s2_off_skips_axis_tags_split():
+    """s2_enabled=False → Rule 2c (axis_tags) skip → hold 회귀."""
+    from src.nodes.integrate import _detect_conflict
+
+    r = _detect_conflict(
+        {"value": "¥50,000", "axis_tags": {"geography": "tokyo"}},
+        {"value": "¥60,000", "axis_tags": {"geography": "osaka"}},
+        s2_enabled=False,
+    )
+    assert r == "hold"
+
+
+def test_plan_s2_off_forces_is_stagnation_false():
+    """s2_enabled=False → plan.py 에서 is_stagnation=False 강제.
+
+    결과: query_rewrite_rx_log 미반환 (aggressive_mode_remaining > 0 여도).
+    """
+    from src.nodes.plan import plan_node
+
+    state = load_state(BENCH)
+    state["current_cycle"] = 10
+    # 평소 stagnation 활성 조건 (aggressive > 0) 이지만 s2 off 로 force skip
+    state["aggressive_mode_remaining"] = 2
+    state["si_p7_toggles"] = {"s1_enabled": True, "s2_enabled": False,
+                               "s3_enabled": True, "s4_enabled": True}
+    state["current_mode"] = {"mode": "normal", "explore_budget": 0, "exploit_budget": 2}
+
+    result = plan_node(state)
+    assert "query_rewrite_rx_log" not in result
+
+
+def test_critique_s2_off_skips_ku_stagnation_trigger():
+    """s2_enabled=False 시 critique 모듈의 stagnation block 이 실행 안 되는지 검증.
+
+    직접 실행은 복잡하므로 (signals 셋업 필요), 소스 구조로 regression guard 확인.
+    """
+    import inspect
+    import src.nodes.critique as crit_mod
+    source = inspect.getsource(crit_mod)
+    # s2_enabled 파라미터 추출 + 전달 + 두 stagnation 블록에 가드 존재
+    assert 's2_enabled = bool(state.get("si_p7_toggles"' in source
+    assert "s2_enabled=s2_enabled" in source  # _analyze_failure_modes 호출 시 전달
+    assert "if ku_stagnation_signals and s2_enabled" in source
+    assert "if integration_result_dist and s2_enabled" in source
+
+
 def test_generate_dynamic_gus_emits_suppress_event():
     """_generate_dynamic_gus 가 suppress 조건 충족 시 buffer 에 event append + log."""
     from src.nodes.integrate import _generate_dynamic_gus

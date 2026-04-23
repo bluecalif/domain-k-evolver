@@ -105,10 +105,14 @@ class Orchestrator:
         orch_cfg = self.config.orchestrator
         state = initial_state or load_state(self._domain_path)
 
+        # SI-P7 V3: axis toggles 를 state 에 주입 (node 들이 state 로 접근)
+        state["si_p7_toggles"] = orch_cfg.si_p7_toggles.to_dict()
+
         logger.info(
-            "Orchestrator 시작: domain=%s, max_cycles=%d",
+            "Orchestrator 시작: domain=%s, max_cycles=%d, si_p7_toggles=%s",
             orch_cfg.bench_domain,
             orch_cfg.max_cycles,
+            orch_cfg.si_p7_toggles.to_dict(),
         )
 
         orch_t0 = time.monotonic()

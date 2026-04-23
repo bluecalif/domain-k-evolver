@@ -260,6 +260,10 @@ class EvolverState(TypedDict, total=False):
     # {rule_id: [{"cycle": int, "attempted": int, "resolved": int}]}
     adjacency_yield: dict
 
+    # SI-P7 V3 ablation: 축별 toggle (orchestrator 가 config 에서 주입)
+    # {"s1_enabled": bool, "s2_enabled": bool, "s3_enabled": bool, "s4_enabled": bool}
+    si_p7_toggles: dict[str, bool]
+
     # SI-P7 V2 계측: event-log 필드 (관찰 전용, append-only)
     # [{"cycle": int, "remaining": int, "event": "entered"|"tick"|"exited", "rx_id": str|None}]
     aggressive_mode_history: list[dict]
