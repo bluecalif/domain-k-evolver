@@ -657,7 +657,7 @@ def critique_node(
         # trigger cycle + 다음 2c = 3 cycles (이미 활성이면 리셋)
         result["aggressive_mode_remaining"] = 3
         # SI-P7 V2 계측 — aggressive mode entry event
-        cycle = int(state.get("cycle_count", 0))
+        cycle = int(state.get("current_cycle", state.get("cycle_count", 0)))
         rx_id = next(
             (rx.get("type") for rx in prescriptions
              if rx.get("type") == "ku_stagnation:added_low"),

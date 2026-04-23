@@ -1,0 +1,2 @@
+cycle,ku_total,ku_active,ku_disputed,gu_total,gu_open,gu_resolved,evidence_rate,multi_evidence_rate,conflict_rate,avg_confidence,gap_resolution_rate,staleness_risk,mode,collect_failure_rate,llm_calls,llm_tokens,search_calls,fetch_calls
+1,39,39,0,35,19,16,1.0,0.45454545454545453,0.15384615384615385,0.7822121212121211,0.45714285714285713,0,normal,0.0,0,0,0,0

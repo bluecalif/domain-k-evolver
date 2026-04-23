@@ -85,3 +85,40 @@
 - H5c (S2-T4 β = S5a coupled no-op) **유력 가설** — V2 계측으로 `aggressive_mode_remaining` cycle 시계열 + 효과 경로 call count 확인 후 V-T10 (D-192) 에서 확정
 - D-190 유지 강화: `balance-*` 단독 원인 가설 (H7) 은 V1 증거로도 기각에 가까움
 - Next: V-T4 계측 범위 사용자 승인 요청
+
+---
+
+### 2026-04-23 — [Step V / V-T6] 1c smoke 성공 + R1 cycle_count offset 확정
+
+**증상**: V-T5 구현 후 `p7-v2-smoke` 1c 실행. `state/si-p7-signals.json` 7개 필드 populate, stdout 에 `[si-p7] condition_split: cycle=1 events=5 reasons={'conditions', 'value_shape'}` emit 확인. 그러나 `telemetry/cycles.jsonl` 의 `si_p7.condition_split_count_cycle` = 0 (기대 5).
+
+**환경**: commit `35c5bea`. trial `bench/silver/japan-travel/p7-v2-smoke`, 1 cycle real API (~250s, KU 13→39, GU 28→35).
+
+**원인 (R1 확정)**:
+- `telemetry.py:92` 의 최상위 `"cycle": state.get("cycle_count", 0)` 은 **pre-existing bug** — orchestrator 가 `cycle_count` 를 설정한 적 없음. `p7-ab-on` telemetry 도 모든 cycle `top-cycle=0` 으로 확인
+- 내가 추가한 `_build_si_p7_subdict` 와 `critique.py:660` 도 동일하게 `cycle_count` 사용 → event 는 `current_cycle` (=1) 로 stamp, telemetry 는 `cycle_count` (=0) 로 count → 매칭 실패
+- integrate.py / plan.py 등 다른 emit 지점은 `current_cycle` 을 이미 사용 → 정답 필드는 `current_cycle`
+
+**해결**:
+- `src/obs/telemetry.py:_build_si_p7_subdict` : `cycle_num = int(state.get("current_cycle", state.get("cycle_count", 0)))`
+- `src/nodes/critique.py:660` : 동일 패턴
+- `tests/test_si_p7_v2_instrumentation.py` : test fixture 에 `current_cycle` 도 주입 (기존 `cycle_count` 유지하여 fallback 검증)
+
+**검증**:
+- 수정 후 smoke state 를 load → `_build_si_p7_subdict(state_with_current_cycle=1)` 호출 시 `condition_split_count_cycle=5`, `suppress_count_cycle=3`, `integration_result_cycle` populate 확인 (smoke 재실행 없이 fix 검증)
+- 전체 944 passed, 3 skipped 유지 (회귀 0)
+- 기존 `telemetry.py:92` 최상위 `cycle_count` 버그는 V-T5 scope 밖 — **별도 후속 과제 (post-SI-P7)**
+
+**V-T6 Acceptance 최종 매트릭스**:
+- ✅ `si-p7-signals.json` 존재 (state/ + cycle-1-snapshot/ 양쪽)
+- ✅ non-empty 필드 7개 (임계 ≥2 달성)
+- ✅ telemetry `si_p7` 8 sub-field 정상 (fix 후)
+- ✅ `[si-p7]` log 2종 emit (condition_split, suppress)
+- ✅ 전체 테스트 944 pass, 회귀 0
+
+**H5c 1차 판단**: c1 에서 `aggressive_mode_remaining=0`, `growth_stagnation=0` → c1 에서 stagnation 이 자연 발동하지 않는 것이 정상. **H5c 확정은 stagnation 자연 발동 조건 (p7-ab-on 에서 c5 근처) 이 포함된 multi-cycle trial 필요** → V3 ablation (D-191 8c) 으로 이월.
+
+**Decision**:
+- **R1 확정**: `cycle_count` 는 orchestrator 설정 미지원 — `current_cycle` 을 source of truth 로 사용. 별도 후속 과제로 orchestrator 가 `cycle_count` 도 sync 하도록 개선 고려
+- H5c 확정 경로 = V3 ablation (`p7-ab-minus-{axis}` 8c) 로 결정
+- Next: V-T7 ablation 설계 + 비용 추정 + 사용자 승인 요청

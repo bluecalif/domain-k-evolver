@@ -94,7 +94,7 @@
 
 - [x] **V-T4** 계측 필드 설계 — `state.py` 신규 필드 (`aggressive_mode_history`, `suppress_event_log`, `query_rewrite_rx_log`, `condition_split_events`) + `state_io.py` `si-p7-signals.json` persist + `telemetry.py` `si_p7` sub-dict + `critique.py`/`plan.py`/`integrate.py` event 기록 포인트. 설계: `dev/active/phase-si-p7-structural-redesign/v2-instrumentation-design.md`
 - [x] **V-T5** 계측 코드 구현 — state.py (+4 event-log 필드), state_io.py (si-p7-signals.json persist), telemetry.py (si_p7 sub-dict + 4 helper), critique.py (β entry), plan.py (query_rewrite), integrate.py (condition_split reason_out + suppress events). 18 L1 테스트 pass (persist 7 / telemetry 5 / emit 6). 전체 944 passed + 3 skipped, 회귀 0. **로직 변경 0건, 관찰만**
-- [ ] **V-T6** 1-cycle smoke (`scripts/run_readiness.py --cycles 1 --trial-id p7-v2-smoke`) 로 실 경로 신호 발생 확인 (mock 금지, real API 1 cycle) `[S]`
+- [x] **V-T6** 1-cycle smoke (`bench/silver/japan-travel/p7-v2-smoke`) 실행. 결과: si-p7-signals.json 7개 non-empty 필드 persist, telemetry si_p7 sub-dict 정상, `[si-p7] condition_split: cycle=1 events=5` emit 확인. **R1 (cycle_count offset) 확정**: orchestrator 가 `cycle_count` 를 설정 안 함 (pre-existing bug). `_build_si_p7_subdict` + critique.py β emit 을 `current_cycle` 사용으로 수정. H5c 는 5c 이내 미확정 (stagnation 자연 발동 필요) → V3 ablation 으로 이월
 
 ### V3 — 축별 Ablation L3 (V2 후 조건부, API 비용 — 사전 승인 필수)
 

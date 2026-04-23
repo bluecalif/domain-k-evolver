@@ -138,8 +138,9 @@ def _build_si_p7_subdict(state: "EvolverState") -> dict:
     """SI-P7 V2 계측 — cycle snapshot 용 si_p7 sub-dict.
 
     관찰 전용. state 를 변형하지 않음.
+    Cycle 기준은 current_cycle (integrate 가 event stamp 에 사용하는 필드와 동일).
     """
-    cycle_num = int(state.get("cycle_count", 0))
+    cycle_num = int(state.get("current_cycle", state.get("cycle_count", 0)))
     return {
         "aggressive_mode_remaining": int(state.get("aggressive_mode_remaining", 0)),
         "integration_result_cycle": _extract_integration_cycle(state, cycle_num),

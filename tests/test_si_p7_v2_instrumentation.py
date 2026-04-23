@@ -206,6 +206,7 @@ def test_telemetry_emits_si_p7_subdict(tmp_path):
     from src.obs.telemetry import emit_cycle
 
     state = _state_with_all_signals()
+    state["current_cycle"] = 14
     state["cycle_count"] = 14
 
     # trial-card.md 존재 가정 (emit_cycle warning 회피 용)
@@ -255,6 +256,7 @@ def test_telemetry_helpers_readonly():
     from src.obs.telemetry import _build_si_p7_subdict
 
     state = _state_with_all_signals()
+    state["current_cycle"] = 14
     state["cycle_count"] = 14
 
     # 전/후 snapshot 비교
@@ -274,6 +276,7 @@ def test_telemetry_si_p7_empty_state():
 
     state = load_state(BENCH)
     state["cycle_count"] = 0
+    state["current_cycle"] = 0
     # 모든 필드 비워 두기
     for field in _SIGNAL_FIELDS:
         if field == "aggressive_mode_remaining":

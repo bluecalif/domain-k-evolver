@@ -1,0 +1,23 @@
+[
+  {
+    "cycle": 1,
+    "ku_total": 39,
+    "ku_active": 39,
+    "ku_disputed": 0,
+    "gu_total": 35,
+    "gu_open": 19,
+    "gu_resolved": 16,
+    "evidence_rate": 1.0,
+    "multi_evidence_rate": 0.45454545454545453,
+    "conflict_rate": 0.15384615384615385,
+    "avg_confidence": 0.7822121212121211,
+    "gap_resolution_rate": 0.45714285714285713,
+    "staleness_risk": 0,
+    "mode": "normal",
+    "collect_failure_rate": 0.0,
+    "llm_calls": 0,
+    "llm_tokens": 0,
+    "search_calls": 0,
+    "fetch_calls": 0
+  }
+]
