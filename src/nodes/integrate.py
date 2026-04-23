@@ -108,12 +108,15 @@ def _detect_conflict(
     *,
     llm: Any | None = None,
     condition_axes: list[str] | None = None,
+    reason_out: dict | None = None,
 ) -> str | None:
     """충돌 감지. 반환: 'hold' | 'condition_split' | None.
 
     Args:
         llm: LLM 인스턴스. None이면 결정론적 문자열 비교 fallback.
         condition_axes: skeleton 에서 조회한 field 의 condition_axes (S2-T7).
+        reason_out: 주어지면 condition_split 결정 시 "reason" 키에 분기 유형 기록
+            ("conditions" | "value_shape" | "condition_axes" | "axis_tags"). V2 계측 용.
     """
     existing_value = existing_ku.get("value")
     claim_value = claim.get("value")
@@ -127,6 +130,8 @@ def _detect_conflict(
 
     # Rule 2: conditions 있으면 condition_split
     if claim.get("conditions") or existing_ku.get("conditions"):
+        if reason_out is not None:
+            reason_out["reason"] = "conditions"
         return "condition_split"
 
     # Rule 2b (S2-T6): 값 구조 차이 → condition_split
@@ -134,10 +139,14 @@ def _detect_conflict(
     existing_type = _value_structure_type(existing_value)
     claim_type = _value_structure_type(claim_value)
     if existing_type != claim_type:
+        if reason_out is not None:
+            reason_out["reason"] = "value_shape"
         return "condition_split"
 
     # Rule 2d (S2-T7): field에 condition_axes 정의 → 값 차이 시 강제 condition_split
     if condition_axes:
+        if reason_out is not None:
+            reason_out["reason"] = "condition_axes"
         return "condition_split"
 
     # Rule 2c (S2-T8): axis_tags 차이 → axis 기반 공존 (condition_split)
@@ -147,6 +156,8 @@ def _detect_conflict(
     if existing_axis and claim_axis:
         for axis_key in existing_axis:
             if axis_key in claim_axis and existing_axis[axis_key] != claim_axis[axis_key]:
+                if reason_out is not None:
+                    reason_out["reason"] = "axis_tags"
                 return "condition_split"
 
     # Rule 3: LLM semantic 판정
@@ -263,6 +274,8 @@ def _generate_dynamic_gus(
     open_count: int,
     kus: list[dict] | None = None,
     conflict_blocklist: set[str] | None = None,
+    suppress_events_out: list[dict] | None = None,
+    cycle: int = 0,
 ) -> list[dict]:
     """동적 GU 발견 (Trigger A: 인접 Gap).
 
@@ -318,6 +331,19 @@ def _generate_dynamic_gus(
             mean_count = sum(cat_field_counts.values()) / len(cat_field_counts)
             threshold = mean_count * 1.5
             suppressed_fields = {f for f, c in cat_field_counts.items() if c > threshold}
+            # SI-P7 V2 계측: suppress event
+            if suppressed_fields and suppress_events_out is not None:
+                suppress_events_out.append({
+                    "cycle": int(cycle),
+                    "category": category,
+                    "threshold": round(threshold, 2),
+                    "suppressed_fields": sorted(suppressed_fields),
+                    "field_counts": dict(cat_field_counts),
+                })
+                logger.info(
+                    "[si-p7] adjacency suppressed: cycle=%d cat=%s thr=%.2f fields=%s",
+                    int(cycle), category, threshold, sorted(suppressed_fields),
+                )
 
     # 부모 claim entity_key에서 geography 추론
     geo = _infer_geography(entity_key, skeleton)
@@ -410,6 +436,10 @@ def integrate_node(
     # S3-T7: adjacency_yield 로드
     adjacency_yield = dict(state.get("adjacency_yield") or {})
 
+    # SI-P7 V2 계측: event 버퍼 (관찰 전용, 로직 영향 없음)
+    split_events: list[dict] = []
+    suppress_events: list[dict] = []
+
     open_count = sum(1 for gu in gap_map if gu.get("status") == "open")
     dynamic_cap = _compute_dynamic_gu_cap(mode, open_count)
 
@@ -498,8 +528,11 @@ def integrate_node(
                 # 충돌 감지 (LLM semantic 비교)
                 # S2-T7: skeleton field의 condition_axes 조회
                 field_condition_axes = _get_field_condition_axes(field, skeleton)
+                _split_reason_info: dict = {}
                 conflict = _detect_conflict(
-                    existing_ku, claim, llm=llm, condition_axes=field_condition_axes,
+                    existing_ku, claim, llm=llm,
+                    condition_axes=field_condition_axes,
+                    reason_out=_split_reason_info,
                 )
 
                 if conflict == "hold":
@@ -572,6 +605,15 @@ def integrate_node(
                     kus.append(new_ku)
                     adds.append(new_ku)
                     claim["integration_result"] = "condition_split"
+
+                    # SI-P7 V2 계측: condition_split event
+                    split_events.append({
+                        "cycle": int(cycle),
+                        "ku_id": new_ku["ku_id"],
+                        "claim_entity": entity_key,
+                        "field": field,
+                        "reason": _split_reason_info.get("reason", "unknown"),
+                    })
 
                 else:
                     # 충돌 없음: 기존 KU 업데이트 (EU 추가, confidence 갱신)
@@ -656,6 +698,7 @@ def integrate_node(
             discovered = _generate_dynamic_gus(
                 claim, gap_map + new_dynamic_gus, skeleton, mode, open_count,
                 kus=kus, conflict_blocklist=conflict_blocklist,
+                suppress_events_out=suppress_events, cycle=cycle,
             )
             remaining = dynamic_cap - len(new_dynamic_gus)
             for dgu in discovered[:remaining]:
@@ -753,6 +796,22 @@ def integrate_node(
         "condition_split_history": condition_split_history,
     }
 
+    # SI-P7 V2 계측: event log append (state list 에 누적)
+    result_extras: dict = {}
+    if split_events:
+        merged_split = list(state.get("condition_split_events") or [])
+        merged_split.extend(split_events)
+        result_extras["condition_split_events"] = merged_split
+        logger.info(
+            "[si-p7] condition_split: cycle=%d events=%d reasons=%s",
+            int(cycle), len(split_events),
+            {e["reason"] for e in split_events},
+        )
+    if suppress_events:
+        merged_suppress = list(state.get("suppress_event_log") or [])
+        merged_suppress.extend(suppress_events)
+        result_extras["suppress_event_log"] = merged_suppress
+
     return {
         "knowledge_units": kus,
         "gap_map": gap_map,
@@ -765,4 +824,5 @@ def integrate_node(
         "adjacency_yield": adjacency_yield,               # S3-T7
         "_diag_adjacent_gap_count": len(new_dynamic_gus),
         "_diag_resolved_gus": diag_resolved_gus,
+        **result_extras,
     }

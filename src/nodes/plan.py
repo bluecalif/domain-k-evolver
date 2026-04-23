@@ -467,4 +467,32 @@ def plan_node(
         len(tg), len(deferred_open), len(prev_deferred), len(q), len(no_query),
     )
 
-    return {"current_plan": plan}
+    result: dict = {"current_plan": plan}
+
+    # SI-P7 V2 계측: query_rewrite 발동 시 event 기록
+    if is_stagnation:
+        rewrite_events: list[dict] = []
+        for gu in all_target_gus:
+            gu_id = gu.get("gu_id", "")
+            target = gu.get("target", {})
+            entity_key = target.get("entity_key", "")
+            field = target.get("field", "")
+            slug = entity_key.split(":")[-1] if ":" in entity_key else entity_key
+            rewritten = q.get(gu_id) or []
+            rewrite_events.append({
+                "cycle": int(cycle),
+                "gu_id": gu_id,
+                "slug": slug,
+                "field": field,
+                "rewritten_queries": list(rewritten),
+            })
+        if rewrite_events:
+            existing = list(state.get("query_rewrite_rx_log") or [])
+            existing.extend(rewrite_events)
+            result["query_rewrite_rx_log"] = existing
+            _logger.info(
+                "[si-p7] query_rewrite: cycle=%d n_gus=%d",
+                int(cycle), len(rewrite_events),
+            )
+
+    return result

@@ -5,6 +5,7 @@ design-v2 §4~§5 기반.
 
 from __future__ import annotations
 
+import logging
 from datetime import date, timedelta
 from typing import Any
 
@@ -16,6 +17,8 @@ from src.utils.metrics import (
     compute_deficit_ratios,
     compute_metrics,
 )
+
+logger = logging.getLogger(__name__)
 
 HIGH_RISK_LEVELS = {"safety", "financial", "policy"}
 
@@ -653,6 +656,25 @@ def critique_node(
     if stagnation_fired:
         # trigger cycle + 다음 2c = 3 cycles (이미 활성이면 리셋)
         result["aggressive_mode_remaining"] = 3
+        # SI-P7 V2 계측 — aggressive mode entry event
+        cycle = int(state.get("cycle_count", 0))
+        rx_id = next(
+            (rx.get("type") for rx in prescriptions
+             if rx.get("type") == "ku_stagnation:added_low"),
+            "ku_stagnation:added_low",
+        )
+        history = list(state.get("aggressive_mode_history") or [])
+        history.append({
+            "cycle": cycle,
+            "remaining": 3,
+            "event": "entered",
+            "rx_id": rx_id,
+        })
+        result["aggressive_mode_history"] = history
+        logger.info(
+            "[si-p7] β aggressive_mode entered: cycle=%d rx=%s remaining=3",
+            cycle, rx_id,
+        )
     elif prev_remaining > 0:
         # 기존 활성 유지 (decrement은 entity_discovery_node 담당)
         pass  # state 변경 없음 — entity_discovery가 처리

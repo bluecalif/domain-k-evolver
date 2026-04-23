@@ -51,6 +51,32 @@ _OPTIONAL_LIST_FILES: dict[str, str] = {
 # SI-P4 Stage E: external anchor state (하나의 파일에 history + 누적 키 병합)
 _EXTERNAL_ANCHOR_FILE = "external-anchor.json"
 
+# SI-P7 V2 계측: 관찰 전용 신호 집합 (1 파일에 10개 필드 묶음)
+_SI_P7_SIGNALS_FILE = "si-p7-signals.json"
+_SI_P7_SIGNAL_FIELDS: tuple[str, ...] = (
+    "integration_result_dist",
+    "ku_stagnation_signals",
+    "aggressive_mode_remaining",
+    "recent_conflict_fields",
+    "adjacency_yield",
+    "coverage_map",
+    "aggressive_mode_history",
+    "query_rewrite_rx_log",
+    "condition_split_events",
+    "suppress_event_log",
+)
+
+
+def _is_empty_signal(value: object) -> bool:
+    """SI-P7 signal 필드가 비어있는지 판정 (save 생략 결정용)."""
+    if value is None:
+        return True
+    if isinstance(value, (list, dict, str)):
+        return len(value) == 0
+    if isinstance(value, int):
+        return value == 0
+    return False
+
 
 def _read_json(path: Path) -> dict | list:
     with open(path, encoding="utf-8") as f:
@@ -116,6 +142,17 @@ def load_state(domain_path: str | Path) -> EvolverState:
         except (json.JSONDecodeError, UnicodeDecodeError):
             logger.warning("external-anchor 파싱 실패, 빈 값 사용: %s", ext_path)
 
+    # SI-P7 V2: si-p7-signals.json 로드 (부재 시 기본값)
+    signals_path = state_dir / _SI_P7_SIGNALS_FILE
+    signals_data: dict = {}
+    if signals_path.exists():
+        try:
+            loaded = _read_json(signals_path)
+            if isinstance(loaded, dict):
+                signals_data = loaded
+        except (json.JSONDecodeError, UnicodeDecodeError):
+            logger.warning("si-p7-signals 파싱 실패, 빈 값 사용: %s", signals_path)
+
     state: EvolverState = {
         **data,
         "current_cycle": cycle,
@@ -130,12 +167,21 @@ def load_state(domain_path: str | Path) -> EvolverState:
         "phase_number": 0,
         "phase_history": [],
         "remodel_report": None,
-        "coverage_map": {},
+        "coverage_map": signals_data.get("coverage_map") or {},
         "novelty_history": [],
         "external_novelty_history": ext_history,
         "external_observation_keys": ext_keys,
         "deferred_targets": [],
         "defer_reason": {},
+        "integration_result_dist": signals_data.get("integration_result_dist") or {},
+        "ku_stagnation_signals": signals_data.get("ku_stagnation_signals") or {},
+        "aggressive_mode_remaining": signals_data.get("aggressive_mode_remaining") or 0,
+        "recent_conflict_fields": signals_data.get("recent_conflict_fields") or [],
+        "adjacency_yield": signals_data.get("adjacency_yield") or {},
+        "aggressive_mode_history": signals_data.get("aggressive_mode_history") or [],
+        "query_rewrite_rx_log": signals_data.get("query_rewrite_rx_log") or [],
+        "condition_split_events": signals_data.get("condition_split_events") or [],
+        "suppress_event_log": signals_data.get("suppress_event_log") or [],
     }
     return state
 
@@ -227,6 +273,18 @@ def save_state(state: EvolverState, domain_path: str | Path) -> None:
             "observation_keys": list(ext_keys),
         })
 
+    # SI-P7 V2: si-p7-signals.json 저장 (비어 있지 않은 필드만 직렬화)
+    signals_payload = {
+        field: state.get(field)
+        for field in _SI_P7_SIGNAL_FIELDS
+        if not _is_empty_signal(state.get(field))
+    }
+    if signals_payload:
+        target = state_dir / _SI_P7_SIGNALS_FILE
+        if target.exists():
+            shutil.copy2(target, target.with_suffix(target.suffix + ".bak"))
+        _write_json(target, signals_payload)
+
 
 def snapshot_state(domain_path: str | Path, cycle: int) -> Path:
     """state/ → state-snapshots/cycle-{n}-snapshot/ 스냅샷 복사.
@@ -251,7 +309,7 @@ def snapshot_state(domain_path: str | Path, cycle: int) -> Path:
 
     snapshot_dir.mkdir(parents=True, exist_ok=True)
 
-    for filename in list(_FILE_MAP) + list(_OPTIONAL_LIST_FILES) + [_EXTERNAL_ANCHOR_FILE]:
+    for filename in list(_FILE_MAP) + list(_OPTIONAL_LIST_FILES) + [_EXTERNAL_ANCHOR_FILE, _SI_P7_SIGNALS_FILE]:
         src = state_dir / filename
         if src.exists():
             shutil.copy2(src, snapshot_dir / filename)

@@ -122,6 +122,21 @@
         "resolved_gus":           { "type": "array", "items": { "type": "string" } },
         "adjacent_gap_generated": { "type": "integer" }
       }
+    },
+    "si_p7": {
+      "type": "object",
+      "description": "SI-P7 V2 계측 — Step A/B 축별 신호 요약 (관찰 전용, V-T4 설계)",
+      "additionalProperties": false,
+      "properties": {
+        "aggressive_mode_remaining":   { "type": "integer", "minimum": 0 },
+        "integration_result_cycle":    { "type": "object" },
+        "condition_split_count_cycle": { "type": "integer", "minimum": 0 },
+        "suppress_count_cycle":        { "type": "integer", "minimum": 0 },
+        "query_rewrite_count_cycle":   { "type": "integer", "minimum": 0 },
+        "recent_conflict_fields_count":{ "type": "integer", "minimum": 0 },
+        "adjacency_yield_top3":        { "type": "array", "items": { "type": "object" } },
+        "coverage_deficit_top3":       { "type": "array", "items": { "type": "object" } }
+      }
     }
   }
 }

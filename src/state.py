@@ -260,6 +260,18 @@ class EvolverState(TypedDict, total=False):
     # {rule_id: [{"cycle": int, "attempted": int, "resolved": int}]}
     adjacency_yield: dict
 
+    # SI-P7 V2 계측: event-log 필드 (관찰 전용, append-only)
+    # [{"cycle": int, "remaining": int, "event": "entered"|"tick"|"exited", "rx_id": str|None}]
+    aggressive_mode_history: list[dict]
+    # [{"cycle": int, "gu_id": str, "slug": str, "field": str, "rewritten_queries": list[str]}]
+    query_rewrite_rx_log: list[dict]
+    # [{"cycle": int, "ku_id": str|None, "claim_entity": str, "field": str,
+    #   "reason": "conditions"|"value_shape"|"condition_axes"|"axis_tags"}]
+    condition_split_events: list[dict]
+    # [{"cycle": int, "category": str, "threshold": float,
+    #   "suppressed_fields": list[str], "field_counts": dict}]
+    suppress_event_log: list[dict]
+
     # Diagnostic fields (진단 전용, orchestrator가 cycle마다 읽고 제거)
     _diag_search_by_gu: dict | None       # collect: {gu_id: search_result_count}
     _diag_adjacent_gap_count: int | None  # integrate: 신규 dynamic GU 수

@@ -130,7 +130,92 @@ def _build_snapshot(
         "deferred_targets": len(state.get("deferred_targets") or []),
         "defer_reason": state.get("defer_reason") or {},
         "cycle_trace": _build_cycle_trace(cycle_ctx) if cycle_ctx else None,
+        "si_p7": _build_si_p7_subdict(state),
     }
+
+
+def _build_si_p7_subdict(state: "EvolverState") -> dict:
+    """SI-P7 V2 계측 — cycle snapshot 용 si_p7 sub-dict.
+
+    관찰 전용. state 를 변형하지 않음.
+    """
+    cycle_num = int(state.get("cycle_count", 0))
+    return {
+        "aggressive_mode_remaining": int(state.get("aggressive_mode_remaining", 0)),
+        "integration_result_cycle": _extract_integration_cycle(state, cycle_num),
+        "condition_split_count_cycle": _count_events_in_cycle(
+            state.get("condition_split_events"), cycle_num
+        ),
+        "suppress_count_cycle": _count_events_in_cycle(
+            state.get("suppress_event_log"), cycle_num
+        ),
+        "query_rewrite_count_cycle": _count_events_in_cycle(
+            state.get("query_rewrite_rx_log"), cycle_num
+        ),
+        "recent_conflict_fields_count": len(state.get("recent_conflict_fields") or []),
+        "adjacency_yield_top3": _top_n_rules(state.get("adjacency_yield"), n=3),
+        "coverage_deficit_top3": _top_n_deficit(state.get("coverage_map"), n=3),
+    }
+
+
+def _extract_integration_cycle(state: "EvolverState", cycle_num: int) -> dict:
+    """integration_result_dist.cycle_history 중 해당 cycle 엔트리 반환 (없으면 {})."""
+    dist = state.get("integration_result_dist") or {}
+    history = dist.get("cycle_history") or []
+    for entry in history:
+        if entry.get("cycle") == cycle_num:
+            return dict(entry)
+    return {}
+
+
+def _count_events_in_cycle(events: list | None, cycle_num: int) -> int:
+    """cycle-stamped event list 에서 해당 cycle 항목 수 카운트."""
+    if not events:
+        return 0
+    return sum(1 for e in events if isinstance(e, dict) and e.get("cycle") == cycle_num)
+
+
+def _top_n_rules(adjacency_yield: dict | None, n: int = 3) -> list[dict]:
+    """adjacency_yield 에서 최근 누적 resolved 가 큰 rule_id 상위 N개.
+
+    구조: {rule_id: [{"cycle": int, "attempted": int, "resolved": int}, ...]}
+    """
+    if not adjacency_yield:
+        return []
+    summaries: list[dict] = []
+    for rule_id, records in adjacency_yield.items():
+        if not isinstance(records, list):
+            continue
+        total_attempted = sum(int(r.get("attempted", 0)) for r in records)
+        total_resolved = sum(int(r.get("resolved", 0)) for r in records)
+        summaries.append({
+            "rule_id": rule_id,
+            "attempted": total_attempted,
+            "resolved": total_resolved,
+            "yield": round(total_resolved / total_attempted, 3) if total_attempted else 0.0,
+        })
+    summaries.sort(key=lambda s: (s["resolved"], s["attempted"]), reverse=True)
+    return summaries[:n]
+
+
+def _top_n_deficit(coverage_map: dict | None, n: int = 3) -> list[dict]:
+    """coverage_map 에서 deficit_score 가 큰 category 상위 N개.
+
+    구조: {cat: {"deficit_score": float, ...}} 또는 {cat: float}
+    """
+    if not coverage_map:
+        return []
+    entries: list[dict] = []
+    for cat, value in coverage_map.items():
+        if isinstance(value, dict):
+            score = float(value.get("deficit_score", 0.0))
+        elif isinstance(value, (int, float)):
+            score = float(value)
+        else:
+            continue
+        entries.append({"category": cat, "deficit_score": round(score, 3)})
+    entries.sort(key=lambda e: e["deficit_score"], reverse=True)
+    return entries[:n]
 
 
 def _build_cycle_trace(cycle_ctx: dict) -> dict:

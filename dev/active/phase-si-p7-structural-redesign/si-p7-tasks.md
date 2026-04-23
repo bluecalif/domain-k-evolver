@@ -93,7 +93,7 @@
 > **조건**: V1 에서 state snapshot 에도 없는 신호 대상만. 모든 V1 항목이 해소되면 V2 생략.
 
 - [x] **V-T4** 계측 필드 설계 — `state.py` 신규 필드 (`aggressive_mode_history`, `suppress_event_log`, `query_rewrite_rx_log`, `condition_split_events`) + `state_io.py` `si-p7-signals.json` persist + `telemetry.py` `si_p7` sub-dict + `critique.py`/`plan.py`/`integrate.py` event 기록 포인트. 설계: `dev/active/phase-si-p7-structural-redesign/v2-instrumentation-design.md`
-- [ ] **V-T5** 계측 코드 구현 — **로직 변경 금지**, 관찰만 추가. L1 테스트로 신호 기록 검증 `[M]`
+- [x] **V-T5** 계측 코드 구현 — state.py (+4 event-log 필드), state_io.py (si-p7-signals.json persist), telemetry.py (si_p7 sub-dict + 4 helper), critique.py (β entry), plan.py (query_rewrite), integrate.py (condition_split reason_out + suppress events). 18 L1 테스트 pass (persist 7 / telemetry 5 / emit 6). 전체 944 passed + 3 skipped, 회귀 0. **로직 변경 0건, 관찰만**
 - [ ] **V-T6** 1-cycle smoke (`scripts/run_readiness.py --cycles 1 --trial-id p7-v2-smoke`) 로 실 경로 신호 발생 확인 (mock 금지, real API 1 cycle) `[S]`
 
 ### V3 — 축별 Ablation L3 (V2 후 조건부, API 비용 — 사전 승인 필수)
