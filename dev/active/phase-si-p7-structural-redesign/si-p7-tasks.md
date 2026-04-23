@@ -102,7 +102,8 @@
 >
 > **설계 원칙 (D-191)**: cycle=**8** (GU 고갈 재현 충분선), baseline 재사용 (`p7-ab-on` 상한 / `p7-ab-off` 하한 — 재수행 금지), **ablation 방식** (`p7-ab-minus-{axis}` — 해당 축만 off, 나머지 on). 비용 ~800–1,500 LLM call 예상.
 
-- [ ] **V-T7** V3 축·cycle 수·비용 추정 정리 + 사용자 승인 요청 (`run_readiness.py --dry-run` 로 call 수 estimation 후 보고) `[S]`
+- [x] **V-T7** V3 설계 + 사용자 승인 — `dev/active/phase-si-p7-structural-redesign/v3-ablation-design.md`. **결정**: (1) Trial #1 단독 `p7-ab-minus-s2` 8c, (2) cycle=8, (3) OrchestratorConfig `si_p7_axis_toggles` config flag 방식, (4) 예산 상한 없음. 예상 비용 ~$0.60-0.80
+- [ ] **V-T7b** Axis toggle 구현 — `OrchestratorConfig.si_p7_axis_toggles: dict[str, bool]` + critique/plan/integrate 각 emit·trigger 지점에 check. 기본값 True (기존 동작 유지), off 시 no-op. L1 테스트: flag off 시 event list·state 필드 미변경 `[M]`
 - [ ] **V-T8** `bench/silver/japan-travel/p7-ab-minus-{axis}/` 1~2 쌍 8c trial 실행 (`silver-trial-scaffold` 표준 준수) `[L]`
 - [ ] **V-T9** `dev/active/phase-si-p7-structural-redesign/v3-isolation-report.md` 작성 — `p7-ab-on` 대비 Δ KU, Δ GU, trigger 발동 수, condition_split 카운트, novelty 분리표 `[M]`
 
