@@ -104,8 +104,8 @@
 
 - [x] **V-T7** V3 설계 + 사용자 승인 — `dev/active/phase-si-p7-structural-redesign/v3-ablation-design.md`. **결정**: (1) Trial #1 단독 `p7-ab-minus-s2` 8c, (2) cycle=8, (3) OrchestratorConfig `si_p7_axis_toggles` config flag 방식, (4) 예산 상한 없음. 예상 비용 ~$0.60-0.80
 - [x] **V-T7b** Axis toggle 구현 — `SIP7AxisToggles` dataclass (config.py) + `OrchestratorConfig.si_p7_toggles` + orchestrator 가 `state["si_p7_toggles"]` 주입. s2 check: critique.py (integration_bottleneck + ku_stagnation 블록), plan.py (is_stagnation force False), integrate.py (`_detect_conflict` `s2_enabled` 파라미터 — Rule 2b/2c/2d skip). `SI_P7_AXIS_OFF=s2` env var 지원. L1 테스트 8개 (toggle 기본값, from_env, s2 off 각 rule). 전체 952 passed + 3 skipped, 회귀 0
-- [ ] **V-T8** `bench/silver/japan-travel/p7-ab-minus-{axis}/` 1~2 쌍 8c trial 실행 (`silver-trial-scaffold` 표준 준수) `[L]`
-- [ ] **V-T9** `dev/active/phase-si-p7-structural-redesign/v3-isolation-report.md` 작성 — `p7-ab-on` 대비 Δ KU, Δ GU, trigger 발동 수, condition_split 카운트, novelty 분리표 `[M]`
+- [x] **V-T8** `bench/silver/japan-travel/p7-ab-minus-s2/` 8c trial 실행 (silver-trial-scaffold 준수, trial-card.md + INDEX.md row). `SI_P7_AXIS_OFF=s2` 로 s2_enabled=False 확인. 9분 완주. Initial bug: run_readiness.py 가 OrchestratorConfig 재구성 시 si_p7_toggles 전달 누락 — fix 후 재실행
+- [x] **V-T9** `dev/active/phase-si-p7-structural-redesign/v3-isolation-report.md` 작성. **H5c CONFIRMED**: c3+ GU=0 고착 패턴이 ab-on 과 minus-s2 모두 동일 → β 의 효과 경로 부재. S2 유일 관찰 효과는 c1-c2 condition_split 확장 (+18 KU @ c2). 최유력 root cause = **H6 (S5a 부재) + S1 과공격성 조합**
 
 ### V4 — Root Cause 확정 + Next Step 결정 (비용 0)
 

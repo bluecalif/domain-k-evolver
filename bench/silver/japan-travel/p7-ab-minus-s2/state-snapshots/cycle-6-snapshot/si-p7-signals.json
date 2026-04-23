@@ -1,0 +1,406 @@
+{
+  "integration_result_dist": {
+    "resolved": 0,
+    "no_source_gu": 0,
+    "invalid_result": 0,
+    "other": 0,
+    "conv_rate": 0.0,
+    "total_claims": 0,
+    "cycle_history": [
+      {
+        "cycle": 1,
+        "resolved": 18,
+        "no_source_gu": 0,
+        "invalid_result": 16,
+        "other": 83,
+        "conv_rate": 0.154,
+        "total_claims": 117
+      },
+      {
+        "cycle": 2,
+        "resolved": 17,
+        "no_source_gu": 0,
+        "invalid_result": 31,
+        "other": 44,
+        "conv_rate": 0.185,
+        "total_claims": 92
+      },
+      {
+        "cycle": 3,
+        "resolved": 2,
+        "no_source_gu": 0,
+        "invalid_result": 3,
+        "other": 10,
+        "conv_rate": 0.133,
+        "total_claims": 15
+      },
+      {
+        "cycle": 4,
+        "resolved": 0,
+        "no_source_gu": 0,
+        "invalid_result": 0,
+        "other": 0,
+        "conv_rate": 0.0,
+        "total_claims": 0
+      },
+      {
+        "cycle": 5,
+        "resolved": 0,
+        "no_source_gu": 0,
+        "invalid_result": 0,
+        "other": 0,
+        "conv_rate": 0.0,
+        "total_claims": 0
+      },
+      {
+        "cycle": 6,
+        "resolved": 0,
+        "no_source_gu": 0,
+        "invalid_result": 0,
+        "other": 0,
+        "conv_rate": 0.0,
+        "total_claims": 0
+      }
+    ]
+  },
+  "ku_stagnation_signals": {
+    "added_history": [
+      {
+        "cycle": 1,
+        "added": 31,
+        "total_claims": 117,
+        "added_ratio": 0.265
+      },
+      {
+        "cycle": 2,
+        "added": 16,
+        "total_claims": 92,
+        "added_ratio": 0.1739
+      },
+      {
+        "cycle": 3,
+        "added": 0,
+        "total_claims": 15,
+        "added_ratio": 0.0
+      },
+      {
+        "cycle": 4,
+        "added": 0,
+        "total_claims": 0,
+        "added_ratio": 0.0
+      },
+      {
+        "cycle": 5,
+        "added": 0,
+        "total_claims": 0,
+        "added_ratio": 0.0
+      },
+      {
+        "cycle": 6,
+        "added": 0,
+        "total_claims": 0,
+        "added_ratio": 0.0
+      }
+    ],
+    "conflict_hold_history": [
+      {
+        "cycle": 1,
+        "conflict_hold": 16
+      },
+      {
+        "cycle": 2,
+        "conflict_hold": 31
+      },
+      {
+        "cycle": 3,
+        "conflict_hold": 3
+      },
+      {
+        "cycle": 4,
+        "conflict_hold": 0
+      },
+      {
+        "cycle": 5,
+        "conflict_hold": 0
+      },
+      {
+        "cycle": 6,
+        "conflict_hold": 0
+      }
+    ],
+    "condition_split_history": [
+      {
+        "cycle": 1,
+        "condition_split": 4
+      },
+      {
+        "cycle": 2,
+        "condition_split": 0
+      },
+      {
+        "cycle": 3,
+        "condition_split": 0
+      },
+      {
+        "cycle": 4,
+        "condition_split": 0
+      },
+      {
+        "cycle": 5,
+        "condition_split": 0
+      },
+      {
+        "cycle": 6,
+        "condition_split": 0
+      }
+    ]
+  },
+  "adjacency_yield": {
+    "regulation:eligibility→price": [
+      {
+        "cycle": 1,
+        "attempted": 1,
+        "resolved": 0
+      },
+      {
+        "cycle": 2,
+        "attempted": 0,
+        "resolved": 4
+      }
+    ],
+    "regulation:eligibility→tips": [
+      {
+        "cycle": 1,
+        "attempted": 1,
+        "resolved": 0
+      },
+      {
+        "cycle": 2,
+        "attempted": 0,
+        "resolved": 5
+      }
+    ],
+    "pass-ticket:policy→tips": [
+      {
+        "cycle": 1,
+        "attempted": 2,
+        "resolved": 0
+      },
+      {
+        "cycle": 2,
+        "attempted": 0,
+        "resolved": 9
+      }
+    ],
+    "pass-ticket:policy→where_to_buy": [
+      {
+        "cycle": 1,
+        "attempted": 2,
+        "resolved": 0
+      },
+      {
+        "cycle": 2,
+        "attempted": 0,
+        "resolved": 5
+      }
+    ],
+    "payment:acceptance→how_to_use": [
+      {
+        "cycle": 2,
+        "attempted": 1,
+        "resolved": 0
+      },
+      {
+        "cycle": 3,
+        "attempted": 0,
+        "resolved": 5
+      }
+    ],
+    "transport:duration→how_to_use": [
+      {
+        "cycle": 2,
+        "attempted": 1,
+        "resolved": 0
+      },
+      {
+        "cycle": 3,
+        "attempted": 0,
+        "resolved": 7
+      }
+    ]
+  },
+  "coverage_map": {
+    "transport": {
+      "ku_count": 6,
+      "deficit_score": 0.4,
+      "base_deficit": 0.4,
+      "field_coverage": {
+        "how_to_use": 2,
+        "price": 1,
+        "duration": 2,
+        "tips": 1
+      }
+    },
+    "accommodation": {
+      "ku_count": 4,
+      "deficit_score": 0.6,
+      "base_deficit": 0.6,
+      "field_coverage": {
+        "price": 1,
+        "etiquette": 1,
+        "tips": 1,
+        "location": 1
+      }
+    },
+    "attraction": {
+      "ku_count": 19,
+      "deficit_score": 0.0,
+      "base_deficit": 0.0,
+      "field_coverage": {
+        "price": 2,
+        "hours": 1,
+        "location": 14,
+        "tips": 2
+      }
+    },
+    "dining": {
+      "ku_count": 4,
+      "deficit_score": 0.6,
+      "base_deficit": 0.6,
+      "field_coverage": {
+        "price": 1,
+        "hours": 1,
+        "location": 1,
+        "etiquette": 1
+      }
+    },
+    "regulation": {
+      "ku_count": 13,
+      "deficit_score": 0.0,
+      "base_deficit": 0.0,
+      "field_coverage": {
+        "policy": 4,
+        "how_to_use": 1,
+        "eligibility": 6,
+        "price": 1,
+        "tips": 1
+      }
+    },
+    "pass-ticket": {
+      "ku_count": 10,
+      "deficit_score": 0.0,
+      "base_deficit": 0.0,
+      "field_coverage": {
+        "eligibility": 1,
+        "price": 1,
+        "where_to_buy": 2,
+        "policy": 2,
+        "duration": 2,
+        "tips": 2
+      }
+    },
+    "connectivity": {
+      "ku_count": 4,
+      "deficit_score": 0.6,
+      "base_deficit": 0.6,
+      "field_coverage": {
+        "price": 1,
+        "tips": 1,
+        "how_to_use": 1,
+        "where_to_buy": 1
+      }
+    },
+    "payment": {
+      "ku_count": 4,
+      "deficit_score": 0.6,
+      "base_deficit": 0.6,
+      "field_coverage": {
+        "how_to_use": 1,
+        "tips": 1,
+        "acceptance": 1,
+        "price": 1
+      }
+    },
+    "summary": {
+      "category_gini": 0.332,
+      "field_gini": 0.3807,
+      "gini_deficit_adjustment": 0.0,
+      "total_kus": 64,
+      "categories_count": 8
+    }
+  },
+  "condition_split_events": [
+    {
+      "cycle": 1,
+      "ku_id": "KU-0016",
+      "claim_entity": "japan-travel:regulation:tourist-visa",
+      "field": "eligibility",
+      "reason": "conditions"
+    },
+    {
+      "cycle": 1,
+      "ku_id": "KU-0017",
+      "claim_entity": "japan-travel:regulation:tourist-visa",
+      "field": "eligibility",
+      "reason": "conditions"
+    },
+    {
+      "cycle": 1,
+      "ku_id": "KU-0021",
+      "claim_entity": "japan-travel:attraction:*",
+      "field": "price",
+      "reason": "conditions"
+    },
+    {
+      "cycle": 1,
+      "ku_id": "KU-0046",
+      "claim_entity": "japan-travel:attraction:*",
+      "field": "tips",
+      "reason": "conditions"
+    }
+  ],
+  "suppress_event_log": [
+    {
+      "cycle": 1,
+      "category": "regulation",
+      "threshold": 3.0,
+      "suppressed_fields": [
+        "policy"
+      ],
+      "field_counts": {
+        "policy": 4,
+        "how_to_use": 1,
+        "eligibility": 1
+      }
+    },
+    {
+      "cycle": 1,
+      "category": "pass-ticket",
+      "threshold": 1.88,
+      "suppressed_fields": [
+        "policy"
+      ],
+      "field_counts": {
+        "eligibility": 1,
+        "price": 1,
+        "where_to_buy": 1,
+        "policy": 2
+      }
+    },
+    {
+      "cycle": 2,
+      "category": "pass-ticket",
+      "threshold": 1.8,
+      "suppressed_fields": [
+        "policy"
+      ],
+      "field_counts": {
+        "eligibility": 1,
+        "price": 1,
+        "where_to_buy": 1,
+        "policy": 2,
+        "duration": 1
+      }
+    }
+  ]
+}

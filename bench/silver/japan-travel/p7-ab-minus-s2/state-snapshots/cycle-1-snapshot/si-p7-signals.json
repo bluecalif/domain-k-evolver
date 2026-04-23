@@ -1,0 +1,251 @@
+{
+  "integration_result_dist": {
+    "resolved": 18,
+    "no_source_gu": 0,
+    "invalid_result": 16,
+    "other": 83,
+    "conv_rate": 0.154,
+    "total_claims": 117,
+    "cycle_history": [
+      {
+        "cycle": 1,
+        "resolved": 18,
+        "no_source_gu": 0,
+        "invalid_result": 16,
+        "other": 83,
+        "conv_rate": 0.154,
+        "total_claims": 117
+      }
+    ]
+  },
+  "ku_stagnation_signals": {
+    "added_history": [
+      {
+        "cycle": 1,
+        "added": 31,
+        "total_claims": 117,
+        "added_ratio": 0.265
+      }
+    ],
+    "conflict_hold_history": [
+      {
+        "cycle": 1,
+        "conflict_hold": 16
+      }
+    ],
+    "condition_split_history": [
+      {
+        "cycle": 1,
+        "condition_split": 4
+      }
+    ]
+  },
+  "recent_conflict_fields": [
+    {
+      "field": "eligibility",
+      "since_cycle": 1
+    },
+    {
+      "field": "price",
+      "since_cycle": 1
+    },
+    {
+      "field": "policy",
+      "since_cycle": 1
+    },
+    {
+      "field": "etiquette",
+      "since_cycle": 1
+    },
+    {
+      "field": "hours",
+      "since_cycle": 1
+    },
+    {
+      "field": "tips",
+      "since_cycle": 1
+    },
+    {
+      "field": "location",
+      "since_cycle": 1
+    }
+  ],
+  "adjacency_yield": {
+    "regulation:eligibility→price": [
+      {
+        "cycle": 1,
+        "attempted": 1,
+        "resolved": 0
+      }
+    ],
+    "regulation:eligibility→tips": [
+      {
+        "cycle": 1,
+        "attempted": 1,
+        "resolved": 0
+      }
+    ],
+    "pass-ticket:policy→tips": [
+      {
+        "cycle": 1,
+        "attempted": 2,
+        "resolved": 0
+      }
+    ],
+    "pass-ticket:policy→where_to_buy": [
+      {
+        "cycle": 1,
+        "attempted": 2,
+        "resolved": 0
+      }
+    ]
+  },
+  "coverage_map": {
+    "transport": {
+      "ku_count": 3,
+      "deficit_score": 0.7,
+      "base_deficit": 0.7,
+      "field_coverage": {
+        "how_to_use": 2,
+        "price": 1
+      }
+    },
+    "accommodation": {
+      "ku_count": 4,
+      "deficit_score": 0.6,
+      "base_deficit": 0.6,
+      "field_coverage": {
+        "price": 1,
+        "etiquette": 1,
+        "tips": 1,
+        "location": 1
+      }
+    },
+    "attraction": {
+      "ku_count": 19,
+      "deficit_score": 0.0,
+      "base_deficit": 0.0,
+      "field_coverage": {
+        "price": 2,
+        "hours": 1,
+        "location": 14,
+        "tips": 2
+      }
+    },
+    "dining": {
+      "ku_count": 2,
+      "deficit_score": 0.8,
+      "base_deficit": 0.8,
+      "field_coverage": {
+        "price": 1,
+        "hours": 1
+      }
+    },
+    "regulation": {
+      "ku_count": 10,
+      "deficit_score": 0.0,
+      "base_deficit": 0.0,
+      "field_coverage": {
+        "policy": 4,
+        "how_to_use": 1,
+        "eligibility": 5
+      }
+    },
+    "pass-ticket": {
+      "ku_count": 5,
+      "deficit_score": 0.5,
+      "base_deficit": 0.5,
+      "field_coverage": {
+        "eligibility": 1,
+        "price": 1,
+        "where_to_buy": 1,
+        "policy": 2
+      }
+    },
+    "connectivity": {
+      "ku_count": 4,
+      "deficit_score": 0.6,
+      "base_deficit": 0.6,
+      "field_coverage": {
+        "price": 1,
+        "tips": 1,
+        "how_to_use": 1,
+        "where_to_buy": 1
+      }
+    },
+    "payment": {
+      "ku_count": 1,
+      "deficit_score": 0.9,
+      "base_deficit": 0.9,
+      "field_coverage": {
+        "how_to_use": 1
+      }
+    },
+    "summary": {
+      "category_gini": 0.4479,
+      "field_gini": 0.375,
+      "gini_deficit_adjustment": 0.0,
+      "total_kus": 48,
+      "categories_count": 8
+    }
+  },
+  "condition_split_events": [
+    {
+      "cycle": 1,
+      "ku_id": "KU-0016",
+      "claim_entity": "japan-travel:regulation:tourist-visa",
+      "field": "eligibility",
+      "reason": "conditions"
+    },
+    {
+      "cycle": 1,
+      "ku_id": "KU-0017",
+      "claim_entity": "japan-travel:regulation:tourist-visa",
+      "field": "eligibility",
+      "reason": "conditions"
+    },
+    {
+      "cycle": 1,
+      "ku_id": "KU-0021",
+      "claim_entity": "japan-travel:attraction:*",
+      "field": "price",
+      "reason": "conditions"
+    },
+    {
+      "cycle": 1,
+      "ku_id": "KU-0046",
+      "claim_entity": "japan-travel:attraction:*",
+      "field": "tips",
+      "reason": "conditions"
+    }
+  ],
+  "suppress_event_log": [
+    {
+      "cycle": 1,
+      "category": "regulation",
+      "threshold": 3.0,
+      "suppressed_fields": [
+        "policy"
+      ],
+      "field_counts": {
+        "policy": 4,
+        "how_to_use": 1,
+        "eligibility": 1
+      }
+    },
+    {
+      "cycle": 1,
+      "category": "pass-ticket",
+      "threshold": 1.88,
+      "suppressed_fields": [
+        "policy"
+      ],
+      "field_counts": {
+        "eligibility": 1,
+        "price": 1,
+        "where_to_buy": 1,
+        "policy": 2
+      }
+    }
+  ]
+}

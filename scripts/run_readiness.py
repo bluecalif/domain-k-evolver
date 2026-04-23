@@ -65,6 +65,7 @@ def _run_benchmark(
             bench_domain=config.orchestrator.bench_domain,
             bench_path=config.orchestrator.bench_path,
             bench_root=bench_root,
+            si_p7_toggles=config.orchestrator.si_p7_toggles,  # SI-P7 V3 ablation
         )
         output_path = Path(bench_root)
     else:
@@ -78,6 +79,7 @@ def _run_benchmark(
             audit_interval=ai,
             bench_domain=f"{config.orchestrator.bench_domain}-readiness",
             bench_path=config.orchestrator.bench_path,
+            si_p7_toggles=config.orchestrator.si_p7_toggles,  # SI-P7 V3 ablation
         )
         output_path = Path(orch_cfg.bench_path) / orch_cfg.bench_domain
 

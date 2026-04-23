@@ -88,6 +88,64 @@
 
 ---
 
+### 2026-04-23 — [Step V / V-T7b→T8→T9] V3 ablation 완료, H5c CONFIRMED
+
+**배경**: V-T7b (axis toggle) → V-T8 (p7-ab-minus-s2 8c real API) → V-T9 (isolation report).
+
+**V-T7b 구현**:
+- `SIP7AxisToggles` dataclass (config.py) + `OrchestratorConfig.si_p7_toggles`
+- `SI_P7_AXIS_OFF=s2` env var 지원
+- S2 off wiring: critique (integration_bottleneck + ku_stagnation trigger skip), plan (is_stagnation force False), integrate (`_detect_conflict` Rule 2b/2c/2d skip)
+- L1 테스트 8개, 전체 952 passed + 3 skipped 회귀 0
+
+**V-T8 실행 과정**:
+
+1. **최초 실패 (background, abort)**: `SI_P7_AXIS_OFF=s2` 설정 후 run_readiness.py 실행했으나 로그 첫 줄 `si_p7_toggles={'s2_enabled': True, ...}` — s2 off 미적용
+2. **Root cause**: `run_readiness.py:58-68` 이 `OrchestratorConfig(...)` 재구성 시 `si_p7_toggles` 파라미터 미전달 → dataclass default (`SIP7AxisToggles()` = all True) 로 덮음
+3. **Fix** (run_readiness.py:67, :82): `si_p7_toggles=config.orchestrator.si_p7_toggles` 명시적 전달
+4. **재실행 (foreground, 10분 timeout)**: 9분 만에 8c 완주. exit code 1 은 readiness gate FAIL (예상, 8c 로 gate 불가능)
+5. **오판 주의**: exit 1 + 출력 30000자 truncation 을 "timeout 중단" 으로 초기 오해 — 사용자가 파일시스템 상태 확인 유도. memory `feedback_foreground_execution.md` 갱신
+
+**V-T9 주요 findings**:
+
+KU count per cycle (state-snapshots 기반):
+```
+p7-ab-on       : [26, 82, 82, 82, 82, 82, 82, 82, ...]   c3+ 영구 고착 (15c)
+p7-ab-minus-s2 : [48, 64, 64, 64, 64, 64, 64, 64]        c3+ 영구 고착 (8c)
+p7-ab-off      : [31, 43, 53, 61, 68, 74, 80, 109, ...]  15c 에 걸쳐 점진 확장
+```
+
+GU open per cycle (telemetry):
+- ab-on c3+ = 0 (고갈), minus-s2 c3+ = 0 (고갈 동일), ab-off = 14~55 유지
+
+**H5c 확정 논거**:
+1. ab-on 과 minus-s2 의 c3+ trajectory **완전 일치**: open=0, resolved=37, target=0, adj_gen=0
+2. β 가 실제 효과 있었다면 ab-on 의 c5+ stagnation 감지 → KU 회복 패턴이 있었어야. 관찰: 회복 없음
+3. minus-s2 에서 β set 경로 skip (aggressive_mode_history=0) 했음에도 ab-on 과 **결과 동일** → β 의 action path 부재 확증
+4. V1 증거 (run.log 에 aggressive 키워드 0회) + V2 계측 0건 + V3 trajectory 일치 = 3중 증거
+
+**S2 의 실제 기여 범위**:
+- c1-c2 에 condition_split Rule 2b/2c/2d 로 +18 KU 추가 생성 (ab-on 82 vs minus-s2 64 @ c2)
+- c3+ 회복/복원력에는 **완전 무관**
+- S2-T5~T8 는 "초기 확장 기록 다변화" 기능만 있고 시스템 동역학에 영향 없음
+
+**Decision**:
+- **D-192 (예정, V-T10 확정)**: H5c CONFIRMED. β aggressive mode = S5a coupled dead code. SI-P7 Step A/B 의 S2-T4 은 S5a 구현 없이는 무효.
+- **H7 약화 재확인**: p7-ab-off 가 balance-* 포함 상태에서 KU 147 까지 확장 → balance-* 제거 단독 원인 아님 (D-190 강화)
+- **새 최유력 가설 H6 + S1 조합**: S5a 부재 + S1 defer/queue 과공격성 → c1-c2 초기 burst 로 모든 GU 소진 → c3+ 새 entity 탐색 경로 (S5a) 부재로 영구 고착
+- **Next step**: V-T11 에서 S5a 착수 확정 또는 (선택) Trial #2 `p7-ab-minus-s1` 로 S1 과공격성 분리 검증
+
+**관련 산출물**:
+- `dev/active/phase-si-p7-structural-redesign/v3-isolation-report.md`
+- `bench/silver/japan-travel/p7-ab-minus-s2/` (trial-card.md + 8c 결과)
+- `bench/silver/INDEX.md` (p7-v2-smoke + p7-ab-minus-s2 row 추가)
+
+**교훈 (memory 에 반영)**:
+- `feedback_foreground_execution.md`: "출력 꼬리 ≠ 프로세스 상태", "exit 1 ≠ timeout", 오판 감지 3-step 체크리스트
+- Pre-existing bug 발견: `telemetry.py:92` `cycle_count` 미설정 (top-level cycle=0). V-T6 에서 V2 계측용 cycle_num 은 `current_cycle` 로 전환했으나 top-level 수정은 post-SI-P7 과제
+
+---
+
 ### 2026-04-23 — [Step V / V-T6] 1c smoke 성공 + R1 cycle_count offset 확정
 
 **증상**: V-T5 구현 후 `p7-v2-smoke` 1c 실행. `state/si-p7-signals.json` 7개 필드 populate, stdout 에 `[si-p7] condition_split: cycle=1 events=5 reasons={'conditions', 'value_shape'}` emit 확인. 그러나 `telemetry/cycles.jsonl` 의 `si_p7.condition_split_count_cycle` = 0 (기대 5).
