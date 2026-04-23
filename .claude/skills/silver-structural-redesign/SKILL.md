@@ -21,7 +21,7 @@ codex 검토: `docs/phase-next-refactor-task-review_codex.md`.
 - `src/nodes/{plan,collect,integrate,critique,entity_discovery,entity_reconcile}.py` 수정 시
 - `src/state.py` 의 `deferred_targets` / `recent_conflict_fields` / `entity_candidates` / `entity_fragmentation_signals` 건드릴 때
 - `bench/japan-travel/state/domain-skeleton.json` 의 `condition_axes` / `field_adjacency` / `entity_frame` 작업 시
-- dev-docs (`dev/active/phase-si-p7-structural-redesign/`, `_CC` suffix) 작성 / 갱신 시
+- dev-docs (`dev/active/phase-si-p7-structural-redesign/`, suffix 없이 네이밍) 작성 / 갱신 시
 - trial_id `si-p7-*` 또는 `p7-<축>-on|off` 로 벤치 trial 구성 시
 - Decision D-181~D-188 중 하나를 언급하거나 β aggressive mode 설정 만질 때
 
@@ -104,10 +104,10 @@ Step D (다음 phase 후보): S5b 전체 정교화
 
 ---
 
-## 파일 네이밍 (D-180)
+## 파일 네이밍 (D-180, 2026-04-23 갱신)
 
-- SI-P7 설계 산출 task doc 은 모두 **`_CC` suffix** 필수.
-  - 예: `docs/structural-redesign-tasks_CC.md`, `dev/active/phase-si-p7-structural-redesign/si-p7-plan_CC.md`
+- SI-P7 spec 문서 한정 `_CC` suffix 유지 (`docs/structural-redesign-tasks_CC.md`).
+- dev-docs (`dev/active/phase-si-p7-structural-redesign/si-p7-{plan,context,tasks,debug-history}.md`) 는 **suffix 없이** 네이밍.
 - Commit prefix: `[si-p7] Step X.Y: description` (또는 `[si-p7] SN-TN: description`)
 - Branch: `feature/si-p7-structural-redesign` 또는 축별 `feature/si-p7-s1-defer` 등
 
@@ -143,7 +143,7 @@ Step D (다음 phase 후보): S5b 전체 정교화
 | β aggressive mode 를 "매 cycle 실행" 과 혼동 | D-181/D-173 구분 무너짐 | β 는 **동작 방식 전환** (target 수/LLM/임계/GU 우선순위), 지속 trigger+2c |
 | graph 위치 A (critique → entity_discovery → plan_modify) 선택 | D-183 위반. candidate 적재 중심인데 같은 cycle 반영은 latency 증가 | 위치 B 고수 |
 | mock 으로 e2e 테스트 | D-187 / memory `feedback_test_real_path` 위반 | real API L2 smoke (`si-p7-*-smoke`) 또는 L3 A/B |
-| 파일명 `_CC` suffix 누락 | D-180 위반 | `si-p7-*_CC.md` 로 통일 |
+| dev-docs 에 `_CC` suffix 사용 | D-180 2026-04-23 갱신 위반 | dev-docs 는 suffix 없이, spec 문서 (`structural-redesign-tasks_CC.md`) 만 `_CC` |
 
 ---
 

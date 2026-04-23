@@ -39,6 +39,12 @@ SI-P3R 완료 (2026-04-14, D-125)
    │      - P6-C: Knowledge DB Release (외부 패키징, query API)
    │
    ▼  M1 (Multi-Domain Validation, suspended) — P6 완료 후 활성화
+
+SI-P7 Structural Redesign (별도 track, P6 와 독립)
+   - Step A / Step B 완료 (S1~S4 구현, commits `a6bc80e`~`2d252f3`)
+   - Step V 검증 착수 전 (D-190): V1 snapshot 재파싱 → V2 계측 → V3 ablation → V4 확정
+   - Step C (S5a Entity Discovery) 는 Step V 결과 의존
+   - dev-docs: `dev/active/phase-si-p7-structural-redesign/si-p7-{plan,context,tasks,debug-history}.md`
 ```
 
 - **P2 재판정 조건**: P3R 실 벤치 trial 성공 + P2 remodel 코드 실 bench 재실행(before/after metrics)

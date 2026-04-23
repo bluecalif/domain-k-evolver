@@ -120,7 +120,7 @@ adjacency_yield: dict               # S3-T7
 ### 진입점 — 읽기 우선순위
 
 1. `docs/structural-redesign-tasks_CC.md` v2 — 단일 진실 소스 (S5a 스펙: Step C 섹션)
-2. `dev/active/phase-si-p7-structural-redesign/si-p7-tasks_CC.md` — checklist
+2. `dev/active/phase-si-p7-structural-redesign/si-p7-tasks.md` — checklist
 3. `src/nodes/entity_discovery.py` — 현재 stub 확인 후 본격 구현
 
 ### S5a 관련 코드 경로

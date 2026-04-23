@@ -76,10 +76,10 @@ L1 (단위) / L2 (single-cycle e2e) / L3 (15c A/B). **fixture 는 real snapshot 
 
 ---
 
-## 파일 네이밍 규칙
+## 파일 네이밍 규칙 (D-180, 2026-04-23 갱신)
 
-- 본 설계 산출 task doc 은 모두 `_CC` suffix 로 끝낸다.
-- 예: `structural-redesign-tasks_CC.md` (본 문서), `si-p7-plan_CC.md` 등.
+- 본 spec 문서만 `_CC` suffix 유지 (`structural-redesign-tasks_CC.md`).
+- dev-docs (`si-p7-plan.md`, `si-p7-context.md`, `si-p7-tasks.md`, `si-p7-debug-history.md`) 는 suffix 없이 네이밍.
 - Commit prefix: `[si-p7] Step X.Y: description`
 
 ---
@@ -329,7 +329,7 @@ Step D (다음 phase 후보): S5b 전체 정교화 (auto-merge, fragmentation_re
 ### 문서
 - `docs/session-compact.md` trim (D-T1)
 - `docs/entity-acquisition-strategy-draft.md` → 확정본 (D-T2)
-- `dev/active/phase-si-p7-structural-redesign/` 신설 (plan/context/tasks/debug-history, 전부 `_CC` suffix)
+- `dev/active/phase-si-p7-structural-redesign/` 신설 (plan/context/tasks/debug-history, suffix 없음 — D-180 2026-04-23 갱신)
 
 ### Skill (D-188, 본 plan 에서 신설)
 - `.claude/skills/silver-structural-redesign/SKILL.md`

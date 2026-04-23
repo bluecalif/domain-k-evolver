@@ -56,6 +56,7 @@
 | Silver P4 | `dev/active/phase-si-p4-coverage/` | ✅ **완료** (42/42, 797 tests, VP4 PASS 4/5, D-147~D-150 해소) |
 | Silver P5 | `dev/active/phase-si-p5-telemetry-dashboard/` | ✅ **완료** (15/15, Gate PASS, 821 tests) |
 | Silver P6 | `dev/active/phase-si-p6-consolidation/` | **Planning** (0/16) — P5 ✅ |
+| SI-P7 Structural Redesign | `dev/active/phase-si-p7-structural-redesign/` | **진행 중** — Step A/B 완료, **Step V 검증 착수 전** (D-190), Step C (S5a) 는 Step V 결과 의존 |
 | M1 Multi-Domain | `dev/active/phase-m1-multidomain/` (예정) | suspended — P6 완료 후 활성화 |
 
 ### Bronze 구현 파일 (현행)
@@ -222,6 +223,11 @@ class EvolverState(TypedDict):
 | D-159 | Remodel/Pivot 임계값 **config 외부화 필수** (`SmartRemodelConfig`, `ExternalAnchorConfig.novelty_*`). 하드코딩 유지 불가 | P6-A7, A8 |
 | D-160 | Trigger telemetry는 **log 파싱 아니라 JSON 필드 emit** (`trigger_event` optional). schema backward compat 유지 | P6-A10 |
 | D-161 | **Forecast 모델 금지 사항**: Prophet/ARIMA 등 블랙박스 모델 금지. 선형/지수 projection + damping + bootstrap confidence 한정 (설명가능성 우선) | P6-A11 |
+| D-171~D-188 | SI-P7 5축 구조 설계 (S1~S5) + Q1~Q14 결정 + F2 α/β + S5a 범위 + graph 위치 + candidate 수명 + 3-layer 테스트 + Skill 2종 | SI-P7 |
+| D-189 (잠정 보류) | S5a = critical path blocker (`p7-ab-on` L3 FAIL 기반). Step V 검증 후 재판정 — 단독 원인 단정 금지 | SI-P7 Step V |
+| D-190 | Step V 삽입 — Step A/B 전 항목 동작 검증 (V1 snapshot 재파싱 → V2 계측 → V3 ablation → V4 확정) 을 S5a 착수 전에 선결 | SI-P7 Step V |
+| D-191 | V3 ablation 설계 — `p7-ab-minus-{axis}` **8c** (cycle 15→8 축소), baseline 재사용 (`p7-ab-on` 상한 / `p7-ab-off` 하한), 의심 축 1~2 개만 1차 실행. 실행 전 사용자 재승인 필수 | SI-P7 Step V |
+| D-180 (갱신 2026-04-23) | SI-P7 spec 문서만 `_CC` suffix 유지. dev-docs 는 suffix 없이 네이밍 | SI-P7 |
 
 ---
 

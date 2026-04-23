@@ -24,7 +24,7 @@
       "enforcement": "suggest",
       "priority": "high",
       "promptTriggers": {
-        "keywords": ["SI-P7", "si-p7", "structural redesign", "S1~S5", "S5a", "S5b", "entity discovery node", "entity_candidates", "condition_split", "field_adjacency", "adjacent rule engine", "integration_result 제어 입력", "deferred_targets", "defer/queue", "rule yield tracker", "aggressive mode", "β mode", "virtual entity 제거", "balance-N", "alias pre-filter", "_CC suffix", "si-p7-*"],
+        "keywords": ["SI-P7", "si-p7", "structural redesign", "S1~S5", "S5a", "S5b", "entity discovery node", "entity_candidates", "condition_split", "field_adjacency", "adjacent rule engine", "integration_result 제어 입력", "deferred_targets", "defer/queue", "rule yield tracker", "aggressive mode", "β mode", "virtual entity 제거", "balance-N", "alias pre-filter", "si-p7-*"],
         "intentPatterns": ["SI-P7.*구현", "S[1-5][a-b]?-T\\d+", "entity.*discovery.*노드", "condition_split.*재정의", "adjacent.*rule.*engine", "aggressive.*mode", "defer.*queue", "candidate.*승격", "entity_candidates.*수명"]
       }
     },

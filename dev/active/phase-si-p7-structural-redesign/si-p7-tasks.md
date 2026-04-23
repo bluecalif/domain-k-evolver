@@ -63,10 +63,54 @@
 
 ### Step B L3 검증
 
-- [ ] `p7-s2-on|off/`, `p7-s3-on|off/`, `p7-s4-on|off/` 15c A/B (또는 S2+S3+S4 묶음 on/off)
-- [ ] **S2**: `added / updated / condition_split / conflict_hold` 분포
-- [ ] **S3**: `adjacency_yield[rule_id]`, conflict field 재생성 = 0
-- [ ] **S4**: category Gini, virtual entity = 0
+- [x] `p7-ab-on|off/` 15c A/B 통합 1쌍 (비용 절감) — `2c54001`
+- [ ] **S2**: `added / updated / condition_split / conflict_hold` 분포 (Step V 로 이동)
+- [ ] **S3**: `adjacency_yield[rule_id]`, conflict field 재생성 = 0 (Step V 로 이동)
+- [ ] **S4**: category Gini, virtual entity = 0 (Step V 로 이동)
+
+> **L3 trial 결과 요약**: `p7-ab-on` FAIL (KU 82 고정, GU 고갈 c3+), `p7-ab-off` PASS (KU 147). 단, **Gate pass 는 Step A/B 의 목적이 아님** — 항목별 동작 검증을 Step V 로 이관 (D-190).
+
+---
+
+## Step V — Step A/B 전 항목 동작 검증 (D-190)
+
+> **배경**: `p7-ab-on` L3 FAIL 을 `balance-* 제거` 단독 원인으로 단정 금지 (D-190). Step A/B 각 item 의 실제 동작을 신호 수준에서 검증한 뒤 S5a 착수 여부를 결정.
+>
+> **현재 항목별 판정** (이 Step 착수 전):
+> - ✓ 10 개 (S1-T1~T8, S3-T3/T4/T5/T6, S4-T1)
+> - ✗ 의심 1 개 (S2-T4 β aggressive mode — stagnation trigger 발동 후 흔적 없음)
+> - ~ 7 개 (S2-T4 α, S2-T5~T8, S3-T1/T2/T7/T8, S4-T2 — 계측 부재)
+> - N/A 2 개 (S4-T3/T4 — Step C 대기)
+
+### V1 — Snapshot 신호 재파싱 (read-only, 비용 0)
+
+- [ ] **V-T1** `bench/silver/japan-travel/p7-ab-on/state-snapshots/cycle-*-snapshot/state.json` 파싱 스크립트 작성 — `aggressive_mode_remaining`, `recent_conflict_fields`, `adjacency_yield`, `coverage_map.deficit_score`, `ku_stagnation_signals`, `deferred_targets`, `defer_reason`, `integration_result_dist` cycle 별 추출 `[S]`
+- [ ] **V-T2** `run.log` grep — `query_rewrite`, `aggressive`, `entity_discovery`, `suppressed`, `ku_stagnation:` 키워드 발생 cycle/횟수 집계 `[S]`
+- [ ] **V-T3** `dev/active/phase-si-p7-structural-redesign/v1-signal-audit.md` 작성 — 표 형태, 7 개 ~ 항목의 ✓/✗ 재판정 포함 `[M]`
+
+### V2 — 계측 보강 (V1 결과 의존, 코드 변경, API 비용 0)
+
+> **조건**: V1 에서 state snapshot 에도 없는 신호 대상만. 모든 V1 항목이 해소되면 V2 생략.
+
+- [ ] **V-T4** 계측 필드 설계 — `state.py` 신규 필드 (e.g. `aggressive_mode_history`, `suppress_event_log`, `query_rewrite_rx_log` 등) + `integrate.py`/`critique.py`/`entity_discovery.py` event 기록 포인트 `[M]`
+- [ ] **V-T5** 계측 코드 구현 — **로직 변경 금지**, 관찰만 추가. L1 테스트로 신호 기록 검증 `[M]`
+- [ ] **V-T6** 1-cycle smoke (`scripts/run_readiness.py --cycles 1 --trial-id p7-v2-smoke`) 로 실 경로 신호 발생 확인 (mock 금지, real API 1 cycle) `[S]`
+
+### V3 — 축별 Ablation L3 (V2 후 조건부, API 비용 — 사전 승인 필수)
+
+> **조건**: V1/V2 후에도 축별 기여도 분리가 안 될 때만. 의심 축 1~2 개 한정.
+>
+> **설계 원칙 (D-191)**: cycle=**8** (GU 고갈 재현 충분선), baseline 재사용 (`p7-ab-on` 상한 / `p7-ab-off` 하한 — 재수행 금지), **ablation 방식** (`p7-ab-minus-{axis}` — 해당 축만 off, 나머지 on). 비용 ~800–1,500 LLM call 예상.
+
+- [ ] **V-T7** V3 축·cycle 수·비용 추정 정리 + 사용자 승인 요청 (`run_readiness.py --dry-run` 로 call 수 estimation 후 보고) `[S]`
+- [ ] **V-T8** `bench/silver/japan-travel/p7-ab-minus-{axis}/` 1~2 쌍 8c trial 실행 (`silver-trial-scaffold` 표준 준수) `[L]`
+- [ ] **V-T9** `dev/active/phase-si-p7-structural-redesign/v3-isolation-report.md` 작성 — `p7-ab-on` 대비 Δ KU, Δ GU, trigger 발동 수, condition_split 카운트, novelty 분리표 `[M]`
+
+### V4 — Root Cause 확정 + Next Step 결정 (비용 0)
+
+- [ ] **V-T10** 가설 H1~H7 증거 집계 → **D-192 (예정)** root cause 확정. `si-p7-debug-history.md` 엔트리 기록 `[S]`
+  - H1 S3 rule engine 커버리지 한계 / H2 S3-T1 suppress 과다 / H3 S3-T2/T8 blocklist 고착 / H4 S3-T7 yield 조기 약화 / H5 S2-T4 β 연결 실패 / H6 S5a 부재 / H7 S4-T1 balance-* 단독 원인
+- [ ] **V-T11** Next step 결정 — S5a 착수 (D-189 유지) / Step A/B item 수정 후 재시험 / 양자 병행 중 택 1 `[S]`
 
 ---
 
