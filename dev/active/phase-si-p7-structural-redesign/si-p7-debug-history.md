@@ -49,3 +49,39 @@
 - **D-191** — V3 ablation 설계 (`p7-ab-minus-{axis}`, 8c, baseline 재사용).
 - **D-189 잠정 보류** — Step V 결과 후 재판정.
 - D-180 갱신 — dev-docs `_CC` suffix 제거. spec 문서(`structural-redesign-tasks_CC.md`) 만 유지.
+
+---
+
+### 2026-04-23 — [Step V / V1 완료] V1 signal audit — ✓11 / ✗2 / ~6, S2-T4 β dead code 가설 (H5c)
+
+**증상 (재판정 대상)**: V1 시작 전 ✓10 / ✗1 (의심) / ~7 / N/A 2 매트릭스. V1 목표는 `~7` 중 snapshot/log 로 관찰 가능한 항목을 ✓/✗ 로 승격.
+
+**환경**: commit `8d794a1`. 도구 `scripts/analyze_p7_ab_signals.py` (cycle mapping 버그 수정 + LOG_KEYWORDS 확장: `growth_stagnation`, `exploration_drought`, `Remodel 트리거`, `axis_tags`, `integration_result`, `conflict_blocklist`, `aggressive_mode`).
+
+**관찰**:
+- `growth_stagnation`: on 3회 / off 0회 — S2-T2 ku_stagnation trigger **작동 확인**
+- `exploration_drought`: on 2회 / off 2회
+- `Remodel 트리거`: on 3회 / off 2회 (자연 발동 양쪽 모두)
+- `aggressive` / `aggressive_mode`: on 0회 / off 0회 — S2-T4 β **dead code 가능성**
+- `query_rewrite`: 0회 — S2-T4 α **기능 부재 확정**
+- `condition_split`, `suppressed`, `adjacency_yield`, `recent_conflict_fields`, `coverage_map`, `integration_result`, `axis_tags`: 전부 0회 (state snapshot 에도 persist 안 됨)
+
+**원인 (V1 완료 시점)**:
+- `~7` → `~6` (S2-T2 ✓ 승격)
+- `~6` 중 6 항목은 전부 state runtime 에만 존재, `state_io.py:_FILE_MAP` 에 매핑 없음 → snapshot 파일에 기록 자체 불가
+- S2-T4 β 가설 H5c: `critique.py:655` 에서 `aggressive_mode_remaining=3` 설정되지만, β mode 효과 경로 (target 확장, source_count≥1 임시 적재, LLM query) 는 **S5a-T11 에 배정되어 있음** → S5a 미구현이라 β 는 **dead code** (no-op)
+- `p7-ab-on` FAIL 의 실질 원인: (a) 초반 공격적 budget (c1 defer 20 → c2 소진), (b) GU 고갈, (c) S2-T4 β dead code 로 회복 불가. `balance-*` 단독 아님
+
+**해결 (V2 필요 범위)**:
+- V-T4/T5: 6개 ~ 항목을 관찰 가능하게 계측 보강
+  - Option A: `_OPTIONAL_LIST_FILES` 에 `si-p7-signals.json` 추가 (recent_conflict_fields, adjacency_yield, coverage_map)
+  - Option B: `telemetry/cycles.jsonl` snapshot 에 `integration_result_counts`, `aggressive_mode_remaining`, `condition_split_count` 추가
+  - Option C: `critique.py:655`, `plan.py:345`, `integrate.py`, `plan.py (query_rewrite)` 에 `logger.info` 구조화 출력
+- 원칙: 로직 변경 금지, 관찰만 추가
+
+**산출물**: `dev/active/phase-si-p7-structural-redesign/v1-signal-audit.md`
+
+**Decision**:
+- H5c (S2-T4 β = S5a coupled no-op) **유력 가설** — V2 계측으로 `aggressive_mode_remaining` cycle 시계열 + 효과 경로 call count 확인 후 V-T10 (D-192) 에서 확정
+- D-190 유지 강화: `balance-*` 단독 원인 가설 (H7) 은 V1 증거로도 기각에 가까움
+- Next: V-T4 계측 범위 사용자 승인 요청

@@ -84,9 +84,9 @@
 
 ### V1 — Snapshot 신호 재파싱 (read-only, 비용 0)
 
-- [ ] **V-T1** `bench/silver/japan-travel/p7-ab-on/state-snapshots/cycle-*-snapshot/state.json` 파싱 스크립트 작성 — `aggressive_mode_remaining`, `recent_conflict_fields`, `adjacency_yield`, `coverage_map.deficit_score`, `ku_stagnation_signals`, `deferred_targets`, `defer_reason`, `integration_result_dist` cycle 별 추출 `[S]`
-- [ ] **V-T2** `run.log` grep — `query_rewrite`, `aggressive`, `entity_discovery`, `suppressed`, `ku_stagnation:` 키워드 발생 cycle/횟수 집계 `[S]`
-- [ ] **V-T3** `dev/active/phase-si-p7-structural-redesign/v1-signal-audit.md` 작성 — 표 형태, 7 개 ~ 항목의 ✓/✗ 재판정 포함 `[M]`
+- [x] **V-T1** `bench/silver/japan-travel/p7-ab-on/state-snapshots/cycle-*-snapshot/state.json` 파싱 스크립트 작성 — `aggressive_mode_remaining`, `recent_conflict_fields`, `adjacency_yield`, `coverage_map.deficit_score`, `ku_stagnation_signals`, `deferred_targets`, `defer_reason`, `integration_result_dist` cycle 별 추출 — `scripts/analyze_p7_ab_signals.py`
+- [x] **V-T2** `run.log` grep — `query_rewrite`, `aggressive`, `entity_discovery`, `suppressed`, `ku_stagnation:` 키워드 발생 cycle/횟수 집계 — V-T1 스크립트 [B] 섹션에 통합
+- [x] **V-T3** `dev/active/phase-si-p7-structural-redesign/v1-signal-audit.md` 작성 — 표 형태, 7 개 ~ 항목의 ✓/✗ 재판정 포함 — **결과: ✓11 / ✗2 / ~6 / N/A 2**. S2-T2 ✓ 승격, S2-T4 α ✗ 확정, S2-T4 β ✗ 확정 (H5c: S5a coupled no-op 가설)
 
 ### V2 — 계측 보강 (V1 결과 의존, 코드 변경, API 비용 0)
 
