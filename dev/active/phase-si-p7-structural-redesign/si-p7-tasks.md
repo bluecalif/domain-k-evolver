@@ -99,8 +99,14 @@ trial: bench/silver/japan-travel/p7-s4-t1-smoke/  (1c real API)
 
 _P2: condition_split 보수화 전 D-56/blocklist root cause 먼저 해결_
 
-- [ ] **S3-T1 (보수화)** suppress 임계 = category 별 `mean × 2.0` (1.5 → 2.0)
-- [ ] **S3-T2 (보수화)** `recent_conflict_fields` blocklist window N=2 (3 → 2)
+- [x] **S3-T1** D-56 suppress 완전 제거 — field 포화 heuristic 제거. adj GU는 all applicable fields 대상. S3-T3 rule engine이 올바른 대체제
+  - adj_gen=0 의 root cause 제거 (S1-T9 DROP 당시 진단: "root cause는 S3 D-56")
+  - S3-T3 이전 과도기: `[:3]` cap(F1) + plan cycle_cap이 GU flooding 방지
+  - **L1**: `TestSuppressRemovalRegression` 3 cases ✓ (838 passed after S3-T2)
+- [x] **S3-T2** `recent_conflict_fields` state 필드 + blocklist window N=2 구현
+  - conflict 발생 시 field 기록, 2 cycle window 트리밍, adjacent GU 생성 차단
+  - **L1**: `TestRecentConflictFieldsBlocklist` 3 cases ✓ (838 passed)
+  - **L2**: `si-p7-s3-t1t2-smoke` (1c) — adj GU 6건, price 포함 ✓, balance-* 0 ✓, KU 13→32
 - [ ] **S3-T3** `domain-skeleton.json` 에 `field_adjacency` rule engine seed
 - [ ] **S3-T4** `_generate_dynamic_gus` 가 rule engine 참조
   - **L2**: `si-p7-s3-t4-smoke` (1c) — adj GU field 가 seed 맵 내

@@ -780,10 +780,16 @@ class TestRefreshIntegration:
 
 
 # ---------------------------------------------------------------------------
-# Task 5.8: Field 다양성 억제
+# S3-T1 regression guard: D-56 suppress 완전 제거 검증
 # ---------------------------------------------------------------------------
 
-class TestFieldDiversitySuppression:
+class TestSuppressRemovalRegression:
+    """S3-T1: field 포화 heuristic(D-56) 완전 제거 검증.
+
+    price가 과다 대표되어도 adjacent GU 생성이 차단되지 않아야 함.
+    adj_gen=0 root cause 제거 확인.
+    """
+
     _SKELETON = {
         "categories": [{"slug": "transport"}],
         "fields": [
@@ -794,56 +800,32 @@ class TestFieldDiversitySuppression:
         "axes": [],
     }
 
-    def test_overrepresented_field_suppressed(self) -> None:
-        """count > mean×1.5인 필드 GU 생성 억제."""
-        # price=10, tips=2, how_to_use=1 → mean=4.33, threshold=6.5
-        # price(10) > 6.5 → suppressed
-        kus = [
-            {"ku_id": f"KU-p{i}", "entity_key": f"d:transport:e{i}",
-             "field": "price", "status": "active"}
-            for i in range(10)
-        ] + [
-            {"ku_id": f"KU-t{i}", "entity_key": f"d:transport:et{i}",
-             "field": "tips", "status": "active"}
-            for i in range(2)
-        ] + [
-            {"ku_id": "KU-h1", "entity_key": "d:transport:eh1",
-             "field": "how_to_use", "status": "active"},
-        ]
+    def test_overrepresented_field_no_longer_suppressed(self) -> None:
+        """D-56 제거 후: price 과다 대표여도 adjacent GU 생성 허용."""
         claim = {
             "claim_id": "CL-001",
             "entity_key": "d:transport:new-bus",
-            "field": "price",
+            "field": "how_to_use",
         }
-        gus = _generate_dynamic_gus(
-            claim, [], self._SKELETON, "normal", 5, kus=kus,
-        )
+        gus = _generate_dynamic_gus(claim, [], self._SKELETON, "normal", 5)
         fields = {gu["target"]["field"] for gu in gus}
-        assert "price" not in fields  # suppressed
-        assert "tips" in fields or "how_to_use" in fields
+        assert "price" in fields, "D-56 제거 후 price adjacent GU가 생성되어야 함"
+        assert "tips" in fields
 
-    def test_no_suppression_when_balanced(self) -> None:
-        """균등 분포시 억제 없음."""
-        kus = [
-            {"ku_id": f"KU-{f}-{i}", "entity_key": f"d:transport:e{i}",
-             "field": f, "status": "active"}
-            for f in ["price", "tips", "how_to_use"]
-            for i in range(3)
-        ]
+    def test_all_applicable_fields_generate_gus(self) -> None:
+        """kus 파라미터 없이도 모든 applicable field에 GU 생성."""
         claim = {
-            "claim_id": "CL-001",
-            "entity_key": "d:transport:new-train",
+            "claim_id": "CL-002",
+            "entity_key": "d:transport:jr-pass",
             "field": "price",
         }
-        gus = _generate_dynamic_gus(
-            claim, [], self._SKELETON, "normal", 5, kus=kus,
-        )
+        gus = _generate_dynamic_gus(claim, [], self._SKELETON, "normal", 5)
         fields = {gu["target"]["field"] for gu in gus}
         assert "tips" in fields
         assert "how_to_use" in fields
 
-    def test_suppression_in_integrate_node(self) -> None:
-        """integrate_node에서 과다 필드 동적 GU 억제 확인."""
+    def test_suppress_removal_in_integrate_node(self) -> None:
+        """integrate_node에서 price 과다 대표여도 adjacent GU 생성 허용."""
         kus = [
             {"ku_id": f"KU-{i}", "entity_key": f"d:transport:e{i}",
              "field": "price", "status": "active",
@@ -872,8 +854,99 @@ class TestFieldDiversitySuppression:
         result = integrate_node(state)
         dynamic_gus = [gu for gu in result["gap_map"] if gu.get("trigger") == "A:adjacent_gap"]
         dynamic_fields = {gu["target"]["field"] for gu in dynamic_gus}
-        # price is overrepresented (10 vs mean~3.7, threshold~5.5) → suppressed
-        assert "price" not in dynamic_fields
+        assert "price" in dynamic_fields, "D-56 제거 후 price adjacent GU가 생성되어야 함"
+
+
+# ---------------------------------------------------------------------------
+# S3-T2: recent_conflict_fields blocklist (N=2 cycle window)
+# ---------------------------------------------------------------------------
+
+class TestRecentConflictFieldsBlocklist:
+    """S3-T2: conflict 반복 field → adjacent GU 차단 (N=2 cycle window)."""
+
+    _SKELETON = {
+        "categories": [{"slug": "transport"}],
+        "fields": [
+            {"name": "price", "categories": ["*"]},
+            {"name": "tips", "categories": ["*"]},
+            {"name": "how_to_use", "categories": ["transport"]},
+        ],
+        "axes": [],
+    }
+
+    def _make_state(self, recent_conflict_fields: list[dict], current_cycle: int = 2) -> dict:
+        return {
+            "knowledge_units": [],
+            "gap_map": [
+                {"gu_id": "GU-0001", "status": "open",
+                 "target": {"entity_key": "d:transport:bus", "field": "how_to_use"}},
+            ],
+            "current_claims": [
+                {
+                    "claim_id": "CL-001",
+                    "entity_key": "d:transport:bus",
+                    "field": "how_to_use",
+                    "value": "Tap IC card",
+                    "source_gu_id": "GU-0001",
+                    "evidence": {"eu_id": "EU-100", "observed_at": "2026-03-07", "credibility": 0.9},
+                },
+            ],
+            "domain_skeleton": self._SKELETON,
+            "current_mode": {"mode": "normal"},
+            "current_cycle": current_cycle,
+            "recent_conflict_fields": recent_conflict_fields,
+        }
+
+    def test_blocklisted_field_excluded_from_adjacent_gus(self) -> None:
+        """conflict field는 adjacent GU에서 차단."""
+        state = self._make_state([{"field": "price", "cycle": 2}], current_cycle=2)
+        result = integrate_node(state)
+        dynamic_gus = [gu for gu in result["gap_map"] if gu.get("trigger") == "A:adjacent_gap"]
+        dynamic_fields = {gu["target"]["field"] for gu in dynamic_gus}
+        assert "price" not in dynamic_fields, "blocklist field는 adjacent GU에서 제외되어야 함"
+        assert "tips" in dynamic_fields
+
+    def test_blocklist_expired_after_window(self) -> None:
+        """N=2 window 이후: blocklist 만료 → field 허용."""
+        # cycle=1 conflict, current_cycle=3 → window(2) 밖
+        state = self._make_state([{"field": "price", "cycle": 1}], current_cycle=3)
+        result = integrate_node(state)
+        dynamic_gus = [gu for gu in result["gap_map"] if gu.get("trigger") == "A:adjacent_gap"]
+        dynamic_fields = {gu["target"]["field"] for gu in dynamic_gus}
+        assert "price" in dynamic_fields, "window 만료 후 field는 허용되어야 함"
+
+    def test_conflict_field_added_to_state(self) -> None:
+        """conflict 발생 시 recent_conflict_fields 에 field 추가."""
+        ku = {
+            "ku_id": "KU-0001", "entity_key": "d:transport:jr-pass",
+            "field": "price", "value": "old price", "status": "active",
+            "evidence_links": ["EU-1"], "confidence": 0.9,
+            "observed_at": "2026-01-01", "validity": {"ttl_days": 180},
+        }
+        state = {
+            "knowledge_units": [ku],
+            "gap_map": [
+                {"gu_id": "GU-0001", "status": "open",
+                 "target": {"entity_key": "d:transport:jr-pass", "field": "price"}},
+            ],
+            "current_claims": [
+                {
+                    "claim_id": "CL-001",
+                    "entity_key": "d:transport:jr-pass",
+                    "field": "price",
+                    "value": "new conflicting price",
+                    "source_gu_id": "GU-0001",
+                    "evidence": {"eu_id": "EU-200", "observed_at": "2026-03-07", "credibility": 0.9},
+                },
+            ],
+            "domain_skeleton": self._SKELETON,
+            "current_mode": {"mode": "normal"},
+            "current_cycle": 1,
+            "recent_conflict_fields": [],
+        }
+        result = integrate_node(state)
+        rcf = result.get("recent_conflict_fields", [])
+        assert any(e["field"] == "price" for e in rcf), "conflict 발생 field가 recent_conflict_fields에 추가되어야 함"
 
 
 # ---------------------------------------------------------------------------

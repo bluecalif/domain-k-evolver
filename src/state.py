@@ -236,6 +236,8 @@ class EvolverState(TypedDict, total=False):
     integration_result_dist: list[dict]
     # SI-P7 S2-T2: KU 성장 정체 신호 (critique가 매 cycle 갱신)
     ku_stagnation_signals: list[str]
+    # SI-P7 S3-T2: conflict 반복 field blocklist [{field, cycle}], N=2 cycle window
+    recent_conflict_fields: list[dict]
 
     # Diagnostic fields (진단 전용, orchestrator가 cycle마다 읽고 제거)
     _diag_search_by_gu: dict | None       # collect: {gu_id: search_result_count}

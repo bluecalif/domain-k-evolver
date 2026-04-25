@@ -179,13 +179,16 @@ def _generate_dynamic_gus(
     skeleton: dict,
     mode: str,
     open_count: int,
-    kus: list[dict] | None = None,
+    blocklist_fields: set[str] | None = None,
 ) -> list[dict]:
     """동적 GU 발견 (Trigger A: 인접 Gap).
 
     Claim의 entity_key/field가 기존 Gap Map에 없는 슬롯 참조 시 missing GU 생성.
-    과다 필드(count > mean×1.5) GU 생성 억제 (D-56).
+    Field 억제(D-56) 제거 — S3-T3 rule engine이 올바른 대체제.
+    blocklist_fields: S3-T2 conflict 반복 field 차단 (N=2 cycle window).
     """
+    if blocklist_fields is None:
+        blocklist_fields = set()
     entity_key = claim.get("entity_key", "")
     field = claim.get("field", "")
 
@@ -210,20 +213,6 @@ def _generate_dynamic_gus(
         if "*" in f.get("categories", []) or category in f.get("categories", [])
     ]
 
-    # Field 다양성 억제: 과다 필드 제외 (D-56)
-    suppressed_fields: set[str] = set()
-    if kus:
-        field_counts: dict[str, int] = {}
-        for ku in kus:
-            if ku.get("status") != "active":
-                continue
-            f = ku.get("field", "")
-            field_counts[f] = field_counts.get(f, 0) + 1
-        if field_counts:
-            mean_count = sum(field_counts.values()) / len(field_counts)
-            threshold = mean_count * 1.5
-            suppressed_fields = {f for f, c in field_counts.items() if c > threshold}
-
     # 부모 claim entity_key에서 geography 추론
     geo = _infer_geography(entity_key, skeleton)
     gu_axis_tags = {"geography": geo} if geo else {}
@@ -231,7 +220,7 @@ def _generate_dynamic_gus(
     for adj_field in applicable_fields:
         if adj_field == field:
             continue
-        if adj_field in suppressed_fields:
+        if adj_field in blocklist_fields:
             continue
         slot = (entity_key, adj_field)
         if slot not in existing_slots:
@@ -291,6 +280,8 @@ def integrate_node(
     mode = mode_decision.get("mode", "normal")
     dispute_queue = list(state.get("dispute_queue", []))
     conflict_ledger = list(state.get("conflict_ledger", []))
+    current_cycle = state.get("current_cycle", 1)
+    recent_conflict_fields: list[dict] = list(state.get("recent_conflict_fields", []))
 
     open_count = sum(1 for gu in gap_map if gu.get("status") == "open")
     dynamic_cap = _compute_dynamic_gu_cap(mode, open_count)
@@ -316,6 +307,14 @@ def integrate_node(
                 max_gu_id = max(max_gu_id, num)
             except ValueError:
                 logger.warning("비정상 GU ID 형식: %r — 무시", gu_id)
+
+    # S3-T2: recent_conflict_fields N=2 cycle window 트리밍
+    _BLOCKLIST_WINDOW = 2
+    recent_conflict_fields = [
+        e for e in recent_conflict_fields
+        if e.get("cycle", 0) >= current_cycle - _BLOCKLIST_WINDOW + 1
+    ]
+    blocklist_fields: set[str] = {e["field"] for e in recent_conflict_fields}
 
     # 통합 처리
     adds: list[dict] = []
@@ -409,6 +408,9 @@ def integrate_node(
                         "new_value": str(value)[:100],
                         "cycle": state.get("current_cycle", 0),
                     })
+
+                    # S3-T2: conflict field blocklist 업데이트
+                    recent_conflict_fields.append({"field": field, "cycle": current_cycle})
 
                     # Silver P1-B2: conflict_ledger entry (append-only, 삭제 금지)
                     eu_ids = list(existing_ku.get("evidence_links", []))
@@ -526,7 +528,7 @@ def integrate_node(
 
         # 동적 GU 발견 (Trigger A)
         if len(new_dynamic_gus) < dynamic_cap:
-            discovered = _generate_dynamic_gus(claim, gap_map + new_dynamic_gus, skeleton, mode, open_count, kus=kus)
+            discovered = _generate_dynamic_gus(claim, gap_map + new_dynamic_gus, skeleton, mode, open_count, blocklist_fields)
             remaining = dynamic_cap - len(new_dynamic_gus)
             for dgu in discovered[:remaining]:
                 max_gu_id += 1
@@ -593,4 +595,5 @@ def integrate_node(
         "_diag_adjacent_gap_count": len(new_dynamic_gus),
         "_diag_resolved_gus": diag_resolved_gus,
         "integration_result_dist": _prev_dist,
+        "recent_conflict_fields": recent_conflict_fields,
     }

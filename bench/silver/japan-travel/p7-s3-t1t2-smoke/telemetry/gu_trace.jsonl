@@ -1,0 +1,14 @@
+{"cycle": 1, "gu_id": "GU-0001", "entity_key": "japan-travel:regulation:tourist-visa", "field": "eligibility", "is_wildcard": false, "query_count": 3, "search_yield": 15, "resolved": true}
+{"cycle": 1, "gu_id": "GU-0002", "entity_key": "japan-travel:regulation:customs-allowance", "field": "eligibility", "is_wildcard": false, "query_count": 3, "search_yield": 15, "resolved": true}
+{"cycle": 1, "gu_id": "GU-0003", "entity_key": "japan-travel:regulation:emergency", "field": "eligibility", "is_wildcard": false, "query_count": 3, "search_yield": 15, "resolved": true}
+{"cycle": 1, "gu_id": "GU-0004", "entity_key": "japan-travel:regulation:visit-japan-web", "field": "eligibility", "is_wildcard": false, "query_count": 3, "search_yield": 15, "resolved": true}
+{"cycle": 1, "gu_id": "GU-0005", "entity_key": "japan-travel:accommodation:*", "field": "price", "is_wildcard": true, "query_count": 3, "search_yield": 15, "resolved": true}
+{"cycle": 1, "gu_id": "GU-0006", "entity_key": "japan-travel:attraction:*", "field": "price", "is_wildcard": true, "query_count": 3, "search_yield": 15, "resolved": true}
+{"cycle": 1, "gu_id": "GU-0007", "entity_key": "japan-travel:dining:*", "field": "price", "is_wildcard": true, "query_count": 3, "search_yield": 15, "resolved": true}
+{"cycle": 1, "gu_id": "GU-0008", "entity_key": "japan-travel:payment:ic-card", "field": "price", "is_wildcard": false, "query_count": 3, "search_yield": 15, "resolved": true}
+{"cycle": 1, "gu_id": "GU-0009", "entity_key": "japan-travel:pass-ticket:jr-pass", "field": "policy", "is_wildcard": false, "query_count": 3, "search_yield": 15, "resolved": true}
+{"cycle": 1, "gu_id": "GU-0010", "entity_key": "japan-travel:pass-ticket:suica", "field": "policy", "is_wildcard": false, "query_count": 3, "search_yield": 15, "resolved": true}
+{"cycle": 1, "gu_id": "GU-0011", "entity_key": "japan-travel:accommodation:*", "field": "location", "is_wildcard": true, "query_count": 3, "search_yield": 15, "resolved": true}
+{"cycle": 1, "gu_id": "GU-0012", "entity_key": "japan-travel:accommodation:*", "field": "etiquette", "is_wildcard": true, "query_count": 3, "search_yield": 15, "resolved": true}
+{"cycle": 1, "gu_id": "GU-0013", "entity_key": "japan-travel:accommodation:*", "field": "tips", "is_wildcard": true, "query_count": 0, "search_yield": 0, "resolved": false}
+{"cycle": 1, "gu_id": "GU-0014", "entity_key": "japan-travel:attraction:*", "field": "hours", "is_wildcard": true, "query_count": 0, "search_yield": 0, "resolved": false}
