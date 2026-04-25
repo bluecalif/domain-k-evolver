@@ -13,10 +13,10 @@ from src.nodes.critique import (
     _check_convergence,
     _compute_refresh_cap,
     _detect_ku_stagnation,
-    _generate_balance_gus,
     _generate_refresh_gus,
     critique_node,
 )
+import src.nodes.critique as _critique_module
 
 BENCH = Path("bench/japan-travel/state")
 
@@ -343,80 +343,43 @@ class TestGenerateRefreshGus:
 
 
 # ---------------------------------------------------------------------------
-# Task 5.7: Category 균형 GU 생성
+# S4-T1 regression guard: virtual balance-N entity 완전 제거 검증
 # ---------------------------------------------------------------------------
 
-class TestGenerateBalanceGus:
+class TestBalanceGuRegression:
+    """S4-T1: _generate_balance_gus 및 MIN_KU_PER_CAT 완전 제거 검증.
+
+    S1-T7 TestBudgetRemoval 패턴 차용.
+    """
+
     _SKELETON = {
         "domain": "test",
         "categories": [
             {"slug": "transport"},
             {"slug": "dining"},
-            {"slug": "payment"},
         ],
         "fields": [
             {"name": "price", "categories": ["*"]},
-            {"name": "hours", "categories": ["dining"]},
-            {"name": "how_to_use", "categories": ["transport", "payment"]},
         ],
     }
 
-    def test_generates_gus_for_underrepresented_category(self) -> None:
-        kus = [
-            {"ku_id": f"KU-{i}", "entity_key": f"test:transport:e{i}",
-             "field": "price", "status": "active"}
-            for i in range(8)
-        ] + [
-            {"ku_id": "KU-20", "entity_key": "test:dining:e20",
-             "field": "price", "status": "active"},
-        ]
-        # transport=8 (ok), dining=1 (need 4), payment=0 (need 5)
-        gus = _generate_balance_gus(kus, [], self._SKELETON, max_gu_id=0)
-        assert len(gus) > 0
-        triggers = {gu["trigger"] for gu in gus}
-        assert triggers == {"E:category_balance"}
-        # dining GUs (applicable fields: hours, price → min(4, 2)=2)
-        dining_gus = [gu for gu in gus if "dining" in gu["target"]["entity_key"]]
-        assert len(dining_gus) == 2
-        # payment GUs (applicable fields: how_to_use, price → min(5, 2)=2)
-        payment_gus = [gu for gu in gus if "payment" in gu["target"]["entity_key"]]
-        assert len(payment_gus) == 2
+    def test_generate_balance_gus_removed_from_module(self) -> None:
+        assert not hasattr(_critique_module, "_generate_balance_gus"), (
+            "_generate_balance_gus 는 S4-T1 에서 제거됨. 재도입 금지."
+        )
 
-    def test_no_gus_when_all_sufficient(self) -> None:
-        kus = []
-        for cat in ["transport", "dining", "payment"]:
-            for i in range(6):
-                kus.append({
-                    "ku_id": f"KU-{cat}-{i}", "entity_key": f"test:{cat}:e{i}",
-                    "field": "price", "status": "active",
-                })
-        gus = _generate_balance_gus(kus, [], self._SKELETON, max_gu_id=0)
-        assert len(gus) == 0
+    def test_min_ku_per_cat_removed_from_module(self) -> None:
+        assert not hasattr(_critique_module, "MIN_KU_PER_CAT"), (
+            "MIN_KU_PER_CAT 는 S4-T1 에서 제거됨. 재도입 금지."
+        )
 
-    def test_category_specific_fields_prioritized(self) -> None:
-        kus = [
-            {"ku_id": "KU-1", "entity_key": "test:dining:e1",
-             "field": "price", "status": "active"},
-        ]
-        gus = _generate_balance_gus(kus, [], self._SKELETON, max_gu_id=0)
-        dining_gus = [gu for gu in gus if "dining" in gu["target"]["entity_key"]]
-        # dining-specific 필드 (hours)가 먼저 나와야 함
-        fields = [gu["target"]["field"] for gu in dining_gus]
-        assert fields[0] == "hours"  # category-specific first
-
-    def test_expansion_mode_jump(self) -> None:
-        kus = []
-        gus = _generate_balance_gus(kus, [], self._SKELETON, max_gu_id=0)
-        for gu in gus:
-            assert gu["expansion_mode"] == "jump"
-
-    def test_critique_node_adds_balance_gus(self) -> None:
+    def test_critique_node_produces_no_balance_gus(self) -> None:
         kus = [
             {"ku_id": f"KU-{i}", "entity_key": f"test:transport:e{i}",
              "field": "price", "status": "active",
-             "evidence_links": ["EU-1", "EU-2"], "confidence": 0.9,
+             "evidence_links": ["EU-1"], "confidence": 0.9,
              "observed_at": "2026-03-01", "validity": {"ttl_days": 180}}
-            for i in range(8)
+            for i in range(2)
         ]
         state = {
             "knowledge_units": kus,
@@ -426,9 +389,13 @@ class TestGenerateBalanceGus:
             "metrics": {"rates": {}},
         }
         result = critique_node(state, today=date(2026, 3, 7))
-        assert "gap_map" in result
-        balance = [gu for gu in result["gap_map"] if gu.get("trigger") == "E:category_balance"]
-        assert len(balance) > 0
+        balance = [
+            gu for gu in result.get("gap_map", [])
+            if "balance-" in gu.get("target", {}).get("entity_key", "")
+        ]
+        assert len(balance) == 0, (
+            f"balance-N virtual entity 가 {len(balance)}건 생성됨. S4-T1 guard 위반."
+        )
 
 
 # ---------------------------------------------------------------------------

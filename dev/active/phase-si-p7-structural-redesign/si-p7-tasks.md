@@ -12,8 +12,11 @@
 각 axis 완료 시 5c L2 smoke 통과 의무 → 통과 시 다음 axis 진입. 실패 시 axis 내부 narrowing (V-T11 토글 패턴, S2-T5~T8 한정). Phase 전체 종료 시 15c L3 통합 trial 로 공식 Gate 판정.
 
 ```
-Stage A → S1 5c gate → S2-T1/T2 1c gate → Stage B
-Stage B → S2-T5~T8 5c gate → S3 5c gate → S4 5c gate → Stage C
+Stage A → S1 5c gate → S2-T1/T2 1c gate → Pre-Stage B
+Pre-Stage B → S4-T1 1c gate → Stage B-1/B-2 (S3)
+Stage B-1/B-2 (S3) → S3 5c gate → Stage B-3 (S2)
+Stage B-3 (S2) → S2 5c gate → Stage B-4 (S4-T2~T4)
+Stage B-4 (S4-T2~T4) → S4 5c gate → Stage C
 Stage C → S5a 5c gate → Stage D
 Stage D → 15c L3 통합 trial → readiness-report (silver-phase-gate-check)
 ```
@@ -68,34 +71,33 @@ PASS 기준:
 
 ---
 
-## Stage B — KU/field 품질 개선 (S2-T5~T8 + S3 + S4)
+## Stage B — KU/field 품질 개선 (Pre-B: S4-T1 → B-1/B-2: S3 → B-3: S2 → B-4: S4-T2~T4)
 
-### S2-T3~T8 — condition_split 재정의 (D-195 보수화)
+> **Option B (P2+P3) 적용**: 측정 오염원 먼저 제거(P3) → root cause 먼저(P2) → S2 보수화 → S4 잔여
 
-**사전 작업**: S2-T6 시작 직전 V-T11 cherry-pick — `git cherry-pick f61c864` (config.py + integrate.py + tests)
+### Pre-Stage B — 측정 오염원 제거 (S4-T1)
 
-- [ ] **S2-T3** F2 = α + β 확정 (D-181 design only, 구현 불필요)
-- [ ] **S2-T4** F2 구현 — α (query 재작성, critique → plan) + β (aggressive mode entity_discovery 파라미터 override). **β 는 S5a-T11 동반 구현**
-- [ ] **S2-T5** condition_split (a): parse prompt "조건어 추출"
-- [ ] **S2-T6 (보수화)** "값 구조 차이" 감지 → condition_split. **임계: existing/claim 모두 ≥ 2 chars, set/range 변환 시 명시적 marker 필요**
-  - **L1**: `_value_structure_type()` + 보수 임계 unit
-  - **L2**: `si-p7-s2-t6-smoke` (1c) — 조건값 claim → split 출현
-- [ ] **S2-T7 (보수화)** `skeleton.fields[].condition_axes` 강제. **임계: claim 의 conditions 필드 비어있지 않을 때만**
-- [ ] **S2-T8 (보수화)** axis_tags 차이 → condition_split. **임계: 단일 axis 차이만 (geography 단일), 다중 axis 차이는 hold**
+_P3: balance-N 양산이 S2/S3 5c gate KU 신호를 오염시킴. 모든 axis 5c gate 전에 선행._
 
-### S2 Axis Gate (5c smoke)
+- [x] **S4-T1** virtual `balance-N` 생성 전부 제거
+  - **L1**: `TestBalanceGuRegression` — gap_map 에 `balance-*` GU 0건, `_generate_balance_gus` 부재, `MIN_KU_PER_CAT` 부재 ✓ (835 passed)
+  - **L2**: `si-p7-s4-t1-smoke` (1c) — `state.gap_map` 에 `balance-*` 0건 ✓ (KU 13→24, GU 35, refresh 정상)
+
+### Pre-Stage B Gate (1c smoke) ✅ PASS
 
 ```
-trial: bench/silver/japan-travel/p7-rebuild-s2-smoke/  (5c real API)
-PASS 기준 (s2-attempt-1 대비):
-- c1 ΔKU ≤ +35  (s2-attempt-1: +59)
-- GU 양산 ≥ 65  (s2-attempt-1: 49)
-- KU c5 ≥ 90  (s2-attempt-1: 88, 회복)
-- adj_gen: c3+ 0 cycle 없음
-FAIL 시: V-T11 토글로 narrowing (T6/T7/T8 개별 off → 어느 rule 이 폭증 원인)
+trial: bench/silver/japan-travel/p7-s4-t1-smoke/  (1c real API)
+결과:
+- gap_map 내 balance-* GU = 0  ✓
+- GU ID 연속 (GU-0001~GU-0035), max_gu_id 연속성 유지  ✓
+- refresh_gus 정상 동작 (0건 — stale KU 없음)  ✓
+- KU: 13 → 24 (active), cycle 정상 완료  ✓
+판정: PASS → Stage B-1 (S3-T1) 진입 가능
 ```
 
-### S3 — adjacent rule engine (보수화)
+### Stage B-1/B-2 — adjacent rule engine root cause (S3)
+
+_P2: condition_split 보수화 전 D-56/blocklist root cause 먼저 해결_
 
 - [ ] **S3-T1 (보수화)** suppress 임계 = category 별 `mean × 2.0` (1.5 → 2.0)
 - [ ] **S3-T2 (보수화)** `recent_conflict_fields` blocklist window N=2 (3 → 2)
@@ -120,11 +122,34 @@ PASS 기준 (s3-attempt-1 대비):
 FAIL 시: suppress/blocklist/yield 임계 narrowing (보수화 강도 올림)
 ```
 
-### S4 — category_balance (virtual entity 즉시 제거)
+### Stage B-3 — condition_split 재정의 (S2-T3~T8, D-195 보수화)
 
-- [ ] **S4-T1** virtual `balance-N` 생성 전부 제거
-  - **L2**: `si-p7-s4-t1-smoke` (1c) — `state.gap_map` 에 `balance-*` 0건
-- [ ] **S4-T2** `MIN_KU_PER_CAT` 제거 → `coverage_map.deficit_score`
+**사전 작업**: S2-T6 시작 직전 V-T11 cherry-pick — `git cherry-pick f61c864` (config.py + integrate.py + tests)
+
+- [ ] **S2-T3** F2 = α + β 확정 (D-181 design only, 구현 불필요)
+- [ ] **S2-T4** F2 구현 — α (query 재작성, critique → plan) + β (aggressive mode entity_discovery 파라미터 override). **β 는 S5a-T11 동반 구현**
+- [ ] **S2-T5** condition_split (a): parse prompt "조건어 추출"
+- [ ] **S2-T6 (보수화)** "값 구조 차이" 감지 → condition_split. **임계: existing/claim 모두 ≥ 2 chars, set/range 변환 시 명시적 marker 필요**
+  - **L1**: `_value_structure_type()` + 보수 임계 unit
+  - **L2**: `si-p7-s2-t6-smoke` (1c) — 조건값 claim → split 출현
+- [ ] **S2-T7 (보수화)** `skeleton.fields[].condition_axes` 강제. **임계: claim 의 conditions 필드 비어있지 않을 때만**
+- [ ] **S2-T8 (보수화)** axis_tags 차이 → condition_split. **임계: 단일 axis 차이만 (geography 단일), 다중 axis 차이는 hold**
+
+### S2 Axis Gate (5c smoke)
+
+```
+trial: bench/silver/japan-travel/p7-rebuild-s2-smoke/  (5c real API)
+PASS 기준 (s2-attempt-1 대비):
+- c1 ΔKU ≤ +35  (s2-attempt-1: +59)
+- GU 양산 ≥ 65  (s2-attempt-1: 49)
+- KU c5 ≥ 90  (s2-attempt-1: 88, 회복)
+- adj_gen: c3+ 0 cycle 없음
+FAIL 시: V-T11 토글로 narrowing (T6/T7/T8 개별 off → 어느 rule 이 폭증 원인)
+```
+
+### Stage B-4 — balance 대체 (S4-T2~T4)
+
+- [ ] **S4-T2** `coverage_map.deficit_score` 기반 카테고리 결핍 계산
 - [ ] **S4-T3** field 선택 → S3 `field_adjacency` 통일
 - [ ] **S4-T4** S5a validated entity 대상으로만 balance GU
 

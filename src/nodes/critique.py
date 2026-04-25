@@ -99,7 +99,6 @@ def _analyze_failure_modes(
 
 
 REFRESH_GU_CAP_DEFAULT = 10  # D-55: cycle당 refresh GU 기본 상한
-MIN_KU_PER_CAT = 5   # D-56: 카테고리당 최소 KU 수
 
 
 def _compute_refresh_cap(stale_count: int) -> int:
@@ -183,90 +182,6 @@ def _generate_refresh_gus(
 
     return new_gus
 
-
-def _generate_balance_gus(
-    kus: list[dict],
-    gap_map: list[dict],
-    skeleton: dict,
-    max_gu_id: int,
-    today: date | None = None,
-) -> list[dict]:
-    """min_ku < MIN_KU_PER_CAT인 카테고리 → 균형 GU 생성.
-
-    category-specific 필드 우선, expansion_mode="jump".
-    """
-    if today is None:
-        today = date.today()
-
-    categories = [c["slug"] for c in skeleton.get("categories", [])]
-    if not categories:
-        return []
-
-    # 카테고리별 active KU 수
-    cat_counts: dict[str, int] = {c: 0 for c in categories}
-    for ku in kus:
-        if ku.get("status") != "active":
-            continue
-        parts = ku.get("entity_key", "").split(":")
-        cat = parts[1] if len(parts) >= 3 else ""
-        if cat in cat_counts:
-            cat_counts[cat] += 1
-
-    # 기존 open GU 슬롯
-    existing_open_slots = {
-        (gu.get("target", {}).get("entity_key"), gu.get("target", {}).get("field"))
-        for gu in gap_map
-        if gu.get("status") == "open"
-    }
-
-    fields = skeleton.get("fields", [])
-    new_gus: list[dict] = []
-
-    for cat, count in cat_counts.items():
-        if count >= MIN_KU_PER_CAT:
-            continue
-        needed = MIN_KU_PER_CAT - count
-        # category-specific 필드 우선
-        applicable = [
-            f["name"] for f in fields
-            if cat in f.get("categories", [])
-        ] + [
-            f["name"] for f in fields
-            if "*" in f.get("categories", [])
-        ]
-        # 중복 제거, 순서 유지
-        seen: set[str] = set()
-        unique_fields: list[str] = []
-        for fn in applicable:
-            if fn not in seen:
-                seen.add(fn)
-                unique_fields.append(fn)
-
-        generated = 0
-        for fn in unique_fields:
-            if generated >= needed:
-                break
-            entity_key = f"{skeleton.get('domain', 'unknown')}:{cat}:balance-{generated}"
-            slot = (entity_key, fn)
-            if slot in existing_open_slots:
-                continue
-            max_gu_id += 1
-            new_gus.append({
-                "gu_id": f"GU-{max_gu_id:04d}",
-                "gap_type": "missing",
-                "target": {"entity_key": entity_key, "field": fn},
-                "expected_utility": "high",
-                "risk_level": "informational",
-                "resolution_criteria": f"{cat} 카테고리 균형 보충: {fn}",
-                "status": "open",
-                "trigger": "E:category_balance",
-                "trigger_source": f"cat:{cat}",
-                "expansion_mode": "jump",
-                "created_at": today.isoformat(),
-            })
-            generated += 1
-
-    return new_gus
 
 
 def _generate_machine_rules(
@@ -532,7 +447,7 @@ def critique_node(
         int_dist, prescriptions, rx_counter
     )
 
-    # Category 균형 GU 생성 (Task 5.7)
+    # max_gu_id 계산 (refresh GU 생성에 사용)
     max_gu_id = 0
     for gu in gap_map:
         gu_id_str = gu.get("gu_id", "")
@@ -542,19 +457,6 @@ def critique_node(
                 max_gu_id = max(max_gu_id, num)
             except ValueError:
                 pass
-    balance_gus = _generate_balance_gus(kus, gap_map, skeleton, max_gu_id, today)
-    if balance_gus:
-        gap_map = list(gap_map)
-        gap_map.extend(balance_gus)
-        # max_gu_id 업데이트
-        for gu in balance_gus:
-            gu_id_str = gu.get("gu_id", "")
-            if gu_id_str.startswith("GU-"):
-                try:
-                    num = int(gu_id_str.replace("GU-", ""))
-                    max_gu_id = max(max_gu_id, num)
-                except ValueError:
-                    pass
 
     # Stale KU → Refresh GU 자동생성 (Task 5.5)
     refresh_gus = _generate_refresh_gus(kus, gap_map, max_gu_id, today)
@@ -646,8 +548,8 @@ def critique_node(
         "ku_stagnation_signals": ku_stagnation_signals,
     }
 
-    # balance/refresh GU가 추가되었으면 gap_map 반환
-    if refresh_gus or balance_gus:
+    # refresh GU가 추가되었으면 gap_map 반환
+    if refresh_gus:
         result["gap_map"] = gap_map
 
     # dispute resolution으로 KU 상태가 변경되었으면 반환
