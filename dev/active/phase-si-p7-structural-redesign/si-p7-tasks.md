@@ -30,7 +30,7 @@ Stage D → 15c L3 통합 trial → readiness-report (silver-phase-gate-check)
 - [x] **S1-T4** `collect.py` utility skip 제거 + budget 초과 시 `deferred_targets` 에 기록
   - **L1**: `_calc_execution_queue()` defer 반환
   - **L2**: `si-p7-s1-t4-smoke` (1c, budget 낮춰 defer 유발) → `state.deferred_targets ≠ 0`
-- [ ] **S1-T5** `max_search_calls_per_cycle` config (drop → defer)
+- [x] **S1-T5** `max_search_calls_per_cycle` config (drop → defer)
 - [ ] **S1-T6** Budget 제거 smoke 5c — F1 결정
 - [ ] **S1-T7** regression guard: `target_count` cap 재도입 방지 (D-129)
 - [ ] **S1-T8** `state.deferred_targets` + 다음 cycle 우선 소진 (FIFO+LIFO mix — D-203): deferred 가 cycle cap 의 ≤50% 채운 후 나머지 slot 은 신규 open_gus 로 보충 → A:adj batch clustering 방지 (v5 §8.6 Option 3)

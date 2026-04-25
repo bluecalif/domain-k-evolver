@@ -454,3 +454,79 @@ class TestCalcExecutionQueue:
         result = collect_node(state, search_tool=tool)
         assert "deferred_targets" in result
         assert len(result["deferred_targets"]) >= 1
+
+
+# ============================================================
+# S1-T5: max_search_calls_per_cycle config (drop→defer) 테스트
+# ============================================================
+
+class _MockSearchConfig:
+    def __init__(self, max_search_calls_per_cycle: int = 0) -> None:
+        self.max_search_calls_per_cycle = max_search_calls_per_cycle
+
+
+class TestConfigCapDefer:
+    """S1-T5: SearchConfig.max_search_calls_per_cycle 적용 시 초과 GU defer."""
+
+    def test_config_cap_zero_no_effect(self) -> None:
+        """cap=0 → 무제한, plan budget 그대로 사용."""
+        tool = MockSearchTool()
+        state = {
+            "gap_map": [
+                {"gu_id": f"GU-{i:04d}", "status": "open",
+                 "target": {"entity_key": f"d:a:x{i}", "field": "price"},
+                 "expected_utility": "high"}
+                for i in range(1, 4)
+            ],
+            "current_plan": {
+                "target_gaps": [f"GU-{i:04d}" for i in range(1, 4)],
+                "queries": {f"GU-{i:04d}": [f"q{i}"] for i in range(1, 4)},
+                "budget": 10,
+            },
+            "current_mode": {"mode": "normal"},
+        }
+        cfg = _MockSearchConfig(max_search_calls_per_cycle=0)
+        result = collect_node(state, search_tool=tool, search_config=cfg)
+        assert result["deferred_targets"] == []
+        assert len(tool.search_calls) == 3
+
+    def test_config_cap_enforced_excess_deferred(self) -> None:
+        """cap=1 → 첫 GU만 실행, 나머지 defer."""
+        tool = MockSearchTool()
+        state = {
+            "gap_map": [
+                {"gu_id": f"GU-{i:04d}", "status": "open",
+                 "target": {"entity_key": f"d:a:x{i}", "field": "price"},
+                 "expected_utility": "high"}
+                for i in range(1, 4)
+            ],
+            "current_plan": {
+                "target_gaps": [f"GU-{i:04d}" for i in range(1, 4)],
+                "queries": {f"GU-{i:04d}": [f"q{i}"] for i in range(1, 4)},
+                "budget": 10,
+            },
+            "current_mode": {"mode": "normal"},
+        }
+        cfg = _MockSearchConfig(max_search_calls_per_cycle=1)
+        result = collect_node(state, search_tool=tool, search_config=cfg)
+        assert len(result["deferred_targets"]) == 2
+        assert len(tool.search_calls) == 1
+
+    def test_config_cap_no_search_config_no_effect(self) -> None:
+        """search_config=None → config cap 미적용."""
+        tool = MockSearchTool()
+        state = {
+            "gap_map": [
+                {"gu_id": "GU-0001", "status": "open",
+                 "target": {"entity_key": "d:a:x", "field": "price"},
+                 "expected_utility": "high"}
+            ],
+            "current_plan": {
+                "target_gaps": ["GU-0001"],
+                "queries": {"GU-0001": ["q1"]},
+                "budget": 5,
+            },
+            "current_mode": {"mode": "normal"},
+        }
+        result = collect_node(state, search_tool=tool, search_config=None)
+        assert result["deferred_targets"] == []

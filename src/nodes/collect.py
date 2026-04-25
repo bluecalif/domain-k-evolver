@@ -236,6 +236,12 @@ def collect_node(
     queries = plan.get("queries", {})
     budget = plan.get("budget", _compute_search_budget(plan, mode))
 
+    # config cap 적용 — 양수일 때만 min() 제한 (S1-T5: drop→defer)
+    if search_config is not None:
+        cap = getattr(search_config, "max_search_calls_per_cycle", 0)
+        if cap > 0:
+            budget = min(budget, cap)
+
     gu_by_id = {gu.get("gu_id"): gu for gu in gap_map}
 
     if search_tool is None:

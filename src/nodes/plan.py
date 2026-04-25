@@ -242,7 +242,7 @@ def _build_plan_from_targets(
         "budget": budget,
         "stop_rules": {
             "max_search_calls": budget,
-            "skip_low_utility_on_budget_exceed": True,
+            "defer_on_budget_exceed": True,
         },
         "explore_targets": [gu.get("gu_id") for gu in explore_targets],
         "exploit_targets": [gu.get("gu_id") for gu in exploit_targets],
