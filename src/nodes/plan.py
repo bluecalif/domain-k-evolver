@@ -141,10 +141,7 @@ def _select_targets(
     Returns:
         ([], exploit_targets)  — explore 슬롯 항상 비움
     """
-    cycle_cap = (
-        mode_decision.get("cycle_cap")
-        or mode_decision.get("explore_budget", 0) + mode_decision.get("exploit_budget", 0)
-    )
+    cycle_cap = mode_decision.get("cycle_cap") or mode_decision.get("exploit_budget", 0)
 
     open_gus = [gu for gu in gap_map if gu.get("status") == "open"]
     return [], open_gus[:cycle_cap]
@@ -186,8 +183,6 @@ Create a Collection Plan in JSON format with these fields:
 - queries: dict mapping each GU ID to a list of search queries (2-3 per gap)
 - source_strategy: recommended sources per gap
 - acceptance_tests: conditions for considering each gap resolved
-- budget: search call budget
-- stop_rules: when to stop collection
 
 Return ONLY valid JSON."""
 
@@ -229,21 +224,11 @@ def _build_plan_from_targets(
         acceptance_tests[gu_id] = criteria
         source_strategy[gu_id] = "official_first"
 
-    mode = mode_decision.get("mode", "normal")
-    budget = len(all_targets) * 2
-    if mode == "jump":
-        budget += 4
-
     return {
         "target_gaps": target_gap_ids,
         "queries": queries,
         "source_strategy": source_strategy,
         "acceptance_tests": acceptance_tests,
-        "budget": budget,
-        "stop_rules": {
-            "max_search_calls": budget,
-            "defer_on_budget_exceed": True,
-        },
         "explore_targets": [gu.get("gu_id") for gu in explore_targets],
         "exploit_targets": [gu.get("gu_id") for gu in exploit_targets],
     }

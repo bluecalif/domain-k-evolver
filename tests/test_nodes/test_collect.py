@@ -110,24 +110,26 @@ class TestCollectNode:
         result = collect_node(state)
         assert result["current_claims"] == []
 
-    def test_budget_respected(self) -> None:
+    def test_per_gu_query_cap_respected(self) -> None:
+        """F1: budget 없이 per-GU [:3] cap — 4 query 넘겨도 GU당 최대 3회 search."""
         tool = MockSearchTool()
         state = {
             "gap_map": [
                 {"gu_id": f"GU-{i:04d}", "status": "open",
                  "target": {"entity_key": f"d:a:x{i}", "field": "price"},
                  "expected_utility": "low", "risk_level": "convenience"}
-                for i in range(1, 6)
+                for i in range(1, 4)
             ],
             "current_plan": {
-                "target_gaps": [f"GU-{i:04d}" for i in range(1, 6)],
-                "queries": {f"GU-{i:04d}": [f"q{i}a", f"q{i}b"] for i in range(1, 6)},
-                "budget": 4,  # Only 2 targets worth of budget
+                "target_gaps": [f"GU-{i:04d}" for i in range(1, 4)],
+                "queries": {f"GU-{i:04d}": [f"q{i}a", f"q{i}b", f"q{i}c", f"q{i}d"]  # 4개
+                            for i in range(1, 4)},
             },
             "current_mode": {"mode": "normal"},
         }
         collect_node(state, search_tool=tool)
-        assert len(tool.search_calls) <= 4
+        # GU 3개 × 최대 3 queries = 최대 9회 ([:3] cap 적용)
+        assert len(tool.search_calls) <= 9
 
     def test_risk_flag_on_high_risk(self) -> None:
         tool = MockSearchTool()
@@ -378,155 +380,65 @@ class TestCollectBatch:
 
 
 # ============================================================
-# S1-T4: _calc_execution_queue L1 테스트
+# S1-T7: _calc_execution_queue budget-free + [:3] cap (F1 결정)
 # ============================================================
 
 def _make_gu(gu_id: str, utility: str = "high") -> dict:
     return {"gu_id": gu_id, "expected_utility": utility, "status": "open"}
 
 
-class TestCalcExecutionQueue:
-    """S1-T4: _calc_execution_queue — defer/queue 분리 검증."""
+class TestBudgetRemoval:
+    """S1-T7: F1 budget 제거 regression guard."""
 
-    def test_within_budget_all_queued(self) -> None:
-        gu_by_id = {f"GU-{i:04d}": _make_gu(f"GU-{i:04d}") for i in range(1, 4)}
-        queries = {f"GU-{i:04d}": [f"q{i}"] for i in range(1, 4)}
-        tasks, deferred = _calc_execution_queue(list(gu_by_id), gu_by_id, queries, budget=10)
-        assert len(tasks) == 3
-        assert deferred == []
+    def test_all_gus_processed_no_budget_gate(self) -> None:
+        """budget 제거 후 모든 GU가 처리됨 — budget 초과로 drop/defer 없음."""
+        gu_by_id = {f"GU-{i:04d}": _make_gu(f"GU-{i:04d}") for i in range(1, 6)}
+        queries = {k: ["q1", "q2", "q3", "q4"] for k in gu_by_id}
+        tasks = _calc_execution_queue(list(gu_by_id), gu_by_id, queries)
+        assert len(tasks) == 5
 
-    def test_over_budget_excess_deferred(self) -> None:
-        """budget=2 → 첫 2 query 분만 실행, 나머지 defer."""
-        gu_by_id = {f"GU-{i:04d}": _make_gu(f"GU-{i:04d}") for i in range(1, 4)}
-        queries = {f"GU-{i:04d}": [f"q{i}"] for i in range(1, 4)}
-        tasks, deferred = _calc_execution_queue(list(gu_by_id), gu_by_id, queries, budget=2)
-        assert len(tasks) == 2
-        assert len(deferred) == 1
-        assert deferred[0]["gu_id"] == "GU-0003"
-
-    def test_low_utility_deferred_not_dropped(self) -> None:
-        """utility=low 도 budget 초과 시 drop 아닌 defer."""
-        gu_by_id = {
-            "GU-0001": _make_gu("GU-0001", utility="high"),
-            "GU-0002": _make_gu("GU-0002", utility="low"),
-        }
-        queries = {"GU-0001": ["q1"], "GU-0002": ["q2"]}
-        tasks, deferred = _calc_execution_queue(["GU-0001", "GU-0002"], gu_by_id, queries, budget=1)
+    def test_queries_capped_at_3_per_gu(self) -> None:
+        """per-GU [:3] cap — 4개 이상 넘겨도 3개만 실행."""
+        gu_by_id = {"GU-0001": _make_gu("GU-0001")}
+        tasks = _calc_execution_queue(
+            ["GU-0001"], gu_by_id, {"GU-0001": ["q1", "q2", "q3", "q4", "q5"]}
+        )
         assert len(tasks) == 1
-        assert len(deferred) == 1
-        assert deferred[0]["expected_utility"] == "low"
+        _, gu_queries = tasks[0]
+        assert len(gu_queries) == 3, f"[:3] cap 미적용: {len(gu_queries)}개 (최대 3개여야 함)"
 
-    def test_medium_utility_deferred_not_dropped(self) -> None:
-        """utility=medium 도 budget 초과 시 drop 아닌 defer."""
-        gu_by_id = {
-            "GU-0001": _make_gu("GU-0001", utility="high"),
-            "GU-0002": _make_gu("GU-0002", utility="medium"),
-        }
-        queries = {"GU-0001": ["q1"], "GU-0002": ["q2"]}
-        tasks, deferred = _calc_execution_queue(["GU-0001", "GU-0002"], gu_by_id, queries, budget=1)
-        assert len(deferred) == 1
-        assert deferred[0]["expected_utility"] == "medium"
+    def test_queries_under_3_unchanged(self) -> None:
+        """query 2개 → 그대로 2개 (cap 미만은 영향 없음)."""
+        gu_by_id = {"GU-0001": _make_gu("GU-0001")}
+        tasks = _calc_execution_queue(
+            ["GU-0001"], gu_by_id, {"GU-0001": ["q1", "q2"]}
+        )
+        _, gu_queries = tasks[0]
+        assert len(gu_queries) == 2
 
     def test_unknown_gu_id_skipped(self) -> None:
+        """알 수 없는 GU ID → tasks에서 제외."""
         gu_by_id = {"GU-0001": _make_gu("GU-0001")}
-        queries = {"GU-0001": ["q1"]}
-        tasks, deferred = _calc_execution_queue(["GU-0001", "MISSING"], gu_by_id, queries, budget=10)
+        tasks = _calc_execution_queue(["GU-0001", "MISSING"], gu_by_id, {"GU-0001": ["q1"]})
         assert len(tasks) == 1
-        assert deferred == []
 
-    def test_collect_node_returns_deferred_targets(self) -> None:
-        """collect_node 반환 dict 에 deferred_targets 포함."""
+    def test_collect_node_no_deferred_targets_key(self) -> None:
+        """S1-T7 regression: collect_node 반환 dict에 'deferred_targets' key 없음."""
         tool = MockSearchTool()
         state = {
             "gap_map": [
                 {"gu_id": f"GU-{i:04d}", "status": "open",
                  "target": {"entity_key": f"d:a:x{i}", "field": "price"},
-                 "expected_utility": "low"}
+                 "expected_utility": "high"}
                 for i in range(1, 4)
             ],
             "current_plan": {
                 "target_gaps": [f"GU-{i:04d}" for i in range(1, 4)],
                 "queries": {f"GU-{i:04d}": [f"q{i}"] for i in range(1, 4)},
-                "budget": 1,
             },
             "current_mode": {"mode": "normal"},
         }
         result = collect_node(state, search_tool=tool)
-        assert "deferred_targets" in result
-        assert len(result["deferred_targets"]) >= 1
-
-
-# ============================================================
-# S1-T5: max_search_calls_per_cycle config (drop→defer) 테스트
-# ============================================================
-
-class _MockSearchConfig:
-    def __init__(self, max_search_calls_per_cycle: int = 0) -> None:
-        self.max_search_calls_per_cycle = max_search_calls_per_cycle
-
-
-class TestConfigCapDefer:
-    """S1-T5: SearchConfig.max_search_calls_per_cycle 적용 시 초과 GU defer."""
-
-    def test_config_cap_zero_no_effect(self) -> None:
-        """cap=0 → 무제한, plan budget 그대로 사용."""
-        tool = MockSearchTool()
-        state = {
-            "gap_map": [
-                {"gu_id": f"GU-{i:04d}", "status": "open",
-                 "target": {"entity_key": f"d:a:x{i}", "field": "price"},
-                 "expected_utility": "high"}
-                for i in range(1, 4)
-            ],
-            "current_plan": {
-                "target_gaps": [f"GU-{i:04d}" for i in range(1, 4)],
-                "queries": {f"GU-{i:04d}": [f"q{i}"] for i in range(1, 4)},
-                "budget": 10,
-            },
-            "current_mode": {"mode": "normal"},
-        }
-        cfg = _MockSearchConfig(max_search_calls_per_cycle=0)
-        result = collect_node(state, search_tool=tool, search_config=cfg)
-        assert result["deferred_targets"] == []
-        assert len(tool.search_calls) == 3
-
-    def test_config_cap_enforced_excess_deferred(self) -> None:
-        """cap=1 → 첫 GU만 실행, 나머지 defer."""
-        tool = MockSearchTool()
-        state = {
-            "gap_map": [
-                {"gu_id": f"GU-{i:04d}", "status": "open",
-                 "target": {"entity_key": f"d:a:x{i}", "field": "price"},
-                 "expected_utility": "high"}
-                for i in range(1, 4)
-            ],
-            "current_plan": {
-                "target_gaps": [f"GU-{i:04d}" for i in range(1, 4)],
-                "queries": {f"GU-{i:04d}": [f"q{i}"] for i in range(1, 4)},
-                "budget": 10,
-            },
-            "current_mode": {"mode": "normal"},
-        }
-        cfg = _MockSearchConfig(max_search_calls_per_cycle=1)
-        result = collect_node(state, search_tool=tool, search_config=cfg)
-        assert len(result["deferred_targets"]) == 2
-        assert len(tool.search_calls) == 1
-
-    def test_config_cap_no_search_config_no_effect(self) -> None:
-        """search_config=None → config cap 미적용."""
-        tool = MockSearchTool()
-        state = {
-            "gap_map": [
-                {"gu_id": "GU-0001", "status": "open",
-                 "target": {"entity_key": "d:a:x", "field": "price"},
-                 "expected_utility": "high"}
-            ],
-            "current_plan": {
-                "target_gaps": ["GU-0001"],
-                "queries": {"GU-0001": ["q1"]},
-                "budget": 5,
-            },
-            "current_mode": {"mode": "normal"},
-        }
-        result = collect_node(state, search_tool=tool, search_config=None)
-        assert result["deferred_targets"] == []
+        assert "deferred_targets" not in result, (
+            "S1-T7 regression: 'deferred_targets' key가 collect 반환에 재도입됨 — F1 결정 위반"
+        )

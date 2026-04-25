@@ -66,7 +66,6 @@ class TestPlanNode:
 
         assert "target_gaps" in plan
         assert "queries" in plan
-        assert "budget" in plan
         assert len(plan["target_gaps"]) == 5
 
     def test_all_targets_are_open_gus(
@@ -96,19 +95,19 @@ class TestPlanNode:
             assert gu_id in queries
             assert len(queries[gu_id]) >= 1
 
-    def test_jump_mode_budget_includes_extra(
+    def test_no_budget_key_in_plan(
         self, gap_map: list[dict], skeleton: dict,
     ) -> None:
+        """S1-T7 / F1: plan output에 'budget'·'stop_rules' key 없음 (budget 완전 제거)."""
         state = {
             "gap_map": gap_map,
             "domain_skeleton": skeleton,
-            "current_mode": {"mode": "jump", "explore_budget": 3, "exploit_budget": 5},
+            "current_mode": {"mode": "normal", "explore_budget": 0, "exploit_budget": 5},
         }
         result = plan_node(state)
         plan = result["current_plan"]
-        n_targets = len(plan["target_gaps"])
-        # Jump budget = targets * 2 + 4
-        assert plan["budget"] == n_targets * 2 + 4
+        assert "budget" not in plan, "S1-T7 regression: 'budget' key 재도입됨 — F1 결정 위반"
+        assert "stop_rules" not in plan, "S1-T7 regression: 'stop_rules' key 재도입됨"
 
     def test_gap_driven_invariant_violation(self) -> None:
         """open이 아닌 GU를 target으로 잡으면 AssertionError."""

@@ -1,7 +1,7 @@
 # SI-P7 Structural Redesign — Tasks (rebuild)
 
 > Last Updated: 2026-04-25
-> Status: Planning (착수 전)
+> Status: In Progress (Stage A)
 > 단일 진실 소스: **`docs/structural-redesign-tasks_CC.md` v2** (task 상세)
 > 본 문서: 착수 순서 + checklist + L1/L2/L3 checkpoint + axis-gate 통과 기준
 
@@ -22,31 +22,32 @@ Stage D → 15c L3 통합 trial → readiness-report (silver-phase-gate-check)
 
 ## Stage A — 제어 루프 복구 (S1 + S2-T1/T2)
 
-### S1 — Target / Collect 자유화 (defer/queue) + D-196 Mitigation
+### S1 — Target / Collect 자유화 + budget 제거 (F1)
 
 - [x] **S1-T1** `_UTILITY_ORDER`/`_RISK_ORDER` 제거, `_select_targets` 정렬 제거 (`src/nodes/plan.py`)
 - [x] **S1-T2** `_select_targets` 가 open_gus 전체 반환 (cycle cap 만 적용)
 - [x] **S1-T3** `mode_node` target_count 공식 → cycle cap 으로 대체 (`src/nodes/mode.py`)
-- [x] **S1-T4** `collect.py` utility skip 제거 + budget 초과 시 `deferred_targets` 에 기록
-  - **L1**: `_calc_execution_queue()` defer 반환
-  - **L2**: `si-p7-s1-t4-smoke` (1c, budget 낮춰 defer 유발) → `state.deferred_targets ≠ 0`
-- [x] **S1-T5** `max_search_calls_per_cycle` config (drop → defer)
-- [ ] **S1-T6** Budget 제거 smoke 5c — F1 결정
-- [ ] **S1-T7** regression guard: `target_count` cap 재도입 방지 (D-129)
-- [ ] **S1-T8** `state.deferred_targets` + 다음 cycle 우선 소진 (FIFO+LIFO mix — D-203): deferred 가 cycle cap 의 ≤50% 채운 후 나머지 slot 은 신규 open_gus 로 보충 → A:adj batch clustering 방지 (v5 §8.6 Option 3)
-- [ ] **S1-T9 (신설)** D-196 mitigation: critique 처방 `stagnation:no_adj_source` — adj_gen=0 감지 시 다음 cycle `?`/`E:cat_balance` GU 우선 선정
-  - **L1**: critique rx 생성 unit
-  - **L2**: `si-p7-s1-t9-smoke` (1c) — adj_gen=0 강제 → 다음 plan 의 GU 선정 분포 변화
+- [x] **S1-T4** `collect.py` utility skip 제거 + deferred_targets 기록 (→ F1에서 반전: budget 제거로 deferred 자체 삭제)
+- [x] **S1-T5** `max_search_calls_per_cycle` config (→ F1에서 반전: config 필드 제거)
+- [x] **S1-T6** **F1 번복 결정**: LLM-set budget 완전 제거. `gu_queries[:3]` hard-cap으로 대체. total calls = `cycle_cap × max 3` (결정론적). 5c smoke 기 완료.
+- [ ] **S1-T7** regression guard: budget key 재도입 방지 + `target_count` cap 재도입 방지 (D-129)
+  - `test_plan.py`: plan output에 `"budget"` / `"stop_rules"` key 없음
+  - `test_collect.py`: `_calc_execution_queue` budget-free 동작 + `gu_queries[:3]` cap 적용
+- ~~**S1-T8**~~ **[DROP — F1]** `state.deferred_targets` + FIFO/LIFO 소진: budget 제거로 deferred 발생 자체 없어짐
+- ~~**S1-T9**~~ **[DROP — adj_gen=0 원인은 S3/S4]** adj_gen=0 감지 → critique rx: D-56 억제(S3-T1)·balance entity(S4-T1)가 근본 원인. S1 처방은 증상 대응에 불과
 
-### S1 Axis Gate (5c smoke)
+### S1 Axis Gate (5c re-smoke — budget 제거 후)
 
 ```
 trial: bench/silver/japan-travel/p7-rebuild-s1-smoke/  (5c real API)
 PASS 기준:
-- adj_gen: c3+ 0 cycle 없음 (Pre-A trajectory 6/9/8/7/4 패턴 ±50%)
-- defer 분포: defer_reason 다양성 (단일 reason ≤ 80%)
 - KU c5: 60~85 (Pre-A 72 ±20%)
 - target_count: c5 까지 > 0
+- per-GU search 호출 ≤ 3 (gu_queries[:3] cap 동작 확인)
+
+※ 삭제된 기준:
+  - adj_gen c3+ 0 cycle 없음 → S3/S4 미완료 상태에서 adj_gen=0 허용 (근본 원인 S3/S4 담당)
+  - defer 분포 다양성 → defer 개념 자체 제거 (F1)
 ```
 
 ### S2-T1/T2 — integration_result 제어 입력화 (Step A 범위)
@@ -207,8 +208,9 @@ PASS 기준:
 | Size | Count | Tasks |
 |---|---|---|
 | S | 8 | S1-T1/T2/T3/T7, S2-T1/T2/T3, S4-T1 |
-| M | 16 | S1-T4/T5/T6/T8/T9, S2-T4/T5/T6/T7/T8, S3-T1~T8 부분 |
+| M | 14 | S1-T4/T5/T6 ~~T8/T9~~, S2-T4/T5/T6/T7/T8, S3-T1~T8 부분 |
 | L | 9 | S5a-T3/T5/T6/T7/T8/T9/T10/T11/T12 |
 | XL | 0 | (S5a 통합은 12 tasks 로 분해됨) |
 
-**Total**: ~43 tasks (Stage A: 11, Stage B: 18, Stage C: 12, Stage D: 3) + 문서 3
+**Total**: ~41 tasks (Stage A: 9, Stage B: 18, Stage C: 12, Stage D: 3) + 문서 3
+_(T8/T9 DROP으로 -2)_

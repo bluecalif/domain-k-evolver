@@ -21,13 +21,6 @@ logger = logging.getLogger(__name__)
 HIGH_RISK_LEVELS = {"safety", "financial", "policy"}
 
 
-def _compute_search_budget(plan: dict, mode: str) -> int:
-    n_targets = len(plan.get("target_gaps", []))
-    budget = n_targets * 2
-    if mode == "jump":
-        budget += 4
-    return budget
-
 
 # ============================================================
 # SEARCH
@@ -177,29 +170,18 @@ def _calc_execution_queue(
     target_gap_ids: list[str],
     gu_by_id: dict[str, dict],
     queries: dict[str, list[str]],
-    budget: int,
-) -> tuple[list[tuple[dict, list[str]]], list[dict]]:
-    """budget 범위 내 실행 queue 와 초과분 deferred 반환.
+) -> list[tuple[dict, list[str]]]:
+    """전체 target GU를 실행 queue로 변환. per-GU queries[:3] cap 적용.
 
-    utility 필터 없음 — 초과 GU 는 drop 대신 deferred 에 적재 (S1-T4).
+    F1 결정: budget/deferred 개념 제거. cycle_cap이 GU 수를 결정론적으로 제어.
     """
     tasks: list[tuple[dict, list[str]]] = []
-    deferred: list[dict] = []
-    search_calls_used = 0
-
     for gu_id in target_gap_ids:
         gu = gu_by_id.get(gu_id)
         if gu is None:
             continue
-        gu_queries = queries.get(gu_id, [])
-        needed = len(gu_queries)
-        if search_calls_used + needed > budget:
-            deferred.append(gu)
-            continue
-        tasks.append((gu, gu_queries))
-        search_calls_used += needed
-
-    return tasks, deferred
+        tasks.append((gu, queries.get(gu_id, [])[:3]))  # F1: hard-cap [:3] per GU
+    return tasks
 
 
 def _search_for_gu(
@@ -234,22 +216,14 @@ def collect_node(
 
     target_gap_ids = plan.get("target_gaps", [])
     queries = plan.get("queries", {})
-    budget = plan.get("budget", _compute_search_budget(plan, mode))
-
-    # config cap 적용 — 양수일 때만 min() 제한 (S1-T5: drop→defer)
-    if search_config is not None:
-        cap = getattr(search_config, "max_search_calls_per_cycle", 0)
-        if cap > 0:
-            budget = min(budget, cap)
 
     gu_by_id = {gu.get("gu_id"): gu for gu in gap_map}
 
     if search_tool is None:
         return {"current_claims": []}
 
-    tasks, deferred_gus = _calc_execution_queue(target_gap_ids, gu_by_id, queries, budget)
-    if deferred_gus:
-        logger.info("collect: %d GU deferred (budget=%d 초과)", len(deferred_gus), budget)
+    tasks = _calc_execution_queue(target_gap_ids, gu_by_id, queries)
+    logger.info("collect: %d GU tasks (budget-free, per-GU [:3] cap)", len(tasks))
 
     all_claims: list[dict] = []
     total_gu_count = len(tasks)
@@ -364,7 +338,6 @@ def collect_node(
         "current_claims": all_claims,
         "collect_failure_rate": round(failure_rate, 3),
         "_diag_search_by_gu": diag_search_by_gu,
-        "deferred_targets": deferred_gus,
     }
 
 

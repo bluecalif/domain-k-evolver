@@ -51,8 +51,6 @@ class SearchConfig:
     request_timeout: int = 30
     entropy_floor: float = 2.5
     cycle_llm_token_budget: int = 100_000
-    max_search_calls_per_cycle: int = 0  # 0 = 무제한; 양수 시 초과 GU는 drop→defer (S1-T5)
-
     @classmethod
     def from_env(cls) -> SearchConfig:
         return cls(
@@ -61,7 +59,6 @@ class SearchConfig:
             max_results=int(os.environ.get("EVOLVER_SEARCH_MAX_RESULTS", "5")),
             entropy_floor=float(os.environ.get("EVOLVER_ENTROPY_FLOOR", "2.5")),
             cycle_llm_token_budget=int(os.environ.get("EVOLVER_CYCLE_LLM_BUDGET", "100000")),
-            max_search_calls_per_cycle=int(os.environ.get("EVOLVER_MAX_SEARCH_CALLS", "0")),
         )
 
 
