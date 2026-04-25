@@ -100,6 +100,19 @@
       "axis_tags": {}
     }
   ],
+  "field_adjacency": {
+    "price":       ["how_to_use", "where_to_buy", "tips"],
+    "hours":       ["location", "tips"],
+    "policy":      ["eligibility", "how_to_use", "tips"],
+    "location":    ["hours", "tips"],
+    "duration":    ["price", "how_to_use", "policy"],
+    "eligibility": ["how_to_use", "where_to_buy"],
+    "how_to_use":  ["tips", "price"],
+    "etiquette":   ["tips"],
+    "tips":        ["price", "how_to_use"],
+    "acceptance":  ["how_to_use", "tips", "where_to_buy"],
+    "where_to_buy": ["price", "how_to_use", "tips"]
+  },
   "canonical_key_rule": {
     "format": "japan-travel:{category}:{slug}",
     "slug_rules": "영문 소문자, 하이픈 구분, 공식 영문 명칭 기반"

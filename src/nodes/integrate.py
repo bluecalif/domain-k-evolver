@@ -213,11 +213,20 @@ def _generate_dynamic_gus(
         if "*" in f.get("categories", []) or category in f.get("categories", [])
     ]
 
+    # S3-T4: field_adjacency rule engine — 해당 field의 우선 adjacent 목록 사용.
+    # fallback: applicable_fields (rule engine seed 없을 때 기존 동작 유지).
+    field_adjacency = skeleton.get("field_adjacency", {})
+    if field in field_adjacency:
+        applicable_set = set(applicable_fields)
+        adj_candidates = [f for f in field_adjacency[field] if f in applicable_set]
+    else:
+        adj_candidates = applicable_fields
+
     # 부모 claim entity_key에서 geography 추론
     geo = _infer_geography(entity_key, skeleton)
     gu_axis_tags = {"geography": geo} if geo else {}
 
-    for adj_field in applicable_fields:
+    for adj_field in adj_candidates:
         if adj_field == field:
             continue
         if adj_field in blocklist_fields:

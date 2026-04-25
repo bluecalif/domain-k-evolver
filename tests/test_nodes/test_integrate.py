@@ -950,6 +950,92 @@ class TestRecentConflictFieldsBlocklist:
 
 
 # ---------------------------------------------------------------------------
+# S3-T4: field_adjacency rule engine
+# ---------------------------------------------------------------------------
+
+class TestFieldAdjacencyRuleEngine:
+    """S3-T4: _generate_dynamic_gus 가 skeleton.field_adjacency 를 우선 참조."""
+
+    _SKELETON_WITH_MAP = {
+        "categories": [{"slug": "transport"}],
+        "fields": [
+            {"name": "price", "categories": ["*"]},
+            {"name": "tips", "categories": ["*"]},
+            {"name": "how_to_use", "categories": ["transport"]},
+            {"name": "where_to_buy", "categories": ["transport"]},
+        ],
+        "axes": [],
+        "field_adjacency": {
+            "price": ["how_to_use", "tips"],
+        },
+    }
+
+    _SKELETON_NO_MAP = {
+        "categories": [{"slug": "transport"}],
+        "fields": [
+            {"name": "price", "categories": ["*"]},
+            {"name": "tips", "categories": ["*"]},
+            {"name": "how_to_use", "categories": ["transport"]},
+            {"name": "where_to_buy", "categories": ["transport"]},
+        ],
+        "axes": [],
+    }
+
+    def test_uses_adjacency_map_when_present(self) -> None:
+        """claim.field 가 field_adjacency 에 있으면 해당 list만 사용."""
+        claim = {
+            "claim_id": "CL-001",
+            "entity_key": "d:transport:jr-pass",
+            "field": "price",
+        }
+        gus = _generate_dynamic_gus(claim, [], self._SKELETON_WITH_MAP, "normal", 5)
+        fields = {gu["target"]["field"] for gu in gus}
+        assert fields == {"how_to_use", "tips"}, (
+            f"field_adjacency['price'] 대로만 생성돼야 함, got {fields}"
+        )
+        assert "where_to_buy" not in fields, "adjacency map에 없는 where_to_buy는 생성되지 않아야 함"
+
+    def test_fallback_when_field_not_in_map(self) -> None:
+        """claim.field 가 field_adjacency 에 없으면 applicable_fields 전체 사용."""
+        claim = {
+            "claim_id": "CL-002",
+            "entity_key": "d:transport:jr-pass",
+            "field": "tips",  # 맵에 없음
+        }
+        gus = _generate_dynamic_gus(claim, [], self._SKELETON_WITH_MAP, "normal", 5)
+        fields = {gu["target"]["field"] for gu in gus}
+        # tips 제외 나머지 applicable fields 모두 생성
+        assert "price" in fields
+        assert "how_to_use" in fields
+        assert "where_to_buy" in fields
+
+    def test_adjacency_filtered_by_applicable_fields(self) -> None:
+        """field_adjacency 결과도 category 제약(applicable_fields)으로 필터링."""
+        # hours는 attraction/dining 전용 → transport entity에서는 제외
+        skeleton = {
+            "categories": [{"slug": "transport"}],
+            "fields": [
+                {"name": "price", "categories": ["*"]},
+                {"name": "hours", "categories": ["attraction", "dining"]},
+                {"name": "tips", "categories": ["*"]},
+            ],
+            "axes": [],
+            "field_adjacency": {
+                "price": ["hours", "tips"],  # hours는 transport에 미적용
+            },
+        }
+        claim = {
+            "claim_id": "CL-003",
+            "entity_key": "d:transport:bus",
+            "field": "price",
+        }
+        gus = _generate_dynamic_gus(claim, [], skeleton, "normal", 5)
+        fields = {gu["target"]["field"] for gu in gus}
+        assert "hours" not in fields, "category 미적용 field는 제외되어야 함"
+        assert "tips" in fields
+
+
+# ---------------------------------------------------------------------------
 # Stage E: Fix A — observed_at = today (D-62)
 # ---------------------------------------------------------------------------
 

@@ -107,9 +107,13 @@ _P2: condition_split 보수화 전 D-56/blocklist root cause 먼저 해결_
   - conflict 발생 시 field 기록, 2 cycle window 트리밍, adjacent GU 생성 차단
   - **L1**: `TestRecentConflictFieldsBlocklist` 3 cases ✓ (838 passed)
   - **L2**: `si-p7-s3-t1t2-smoke` (1c) — adj GU 6건, price 포함 ✓, balance-* 0 ✓, KU 13→32
-- [ ] **S3-T3** `domain-skeleton.json` 에 `field_adjacency` rule engine seed
-- [ ] **S3-T4** `_generate_dynamic_gus` 가 rule engine 참조
-  - **L2**: `si-p7-s3-t4-smoke` (1c) — adj GU field 가 seed 맵 내
+- [x] **S3-T3** `domain-skeleton.json` 에 `field_adjacency` rule engine seed
+  - `cycle-0-snapshot/domain-skeleton.json`: 11개 field → 2~3 next_fields 매핑
+  - 설계: `price→[how_to_use,where_to_buy,tips]`, `policy→[eligibility,how_to_use,tips]` 등
+- [x] **S3-T4** `_generate_dynamic_gus` 가 rule engine 참조
+  - `field_adjacency[field]` → `applicable_fields` 교집합; fallback: applicable_fields
+  - **L1**: `TestFieldAdjacencyRuleEngine` 3 cases ✓ (841 passed)
+  - **L2**: `si-p7-s3-t4-smoke` (1c) — adj GU 5건, 모두 field_adjacency 값 내 ✓, balance-* 0 ✓, KU 13→24
 - [ ] **S3-T5** `fields[].default_risk`, `default_utility` skeleton 추가
 - [ ] **S3-T6** dynamic GU 가 skeleton default 사용
 - [ ] **S3-T7 (보수화)** rule yield tracker — 약화 임계 5c 평균 < 0.05 (강한 신호만)
