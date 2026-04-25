@@ -6,7 +6,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from src.nodes.collect import collect_node
+from src.nodes.collect import _calc_execution_queue, collect_node
 from src.tools.search import MockSearchTool
 
 
@@ -375,3 +375,82 @@ class TestCollectBatch:
 
         assert mock_llm.batch.call_count == 1
         assert not mock_llm.invoke.called
+
+
+# ============================================================
+# S1-T4: _calc_execution_queue L1 테스트
+# ============================================================
+
+def _make_gu(gu_id: str, utility: str = "high") -> dict:
+    return {"gu_id": gu_id, "expected_utility": utility, "status": "open"}
+
+
+class TestCalcExecutionQueue:
+    """S1-T4: _calc_execution_queue — defer/queue 분리 검증."""
+
+    def test_within_budget_all_queued(self) -> None:
+        gu_by_id = {f"GU-{i:04d}": _make_gu(f"GU-{i:04d}") for i in range(1, 4)}
+        queries = {f"GU-{i:04d}": [f"q{i}"] for i in range(1, 4)}
+        tasks, deferred = _calc_execution_queue(list(gu_by_id), gu_by_id, queries, budget=10)
+        assert len(tasks) == 3
+        assert deferred == []
+
+    def test_over_budget_excess_deferred(self) -> None:
+        """budget=2 → 첫 2 query 분만 실행, 나머지 defer."""
+        gu_by_id = {f"GU-{i:04d}": _make_gu(f"GU-{i:04d}") for i in range(1, 4)}
+        queries = {f"GU-{i:04d}": [f"q{i}"] for i in range(1, 4)}
+        tasks, deferred = _calc_execution_queue(list(gu_by_id), gu_by_id, queries, budget=2)
+        assert len(tasks) == 2
+        assert len(deferred) == 1
+        assert deferred[0]["gu_id"] == "GU-0003"
+
+    def test_low_utility_deferred_not_dropped(self) -> None:
+        """utility=low 도 budget 초과 시 drop 아닌 defer."""
+        gu_by_id = {
+            "GU-0001": _make_gu("GU-0001", utility="high"),
+            "GU-0002": _make_gu("GU-0002", utility="low"),
+        }
+        queries = {"GU-0001": ["q1"], "GU-0002": ["q2"]}
+        tasks, deferred = _calc_execution_queue(["GU-0001", "GU-0002"], gu_by_id, queries, budget=1)
+        assert len(tasks) == 1
+        assert len(deferred) == 1
+        assert deferred[0]["expected_utility"] == "low"
+
+    def test_medium_utility_deferred_not_dropped(self) -> None:
+        """utility=medium 도 budget 초과 시 drop 아닌 defer."""
+        gu_by_id = {
+            "GU-0001": _make_gu("GU-0001", utility="high"),
+            "GU-0002": _make_gu("GU-0002", utility="medium"),
+        }
+        queries = {"GU-0001": ["q1"], "GU-0002": ["q2"]}
+        tasks, deferred = _calc_execution_queue(["GU-0001", "GU-0002"], gu_by_id, queries, budget=1)
+        assert len(deferred) == 1
+        assert deferred[0]["expected_utility"] == "medium"
+
+    def test_unknown_gu_id_skipped(self) -> None:
+        gu_by_id = {"GU-0001": _make_gu("GU-0001")}
+        queries = {"GU-0001": ["q1"]}
+        tasks, deferred = _calc_execution_queue(["GU-0001", "MISSING"], gu_by_id, queries, budget=10)
+        assert len(tasks) == 1
+        assert deferred == []
+
+    def test_collect_node_returns_deferred_targets(self) -> None:
+        """collect_node 반환 dict 에 deferred_targets 포함."""
+        tool = MockSearchTool()
+        state = {
+            "gap_map": [
+                {"gu_id": f"GU-{i:04d}", "status": "open",
+                 "target": {"entity_key": f"d:a:x{i}", "field": "price"},
+                 "expected_utility": "low"}
+                for i in range(1, 4)
+            ],
+            "current_plan": {
+                "target_gaps": [f"GU-{i:04d}" for i in range(1, 4)],
+                "queries": {f"GU-{i:04d}": [f"q{i}"] for i in range(1, 4)},
+                "budget": 1,
+            },
+            "current_mode": {"mode": "normal"},
+        }
+        result = collect_node(state, search_tool=tool)
+        assert "deferred_targets" in result
+        assert len(result["deferred_targets"]) >= 1

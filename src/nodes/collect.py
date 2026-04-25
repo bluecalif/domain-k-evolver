@@ -173,6 +173,35 @@ def _parse_llm_response(
 # Collect 메인
 # ============================================================
 
+def _calc_execution_queue(
+    target_gap_ids: list[str],
+    gu_by_id: dict[str, dict],
+    queries: dict[str, list[str]],
+    budget: int,
+) -> tuple[list[tuple[dict, list[str]]], list[dict]]:
+    """budget 범위 내 실행 queue 와 초과분 deferred 반환.
+
+    utility 필터 없음 — 초과 GU 는 drop 대신 deferred 에 적재 (S1-T4).
+    """
+    tasks: list[tuple[dict, list[str]]] = []
+    deferred: list[dict] = []
+    search_calls_used = 0
+
+    for gu_id in target_gap_ids:
+        gu = gu_by_id.get(gu_id)
+        if gu is None:
+            continue
+        gu_queries = queries.get(gu_id, [])
+        needed = len(gu_queries)
+        if search_calls_used + needed > budget:
+            deferred.append(gu)
+            continue
+        tasks.append((gu, gu_queries))
+        search_calls_used += needed
+
+    return tasks, deferred
+
+
 def _search_for_gu(
     gu: dict,
     gu_queries: list[str],
@@ -212,22 +241,9 @@ def collect_node(
     if search_tool is None:
         return {"current_claims": []}
 
-    tasks: list[tuple[dict, list[str]]] = []
-    search_calls_used = 0
-    for gu_id in target_gap_ids:
-        gu = gu_by_id.get(gu_id)
-        if gu is None:
-            continue
-
-        gu_queries = queries.get(gu_id, [])
-        needed = len(gu_queries)
-
-        if search_calls_used + needed > budget:
-            if gu.get("expected_utility") in ("low", "medium"):
-                continue
-
-        tasks.append((gu, gu_queries))
-        search_calls_used += needed
+    tasks, deferred_gus = _calc_execution_queue(target_gap_ids, gu_by_id, queries, budget)
+    if deferred_gus:
+        logger.info("collect: %d GU deferred (budget=%d 초과)", len(deferred_gus), budget)
 
     all_claims: list[dict] = []
     total_gu_count = len(tasks)
@@ -342,6 +358,7 @@ def collect_node(
         "current_claims": all_claims,
         "collect_failure_rate": round(failure_rate, 3),
         "_diag_search_by_gu": diag_search_by_gu,
+        "deferred_targets": deferred_gus,
     }
 
 

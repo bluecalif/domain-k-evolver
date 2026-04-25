@@ -24,10 +24,10 @@ Stage D → 15c L3 통합 trial → readiness-report (silver-phase-gate-check)
 
 ### S1 — Target / Collect 자유화 (defer/queue) + D-196 Mitigation
 
-- [ ] **S1-T1** `_UTILITY_ORDER`/`_RISK_ORDER` 제거, `_select_targets` 정렬 제거 (`src/nodes/plan.py`)
-- [ ] **S1-T2** `_select_targets` 가 open_gus 전체 반환 (cycle cap 만 적용)
-- [ ] **S1-T3** `mode_node` target_count 공식 → cycle cap 으로 대체 (`src/nodes/mode.py`)
-- [ ] **S1-T4** `collect.py` utility skip 제거 + budget 초과 시 `deferred_targets` 에 기록
+- [x] **S1-T1** `_UTILITY_ORDER`/`_RISK_ORDER` 제거, `_select_targets` 정렬 제거 (`src/nodes/plan.py`)
+- [x] **S1-T2** `_select_targets` 가 open_gus 전체 반환 (cycle cap 만 적용)
+- [x] **S1-T3** `mode_node` target_count 공식 → cycle cap 으로 대체 (`src/nodes/mode.py`)
+- [x] **S1-T4** `collect.py` utility skip 제거 + budget 초과 시 `deferred_targets` 에 기록
   - **L1**: `_calc_execution_queue()` defer 반환
   - **L2**: `si-p7-s1-t4-smoke` (1c, budget 낮춰 defer 유발) → `state.deferred_targets ≠ 0`
 - [ ] **S1-T5** `max_search_calls_per_cycle` config (drop → defer)
