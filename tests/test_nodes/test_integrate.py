@@ -948,6 +948,14 @@ class TestRecentConflictFieldsBlocklist:
         rcf = result.get("recent_conflict_fields", [])
         assert any(e["field"] == "price" for e in rcf), "conflict 발생 field가 recent_conflict_fields에 추가되어야 함"
 
+    def test_source_field_blocklisted_skips_all_adj(self) -> None:
+        """S3-T8: claim.field 자체가 blocklist 이면 adj GU 전혀 생성 안 함."""
+        # how_to_use 가 source field, how_to_use 가 blocklist 에 있음
+        state = self._make_state([{"field": "how_to_use", "cycle": 2}], current_cycle=2)
+        result = integrate_node(state)
+        dynamic_gus = [gu for gu in result["gap_map"] if gu.get("trigger") == "A:adjacent_gap"]
+        assert len(dynamic_gus) == 0, "source field blocklist 시 adj GU 생성 전혀 없어야 함"
+
 
 # ---------------------------------------------------------------------------
 # S3-T4: field_adjacency rule engine
@@ -1091,6 +1099,82 @@ class TestSkeletonFieldDefaults:
         for g in gus:
             assert g["risk_level"] == "convenience"
             assert g["expected_utility"] == "medium"
+
+
+# ---------------------------------------------------------------------------
+# S3-T7: adjacency_yield 트래커
+# ---------------------------------------------------------------------------
+
+class TestAdjacencyYieldTracker:
+    """S3-T7: integrate_node 가 adjacency_yield 를 매 cycle 누적."""
+
+    _SKELETON = {
+        "categories": [{"slug": "transport"}],
+        "fields": [
+            {"name": "price", "categories": ["*"]},
+            {"name": "tips",  "categories": ["*"]},
+            {"name": "how_to_use", "categories": ["transport"]},
+        ],
+        "axes": [],
+    }
+
+    def _make_state_with_adj_gu(self, adj_gu_id: str, current_cycle: int = 1,
+                                 prev_yield: list | None = None) -> dict:
+        return {
+            "knowledge_units": [],
+            "gap_map": [
+                {
+                    "gu_id": adj_gu_id, "status": "open",
+                    "gap_type": "missing",
+                    "trigger": "A:adjacent_gap",
+                    "target": {"entity_key": "d:transport:bus", "field": "tips"},
+                },
+            ],
+            "current_claims": [
+                {
+                    "claim_id": "CL-001",
+                    "entity_key": "d:transport:bus",
+                    "field": "tips",
+                    "value": "useful tip",
+                    "source_gu_id": adj_gu_id,
+                    "evidence": {"eu_id": "EU-100", "observed_at": "2026-03-07", "credibility": 0.9},
+                },
+            ],
+            "domain_skeleton": self._SKELETON,
+            "current_mode": {"mode": "normal"},
+            "current_cycle": current_cycle,
+            "adjacency_yield": prev_yield or [],
+        }
+
+    def test_yield_entry_appended_per_cycle(self) -> None:
+        """매 cycle 마다 adjacency_yield 에 entry 추가."""
+        state = self._make_state_with_adj_gu("GU-0001", current_cycle=1)
+        result = integrate_node(state)
+        ay = result.get("adjacency_yield", [])
+        assert len(ay) == 1
+        assert ay[0]["cycle"] == 1
+        assert "yield" in ay[0]
+        assert "adj_open" in ay[0]
+        assert "adj_resolved" in ay[0]
+
+    def test_adj_resolved_counted_correctly(self) -> None:
+        """adj GU가 해소되면 adj_resolved = 1, yield > 0."""
+        state = self._make_state_with_adj_gu("GU-0001", current_cycle=2)
+        result = integrate_node(state)
+        ay = result["adjacency_yield"]
+        assert ay[-1]["adj_open"] == 1
+        assert ay[-1]["adj_resolved"] == 1
+        assert ay[-1]["yield"] == 1.0
+
+    def test_rolling_window_capped_at_10(self) -> None:
+        """10개 초과 시 오래된 항목 제거."""
+        prev = [{"cycle": i, "yield": 0.5, "adj_open": 1, "adj_resolved": 1} for i in range(1, 11)]
+        state = self._make_state_with_adj_gu("GU-0001", current_cycle=11, prev_yield=prev)
+        result = integrate_node(state)
+        ay = result["adjacency_yield"]
+        assert len(ay) == 10
+        assert ay[0]["cycle"] == 2  # 최초 항목 밀려남
+        assert ay[-1]["cycle"] == 11
 
 
 # ---------------------------------------------------------------------------

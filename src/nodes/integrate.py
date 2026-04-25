@@ -186,11 +186,16 @@ def _generate_dynamic_gus(
     Claim의 entity_key/field가 기존 Gap Map에 없는 슬롯 참조 시 missing GU 생성.
     Field 억제(D-56) 제거 — S3-T3 rule engine이 올바른 대체제.
     blocklist_fields: S3-T2 conflict 반복 field 차단 (N=2 cycle window).
+    S3-T8: source field(claim.field) 도 blocklist 확인 — source/next 양쪽 배제.
     """
     if blocklist_fields is None:
         blocklist_fields = set()
     entity_key = claim.get("entity_key", "")
     field = claim.get("field", "")
+
+    # S3-T8: source field 도 blocklist 확인 — conflict 분야는 adj 탐색 자체 배제
+    if field in blocklist_fields:
+        return []
 
     # 기존 GU에 이미 있는 슬롯
     existing_slots = {
@@ -334,6 +339,12 @@ def integrate_node(
         if e.get("cycle", 0) >= current_cycle - _BLOCKLIST_WINDOW + 1
     ]
     blocklist_fields: set[str] = {e["field"] for e in recent_conflict_fields}
+
+    # S3-T7: 통합 시작 시점의 open adj GU 수 (yield 분모)
+    adj_open_at_start = sum(
+        1 for gu in gap_map
+        if gu.get("trigger") == "A:adjacent_gap" and gu.get("status") == "open"
+    )
 
     # 통합 처리
     adds: list[dict] = []
@@ -605,6 +616,23 @@ def integrate_node(
     if len(_prev_dist) > 3:
         _prev_dist = _prev_dist[-3:]
 
+    # S3-T7: adjacency_yield 누적 — adj GU 해소율 추적
+    _resolved_set = set(diag_resolved_gus)
+    _adj_resolved = sum(
+        1 for gu in gap_map
+        if gu.get("gu_id") in _resolved_set and gu.get("trigger") == "A:adjacent_gap"
+    )
+    _adj_yield = round(_adj_resolved / max(adj_open_at_start, 1), 4)
+    _prev_adj_yield = list(state.get("adjacency_yield", []) or [])
+    _prev_adj_yield.append({
+        "cycle": current_cycle,
+        "yield": _adj_yield,
+        "adj_open": adj_open_at_start,
+        "adj_resolved": _adj_resolved,
+    })
+    if len(_prev_adj_yield) > 10:
+        _prev_adj_yield = _prev_adj_yield[-10:]
+
     return {
         "knowledge_units": kus,
         "gap_map": gap_map,
@@ -615,4 +643,5 @@ def integrate_node(
         "_diag_resolved_gus": diag_resolved_gus,
         "integration_result_dist": _prev_dist,
         "recent_conflict_fields": recent_conflict_fields,
+        "adjacency_yield": _prev_adj_yield,
     }

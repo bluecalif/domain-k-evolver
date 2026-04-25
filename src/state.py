@@ -238,6 +238,8 @@ class EvolverState(TypedDict, total=False):
     ku_stagnation_signals: list[str]
     # SI-P7 S3-T2: conflict 반복 field blocklist [{field, cycle}], N=2 cycle window
     recent_conflict_fields: list[dict]
+    # SI-P7 S3-T7: adjacency rule yield tracker [{cycle, yield, adj_open, adj_resolved}], 최근 10c
+    adjacency_yield: list[dict]
 
     # Diagnostic fields (진단 전용, orchestrator가 cycle마다 읽고 제거)
     _diag_search_by_gu: dict | None       # collect: {gu_id: search_result_count}

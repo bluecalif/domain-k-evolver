@@ -121,9 +121,14 @@ _P2: condition_split 보수화 전 D-56/blocklist root cause 먼저 해결_
   - `_generate_dynamic_gus`: `field_defaults` 맵 구축 → adj GU `risk_level`/`expected_utility` 에 적용
   - fallback: default 없으면 "medium"/"convenience" 유지
   - **L1**: `TestSkeletonFieldDefaults` 2 cases ✓ (843 passed)
-- [ ] **S3-T7 (보수화)** rule yield tracker — 약화 임계 5c 평균 < 0.05 (강한 신호만)
-  - **L2**: `si-p7-s3-t7-smoke` (5c) — `state.adjacency_yield`
-- [ ] **S3-T8** blocklist N cycle 동안 source/next 양쪽 배제
+- [x] **S3-T7 (보수화)** rule yield tracker — 약화 임계 5c 평균 < 0.05
+  - `state.adjacency_yield: list[dict]` 추가, integrate_node 에서 매 cycle 누적 (최근 10c)
+  - `adj_yield = adj_resolved / max(adj_open_at_start, 1)` per-cycle
+  - **L1**: `TestAdjacencyYieldTracker` 3 cases ✓ (846 passed)
+  - **L2**: S3 Axis Gate (5c `p7-rebuild-s3-smoke`) 와 합산 검증 (비용 절감)
+- [x] **S3-T8** blocklist N cycle 동안 source/next 양쪽 배제
+  - `_generate_dynamic_gus`: `claim.field in blocklist_fields` → 즉시 `[]` 반환
+  - **L1**: `test_source_field_blocklisted_skips_all_adj` ✓ (847 passed)
 
 ### S3 Axis Gate (5c smoke)
 
