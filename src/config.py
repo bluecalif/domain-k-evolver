@@ -73,6 +73,10 @@ class SIP7AxisToggles:
 
     기본값 전부 True = 기존 동작 유지. False 로 설정 시 해당 축 no-op.
     `SI_P7_AXIS_OFF=s2` env var 로 비활성화 축 지정 (콤마 구분, e.g. "s2,s3").
+
+    SI-P7 V-T11 (Action A): S2 내부 condition_split rule 단위 토글 추가.
+    `SI_P7_RULE_OFF=t6,t7,t8` 로 개별 비활성화. s2_enabled=True 하에서만 의미.
+    s2_enabled=False 면 3 rule 모두 강제 off (기존 회귀 동작).
     """
 
     s1_enabled: bool = True  # defer/queue, target 자유화 (S1-T1~T8)
@@ -80,16 +84,25 @@ class SIP7AxisToggles:
                              # + aggressive_mode + condition_split 재정의 (S2-T1~T8)
     s3_enabled: bool = True  # adjacent rule engine + suppress + blocklist + yield (S3-T1~T8)
     s4_enabled: bool = True  # virtual entity 제거 + coverage_map.deficit_score (S4-T1~T2)
+    # S2 내부 condition_split rule 단위 토글 (V-T11)
+    t6_struct_split: bool = True       # Rule 2b: 값 구조 차이 (range vs scalar vs set)
+    t7_axes_forced_split: bool = True  # Rule 2d: skeleton condition_axes 정의 → 강제
+    t8_axis_tags_split: bool = True    # Rule 2c: axis_tags 차이
 
     @classmethod
     def from_env(cls) -> SIP7AxisToggles:
         off_raw = os.environ.get("SI_P7_AXIS_OFF", "").strip().lower()
         off_axes = {a.strip() for a in off_raw.split(",") if a.strip()}
+        rule_off_raw = os.environ.get("SI_P7_RULE_OFF", "").strip().lower()
+        off_rules = {r.strip() for r in rule_off_raw.split(",") if r.strip()}
         return cls(
             s1_enabled="s1" not in off_axes,
             s2_enabled="s2" not in off_axes,
             s3_enabled="s3" not in off_axes,
             s4_enabled="s4" not in off_axes,
+            t6_struct_split="t6" not in off_rules,
+            t7_axes_forced_split="t7" not in off_rules,
+            t8_axis_tags_split="t8" not in off_rules,
         )
 
     def to_dict(self) -> dict[str, bool]:
@@ -99,6 +112,9 @@ class SIP7AxisToggles:
             "s2_enabled": self.s2_enabled,
             "s3_enabled": self.s3_enabled,
             "s4_enabled": self.s4_enabled,
+            "t6_struct_split": self.t6_struct_split,
+            "t7_axes_forced_split": self.t7_axes_forced_split,
+            "t8_axis_tags_split": self.t8_axis_tags_split,
         }
 
 

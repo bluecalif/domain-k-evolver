@@ -110,6 +110,9 @@ def _detect_conflict(
     condition_axes: list[str] | None = None,
     reason_out: dict | None = None,
     s2_enabled: bool = True,
+    t6_struct_split: bool = True,
+    t7_axes_forced_split: bool = True,
+    t8_axis_tags_split: bool = True,
 ) -> str | None:
     """충돌 감지. 반환: 'hold' | 'condition_split' | None.
 
@@ -120,6 +123,8 @@ def _detect_conflict(
             ("conditions" | "value_shape" | "condition_axes" | "axis_tags"). V2 계측 용.
         s2_enabled: SI-P7 V3 ablation. False 면 Rule 2b/2c/2d (S2-T6~T8 재정의)
             skip — Rule 2 (conditions) 만 condition_split 로 판정. 기존 hold/LLM 경로 유지.
+        t6_struct_split / t7_axes_forced_split / t8_axis_tags_split: V-T11 (Action A).
+            s2_enabled=True 하에서 개별 rule 을 끌 수 있게 함. False 면 해당 rule 만 skip.
     """
     existing_value = existing_ku.get("value")
     claim_value = claim.get("value")
@@ -141,13 +146,13 @@ def _detect_conflict(
     # 단일값 vs 범위, 단일값 vs 옵션셋은 조건부 공존으로 처리
     existing_type = _value_structure_type(existing_value)
     claim_type = _value_structure_type(claim_value)
-    if s2_enabled and existing_type != claim_type:
+    if s2_enabled and t6_struct_split and existing_type != claim_type:
         if reason_out is not None:
             reason_out["reason"] = "value_shape"
         return "condition_split"
 
     # Rule 2d (S2-T7): field에 condition_axes 정의 → 값 차이 시 강제 condition_split
-    if s2_enabled and condition_axes:
+    if s2_enabled and t7_axes_forced_split and condition_axes:
         if reason_out is not None:
             reason_out["reason"] = "condition_axes"
         return "condition_split"
@@ -156,7 +161,7 @@ def _detect_conflict(
     # 지역/조건이 다른 claim은 충돌이 아니라 공존
     existing_axis = existing_ku.get("axis_tags") or {}
     claim_axis = claim.get("axis_tags") or {}
-    if s2_enabled and existing_axis and claim_axis:
+    if s2_enabled and t8_axis_tags_split and existing_axis and claim_axis:
         for axis_key in existing_axis:
             if axis_key in claim_axis and existing_axis[axis_key] != claim_axis[axis_key]:
                 if reason_out is not None:
@@ -446,6 +451,10 @@ def integrate_node(
     # SI-P7 V3: axis toggle (state 에서 주입, 기본값 True = 기존 동작)
     si_p7_toggles = state.get("si_p7_toggles") or {}
     s2_enabled = bool(si_p7_toggles.get("s2_enabled", True))
+    # V-T11 (Action A): S2 내부 condition_split rule 단위 토글
+    t6_struct_split = bool(si_p7_toggles.get("t6_struct_split", True))
+    t7_axes_forced_split = bool(si_p7_toggles.get("t7_axes_forced_split", True))
+    t8_axis_tags_split = bool(si_p7_toggles.get("t8_axis_tags_split", True))
 
     open_count = sum(1 for gu in gap_map if gu.get("status") == "open")
     dynamic_cap = _compute_dynamic_gu_cap(mode, open_count)
@@ -541,6 +550,9 @@ def integrate_node(
                     condition_axes=field_condition_axes,
                     reason_out=_split_reason_info,
                     s2_enabled=s2_enabled,
+                    t6_struct_split=t6_struct_split,
+                    t7_axes_forced_split=t7_axes_forced_split,
+                    t8_axis_tags_split=t8_axis_tags_split,
                 )
 
                 if conflict == "hold":

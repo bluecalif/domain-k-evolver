@@ -494,6 +494,9 @@ def test_sip7_axis_toggles_default_all_on():
         "s2_enabled": True,
         "s3_enabled": True,
         "s4_enabled": True,
+        "t6_struct_split": True,
+        "t7_axes_forced_split": True,
+        "t8_axis_tags_split": True,
     }
 
 
@@ -582,6 +585,63 @@ def test_detect_conflict_s2_off_skips_axis_tags_split():
         s2_enabled=False,
     )
     assert r == "hold"
+
+
+# --- V-T11 (Action A): rule 단위 토글 ---
+
+
+def test_detect_conflict_t6_off_skips_value_shape_only():
+    """t6_struct_split=False → Rule 2b skip. T7/T8 은 영향 없음."""
+    from src.nodes.integrate import _detect_conflict
+
+    # value_shape 만 다른 케이스 → t6 off 면 hold
+    r = _detect_conflict(
+        {"value": "¥50,000"},
+        {"value": ["¥40,000", "¥50,000"]},
+        s2_enabled=True,
+        t6_struct_split=False,
+    )
+    assert r == "hold"
+
+
+def test_detect_conflict_t7_off_skips_condition_axes_only():
+    """t7_axes_forced_split=False → Rule 2d skip. T6/T8 은 영향 없음."""
+    from src.nodes.integrate import _detect_conflict
+
+    # condition_axes 만 매칭 (구조/axis_tags 동일)
+    r = _detect_conflict(
+        {"value": "A"},
+        {"value": "B"},
+        condition_axes=["region"],
+        s2_enabled=True,
+        t7_axes_forced_split=False,
+    )
+    assert r == "hold"
+
+
+def test_detect_conflict_t8_off_skips_axis_tags_only():
+    """t8_axis_tags_split=False → Rule 2c skip. T6/T7 은 영향 없음."""
+    from src.nodes.integrate import _detect_conflict
+
+    r = _detect_conflict(
+        {"value": "¥50,000", "axis_tags": {"geography": "tokyo"}},
+        {"value": "¥60,000", "axis_tags": {"geography": "osaka"}},
+        s2_enabled=True,
+        t8_axis_tags_split=False,
+    )
+    assert r == "hold"
+
+
+def test_sip7_axis_toggles_rule_off_env(monkeypatch):
+    """SI_P7_RULE_OFF='t6,t8' env var → 해당 rule 만 False."""
+    from src.config import SIP7AxisToggles
+
+    monkeypatch.setenv("SI_P7_RULE_OFF", "t6,t8")
+    toggles = SIP7AxisToggles.from_env()
+    assert toggles.s2_enabled is True  # 축은 영향 없음
+    assert toggles.t6_struct_split is False
+    assert toggles.t7_axes_forced_split is True
+    assert toggles.t8_axis_tags_split is False
 
 
 def test_plan_s2_off_forces_is_stagnation_false():
