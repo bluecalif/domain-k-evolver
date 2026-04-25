@@ -56,6 +56,7 @@
 | Silver P4 | `dev/active/phase-si-p4-coverage/` | ✅ **완료** (42/42, 797 tests, VP4 PASS 4/5, D-147~D-150 해소) |
 | Silver P5 | `dev/active/phase-si-p5-telemetry-dashboard/` | ✅ **완료** (15/15, Gate PASS, 821 tests) |
 | Silver P6 | `dev/active/phase-si-p6-consolidation/` | **Planning** (0/16) — P5 ✅ |
+| SI-P7 Structural Redesign | `dev/active/phase-si-p7-structural-redesign/` | **Attempt 1 archived** (main `a33dfdb` + tag `si-p7-attempt-1`) → **Attempt 2 (rebuild) Planning** on `feature/si-p7-rebuild` from `2ebd435`. Axis-gated + per-axis 5c smoke gate (D-200~D-202) |
 | M1 Multi-Domain | `dev/active/phase-m1-multidomain/` (예정) | suspended — P6 완료 후 활성화 |
 
 ### Bronze 구현 파일 (현행)
@@ -222,6 +223,17 @@ class EvolverState(TypedDict):
 | D-159 | Remodel/Pivot 임계값 **config 외부화 필수** (`SmartRemodelConfig`, `ExternalAnchorConfig.novelty_*`). 하드코딩 유지 불가 | P6-A7, A8 |
 | D-160 | Trigger telemetry는 **log 파싱 아니라 JSON 필드 emit** (`trigger_event` optional). schema backward compat 유지 | P6-A10 |
 | D-161 | **Forecast 모델 금지 사항**: Prophet/ARIMA 등 블랙박스 모델 금지. 선형/지수 projection + damping + bootstrap confidence 한정 (설명가능성 우선) | P6-A11 |
+| D-171~D-188 | SI-P7 5축 구조 설계 (S1~S5) + Q1~Q14 결정 + F2 α/β + S5a 범위 + graph 위치 + candidate 수명 + 3-layer 테스트 + Skill 2종 | SI-P7 |
+| D-189 (잠정 보류) | S5a = critical path blocker (`p7-ab-on` L3 FAIL 기반). Step V 검증 후 재판정 — 단독 원인 단정 금지 | SI-P7 Step V |
+| D-190 | Step V 삽입 — Step A/B 전 항목 동작 검증 (V1 snapshot 재파싱 → V2 계측 → V3 ablation → V4 확정) 을 S5a 착수 전에 선결 | SI-P7 Step V |
+| D-191 | V3 ablation 설계 — `p7-ab-minus-{axis}` **8c** (cycle 15→8 축소), baseline 재사용 (`p7-ab-on` 상한 / `p7-ab-off` 하한), 의심 축 1~2 개만 1차 실행. 실행 전 사용자 재승인 필수 | SI-P7 Step V |
+| D-180 (갱신 2026-04-23) | SI-P7 spec 문서만 `_CC` suffix 유지. dev-docs 는 suffix 없이 네이밍 | SI-P7 |
+| D-194 | SI-P7 attempt 1 v5 sequential ablation: **Primary Introducer = S2** (condition_split 강화 + ku_stagnation + β). Secondary Aggravator = S3, Mitigator = S4. 5-trial KU/GU/target/adj_gen delta 비교 | SI-P7 attempt 1 |
+| D-195 | S2 내부 유력 primary subtask = **T5~T8 (condition_split 강화)**. c1 KU +59 폭증 → 강제 split 재분류 가설. V-T11 토글 (T6/T7/T8 sub-rule) 로 narrowing 가능 | SI-P7 attempt 1/2 |
+| D-196 | S1 adj_gen oscillation 메커니즘 = **1단계 adj chain 억제 + S1 sort 제거 + deferred FIFO 의 A:adj batch clustering**. resolved 가 A:adj 위주 cycle 에 adj source 고갈. attempt 2 mitigation = S1-T9 critique rx `stagnation:no_adj_source` | SI-P7 attempt 1/2 |
+| D-200 | SI-P7 **rebuild 전략 = axis-gated** — 일괄 구현 + ablation → axis 별 5c smoke gate 의무 + 통과 시에만 다음 axis 진입. 이유: attempt 1 c3+ 고착 root cause 추적 어려움 (~$2.0 audit 비용) | SI-P7 attempt 2 |
+| D-201 | SI-P7 **per-axis pitfall pre-declare** — v5 분석 결과 (D-194/195/196) 를 axis 별 plan.md 에 사전 명시 + mitigation task 신설. S1-T9 (oscillation 차단), S2-T5~T8 보수화, S3 suppress/blocklist 보수화 | SI-P7 attempt 2 |
+| D-202 | SI-P7 **V-T11 cherry-pick 시점 = S2-T5~T8 시작 직전**. 사전 cherry-pick 시 baseline 변경, 사후엔 fail narrowing 불가. `git cherry-pick f61c864` (config + integrate + tests) | SI-P7 attempt 2 |
 
 ---
 

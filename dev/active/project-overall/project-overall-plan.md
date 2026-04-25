@@ -39,6 +39,19 @@ SI-P3R 완료 (2026-04-14, D-125)
    │      - P6-C: Knowledge DB Release (외부 패키징, query API)
    │
    ▼  M1 (Multi-Domain Validation, suspended) — P6 완료 후 활성화
+
+SI-P7 Structural Redesign (별도 track, P6 와 독립)
+   - **Attempt 1 종료 (2026-04-25, archived)**: main `a33dfdb` + tag `si-p7-attempt-1`
+     - Step A/B 완료 후 c3+ 고착 발견 → V1~V5 audit (~$2.0)
+     - **D-194**: Primary Introducer = S2 (5-trial sequential ablation)
+     - **D-195**: S2 내부 primary subtask = T5~T8 (condition_split 강화)
+     - **D-196**: S1 adj_gen oscillation 메커니즘
+     - 산출물: v5-sequential-ablation-report.md, V-T11 토글 인프라, 5-trial bench
+   - **Attempt 2 (rebuild) 착수**: branch `feature/si-p7-rebuild` from `2ebd435` Pre-P7 baseline
+     - 전략: axis-gated 재구현 + per-axis 5c smoke gate 의무 (D-200)
+     - Pitfall pre-declare + mitigation (D-201): S1-T9 critique rx, S2-T5~T8 보수화, S3 suppress/blocklist 보수화
+     - V-T11 cherry-pick 시점 = S2-T5~T8 시작 직전 (D-202)
+     - dev-docs: `dev/active/phase-si-p7-structural-redesign/si-p7-{plan,context,tasks,debug-history}.md`
 ```
 
 - **P2 재판정 조건**: P3R 실 벤치 trial 성공 + P2 remodel 코드 실 bench 재실행(before/after metrics)
