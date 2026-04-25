@@ -128,6 +128,7 @@ def _build_snapshot(
         },
         "dispute_queue_size": len(dispute_queue),
         "cycle_trace": _build_cycle_trace(cycle_ctx) if cycle_ctx else None,
+        "adjacency_yield": _latest_adj_yield(state),
     }
 
 
@@ -189,6 +190,12 @@ def emit_gu_trace(cycle_ctx: dict, telemetry_dir: Path) -> None:
         os.replace(tmp_path, out_path)
     except Exception as exc:
         logger.warning("GU trace emit 실패 (무시): %s", exc)
+
+
+def _latest_adj_yield(state: "EvolverState") -> dict | None:
+    """adjacency_yield 최신 entry 반환. 없으면 None."""
+    history = state.get("adjacency_yield") or []
+    return history[-1] if history else None
 
 
 def _latest_metrics_entry(state: "EvolverState") -> dict:

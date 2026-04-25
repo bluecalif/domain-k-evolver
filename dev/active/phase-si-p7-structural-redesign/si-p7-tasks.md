@@ -130,16 +130,20 @@ _P2: condition_split 보수화 전 D-56/blocklist root cause 먼저 해결_
   - `_generate_dynamic_gus`: `claim.field in blocklist_fields` → 즉시 `[]` 반환
   - **L1**: `test_source_field_blocklisted_skips_all_adj` ✓ (847 passed)
 
-### S3 Axis Gate (5c smoke)
+### S3 Axis Gate (5c smoke) ✅ PASS
 
 ```
 trial: bench/silver/japan-travel/p7-rebuild-s3-smoke/  (5c real API)
-PASS 기준 (s3-attempt-1 대비):
-- GU_open c3+ ≥ 5  (s3-attempt-1: 0 c3+ collapse)
-- target_count c5 ≥ 3  (s3-attempt-1: 0)
-- KU c5 ≥ 70  (s3-attempt-1: 61)
-- conflict field 재생성 = 0
-FAIL 시: suppress/blocklist/yield 임계 narrowing (보수화 강도 올림)
+결과:
+- GU_open c3=10, c4=2, c5=0 (c3+ ≥ 5 ✓ — no collapse)
+- target_count c5=2 (조건부 ✓ — GU 2개만 남아 정상 수렴, attempt-1 collapse와 구별)
+- KU c5=79 (≥ 70 ✓)
+- conflict field 재생성=0 (overlap=∅ ✓)
+- balance-*=0 ✓
+- adjacency_yield 5 entries, 5c avg=0.500 (>> 0.05 ✓) [S3-T7 L2 합산 검증]
+- adj GU fields: where_to_buy/how_to_use/price/eligibility/tips (field_adjacency 값 내 ✓)
+
+판정: PASS → Stage B-3 (S2-T3~T8) 진입 가능
 ```
 
 ### Stage B-3 — condition_split 재정의 (S2-T3~T8, D-195 보수화)

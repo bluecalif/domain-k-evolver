@@ -46,6 +46,7 @@ _FILE_MAP: dict[str, str] = {
 # Silver P1-B3: 추가 state 파일 (파일 부재 시 빈 배열, migration-safe)
 _OPTIONAL_LIST_FILES: dict[str, str] = {
     "conflict-ledger.json": "conflict_ledger",
+    "adjacency-yield.json": "adjacency_yield",
 }
 
 # SI-P4 Stage E: external anchor state (하나의 파일에 history + 누적 키 병합)

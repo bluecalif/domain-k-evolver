@@ -112,6 +112,16 @@
         "resolved_gus":           { "type": "array", "items": { "type": "string" } },
         "adjacent_gap_generated": { "type": "integer" }
       }
+    },
+    "adjacency_yield": {
+      "type": ["object", "null"],
+      "description": "S3-T7: 최신 cycle의 adj GU yield 요약. null이면 adj GU 미발생",
+      "properties": {
+        "cycle":        { "type": "integer", "minimum": 0 },
+        "yield":        { "type": "number",  "minimum": 0.0 },
+        "adj_open":     { "type": "integer", "minimum": 0 },
+        "adj_resolved": { "type": "integer", "minimum": 0 }
+      }
     }
   }
 }
