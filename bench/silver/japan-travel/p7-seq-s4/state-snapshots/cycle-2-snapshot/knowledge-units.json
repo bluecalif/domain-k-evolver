@@ -1,0 +1,1930 @@
+[
+  {
+    "ku_id": "KU-0001",
+    "entity_key": "japan-travel:pass-ticket:jr-pass",
+    "field": "eligibility",
+    "value": "일본 국외 거주 외국인 여권 소지자. 'Temporary Visitor' 체류자격으로 입국한 자만 구매 가능. 일본 국적자 또는 일본 거주 외국인은 구매 불가.",
+    "observed_at": "2026-03-02",
+    "validity": {
+      "ttl_days": 90
+    },
+    "evidence_links": [
+      "EU-0001"
+    ],
+    "confidence": 0.95,
+    "status": "active"
+  },
+  {
+    "ku_id": "KU-0002",
+    "entity_key": "japan-travel:pass-ticket:jr-pass",
+    "field": "price",
+    "value": {
+      "7일권": {
+        "ordinary": 50000,
+        "green": 70000
+      },
+      "14일권": {
+        "ordinary": 80000,
+        "green": 110000
+      },
+      "21일권": {
+        "ordinary": 100000,
+        "green": 140000
+      },
+      "currency": "JPY",
+      "비고": "2023년 10월 인상 후 유지. 2025-2026 추가 인상 없음."
+    },
+    "conditions": {
+      "channel": "일본 국내 구매 기준",
+      "traveler_type": "temporary-visitor"
+    },
+    "observed_at": "2026-03-02",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0001",
+      "EU-0011"
+    ],
+    "confidence": 0.95,
+    "status": "active"
+  },
+  {
+    "ku_id": "KU-0003",
+    "entity_key": "japan-travel:regulation:tourist-visa",
+    "field": "policy",
+    "value": "한국 국적자는 90일 이내 관광 목적 무비자 입국 가능. 여권 잔여 유효기간 제한 없음 (체류 기간 이상 권장). Visit Japan Web 사전 등록 권장.",
+    "conditions": {
+      "traveler_type": "korean-citizen"
+    },
+    "observed_at": "2026-03-02",
+    "validity": {
+      "ttl_days": 90
+    },
+    "evidence_links": [
+      "EU-0002"
+    ],
+    "confidence": 0.9,
+    "status": "active"
+  },
+  {
+    "ku_id": "KU-0004",
+    "entity_key": "japan-travel:payment:ic-card",
+    "field": "how_to_use",
+    "value": "Suica/PASMO 등 IC카드로 전철, 버스, 편의점 결제 가능. 물리 카드 재고 부족은 2025.3월 공식 해소. Welcome Suica(관광객용, 28일 유효) 주요 역에서 판매 재개. 모바일 Suica(Apple/Google) 및 Welcome Suica Mobile(iPhone, 180일 유효) 이용 가능.",
+    "observed_at": "2026-03-02",
+    "validity": {
+      "ttl_days": 365
+    },
+    "evidence_links": [
+      "EU-0003",
+      "EU-0016",
+      "EU-0017"
+    ],
+    "confidence": 0.85,
+    "status": "active"
+  },
+  {
+    "ku_id": "KU-0005",
+    "entity_key": "japan-travel:transport:shinkansen",
+    "field": "how_to_use",
+    "value": "지정석(Reserved)과 자유석(Non-reserved) 구분. JR Pass 소지 시 지정석 무료 예약 가능 (Nozomi/Mizuho 제외). 자유석은 선착순 탑승.",
+    "observed_at": "2026-03-02",
+    "validity": {
+      "ttl_days": 365
+    },
+    "evidence_links": [
+      "EU-0004"
+    ],
+    "confidence": 0.9,
+    "status": "active"
+  },
+  {
+    "ku_id": "KU-0006",
+    "entity_key": "japan-travel:regulation:customs-allowance",
+    "field": "policy",
+    "value": "면세 범위: 주류 3병(760ml 이하), 담배 200개비(거주자)/400개비(비거주자), 향수 2oz, 기타 품목 20만엔 이하. 초과 시 신고 및 관세 부과.",
+    "observed_at": "2026-04-23",
+    "validity": {
+      "ttl_days": 90
+    },
+    "evidence_links": [
+      "EU-0005",
+      "EU-0031-01",
+      "EU-0031-02",
+      "EU-0031-03"
+    ],
+    "confidence": 0.95,
+    "status": "active"
+  },
+  {
+    "ku_id": "KU-0007",
+    "entity_key": "japan-travel:connectivity:sim-card",
+    "field": "price",
+    "value": {
+      "7일_3GB": "약 1500-3000 JPY",
+      "15일_무제한_저속": "약 3000-5000 JPY",
+      "구매처": "공항 자판기, 편의점, 온라인 사전주문"
+    },
+    "observed_at": "2026-03-02",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0006"
+    ],
+    "confidence": 0.7,
+    "status": "active"
+  },
+  {
+    "ku_id": "KU-0008",
+    "entity_key": "japan-travel:regulation:emergency",
+    "field": "policy",
+    "value": {
+      "경찰": "110",
+      "소방_구급": "119",
+      "해상긴급": "118",
+      "의료상담": "#7119",
+      "관광헬프라인": "050-3816-2787",
+      "재해전언다이얼": "171",
+      "비고": "구급차 무료, 치료비는 별도. 119/110은 일본어 우선이나 통역 연결 가능."
+    },
+    "observed_at": "2026-04-23",
+    "validity": {
+      "ttl_days": 365
+    },
+    "evidence_links": [
+      "EU-0007",
+      "EU-0008",
+      "EU-0034-01",
+      "EU-0034-02",
+      "EU-0034-03",
+      "EU-0034-04",
+      "EU-0034-05"
+    ],
+    "confidence": 0.95,
+    "status": "active",
+    "disputes": [
+      {
+        "conflicting_claim": "CL-0034-01",
+        "nature": "Conflicting value for policy",
+        "resolution": "resolved",
+        "resolution_reason": "evidence majority (7 evidence vs 1 disputes)"
+      }
+    ]
+  },
+  {
+    "ku_id": "KU-0009",
+    "entity_key": "japan-travel:transport:airport-transfer",
+    "field": "how_to_use",
+    "value": {
+      "나리타": {
+        "Narita_Express": {
+          "소요": "60분→도쿄역",
+          "가격": "3070 JPY",
+          "JR_Pass": true
+        },
+        "Skyliner": {
+          "소요": "36분→닛포리",
+          "가격": "약 2520 JPY"
+        },
+        "리무진버스": {
+          "소요": "75-90분",
+          "가격": "약 1500-3200 JPY"
+        }
+      },
+      "하네다": {
+        "모노레일": {
+          "소요": "20분→하마마츠초",
+          "가격": "약 500-600 JPY"
+        },
+        "게이큐선": {
+          "소요": "15분→시나가와",
+          "가격": "약 300 JPY"
+        },
+        "리무진버스": {
+          "소요": "약 45분",
+          "가격": "약 1000-1500 JPY"
+        }
+      }
+    },
+    "observed_at": "2026-03-02",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0009",
+      "EU-0010"
+    ],
+    "confidence": 0.85,
+    "status": "active"
+  },
+  {
+    "ku_id": "KU-0010",
+    "entity_key": "japan-travel:regulation:visit-japan-web",
+    "field": "how_to_use",
+    "value": "Visit Japan Web은 웹 기반 서비스(앱 불필요). 여권 정보, 입국심사(하선카드), 세관신고, 면세쇼핑 3개 항목 사전 등록. 등록 후 QR코드 발급 → 공항 도착 시 제시. 2026년 현재 필수는 아니나 강력 권장 (심사 시간 대폭 단축). 스크린샷 불가, 라이브 접속 필요.",
+    "observed_at": "2026-03-02",
+    "validity": {
+      "ttl_days": 90
+    },
+    "evidence_links": [
+      "EU-0012",
+      "EU-0013"
+    ],
+    "confidence": 0.9,
+    "status": "active"
+  },
+  {
+    "ku_id": "KU-0011",
+    "entity_key": "japan-travel:regulation:tax-free",
+    "field": "policy",
+    "value": {
+      "현행_2025": {
+        "최소금액": "5000 JPY (세전, 1일 1매장)",
+        "대상": "비소모품+소모품 각 5000-500000 JPY",
+        "절차": "여권 제시 → 매장 즉시 면세",
+        "제한": "국제소포 발송 품목 면세 불가 (2025.4~)"
+      },
+      "신제도_2026_11월": {
+        "방식": "환급형 (구매 시 세금 포함 → 출국 시 환급)",
+        "최소금액_제한": "철폐",
+        "봉인포장": "폐지"
+      }
+    },
+    "observed_at": "2026-03-02",
+    "validity": {
+      "ttl_days": 90,
+      "expires_at": "2026-11-01"
+    },
+    "evidence_links": [
+      "EU-0014",
+      "EU-0015"
+    ],
+    "confidence": 0.9,
+    "status": "active"
+  },
+  {
+    "ku_id": "KU-0012",
+    "entity_key": "japan-travel:pass-ticket:suica",
+    "field": "where_to_buy",
+    "value": {
+      "Welcome_Suica": {
+        "판매처": "JR East Travel Service Center (나리타/하네다/도쿄/우에노/이케부쿠로/시부야/시나가와)",
+        "보증금": "없음",
+        "유효기간": "28일",
+        "환불": "불가"
+      },
+      "Welcome_Suica_Mobile": {
+        "대상": "iPhone (Apple Pay)",
+        "유효기간": "180일"
+      },
+      "대안": "PASMO Passport (사철 역), ICOCA (관서 지역)"
+    },
+    "observed_at": "2026-03-02",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0016",
+      "EU-0017"
+    ],
+    "confidence": 0.85,
+    "status": "active"
+  },
+  {
+    "ku_id": "KU-0013",
+    "entity_key": "japan-travel:transport:shinkansen",
+    "field": "price",
+    "value": {
+      "도쿄-교토": {
+        "자유석": 13320,
+        "지정석_Hikari": 14570,
+        "Platt_Kodama": 10700
+      },
+      "도쿄-신오사카": {
+        "지정석": 14720,
+        "Platt_Kodama": 11110
+      },
+      "currency": "JPY",
+      "구성": "기본운임 + 특급요금",
+      "Nozomi추가": "210-1060 JPY"
+    },
+    "observed_at": "2026-03-02",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0018"
+    ],
+    "confidence": 0.85,
+    "status": "active"
+  },
+  {
+    "ku_id": "KU-0014",
+    "entity_key": "japan-travel:regulation:customs-allowance",
+    "field": "eligibility",
+    "value": "Tourists can bring in goods for personal use purchased abroad whose total market value is less than 200,000 Yen without paying duties or taxes.",
+    "observed_at": "2026-04-23",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0001-01",
+      "EU-0002-01",
+      "EU-0002-02",
+      "EU-0004-01",
+      "EU-0001-02"
+    ],
+    "confidence": 0.943,
+    "status": "active",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "provenance": {
+      "provider": "tavily",
+      "domain": "help.wendywutours.com.au",
+      "retrieved_at": "2026-04-23T14:09:42.303952+00:00",
+      "trust_tier": "primary"
+    }
+  },
+  {
+    "ku_id": "KU-0015",
+    "entity_key": "japan-travel:regulation:emergency",
+    "field": "eligibility",
+    "value": "Foreign residents and travelers in Japan can access emergency services by calling 119 for ambulance or fire emergencies; the service can handle languages other than Japanese but having a fluent Japanese speaker helps.",
+    "observed_at": "2026-04-23",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0003-01",
+      "EU-0003-02"
+    ],
+    "confidence": 0.797,
+    "status": "active",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "provenance": {
+      "provider": "tavily",
+      "domain": "japantravel.navitime.com",
+      "retrieved_at": "2026-04-23T14:09:42.306899+00:00",
+      "trust_tier": "primary"
+    }
+  },
+  {
+    "ku_id": "KU-0016",
+    "entity_key": "japan-travel:regulation:emergency",
+    "field": "eligibility",
+    "value": "Travel medical insurance in Japan costs approximately $8-10 per day depending on activities and pre-existing conditions and can be purchased after arrival to fit travelers' budgets.",
+    "conditions": {},
+    "observed_at": "2026-04-23",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0003-03"
+    ],
+    "confidence": 0.5,
+    "status": "active",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "provenance": {
+      "provider": "tavily",
+      "domain": "tanpopojourneys.com",
+      "retrieved_at": "2026-04-23T14:09:42.306899+00:00",
+      "trust_tier": "primary"
+    }
+  },
+  {
+    "ku_id": "KU-0017",
+    "entity_key": "japan-travel:accommodation:*",
+    "field": "price",
+    "value": "The average price for a cheap hotel room in Kyoto is $79",
+    "observed_at": "2026-04-23",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0005-01",
+      "EU-0005-02",
+      "EU-0005-03",
+      "EU-0005-04",
+      "EU-0005-05"
+    ],
+    "confidence": 0.75,
+    "status": "active",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "provenance": {
+      "provider": "tavily",
+      "domain": "www.agoda.com",
+      "retrieved_at": "2026-04-23T14:09:42.307956+00:00",
+      "trust_tier": "primary"
+    },
+    "disputes": [
+      {
+        "conflicting_claim": "CL-0005-02",
+        "nature": "Conflicting value for price",
+        "resolution": "resolved",
+        "resolution_reason": "evidence majority (5 evidence vs 1 disputes)"
+      }
+    ]
+  },
+  {
+    "ku_id": "KU-0018",
+    "entity_key": "japan-travel:regulation:tourist-visa",
+    "field": "eligibility",
+    "value": "Visa applicants must physically reside in the jurisdiction of the Consulate General of Japan in San Francisco to apply through them.",
+    "observed_at": "2026-04-23",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0002-01",
+      "EU-0002-02",
+      "EU-0002-03",
+      "EU-0004-01",
+      "EU-0004-02"
+    ],
+    "confidence": 0.95,
+    "status": "active",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "provenance": {
+      "provider": "tavily",
+      "domain": "www.sf.us.emb-japan.go.jp",
+      "retrieved_at": "2026-04-23T14:09:42.309947+00:00",
+      "trust_tier": "primary"
+    },
+    "disputes": [
+      {
+        "conflicting_claim": "CL-0001-03",
+        "nature": "Conflicting value for eligibility",
+        "resolution": "resolved",
+        "resolution_reason": "evidence majority (5 evidence vs 1 disputes)"
+      }
+    ]
+  },
+  {
+    "ku_id": "KU-0019",
+    "entity_key": "japan-travel:regulation:visit-japan-web",
+    "field": "eligibility",
+    "value": "Foreigners can use Visit Japan Web for immigration procedures (immigration clearance, customs declaration) and tax-free purchases during their stay in Japan.",
+    "observed_at": "2026-04-23",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0004-01"
+    ],
+    "confidence": 0.9,
+    "status": "active",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "provenance": {
+      "provider": "tavily",
+      "domain": "services.digital.go.jp",
+      "retrieved_at": "2026-04-23T14:09:42.310950+00:00",
+      "trust_tier": "primary"
+    }
+  },
+  {
+    "ku_id": "KU-0020",
+    "entity_key": "japan-travel:attraction:shrines_and_temples",
+    "field": "price",
+    "value": "¥1,000 for tourists, ¥500 for locals",
+    "observed_at": "2026-04-23",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0006-01"
+    ],
+    "confidence": 0.7,
+    "status": "active",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "provenance": {
+      "provider": "tavily",
+      "domain": "www.ndtraveltours.com",
+      "retrieved_at": "2026-04-23T14:09:42.312945+00:00",
+      "trust_tier": "primary"
+    }
+  },
+  {
+    "ku_id": "KU-0021",
+    "entity_key": "japan-travel:attraction:himeji_castle",
+    "field": "price",
+    "value": "¥2,500 for tourists, ¥1,000 for locals",
+    "observed_at": "2026-04-23",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0006-02"
+    ],
+    "confidence": 0.7,
+    "status": "active",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "provenance": {
+      "provider": "tavily",
+      "domain": "travelnoire.com",
+      "retrieved_at": "2026-04-23T14:09:42.312945+00:00",
+      "trust_tier": "primary"
+    }
+  },
+  {
+    "ku_id": "KU-0022",
+    "entity_key": "japan-travel:attraction:mount_fuji_yoshida_trail",
+    "field": "price",
+    "value": "¥2,000 climbing fee per person",
+    "observed_at": "2026-04-23",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0006-03"
+    ],
+    "confidence": 0.7,
+    "status": "active",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "provenance": {
+      "provider": "tavily",
+      "domain": "blog.gaijinpot.com",
+      "retrieved_at": "2026-04-23T14:09:42.312945+00:00",
+      "trust_tier": "primary"
+    }
+  },
+  {
+    "ku_id": "KU-0023",
+    "entity_key": "japan-travel:attraction:mount_fuji_toilet_fee",
+    "field": "price",
+    "value": "200 to 300 yen per use",
+    "observed_at": "2026-04-23",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0006-04"
+    ],
+    "confidence": 0.7,
+    "status": "active",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "provenance": {
+      "provider": "tavily",
+      "domain": "www.japan-experience.com",
+      "retrieved_at": "2026-04-23T14:09:42.312945+00:00",
+      "trust_tier": "primary"
+    }
+  },
+  {
+    "ku_id": "KU-0024",
+    "entity_key": "japan-travel:attraction:mount_fuji_transportation",
+    "field": "price",
+    "value": "7,600 yen round trip bus from Shinjuku to Mount Fuji 5th station",
+    "observed_at": "2026-04-23",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0006-05"
+    ],
+    "confidence": 0.7,
+    "status": "active",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "provenance": {
+      "provider": "tavily",
+      "domain": "www.japan-experience.com",
+      "retrieved_at": "2026-04-23T14:09:42.312945+00:00",
+      "trust_tier": "primary"
+    }
+  },
+  {
+    "ku_id": "KU-0025",
+    "entity_key": "japan-travel:attraction:tokyo_disney_resort",
+    "field": "price",
+    "value": "$240 for 4 days, approximately $40 per day",
+    "observed_at": "2026-04-23",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0006-06"
+    ],
+    "confidence": 0.7,
+    "status": "active",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "provenance": {
+      "provider": "tavily",
+      "domain": "wanderingindisney.com",
+      "retrieved_at": "2026-04-23T14:09:42.312945+00:00",
+      "trust_tier": "primary"
+    }
+  },
+  {
+    "ku_id": "KU-0026",
+    "entity_key": "japan-travel:pass-ticket:suica",
+    "field": "policy",
+    "value": "Suica cards support use on multiple Shinkansen lines including Tōhoku, Hokkaidō, Akita, Yamagata, Jōetsu, and Hokuriku Shinkansen, as well as limited express trains such as Narita Express, Fuji Kaiyū, Azusa, and Kaiji. From November 2025, more limited express trains like Saphir Odoriko will be supported, and from Spring 2026, there will be an option to buy Green Car seats on regular JR East commuter trains.",
+    "observed_at": "2026-04-23",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0010-01",
+      "EU-0010-02",
+      "EU-0010-03",
+      "EU-0010-04",
+      "EU-0010-05"
+    ],
+    "confidence": 0.95,
+    "status": "active",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "provenance": {
+      "provider": "tavily",
+      "domain": "tokyocheapo.com",
+      "retrieved_at": "2026-04-23T14:09:42.313951+00:00",
+      "trust_tier": "primary"
+    }
+  },
+  {
+    "ku_id": "KU-0027",
+    "entity_key": "japan-travel:payment:ic-card",
+    "field": "price",
+    "value": "IC cards require a minimum balance of 1 yen (Icoca), 10 yen (PiTaPa, Sugoca, Nimoca, Hayakaken), or the starting fare amount (Pasmo) to enter ticket gates",
+    "observed_at": "2026-04-23",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-GU0008-01"
+    ],
+    "confidence": 0.7,
+    "status": "active",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "provenance": {
+      "provider": "tavily",
+      "domain": "www.japan-experience.com",
+      "retrieved_at": "2026-04-23T14:09:42.315940+00:00",
+      "trust_tier": "primary"
+    }
+  },
+  {
+    "ku_id": "KU-0028",
+    "entity_key": "japan-travel:pass-ticket:jr-pass",
+    "field": "policy",
+    "value": "The Japan Rail Pass is available only to foreign nationals traveling to Japan as temporary visitors with a 'Temporary Visitor' visa status.",
+    "observed_at": "2026-04-23",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0009-01",
+      "EU-0009-02",
+      "EU-0009-03",
+      "EU-0009-04",
+      "EU-0009-05"
+    ],
+    "confidence": 0.95,
+    "status": "active",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "provenance": {
+      "provider": "tavily",
+      "domain": "www.jrailpass.com",
+      "retrieved_at": "2026-04-23T14:09:42.317886+00:00",
+      "trust_tier": "primary"
+    },
+    "disputes": [
+      {
+        "conflicting_claim": "CL-0009-05",
+        "nature": "Conflicting value for policy",
+        "resolution": "resolved",
+        "resolution_reason": "evidence majority (5 evidence vs 1 disputes)"
+      }
+    ]
+  },
+  {
+    "ku_id": "KU-0029",
+    "entity_key": "japan-travel:dining:*",
+    "field": "price",
+    "value": "Japanese bakery or kissaten café breakfast: ¥500 to ¥1,000",
+    "observed_at": "2026-04-23",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0007-01",
+      "EU-0007-02",
+      "EU-0007-04",
+      "EU-0007-13",
+      "EU-0007-14",
+      "EU-0007-15"
+    ],
+    "confidence": 0.897,
+    "status": "active",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "provenance": {
+      "provider": "tavily",
+      "domain": "jasumo.com",
+      "retrieved_at": "2026-04-23T14:09:42.320874+00:00",
+      "trust_tier": "primary"
+    },
+    "disputes": [
+      {
+        "conflicting_claim": "CL-0007-04",
+        "nature": "Conflicting value for price",
+        "resolution": "resolved",
+        "resolution_reason": "evidence majority (6 evidence vs 1 disputes)"
+      }
+    ]
+  },
+  {
+    "ku_id": "KU-0030",
+    "entity_key": "japan-travel:dining:*",
+    "field": "price",
+    "value": "Fast food chains meals (gyudon, curry, pork cutlet): ¥500–¥800",
+    "conditions": {},
+    "observed_at": "2026-04-23",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0007-03"
+    ],
+    "confidence": 0.7,
+    "status": "active",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "provenance": {
+      "provider": "tavily",
+      "domain": "jasumo.com",
+      "retrieved_at": "2026-04-23T14:09:42.321897+00:00",
+      "trust_tier": "primary"
+    }
+  },
+  {
+    "ku_id": "KU-0031",
+    "entity_key": "japan-travel:dining:*",
+    "field": "price",
+    "value": "Set meals / Teishoku: ¥1,000–¥1,500",
+    "conditions": {},
+    "observed_at": "2026-04-23",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0007-05"
+    ],
+    "confidence": 0.7,
+    "status": "active",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "provenance": {
+      "provider": "tavily",
+      "domain": "jasumo.com",
+      "retrieved_at": "2026-04-23T14:09:42.321897+00:00",
+      "trust_tier": "primary"
+    }
+  },
+  {
+    "ku_id": "KU-0032",
+    "entity_key": "japan-travel:dining:*",
+    "field": "price",
+    "value": "Izakayas: ¥2,000–¥5,000 per person",
+    "conditions": {},
+    "observed_at": "2026-04-23",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0007-06"
+    ],
+    "confidence": 0.7,
+    "status": "active",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "provenance": {
+      "provider": "tavily",
+      "domain": "jasumo.com",
+      "retrieved_at": "2026-04-23T14:09:42.321897+00:00",
+      "trust_tier": "primary"
+    }
+  },
+  {
+    "ku_id": "KU-0033",
+    "entity_key": "japan-travel:dining:*",
+    "field": "price",
+    "value": "Sushi prices range from ¥1,500 to ¥30,000+; conveyor belt sushi plates cost ¥100–¥300 each, with full meals around ¥1,000 to ¥2,500",
+    "conditions": {},
+    "observed_at": "2026-04-23",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0007-07"
+    ],
+    "confidence": 0.7,
+    "status": "active",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "provenance": {
+      "provider": "tavily",
+      "domain": "jasumo.com",
+      "retrieved_at": "2026-04-23T14:09:42.321897+00:00",
+      "trust_tier": "primary"
+    }
+  },
+  {
+    "ku_id": "KU-0034",
+    "entity_key": "japan-travel:dining:*",
+    "field": "price",
+    "value": "Mid-range dining: ¥3,000–¥6,000",
+    "conditions": {},
+    "observed_at": "2026-04-23",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0007-08"
+    ],
+    "confidence": 0.7,
+    "status": "active",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "provenance": {
+      "provider": "tavily",
+      "domain": "jasumo.com",
+      "retrieved_at": "2026-04-23T14:09:42.321897+00:00",
+      "trust_tier": "primary"
+    }
+  },
+  {
+    "ku_id": "KU-0035",
+    "entity_key": "japan-travel:dining:*",
+    "field": "price",
+    "value": "Fine dining: ¥10,000–¥50,000+",
+    "conditions": {},
+    "observed_at": "2026-04-23",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0007-09"
+    ],
+    "confidence": 0.7,
+    "status": "active",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "provenance": {
+      "provider": "tavily",
+      "domain": "jasumo.com",
+      "retrieved_at": "2026-04-23T14:09:42.321897+00:00",
+      "trust_tier": "primary"
+    }
+  },
+  {
+    "ku_id": "KU-0036",
+    "entity_key": "japan-travel:dining:*",
+    "field": "price",
+    "value": "Osaka street food (takoyaki, kushikatsu): ¥600–¥1,500",
+    "conditions": {},
+    "observed_at": "2026-04-23",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0007-10"
+    ],
+    "confidence": 0.7,
+    "status": "active",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "provenance": {
+      "provider": "tavily",
+      "domain": "jasumo.com",
+      "retrieved_at": "2026-04-23T14:09:42.321897+00:00",
+      "trust_tier": "primary"
+    }
+  },
+  {
+    "ku_id": "KU-0037",
+    "entity_key": "japan-travel:dining:*",
+    "field": "price",
+    "value": "Backpacker daily food budget: ¥2,000–¥3,000",
+    "conditions": {},
+    "observed_at": "2026-04-23",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0007-11"
+    ],
+    "confidence": 0.7,
+    "status": "active",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "provenance": {
+      "provider": "tavily",
+      "domain": "jasumo.com",
+      "retrieved_at": "2026-04-23T14:09:42.321897+00:00",
+      "trust_tier": "primary"
+    }
+  },
+  {
+    "ku_id": "KU-0038",
+    "entity_key": "japan-travel:dining:*",
+    "field": "price",
+    "value": "Mid-range tourist daily food budget: ¥4,000–¥6,000",
+    "conditions": {},
+    "observed_at": "2026-04-23",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0007-12"
+    ],
+    "confidence": 0.7,
+    "status": "active",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "provenance": {
+      "provider": "tavily",
+      "domain": "jasumo.com",
+      "retrieved_at": "2026-04-23T14:09:42.322887+00:00",
+      "trust_tier": "primary"
+    }
+  },
+  {
+    "ku_id": "KU-0039",
+    "entity_key": "japan-travel:accommodation:*",
+    "field": "location",
+    "value": "nearby Kyoto Station or in downtown Kyoto",
+    "observed_at": "2026-04-23",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0001-01",
+      "EU-0001-02",
+      "EU-0001-03",
+      "EU-0002-01",
+      "EU-0003-01",
+      "EU-0003-02",
+      "EU-0004-01",
+      "EU-0004-02",
+      "EU-0004-03",
+      "EU-0005-01",
+      "EU-0005-02"
+    ],
+    "confidence": 0.797,
+    "status": "active",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "provenance": {
+      "provider": "tavily",
+      "domain": "yourfriendthenomad.com",
+      "retrieved_at": "2026-04-23T14:09:42.324953+00:00",
+      "trust_tier": "primary"
+    },
+    "disputes": [
+      {
+        "conflicting_claim": "CL-0001-03",
+        "nature": "Conflicting value for location",
+        "resolution": "resolved",
+        "resolution_reason": "evidence majority (11 evidence vs 1 disputes)"
+      }
+    ]
+  },
+  {
+    "ku_id": "KU-0040",
+    "entity_key": "japan-travel:accommodation:*",
+    "field": "etiquette",
+    "value": "Many hotels, especially ryokans, require you to remove your shoes at the entrance or in your room.",
+    "observed_at": "2026-04-23",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0012-01",
+      "EU-0012-02",
+      "EU-0012-03",
+      "EU-0012-04",
+      "EU-0012-05",
+      "EU-0012-06",
+      "EU-0012-07",
+      "EU-0012-08"
+    ],
+    "confidence": 0.95,
+    "status": "active",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "provenance": {
+      "provider": "tavily",
+      "domain": "aajapantours.com",
+      "retrieved_at": "2026-04-23T14:09:42.326945+00:00",
+      "trust_tier": "primary"
+    }
+  },
+  {
+    "ku_id": "KU-0041",
+    "entity_key": "japan-travel:accommodation:*",
+    "field": "tips",
+    "value": "Hotel rooms in Japan, especially in Tokyo, tend to be smaller than Western hotels. Business hotels are slightly smaller but effective stays.",
+    "observed_at": "2026-04-23",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0013-01",
+      "EU-0013-02",
+      "EU-0013-03",
+      "EU-0013-04",
+      "EU-0013-05",
+      "EU-0013-06",
+      "EU-0013-07",
+      "EU-0013-08",
+      "EU-0013-09",
+      "EU-0013-10",
+      "EU-0013-11",
+      "EU-0013-12"
+    ],
+    "confidence": 0.95,
+    "status": "active",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "provenance": {
+      "provider": "tavily",
+      "domain": "www.japanicattack.com",
+      "retrieved_at": "2026-04-23T14:09:42.328953+00:00",
+      "trust_tier": "primary"
+    },
+    "disputes": [
+      {
+        "conflicting_claim": "CL-0013-10",
+        "nature": "Conflicting value for tips",
+        "resolution": "resolved",
+        "resolution_reason": "evidence majority (12 evidence vs 1 disputes)"
+      }
+    ]
+  },
+  {
+    "ku_id": "KU-0042",
+    "entity_key": "japan-travel:attraction:tokyo-tower",
+    "field": "hours",
+    "value": "09:00–22:30, open year-round including public holidays, no regular days of closure",
+    "observed_at": "2026-04-23",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0014-01"
+    ],
+    "confidence": 0.9,
+    "status": "active",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "provenance": {
+      "provider": "tavily",
+      "domain": "www.tickets-tokyo.com",
+      "retrieved_at": "2026-04-23T14:09:42.330940+00:00",
+      "trust_tier": "primary"
+    }
+  },
+  {
+    "ku_id": "KU-0043",
+    "entity_key": "japan-travel:attraction:to-ji-temple",
+    "field": "hours",
+    "value": "Last admission 4:00 p.m. for Kondo and Kodo Kanchiin House; last admission 3:30 p.m. for Houmotsukan Museum",
+    "observed_at": "2026-04-23",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0014-02"
+    ],
+    "confidence": 0.9,
+    "status": "active",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "provenance": {
+      "provider": "tavily",
+      "domain": "toji.or.jp",
+      "retrieved_at": "2026-04-23T14:09:42.330940+00:00",
+      "trust_tier": "primary"
+    }
+  },
+  {
+    "ku_id": "KU-0044",
+    "entity_key": "japan-travel:attraction:rokkaku-do",
+    "field": "hours",
+    "value": "Open 6:00AM – 5:00PM; Reception of hand-written sutra offerings: 8:00AM – 5:00PM",
+    "observed_at": "2026-04-23",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0014-03"
+    ],
+    "confidence": 0.9,
+    "status": "active",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "provenance": {
+      "provider": "tavily",
+      "domain": "kyoto.travel",
+      "retrieved_at": "2026-04-23T14:09:42.330940+00:00",
+      "trust_tier": "primary"
+    }
+  },
+  {
+    "ku_id": "KU-0045",
+    "entity_key": "japan-travel:attraction:fushimi-inari-shrine",
+    "field": "location",
+    "value": "Southern Kyoto, near JR Inari Station and Fushimi Inari Station along the Keihan Main Line",
+    "observed_at": "2026-04-23",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0015-01",
+      "EU-0015-02"
+    ],
+    "confidence": 0.863,
+    "status": "active",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "provenance": {
+      "provider": "tavily",
+      "domain": "www.japan-guide.com",
+      "retrieved_at": "2026-04-23T14:09:42.331936+00:00",
+      "trust_tier": "primary"
+    }
+  },
+  {
+    "ku_id": "KU-0046",
+    "entity_key": "japan-travel:attraction:*",
+    "field": "tips",
+    "value": "Collected info for tips from 40 Best Tips for Visiting Japan in 2025 - by Peter Yang",
+    "observed_at": "2026-04-23",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0016-01",
+      "EU-0016-02"
+    ],
+    "confidence": 0.73,
+    "status": "active",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "provenance": {
+      "provider": "tavily",
+      "domain": "creatoreconomy.so",
+      "retrieved_at": "2026-04-23T14:09:42.332939+00:00",
+      "trust_tier": "primary"
+    }
+  },
+  {
+    "ku_id": "KU-0047",
+    "entity_key": "japan-travel:connectivity:sim-card",
+    "field": "how_to_use",
+    "value": "The SIM card will be automatically activated once you put it into your phone. If asked for the SIM card PIN code, the initial value is '0000'.",
+    "observed_at": "2026-04-23",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0017-01",
+      "EU-0017-02",
+      "EU-0017-03"
+    ],
+    "confidence": 0.95,
+    "status": "active",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "provenance": {
+      "provider": "tavily",
+      "domain": "www.sakuramobile.jp",
+      "retrieved_at": "2026-04-23T14:09:42.336875+00:00",
+      "trust_tier": "primary"
+    },
+    "disputes": [
+      {
+        "conflicting_claim": "CL-0017-02",
+        "nature": "Conflicting value for how_to_use",
+        "resolution": "resolved",
+        "resolution_reason": "evidence majority (3 evidence vs 1 disputes)"
+      }
+    ]
+  },
+  {
+    "ku_id": "KU-0048",
+    "entity_key": "japan-travel:connectivity:sim-card",
+    "field": "where_to_buy",
+    "value": "SIM cards can be purchased at Haneda Airport Terminal 3 at 7-Eleven (3rd floor), BIC Camera Store, or online as an eSIM at ohayu.com",
+    "observed_at": "2026-04-23",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0019-01",
+      "EU-0019-02",
+      "EU-0019-03",
+      "EU-0019-04"
+    ],
+    "confidence": 0.95,
+    "status": "active",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "provenance": {
+      "provider": "tavily",
+      "domain": "ohayu.com",
+      "retrieved_at": "2026-04-23T14:09:42.337885+00:00",
+      "trust_tier": "primary"
+    }
+  },
+  {
+    "ku_id": "KU-0049",
+    "entity_key": "japan-travel:connectivity:*",
+    "field": "tips",
+    "value": "Airport Wi-Fi in Japan often has time limits, mandatory sign-ups, and heavy congestion during peak arrival hours, making it unreliable for primary connectivity upon arrival.",
+    "observed_at": "2026-04-23",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0018-01",
+      "EU-0018-02",
+      "EU-0018-03",
+      "EU-0018-05",
+      "EU-0018-04"
+    ],
+    "confidence": 0.95,
+    "status": "active",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "provenance": {
+      "provider": "tavily",
+      "domain": "ninjawifi.com",
+      "retrieved_at": "2026-04-23T14:09:42.339936+00:00",
+      "trust_tier": "primary"
+    }
+  },
+  {
+    "ku_id": "KU-0050",
+    "entity_key": "japan-travel:dining:*",
+    "field": "hours",
+    "value": "Many convenience stores and some chain restaurants operate 24 hours a day, even on national holidays.",
+    "observed_at": "2026-04-23",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0020-01",
+      "EU-0020-02",
+      "EU-0020-03",
+      "EU-0020-04"
+    ],
+    "confidence": 0.86,
+    "status": "active",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "provenance": {
+      "provider": "tavily",
+      "domain": "www.japan.travel",
+      "retrieved_at": "2026-04-23T14:09:42.340944+00:00",
+      "trust_tier": "primary"
+    },
+    "disputes": [
+      {
+        "conflicting_claim": "CL-0020-03",
+        "nature": "Conflicting value for hours",
+        "resolution": "resolved",
+        "resolution_reason": "evidence majority (4 evidence vs 1 disputes)"
+      }
+    ]
+  },
+  {
+    "ku_id": "KU-0051",
+    "entity_key": "japan-travel:dining:*",
+    "field": "etiquette",
+    "value": "Kaiseki is Japan’s most refined dining, almost synonymous with Western haute cuisine, requiring the highest level of etiquette and respect for the food, typically prepared by experienced professional chefs.",
+    "observed_at": "2026-04-23",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0022-01",
+      "EU-0022-02",
+      "EU-0022-03",
+      "EU-0022-04",
+      "EU-0022-05",
+      "EU-0022-06",
+      "EU-0022-07",
+      "EU-0022-08",
+      "EU-0022-09"
+    ],
+    "confidence": 0.95,
+    "status": "active",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "provenance": {
+      "provider": "tavily",
+      "domain": "mai-ko.com",
+      "retrieved_at": "2026-04-23T14:13:11.166306+00:00",
+      "trust_tier": "primary"
+    },
+    "disputes": [
+      {
+        "conflicting_claim": "CL-0022-06",
+        "nature": "Conflicting value for etiquette",
+        "resolution": "resolved",
+        "resolution_reason": "evidence majority (9 evidence vs 1 disputes)"
+      }
+    ]
+  },
+  {
+    "ku_id": "KU-0052",
+    "entity_key": "japan-travel:dining:*",
+    "field": "location",
+    "value": "Naruto Taiyaki Honpo, a chain with locations throughout Japan",
+    "observed_at": "2026-04-23",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0021-01",
+      "EU-0021-02",
+      "EU-0021-03",
+      "EU-0021-04",
+      "EU-0021-05",
+      "EU-0021-06"
+    ],
+    "confidence": 0.7,
+    "status": "active",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "provenance": {
+      "provider": "tavily",
+      "domain": "www.tangledupinfood.com",
+      "retrieved_at": "2026-04-23T14:13:11.167304+00:00",
+      "trust_tier": "primary"
+    },
+    "disputes": [
+      {
+        "conflicting_claim": "CL-0021-02",
+        "nature": "Conflicting value for location",
+        "resolution": "resolved",
+        "resolution_reason": "evidence majority (6 evidence vs 1 disputes)"
+      }
+    ]
+  },
+  {
+    "ku_id": "KU-0053",
+    "entity_key": "japan-travel:payment:*",
+    "field": "tips",
+    "value": "Credit cards such as Visa, JCB, and Mastercard are widely accepted in Japan, but travelers should be prepared to pay with cash as an alternative due to possible payment errors.",
+    "observed_at": "2026-04-23",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0025-01",
+      "EU-0025-02",
+      "EU-0025-03",
+      "EU-0025-04",
+      "EU-0025-05"
+    ],
+    "confidence": 0.95,
+    "status": "active",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "provenance": {
+      "provider": "tavily",
+      "domain": "www.japan.travel",
+      "retrieved_at": "2026-04-23T14:13:11.169308+00:00",
+      "trust_tier": "primary"
+    }
+  },
+  {
+    "ku_id": "KU-0054",
+    "entity_key": "japan-travel:pass-ticket:suica",
+    "field": "duration",
+    "value": "Suica cards expire 10 years after their last use",
+    "observed_at": "2026-04-23",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-GU0024-01",
+      "EU-GU0024-02",
+      "EU-GU0024-03"
+    ],
+    "confidence": 0.672,
+    "status": "active",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "provenance": {
+      "provider": "tavily",
+      "domain": "unseen-japan.com",
+      "retrieved_at": "2026-04-23T14:13:11.170251+00:00",
+      "trust_tier": "primary"
+    }
+  },
+  {
+    "ku_id": "KU-0055",
+    "entity_key": "japan-travel:pass-ticket:suica",
+    "field": "duration",
+    "value": "Tourist Suica is valid for less than a month",
+    "conditions": {
+      "pass_type": "tourist Suica"
+    },
+    "observed_at": "2026-04-23",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-GU0024-04"
+    ],
+    "confidence": 0.5,
+    "status": "active",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "provenance": {
+      "provider": "tavily",
+      "domain": "www.facebook.com",
+      "retrieved_at": "2026-04-23T14:13:11.170251+00:00",
+      "trust_tier": "primary"
+    }
+  },
+  {
+    "ku_id": "KU-0056",
+    "entity_key": "japan-travel:pass-ticket:jr-pass",
+    "field": "duration",
+    "value": "The validity period of a Japan Rail Pass is consecutive 7, 14, or 21 days beginning on the date the pass can actually be first used.",
+    "observed_at": "2026-04-23",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0023-01",
+      "EU-0023-02"
+    ],
+    "confidence": 0.93,
+    "status": "active",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "provenance": {
+      "provider": "tavily",
+      "domain": "www.jrpass.com",
+      "retrieved_at": "2026-04-23T14:13:11.170251+00:00",
+      "trust_tier": "primary"
+    }
+  },
+  {
+    "ku_id": "KU-0057",
+    "entity_key": "japan-travel:payment:ic-card",
+    "field": "acceptance",
+    "value": "The 10 most popular IC cards, including Suica, Pasmo, and Icoca, are compatible with each other and can be used on almost all train, subway, and bus lines inside Japanese cities.",
+    "observed_at": "2026-04-23",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0026-01",
+      "EU-0026-02",
+      "EU-0026-03"
+    ],
+    "confidence": 0.897,
+    "status": "active",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "provenance": {
+      "provider": "tavily",
+      "domain": "www.jrailpass.com",
+      "retrieved_at": "2026-04-23T14:13:11.171256+00:00",
+      "trust_tier": "primary"
+    }
+  },
+  {
+    "ku_id": "KU-0058",
+    "entity_key": "japan-travel:transport:*",
+    "field": "tips",
+    "value": "Japanese public transportation is characterized by its punctuality, superb service, and large crowds of people using it.",
+    "observed_at": "2026-04-23",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0029-01",
+      "EU-0029-02",
+      "EU-0029-03",
+      "EU-0029-04",
+      "EU-0029-05",
+      "EU-0029-06",
+      "EU-0029-07"
+    ],
+    "confidence": 0.95,
+    "status": "active",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "provenance": {
+      "provider": "tavily",
+      "domain": "www.japan-guide.com",
+      "retrieved_at": "2026-04-23T14:13:11.172253+00:00",
+      "trust_tier": "primary"
+    }
+  },
+  {
+    "ku_id": "KU-0059",
+    "entity_key": "japan-travel:transport:shinkansen",
+    "field": "duration",
+    "value": "Tokyo to Kyoto Shinkansen trip can be covered in just over two hours",
+    "observed_at": "2026-04-23",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0027-01",
+      "EU-0027-02"
+    ],
+    "confidence": 0.797,
+    "status": "active",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "provenance": {
+      "provider": "tavily",
+      "domain": "railmonsters.com",
+      "retrieved_at": "2026-04-23T14:13:11.172253+00:00",
+      "trust_tier": "primary"
+    }
+  },
+  {
+    "ku_id": "KU-0060",
+    "entity_key": "japan-travel:transport:airport-transfer",
+    "field": "duration",
+    "value": "Taxi ride from Haneda Airport to Tokyo takes around 30-40 minutes",
+    "observed_at": "2026-04-23",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0028-01",
+      "EU-0028-02"
+    ],
+    "confidence": 0.9,
+    "status": "active",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "provenance": {
+      "provider": "tavily",
+      "domain": "www.inspiringvacations.com",
+      "retrieved_at": "2026-04-23T14:13:11.173252+00:00",
+      "trust_tier": "primary"
+    },
+    "disputes": [
+      {
+        "conflicting_claim": "CL-0028-02",
+        "nature": "Conflicting value for duration",
+        "resolution": "resolved",
+        "resolution_reason": "evidence majority (2 evidence vs 1 disputes)"
+      }
+    ]
+  },
+  {
+    "ku_id": "KU-0061",
+    "entity_key": "japan-travel:transport:airport-transfer",
+    "field": "duration",
+    "value": "JR Kansai Airport Rapid Service takes about 50 minutes to Osaka Station",
+    "conditions": {},
+    "observed_at": "2026-04-23",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0028-03"
+    ],
+    "confidence": 0.9,
+    "status": "active",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "provenance": {
+      "provider": "tavily",
+      "domain": "www.inspiringvacations.com",
+      "retrieved_at": "2026-04-23T14:13:11.173252+00:00",
+      "trust_tier": "primary"
+    }
+  },
+  {
+    "ku_id": "KU-0062",
+    "entity_key": "japan-travel:transport:airport-transfer",
+    "field": "duration",
+    "value": "Airport shuttle bus travel time is around 25 minutes to central Osaka",
+    "conditions": {},
+    "observed_at": "2026-04-23",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0028-04"
+    ],
+    "confidence": 0.9,
+    "status": "active",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "provenance": {
+      "provider": "tavily",
+      "domain": "www.inspiringvacations.com",
+      "retrieved_at": "2026-04-23T14:13:11.173252+00:00",
+      "trust_tier": "primary"
+    }
+  },
+  {
+    "ku_id": "KU-0063",
+    "entity_key": "japan-travel:transport:airport-transfer",
+    "field": "duration",
+    "value": "Narita Express train takes 53 minutes to Tokyo Station",
+    "conditions": {},
+    "observed_at": "2026-04-23",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0028-05"
+    ],
+    "confidence": 0.9,
+    "status": "active",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "provenance": {
+      "provider": "tavily",
+      "domain": "rydagent.com",
+      "retrieved_at": "2026-04-23T14:13:11.173252+00:00",
+      "trust_tier": "primary"
+    }
+  },
+  {
+    "ku_id": "KU-0064",
+    "entity_key": "japan-travel:transport:airport-transfer",
+    "field": "duration",
+    "value": "Limousine buses from Kansai Airport to Osaka Station take 30 minutes",
+    "conditions": {},
+    "observed_at": "2026-04-23",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0028-06"
+    ],
+    "confidence": 0.9,
+    "status": "active",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "provenance": {
+      "provider": "tavily",
+      "domain": "rydagent.com",
+      "retrieved_at": "2026-04-23T14:13:11.173252+00:00",
+      "trust_tier": "primary"
+    }
+  },
+  {
+    "ku_id": "KU-0065",
+    "entity_key": "japan-travel:transport:airport-transfer",
+    "field": "duration",
+    "value": "JR Rapid Airport train from New Chitose Airport to Sapporo takes 37 minutes",
+    "conditions": {},
+    "observed_at": "2026-04-23",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0028-07"
+    ],
+    "confidence": 0.9,
+    "status": "active",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "provenance": {
+      "provider": "tavily",
+      "domain": "rydagent.com",
+      "retrieved_at": "2026-04-23T14:13:11.173252+00:00",
+      "trust_tier": "primary"
+    }
+  },
+  {
+    "ku_id": "KU-0066",
+    "entity_key": "japan-travel:transport:airport-transfer",
+    "field": "duration",
+    "value": "Journey time from Narita Airport into Tokyo is approximately 75 minutes",
+    "conditions": {},
+    "observed_at": "2026-04-23",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0028-08"
+    ],
+    "confidence": 0.9,
+    "status": "active",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "provenance": {
+      "provider": "tavily",
+      "domain": "www.jrpass.com",
+      "retrieved_at": "2026-04-23T14:13:11.173252+00:00",
+      "trust_tier": "primary"
+    }
+  },
+  {
+    "ku_id": "KU-0067",
+    "entity_key": "japan-travel:regulation:customs-allowance",
+    "field": "price",
+    "value": "Duty-free allowance for gift and other items except liquor, tobacco and perfume is 200,000 yen (market value). Goods valued under 10,000 yen are exempt from duty charges.",
+    "observed_at": "2026-04-23",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0030-01",
+      "EU-0030-02",
+      "EU-0030-03",
+      "EU-0030-04"
+    ],
+    "confidence": 0.948,
+    "status": "active",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "provenance": {
+      "provider": "tavily",
+      "domain": "www.la.us.emb-japan.go.jp",
+      "retrieved_at": "2026-04-23T14:13:11.173252+00:00",
+      "trust_tier": "primary"
+    }
+  },
+  {
+    "ku_id": "KU-0068",
+    "entity_key": "japan-travel:regulation:customs-allowance",
+    "field": "tips",
+    "value": "At duty-free shops in Japan, purchases can be made without taxes, but additional taxes apply if purchases exceed the duty-free limit; recording each purchase amount helps to shop within the duty-free limit.",
+    "observed_at": "2026-04-23",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0032-01",
+      "EU-0032-02",
+      "EU-0032-03",
+      "EU-0032-04",
+      "EU-0032-05"
+    ],
+    "confidence": 0.95,
+    "status": "active",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "provenance": {
+      "provider": "tavily",
+      "domain": "www.kixdutyfree.jp",
+      "retrieved_at": "2026-04-23T14:13:11.174251+00:00",
+      "trust_tier": "primary"
+    },
+    "disputes": [
+      {
+        "conflicting_claim": "CL-0032-02",
+        "nature": "Conflicting value for tips",
+        "resolution": "resolved",
+        "resolution_reason": "evidence majority (5 evidence vs 1 disputes)"
+      }
+    ]
+  },
+  {
+    "ku_id": "KU-0069",
+    "entity_key": "japan-travel:regulation:emergency",
+    "field": "price",
+    "value": "Foreigners are typically required to pay the full cost of urgent treatment upfront unless they hold Japanese public insurance",
+    "observed_at": "2026-04-23",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0033-01",
+      "EU-0033-02"
+    ],
+    "confidence": 0.9,
+    "status": "active",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "provenance": {
+      "provider": "tavily",
+      "domain": "www.pacificprime.com",
+      "retrieved_at": "2026-04-23T14:13:11.175288+00:00",
+      "trust_tier": "primary"
+    },
+    "disputes": [
+      {
+        "conflicting_claim": "CL-0033-02",
+        "nature": "Conflicting value for price",
+        "resolution": "resolved",
+        "resolution_reason": "evidence majority (2 evidence vs 1 disputes)"
+      }
+    ]
+  },
+  {
+    "ku_id": "KU-0070",
+    "entity_key": "japan-travel:regulation:emergency",
+    "field": "tips",
+    "value": "The multilingual Safety Tips app, overseen by the Japan Tourism Agency, provides alerts about earthquakes and other disasters, as well as evacuation information.",
+    "observed_at": "2026-04-23",
+    "validity": {
+      "ttl_days": 180
+    },
+    "evidence_links": [
+      "EU-0035-01",
+      "EU-0035-02",
+      "EU-0035-04"
+    ],
+    "confidence": 0.95,
+    "status": "active",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "provenance": {
+      "provider": "tavily",
+      "domain": "www.nippon.com",
+      "retrieved_at": "2026-04-23T14:13:11.175288+00:00",
+      "trust_tier": "primary"
+    },
+    "disputes": [
+      {
+        "conflicting_claim": "CL-0035-08",
+        "nature": "Conflicting value for tips",
+        "resolution": "resolved",
+        "resolution_reason": "evidence majority (3 evidence vs 1 disputes)"
+      }
+    ]
+  }
+]

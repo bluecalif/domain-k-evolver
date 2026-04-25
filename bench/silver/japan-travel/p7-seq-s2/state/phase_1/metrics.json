@@ -1,0 +1,30 @@
+{
+  "cycle": 4,
+  "phase": "post_critique",
+  "timestamp": "2026-04-23",
+  "counts": {
+    "total_ku": 86,
+    "active_ku": 86,
+    "disputed_ku": 0,
+    "deprecated_ku": 0,
+    "total_gu_open": 11,
+    "total_gu_resolved": 38,
+    "total_gu_deferred": 0
+  },
+  "rates": {
+    "evidence_rate": 1.0,
+    "multi_evidence_rate": 0.46511627906976744,
+    "gap_resolution_rate": 0.7755102040816326,
+    "conflict_rate": 0.0,
+    "avg_confidence": 0.8385581395348837,
+    "staleness_risk": 0
+  },
+  "delta_from_prev_cycle": {
+    "evidence_rate": 0.0,
+    "multi_evidence_rate": -0.0092,
+    "gap_resolution_rate": 0.0308,
+    "conflict_rate": -0.037,
+    "avg_confidence": 0.0001,
+    "staleness_risk": 0
+  }
+}
