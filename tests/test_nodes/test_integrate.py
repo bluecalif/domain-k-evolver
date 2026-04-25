@@ -1533,3 +1533,101 @@ class TestS6ConflictLedgerPersistence:
         )
         result = integrate_node(state)
         assert "conflict_ledger" in result
+
+
+# ============================================================
+# S2-T1: integration_result_dist 누적 L1 테스트
+# ============================================================
+
+class TestIntegrationResultDist:
+    """S2-T1: integrate_node가 integration_result_dist를 3-cycle window로 누적."""
+
+    def _make_claim(self, claim_id: str, gu_id: str, entity: str, field: str, value: str) -> dict:
+        return {
+            "claim_id": claim_id,
+            "entity_key": entity,
+            "field": field,
+            "value": value,
+            "source_gu_id": gu_id,
+            "evidence": {"eu_id": f"EU-{claim_id}", "credibility": 0.8},
+        }
+
+    def test_dist_returned_on_first_cycle(self) -> None:
+        """integrate_node 첫 호출 → integration_result_dist 필드 반환."""
+        state = make_minimal_state(
+            gap_map=[{
+                "gu_id": "GU-0001", "status": "open",
+                "target": {"entity_key": "japan-travel:transport:taxi", "field": "price"},
+                "expected_utility": "high", "risk_level": "convenience",
+            }],
+            current_claims=[
+                self._make_claim("CL-001", "GU-0001", "japan-travel:transport:taxi", "price", "700 JPY"),
+            ],
+            domain_skeleton=SKELETON_P1,
+            current_mode={"mode": "normal"},
+            current_cycle=1,
+        )
+        result = integrate_node(state)
+        assert "integration_result_dist" in result
+        dist = result["integration_result_dist"]
+        assert len(dist) == 1
+        entry = dist[0]
+        assert "cycle" in entry
+        assert "total_claims" in entry
+        assert "added" in entry
+        assert "added_ratio" in entry
+        assert "conv_rate" in entry
+
+    def test_dist_window_keeps_last_3(self) -> None:
+        """이전 dist 3개 이상 → 최신 3개만 유지."""
+        prev_dist = [
+            {"cycle": 1, "total_claims": 5, "added": 2, "conflict_hold": 0,
+             "condition_split": 0, "resolved": 2, "conv_rate": 0.4, "added_ratio": 0.4},
+            {"cycle": 2, "total_claims": 4, "added": 1, "conflict_hold": 0,
+             "condition_split": 0, "resolved": 1, "conv_rate": 0.25, "added_ratio": 0.25},
+            {"cycle": 3, "total_claims": 3, "added": 1, "conflict_hold": 0,
+             "condition_split": 0, "resolved": 1, "conv_rate": 0.33, "added_ratio": 0.33},
+        ]
+        state = make_minimal_state(
+            gap_map=[{
+                "gu_id": "GU-0001", "status": "open",
+                "target": {"entity_key": "japan-travel:transport:taxi", "field": "price"},
+                "expected_utility": "high", "risk_level": "convenience",
+            }],
+            current_claims=[
+                self._make_claim("CL-001", "GU-0001", "japan-travel:transport:taxi", "price", "700 JPY"),
+            ],
+            domain_skeleton=SKELETON_P1,
+            current_mode={"mode": "normal"},
+            current_cycle=4,
+            integration_result_dist=prev_dist,
+        )
+        result = integrate_node(state)
+        dist = result["integration_result_dist"]
+        assert len(dist) == 3, f"window는 최대 3개: {len(dist)}"
+        assert dist[-1]["cycle"] == 4  # 최신 항목
+
+    def test_added_ratio_computed_correctly(self) -> None:
+        """added_ratio = added_count / total_claims."""
+        state = make_minimal_state(
+            gap_map=[{
+                "gu_id": "GU-0001", "status": "open",
+                "target": {"entity_key": "japan-travel:transport:taxi", "field": "price"},
+                "expected_utility": "high", "risk_level": "convenience",
+            }],
+            current_claims=[
+                self._make_claim("CL-001", "GU-0001", "japan-travel:transport:taxi", "price", "700 JPY"),
+                # 두 번째 claim은 source_gu_id 없어 invalid
+                {**self._make_claim("CL-002", "", "japan-travel:transport:taxi", "price", "800 JPY"),
+                 "source_gu_id": ""},
+            ],
+            domain_skeleton=SKELETON_P1,
+            current_mode={"mode": "normal"},
+            current_cycle=1,
+        )
+        result = integrate_node(state)
+        dist = result["integration_result_dist"]
+        assert len(dist) == 1
+        entry = dist[0]
+        assert entry["total_claims"] == 2
+        assert 0.0 <= entry["added_ratio"] <= 1.0

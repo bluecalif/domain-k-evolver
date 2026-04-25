@@ -435,6 +435,50 @@ def _check_convergence(
     return result
 
 
+def _detect_ku_stagnation(
+    integration_result_dist: list[dict],
+    prescriptions: list[dict],
+    rx_counter: int,
+) -> tuple[list[dict], list[str], int]:
+    """3-cycle window에서 KU 성장 정체 감지 → rx_id=ku_stagnation:* 처방 생성 (S2-T2)."""
+    signals: list[str] = []
+    if len(integration_result_dist) < 3:
+        return prescriptions, signals, rx_counter
+
+    window = integration_result_dist[-3:]
+
+    # 신호 1: added_ratio < 0.3 for all 3 cycles
+    if all(e.get("added_ratio", 1.0) < 0.3 for e in window):
+        signals.append("integration_added_low")
+        avg = sum(e.get("added_ratio", 0.0) for e in window) / 3
+        prescriptions.append({
+            "rx_id": f"RX-{rx_counter:04d}",
+            "type": "ku_stagnation",
+            "rx_subtype": "integration_added_low",
+            "description": (
+                f"3-cycle added_ratio 평균 {avg:.2f} < 0.3 — "
+                "수집 쿼리 다각화 또는 새 GU 유형 투입 필요"
+            ),
+        })
+        rx_counter += 1
+
+    # 신호 2: condition_split == 0 for all 3 cycles
+    if all(e.get("condition_split", 0) == 0 for e in window):
+        signals.append("adjacent_yield_low")
+        prescriptions.append({
+            "rx_id": f"RX-{rx_counter:04d}",
+            "type": "ku_stagnation",
+            "rx_subtype": "adjacent_yield_low",
+            "description": (
+                "3-cycle condition_split=0 — "
+                "adj GU 다양성 부족 (S3-T1 threshold 수정 후 재확인 필요)"
+            ),
+        })
+        rx_counter += 1
+
+    return prescriptions, signals, rx_counter
+
+
 def critique_node(
     state: EvolverState,
     *,
@@ -481,6 +525,12 @@ def critique_node(
             "target_ku": entry["ku_id"],
         })
         rx_counter += 1
+
+    # SI-P7 S2-T2: KU 성장 정체 신호 감지
+    int_dist = list(state.get("integration_result_dist", []) or [])
+    prescriptions, ku_stagnation_signals, rx_counter = _detect_ku_stagnation(
+        int_dist, prescriptions, rx_counter
+    )
 
     # Category 균형 GU 생성 (Task 5.7)
     max_gu_id = 0
@@ -593,6 +643,7 @@ def critique_node(
         "axis_coverage": axis_coverage_entries,
         "metrics": new_metrics,
         "net_gap_changes": net_gap_changes,
+        "ku_stagnation_signals": ku_stagnation_signals,
     }
 
     # balance/refresh GU가 추가되었으면 gap_map 반환

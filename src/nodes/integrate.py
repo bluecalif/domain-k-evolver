@@ -565,6 +565,25 @@ def integrate_node(
             resolve_outcomes["resolved"] / total_claims,
         )
 
+    # SI-P7 S2-T1: integration_result_dist 3-cycle window 누적
+    _added_count = sum(1 for c in claims if c.get("integration_result") == "added")
+    _conflict_hold_count = sum(1 for c in claims if c.get("integration_result") == "conflict_hold")
+    _condition_split_count = sum(1 for c in claims if c.get("integration_result") == "condition_split")
+    _dist_entry = {
+        "cycle": state.get("current_cycle", 0),
+        "total_claims": total_claims,
+        "added": _added_count,
+        "conflict_hold": _conflict_hold_count,
+        "condition_split": _condition_split_count,
+        "resolved": resolve_outcomes["resolved"],
+        "conv_rate": round(resolve_outcomes["resolved"] / total_claims, 3) if total_claims > 0 else 0.0,
+        "added_ratio": round(_added_count / total_claims, 3) if total_claims > 0 else 0.0,
+    }
+    _prev_dist = list(state.get("integration_result_dist", []) or [])
+    _prev_dist.append(_dist_entry)
+    if len(_prev_dist) > 3:
+        _prev_dist = _prev_dist[-3:]
+
     return {
         "knowledge_units": kus,
         "gap_map": gap_map,
@@ -573,4 +592,5 @@ def integrate_node(
         "conflict_ledger": conflict_ledger,
         "_diag_adjacent_gap_count": len(new_dynamic_gus),
         "_diag_resolved_gus": diag_resolved_gus,
+        "integration_result_dist": _prev_dist,
     }

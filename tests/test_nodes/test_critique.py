@@ -12,6 +12,7 @@ from src.nodes.critique import (
     _analyze_failure_modes,
     _check_convergence,
     _compute_refresh_cap,
+    _detect_ku_stagnation,
     _generate_balance_gus,
     _generate_refresh_gus,
     critique_node,
@@ -467,3 +468,101 @@ class TestAdaptiveRefreshCap:
         ]
         gus = _generate_refresh_gus(kus, [], max_gu_id=0, today=date(2026, 3, 7))
         assert len(gus) == 20  # adaptive: 60//3 = 20
+
+
+# ============================================================
+# S2-T2: _detect_ku_stagnation L1 테스트
+# ============================================================
+
+def _make_dist_entry(cycle: int, added_ratio: float, condition_split: int = 0) -> dict:
+    total = 10
+    added = round(added_ratio * total)
+    return {
+        "cycle": cycle,
+        "total_claims": total,
+        "added": added,
+        "conflict_hold": 0,
+        "condition_split": condition_split,
+        "resolved": added,
+        "conv_rate": added_ratio,
+        "added_ratio": added_ratio,
+    }
+
+
+class TestKuStagnation:
+    """S2-T2: _detect_ku_stagnation — 3-cycle window 정체 감지."""
+
+    def test_no_signal_insufficient_window(self) -> None:
+        """2-cycle 미만 → 신호 없음 (3-cycle 완성 전)."""
+        dist = [_make_dist_entry(1, 0.1), _make_dist_entry(2, 0.1)]
+        _, signals, _ = _detect_ku_stagnation(dist, [], 1)
+        assert signals == []
+
+    def test_integration_added_low_signal(self) -> None:
+        """3-cycle added_ratio < 0.3 → integration_added_low 신호."""
+        dist = [
+            _make_dist_entry(1, 0.1, condition_split=1),  # condition_split>0 → adjacent_yield_low 미발생
+            _make_dist_entry(2, 0.2, condition_split=1),
+            _make_dist_entry(3, 0.15, condition_split=1),
+        ]
+        prescriptions, signals, rx_counter = _detect_ku_stagnation(dist, [], 1)
+        assert "integration_added_low" in signals
+        assert any(p.get("rx_subtype") == "integration_added_low" for p in prescriptions)
+        assert rx_counter == 2
+
+    def test_adjacent_yield_low_signal(self) -> None:
+        """3-cycle condition_split=0 → adjacent_yield_low 신호."""
+        dist = [
+            _make_dist_entry(1, 0.5, condition_split=0),
+            _make_dist_entry(2, 0.5, condition_split=0),
+            _make_dist_entry(3, 0.5, condition_split=0),
+        ]
+        _, signals, _ = _detect_ku_stagnation(dist, [], 1)
+        assert "adjacent_yield_low" in signals
+
+    def test_no_signal_normal_added_ratio(self) -> None:
+        """added_ratio >= 0.3 → integration_added_low 신호 없음."""
+        dist = [
+            _make_dist_entry(1, 0.4),
+            _make_dist_entry(2, 0.35),
+            _make_dist_entry(3, 0.5),
+        ]
+        _, signals, _ = _detect_ku_stagnation(dist, [], 1)
+        assert "integration_added_low" not in signals
+
+    def test_both_signals_combined(self) -> None:
+        """added_ratio 낮고 condition_split=0 → 두 신호 모두."""
+        dist = [
+            _make_dist_entry(1, 0.1, condition_split=0),
+            _make_dist_entry(2, 0.1, condition_split=0),
+            _make_dist_entry(3, 0.1, condition_split=0),
+        ]
+        _, signals, _ = _detect_ku_stagnation(dist, [], 1)
+        assert "integration_added_low" in signals
+        assert "adjacent_yield_low" in signals
+
+    def test_window_uses_last_3(self) -> None:
+        """5-cycle dist에서 마지막 3개만 사용 (앞 2개는 낮아도 뒤 3개 정상이면 신호 없음)."""
+        dist = [
+            _make_dist_entry(1, 0.05),  # 낮음 (무시)
+            _make_dist_entry(2, 0.05),  # 낮음 (무시)
+            _make_dist_entry(3, 0.4),
+            _make_dist_entry(4, 0.5),
+            _make_dist_entry(5, 0.6),
+        ]
+        _, signals, _ = _detect_ku_stagnation(dist, [], 1)
+        assert "integration_added_low" not in signals
+
+    def test_ku_stagnation_signals_in_critique_output(self) -> None:
+        """critique_node 반환에 ku_stagnation_signals 필드 포함."""
+        from tests.conftest import make_minimal_state
+        state = make_minimal_state(
+            integration_result_dist=[
+                _make_dist_entry(1, 0.1, 0),
+                _make_dist_entry(2, 0.1, 0),
+                _make_dist_entry(3, 0.1, 0),
+            ],
+        )
+        result = critique_node(state)
+        assert "ku_stagnation_signals" in result
+        assert isinstance(result["ku_stagnation_signals"], list)
