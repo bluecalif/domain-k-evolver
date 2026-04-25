@@ -33,7 +33,7 @@ Stage D → 15c L3 통합 trial → readiness-report (silver-phase-gate-check)
 - [ ] **S1-T5** `max_search_calls_per_cycle` config (drop → defer)
 - [ ] **S1-T6** Budget 제거 smoke 5c — F1 결정
 - [ ] **S1-T7** regression guard: `target_count` cap 재도입 방지 (D-129)
-- [ ] **S1-T8** `state.deferred_targets` + 다음 cycle 우선 소진 (선-FIFO)
+- [ ] **S1-T8** `state.deferred_targets` + 다음 cycle 우선 소진 (FIFO+LIFO mix — D-203): deferred 가 cycle cap 의 ≤50% 채운 후 나머지 slot 은 신규 open_gus 로 보충 → A:adj batch clustering 방지 (v5 §8.6 Option 3)
 - [ ] **S1-T9 (신설)** D-196 mitigation: critique 처방 `stagnation:no_adj_source` — adj_gen=0 감지 시 다음 cycle `?`/`E:cat_balance` GU 우선 선정
   - **L1**: critique rx 생성 unit
   - **L2**: `si-p7-s1-t9-smoke` (1c) — adj_gen=0 강제 → 다음 plan 의 GU 선정 분포 변화

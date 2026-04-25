@@ -214,14 +214,6 @@ class TestModeNodeWithAudit:
         assert result["current_mode"]["mode"] == "jump"
         assert "T6:audit_axis_imbalance" in result["current_mode"]["trigger_set"]
 
-    def test_audit_bias_in_mode_decision(self) -> None:
-        state = self._base_state()
-        state["audit_history"] = [
-            _make_audit([_coverage_gap_finding("a"), _coverage_gap_finding("b")]),
-        ]
-        result = mode_node(state)
-        assert result["current_mode"].get("audit_bias", 0.0) > 0
-
     def test_no_audit_no_bias(self) -> None:
         state = self._base_state()
         result = mode_node(state)

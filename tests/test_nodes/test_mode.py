@@ -234,7 +234,7 @@ class TestModeNode:
             "jump_history": [],
         }
         result = mode_node(state)
-        cap = result["current_mode"]["cap"]
+        cap = result["current_mode"]["cycle_cap"]
         assert cap >= 4
 
     def test_target_count_no_upper_cap_jump(self) -> None:

@@ -201,13 +201,11 @@ def mode_node(state: EvolverState) -> dict:
     # Mode 결정
     mode = "jump" if triggers else "normal"
 
-    # target_count 계산 (D-129: Phase 5 b122a23 복원 — cap 재도입 금지)
+    # cycle_cap 계산 (S1-T3: 단일 cap, D-129 — upper cap 재도입 금지)
     if mode == "normal":
-        cap = max(4, ceil(open_count * 0.2))
-        target_count = max(4, ceil(open_count * 0.4))
+        cycle_cap = max(4, ceil(open_count * 0.4))
     else:
-        cap = max(10, ceil(open_count * 0.6))
-        target_count = max(10, ceil(open_count * 0.5))
+        cycle_cap = max(10, ceil(open_count * 0.5))
 
     # Convergence Guard: 연속 2 Cycle Jump 감지
     convergence_warning = False
@@ -215,35 +213,22 @@ def mode_node(state: EvolverState) -> dict:
         if jump_history[-1] == cycle - 1:
             convergence_warning = True
 
-    # net_gap_change 3 Cycle 연속 양수 → cap 감쇠
-    # (metrics.delta_from_prev_cycle에서 확인, 현재 단순화)
-
     # Jump 기록 갱신
     if mode == "jump":
         jump_history.append(cycle)
 
-    # Budget 배분 — Audit 기반 bias 적용 (Task 4.7)
-    cycle_stage = _get_cycle_stage(cycle)
-    audit_bias = _compute_audit_bias(audit_history)
-    explore_budget, exploit_budget = _compute_budget(
-        target_count, mode, cycle_stage, audit_bias=audit_bias,
-    )
-
     import logging
     _logger = logging.getLogger(__name__)
-    _logger.info("mode: %s | open=%d → target_count=%d (explore=%d, exploit=%d) triggers=%s",
-                 mode, open_count, target_count, explore_budget, exploit_budget, triggers or "none")
+    _logger.info("mode: %s | open=%d → cycle_cap=%d triggers=%s",
+                 mode, open_count, cycle_cap, triggers or "none")
 
     mode_decision: dict[str, Any] = {
         "mode": mode,
-        "cap": cap,
-        "explore_budget": explore_budget,
-        "exploit_budget": exploit_budget,
+        "cycle_cap": cycle_cap,
+        "explore_budget": 0,          # S1-T2: explore/exploit 분리 제거, compat 유지
+        "exploit_budget": cycle_cap,  # D-129 regression guard 호환
         "trigger_set": triggers,
     }
-
-    if audit_bias != 0.0:
-        mode_decision["audit_bias"] = audit_bias
 
     if convergence_warning:
         mode_decision["convergence_warning"] = True

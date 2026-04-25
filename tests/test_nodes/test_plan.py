@@ -35,26 +35,17 @@ class TestSelectTargets:
         assert len(explore) == 0
         assert len(exploit) == 5
 
-    def test_jump_mode_split(self, gap_map: list[dict]) -> None:
+    def test_jump_mode_uses_cycle_cap(self, gap_map: list[dict]) -> None:
         mode = {"mode": "jump", "explore_budget": 3, "exploit_budget": 5}
         explore, exploit = _select_targets(gap_map, mode)
-        assert len(explore) <= 3
-        assert len(exploit) <= 5
+        assert len(explore) == 0
+        assert len(exploit) <= 8  # cycle_cap = explore_budget + exploit_budget
 
     def test_targets_are_open(self, gap_map: list[dict]) -> None:
         mode = {"mode": "normal", "explore_budget": 0, "exploit_budget": 8}
         _, exploit = _select_targets(gap_map, mode)
         for gu in exploit:
             assert gu["status"] == "open"
-
-    def test_priority_ordering(self, gap_map: list[dict]) -> None:
-        mode = {"mode": "normal", "explore_budget": 0, "exploit_budget": 10}
-        _, exploit = _select_targets(gap_map, mode)
-        utility_order = {"critical": 0, "high": 1, "medium": 2, "low": 3}
-        for i in range(len(exploit) - 1):
-            curr = utility_order.get(exploit[i].get("expected_utility", "low"), 99)
-            next_ = utility_order.get(exploit[i + 1].get("expected_utility", "low"), 99)
-            assert curr <= next_
 
 
 # ---------------------------------------------------------------------------
