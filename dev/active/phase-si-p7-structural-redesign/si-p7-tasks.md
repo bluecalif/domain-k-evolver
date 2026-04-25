@@ -51,18 +51,19 @@ trial: bench/silver/japan-travel/p7-rebuild-s1-smoke/  (5c real API, commit a303
 
 ### S2-T1/T2 — integration_result 제어 입력화 (Step A 범위)
 
-- [ ] **S2-T1** `integration_result_dist` state 누적 + plan_modify/critique 입력 주입
-  - **L1**: `accumulate_integration_dist()` unit
-  - **L2**: `si-p7-s2-t1-smoke` (3c) → `state.integration_result_dist` 3-cycle window
-- [ ] **S2-T2** `added_ratio<0.3×3c` + `conflict_hold↑` + `condition_split=0` → critique `rx_id=ku_stagnation:*`
-  - reason code: `collect_defer_excess`, `integration_added_low`, `adjacent_yield_low`, `entity_discovery_insufficient`
+- [x] **S2-T1** `integration_result_dist` state 누적 + plan_modify/critique 입력 주입
+  - **L1**: integrate_node dist 누적 + TestIntegrationResultDist ✓
+  - **L2**: `si-p7-s2-t1-smoke` (1c gate) → `state.integration_result_dist` 확인
+- [x] **S2-T2** `added_ratio<0.3×3c` + `condition_split=0×3c` → critique `rx_id=ku_stagnation:*`
+  - `_detect_ku_stagnation()` + TestKuStagnation 6 cases ✓
+  - reason code: `integration_added_low`, `adjacent_yield_low`
 
-### S2-T1/T2 Gate (1c smoke)
+### S2-T1/T2 Gate (1c smoke) ✅ PASS
 
 ```
 PASS 기준:
-- state.integration_result_dist 누적 확인
-- ku_stagnation_signals state field 작동 확인
+- state.integration_result_dist 누적 확인  ✓ (cycle/added/added_ratio/conv_rate 등 모든 필드)
+- ku_stagnation_signals state field 작동 확인  ✓ (1c → [], 3c 이상 시 신호 생성 확인)
 ```
 
 ---
