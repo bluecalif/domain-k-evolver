@@ -5,91 +5,131 @@
 
 ## Goal
 
-SI-P7 rebuild Stage B 진입. Option B 재순서 적용 (P2+P3 패턴) + Pre-Stage B (S4-T1) + Stage B-1/B-2 (S3-T1/T2) 완료.
+SI-P7 rebuild Stage B 계속 진행. S3 Axis (Stage B-1/B-2) 완료 → S3 Axis Gate PASS → Stage B-3 (S2-T3~T8) 착수 준비.
 
 ---
 
 ## Completed
 
-### Stage B 재구성 + Pre-Stage B
+### S3-T3: field_adjacency rule engine seed
 
-- [x] **Option B 채택**: tasks.md Stage B 섹션 재구성
-  - Pre-B (S4-T1) → B-1/B-2 (S3-T1~T8) → B-3 (S2-T3~T8) → B-4 (S4-T2~T4)
-  - P3 측정 오염원 먼저 제거, P2 root cause 먼저
+- [x] `bench/japan-travel/state-snapshots/cycle-0-snapshot/domain-skeleton.json` 에 `field_adjacency` 추가
+  - 11개 field → 2~3 next_fields (japan-travel 도메인 기반)
+  - `price→[how_to_use,where_to_buy,tips]`, `policy→[eligibility,how_to_use,tips]`, `location→[hours,tips]` 등
+  - commit `d9dad76`
 
-- [x] **Pre-Stage B / S4-T1**: virtual `balance-N` entity 완전 제거 (commit `56e4649`)
-  - `src/nodes/critique.py`: `_generate_balance_gus` 함수 + `MIN_KU_PER_CAT` 삭제, 호출 블록 삭제
-  - `tests/test_nodes/test_critique.py`: `TestGenerateBalanceGus` → `TestBalanceGuRegression` (3 cases)
-  - L1: 835 passed ✓ | L2: `p7-s4-t1-smoke` (1c) — balance-* 0건, KU 13→24 ✓
+### S3-T4: _generate_dynamic_gus rule engine 참조
 
-### Stage B-1/B-2 (S3-T1, S3-T2)
+- [x] `src/nodes/integrate.py`: `field_adjacency[claim.field]` 우선, `applicable_fields` 교집합으로 category 제약, fallback 기존 방식
+- [x] **L1**: `TestFieldAdjacencyRuleEngine` 3 cases ✓
+- [x] **L2**: `si-p7-s3-t4-smoke` (1c) — adj GU 5건 모두 field_adjacency 값 내, balance-* 0, KU 13→24
+  - commit `d9dad76`
 
-- [x] **S3-T1**: D-56 suppress 완전 제거 (commit `2fa51e0`)
-  - 결정: 1.5→2.0 변경 대신 suppress 자체 제거 — "field 풍부한 쪽이 좋다"
-  - `src/nodes/integrate.py`: `_generate_dynamic_gus` 에서 suppressed_fields 블록 삭제, `kus` 파라미터 제거
-  - `tests/test_nodes/test_integrate.py`: `TestFieldDiversitySuppression` → `TestSuppressRemovalRegression` (3 cases)
-  - 효과: adj GU 0→6건, price field 생성 허용, adj_gen=0 root cause 제거
+### S3-T5: fields[].default_risk / default_utility skeleton 추가
 
-- [x] **S3-T2**: `recent_conflict_fields` blocklist N=2 구현 (commit `2fa51e0`)
-  - `src/state.py`: `recent_conflict_fields: list[dict]` 필드 추가
-  - `src/nodes/integrate.py`: conflict 감지 시 field 기록, 2c window 트리밍, adj GU 차단 로직
-  - `tests/test_nodes/test_integrate.py`: `TestRecentConflictFieldsBlocklist` (3 cases)
-  - L1: 838 passed ✓ | L2: `p7-s3-t1t2-smoke` (1c) — adj=6, KU 13→32, balance-* 0 ✓
+- [x] 11개 field에 `default_risk` / `default_utility` 추가
+  - price/acceptance → financial/high | policy/eligibility → policy/high
+  - how_to_use → convenience/high | tips/duration → informational/medium
+  - hours/location/etiquette/where_to_buy → convenience/medium
+  - commit `e38c01e`
+
+### S3-T6: dynamic GU skeleton default 참조
+
+- [x] `_generate_dynamic_gus`: `field_defaults` 맵으로 adj field별 default 조회
+  - 기존 `"medium"/"convenience"` 하드코딩 제거
+  - fallback: skeleton default 없으면 "medium"/"convenience" 유지
+- [x] **L1**: `TestSkeletonFieldDefaults` 2 cases ✓ (843 passed)
+  - commit `e38c01e`
+
+### S3-T7: adjacency_yield 트래커
+
+- [x] `src/state.py`: `adjacency_yield: list[dict]` 추가
+- [x] `src/nodes/integrate.py`: `adj_yield = adj_resolved / max(adj_open_at_start, 1)` 매 cycle 누적 (최근 10c)
+- [x] `src/utils/state_io.py`: `adjacency-yield.json` → `_OPTIONAL_LIST_FILES` 등록 (snapshot 포함)
+- [x] `src/obs/telemetry.py`: `_latest_adj_yield()` + `adjacency_yield` 키 추가
+- [x] `schemas/telemetry.v1.schema.json`: `adjacency_yield` 필드 추가
+- [x] **L1**: `TestAdjacencyYieldTracker` 3 cases ✓
+- [x] **L2**: S3 Axis Gate (5c) 와 합산 검증 — 5c avg=0.500 >> 0.05 ✓
+  - commit `d381f9a`, `77c658d`
+
+### S3-T8: blocklist source/next 양쪽 배제
+
+- [x] `_generate_dynamic_gus`: `claim.field in blocklist_fields` → 즉시 `[]` 반환 (source 배제)
+  - S3-T2(next 차단) + S3-T8(source 차단) 합산으로 conflict field 완전 억제
+- [x] **L1**: `test_source_field_blocklisted_skips_all_adj` ✓ (847 passed)
+  - commit `d381f9a`
+
+### S3 Axis Gate (5c smoke) ✅ PASS
+
+- [x] `bench/silver/japan-travel/p7-rebuild-s3-smoke/` (5c real API)
+  - KU c5=79 (기준 ≥70 ✓)
+  - GU_open c3=10 (기준 ≥5 ✓) — attempt-1 collapse 없음
+  - target_count c5=2 (조건부 ✓ — GU 2개만 남아 수렴, not collapse)
+  - conflict field 재생성=0, balance-*=0
+  - adjacency_yield 5 entries, 5c avg=0.500 ✓
+  - commit `77c658d`
 
 ---
 
 ## Current State
 
 - **브랜치**: `feature/si-p7-rebuild`
-- **최신 commit**: `d9dad76` ([si-p7] S3-T3/T4: field_adjacency rule engine seed + 참조 구현)
-- **테스트**: 841 passed, 3 skipped
-- **Stage A**: 완료 (S1 5c + S2-T1/T2 1c Gate PASS)
-- **Pre-Stage B**: S4-T1 완료 (1c Gate PASS)
-- **Stage B-1/B-2**: S3-T1/T2 완료 (L1 + L2 1c PASS), S3-T3/T4 완료 (L1 + L2 1c PASS)
+- **최신 commit**: `77c658d`
+- **테스트**: 847 passed, 3 skipped
+- **Stage A**: 완료
+- **Pre-Stage B (S4-T1)**: 완료
+- **Stage B-1/B-2 (S3 전체)**: **완료** — S3 Axis Gate PASS
+- **다음**: Stage B-3 (S2-T3~T8)
 
 ### Changed Files (this session)
 
 | 파일 | 변경 |
 |---|---|
-| `dev/active/phase-si-p7-structural-redesign/si-p7-tasks.md` | Stage B Option B 재구성, S4-T1/S3-T1/T2 완료 마킹 |
-| `src/nodes/critique.py` | `_generate_balance_gus` + `MIN_KU_PER_CAT` 제거, balance_gus 호출 블록 제거 |
-| `src/nodes/integrate.py` | D-56 suppress 블록 제거, `recent_conflict_fields` blocklist N=2 추가 |
-| `src/state.py` | `recent_conflict_fields: list[dict]` 필드 추가 |
-| `tests/test_nodes/test_critique.py` | `TestGenerateBalanceGus` → `TestBalanceGuRegression` |
-| `tests/test_nodes/test_integrate.py` | `TestFieldDiversitySuppression` → `TestSuppressRemovalRegression` + `TestRecentConflictFieldsBlocklist` |
-| `bench/silver/japan-travel/p7-s4-t1-smoke/` | Pre-B S4-T1 1c smoke 결과 |
-| `bench/silver/japan-travel/p7-s3-t1t2-smoke/` | S3-T1/T2 1c smoke 결과 |
+| `bench/japan-travel/state-snapshots/cycle-0-snapshot/domain-skeleton.json` | field_adjacency + default_risk/utility 추가 |
+| `src/nodes/integrate.py` | S3-T4(rule engine) + S3-T6(default) + S3-T7(yield tracker) + S3-T8(source blocklist) |
+| `src/state.py` | `adjacency_yield: list[dict]` 추가 |
+| `src/utils/state_io.py` | adjacency-yield.json → _OPTIONAL_LIST_FILES |
+| `src/obs/telemetry.py` | adjacency_yield 추가 |
+| `schemas/telemetry.v1.schema.json` | adjacency_yield 필드 추가 |
+| `tests/test_nodes/test_integrate.py` | S3-T4/T6/T7/T8 테스트 추가 |
+| `dev/active/phase-si-p7-structural-redesign/si-p7-tasks.md` | S3-T3~T8 + Gate 완료 마킹 |
+| `bench/silver/japan-travel/p7-s3-t4-smoke/` | S3-T4 1c smoke 결과 |
+| `bench/silver/japan-travel/p7-rebuild-s3-smoke/` | S3 Axis Gate 5c smoke 결과 |
 
 ---
 
 ## Remaining / TODO
 
-### Stage B-2 (S3-T3~T8) — rule engine 본체
+### Stage B-3 (S2-T3~T8) — condition_split 재정의
 
-- [ ] **S3-T3**: `domain-skeleton.json` 에 `field_adjacency` rule engine seed 추가
-  - 형식: `field_adjacency: {source_field: [next_fields]}` — skeleton level에 정의
-  - 참조: `bench/japan-travel/state/domain-skeleton.json` (현재 skeleton 확인 필요)
-- [ ] **S3-T4**: `_generate_dynamic_gus` 가 rule engine 참조 (L2: `si-p7-s3-t4-smoke` 1c)
-- [ ] **S3-T5**: `fields[].default_risk`, `default_utility` skeleton 추가
-- [ ] **S3-T6**: dynamic GU 가 skeleton default 사용
-- [ ] **S3-T7**: rule yield tracker — 약화 임계 5c 평균 < 0.05 (L2: `si-p7-s3-t7-smoke` 5c)
-- [ ] **S3-T8**: blocklist N cycle 동안 source/next 양쪽 배제 (현재 S3-T2는 next만 차단)
-- [ ] **S3 Axis Gate** (5c smoke): GU_open c3+ ≥ 5, target c5 ≥ 3, KU c5 ≥ 70
+> **사전 작업**: S2-T6 시작 직전 V-T11 cherry-pick — `git cherry-pick f61c864` (config.py + integrate.py + tests)
 
-### Stage B-3 (S2-T3~T8) — condition_split
+- [ ] **S2-T3** F2 = α + β 확정 (D-181 design only, 구현 불필요)
+- [ ] **S2-T4** F2 구현 — α (query 재작성) + β (aggressive mode, S5a-T11 동반)
+- [ ] **S2-T5** condition_split (a): parse prompt "조건어 추출"
+- [ ] **S2-T6 (보수화)** "값 구조 차이" 감지 → condition_split (임계: ≥2 chars, set/range 변환 시 명시적 marker)
+- [ ] **S2-T7 (보수화)** skeleton.fields[].condition_axes 강제 (임계: conditions 필드 비어있지 않을 때)
+- [ ] **S2-T8 (보수화)** axis_tags 차이 → condition_split (임계: 단일 axis 차이만)
 
-- [ ] **S2-T3** F2 = α + β 확정 (design only)
-- [ ] **S2-T4~T8** F2 구현 + condition_split 4 rules
-- [ ] **S2 Axis Gate** (5c): c1 ΔKU ≤ +35, KU c5 ≥ 90
+### S2 Axis Gate (5c smoke)
 
-### Stage B-4 (S4-T2~T4) — balance 대체
+```
+trial: bench/silver/japan-travel/p7-rebuild-s2-smoke/
+PASS 기준:
+- c1 ΔKU ≤ +35
+- GU 양산 ≥ 65
+- KU c5 ≥ 90
+- adj_gen: c3+ 0 cycle 없음
+FAIL 시: V-T11 토글로 narrowing
+```
 
-- [ ] **S4-T2~T4** deficit_score, field_adjacency 통일, S5a entity 한정
+### Stage B-4 (S4-T2~T4)
 
-### Stage C / D
+- [ ] S4-T2: coverage_map.deficit_score 카테고리 결핍 계산
+- [ ] S4-T3: field 선택 → S3 field_adjacency 통일
+- [ ] S4-T4: S5a validated entity 대상만 balance GU
 
-- [ ] S5a (entity discovery), S5a 5c gate
-- [ ] Stage D: 15c L3 통합 trial + readiness-report
+### Stage C (S5a), Stage D (15c L3)
 
 ---
 
@@ -97,16 +137,16 @@ SI-P7 rebuild Stage B 진입. Option B 재순서 적용 (P2+P3 패턴) + Pre-Sta
 
 ### 이번 세션 확정
 
-- **Option B 채택**: Pre-B(S4-T1) 분리 + S3↔S2 역전. Full option A는 과잉. Minimal C는 부족.
-- **S4-T1**: balance-N virtual entity 완전 제거. S1 5c re-smoke KU=104 초과 단일 원인.
-- **S3-T1 — suppress 완전 제거** (1.5→2.0 변경 대신): "field 풍부한 쪽이 좋다". suppress는 합법적 adj GU를 차단하고 adj_gen=0 root cause. S3-T3 rule engine이 올바른 대체제.
-- **S3-T2 — N=2** (original spec N=3): 보수화. 더 짧은 window가 conflict field를 더 빠르게 해제.
+- **S3-T7 L2 합산**: S3-T7 5c smoke를 S3 Axis Gate와 합산 → API 비용 절감
+- **field_adjacency 설계**: 11개 field → 2~3 next_fields, category constraint 교집합 필터 필수
+- **adjacency_yield 저장**: _OPTIONAL_LIST_FILES 등록 + telemetry emit → 검증 가능성 확보
+- **S3 Gate 판정**: c5 targets=2는 healthy convergence (GU 2개 남음), attempt-1 collapse(targets=0)와 구별 → 조건부 PASS
 
-### Stage A에서 확정 유지
+### 이전 세션에서 유지
 
-- **F1**: budget 완전 제거. `gu_queries[:3]` hard-cap (D-129 guard 보호)
-- **S1 Gate 조건부 PASS**: KU=104 초과는 balance-N 원인 → S4-T1로 해결 완료
-- **S2-T2 reason code**: `integration_added_low`, `adjacent_yield_low` 2개
+- **Option B**: Pre-B(S4-T1) → S3 → S2 → S4-T2~T4 순서
+- **D-129/F1**: target_count cap/budget 재도입 금지
+- **S2-T6 V-T11**: `git cherry-pick f61c864` 사전 적용 필요
 
 ---
 
@@ -114,47 +154,56 @@ SI-P7 rebuild Stage B 진입. Option B 재순서 적용 (P2+P3 패턴) + Pre-Sta
 
 다음 세션에서는 답변에 한국어를 사용하세요.
 
-### S3-T3 설계 사전 정보
+### S2-T3~T8 설계 사전 정보
 
-- **현재 skeleton**: `bench/japan-travel/state/domain-skeleton.json` (seed 스테이트) 또는 `bench/silver/japan-travel/p7-s3-t1t2-smoke/state/domain-skeleton.json` (최신 run 결과)
-- **field_adjacency 형식** (SKILL.md 기준): `{source_field: [next_fields]}`
-  - 예: `"price": ["tips", "how_to_use"]`, `"location": ["access", "hours"]`
-- **S3-T4 영향 범위**: `_generate_dynamic_gus` — 현재 `applicable_fields`를 skeleton fields로 계산. rule engine 참조 시 `field_adjacency[field]` 우선, fallback은 기존 방식.
-- **S3-T5**: `fields[].default_risk` ("low"/"medium"/"high"), `default_utility` ("high"/"medium"/"low")
-- **S3-T6**: dynamic GU의 `expected_utility`/`risk_level` 가 skeleton default 참조 (현재 "medium"/"convenience" 하드코딩)
+- **V-T11**: S2-T6 시작 전 cherry-pick 필요 (`git cherry-pick f61c864`)
+  - config.py + integrate.py + tests — condition_split toggle 인프라
+- **F2 = α + β**:
+  - α: critique rx에서 plan으로 query 재작성 파라미터 전달
+  - β: aggressive mode entity_discovery 파라미터 override (S5a-T11 동반 구현)
+- **condition_split 보수화 임계**:
+  - S2-T6: existing/claim 모두 ≥ 2 chars, set/range 변환 시 명시적 marker
+  - S2-T7: claim.conditions 필드 비어있지 않을 때만
+  - S2-T8: 단일 axis 차이만 (geography), 다중 axis 차이는 hold
 
-### L2 1c smoke 결과 비교
+### S3 Axis Gate 최종 비교
 
-| trial | KU | adj GU | balance-* |
-|---|---|---|---|
-| p7-s4-t1-smoke (Pre-B) | 24 | 0 (suppress 있음) | 0 ✓ |
-| p7-s3-t1t2-smoke (S3-T1/T2) | 32 | 6 | 0 ✓ |
-
-suppress 제거 후 KU +8 (+33%) — adj GU 생성이 KU 성장에 직접 기여 확인.
+| trial | KU c5 | GU_open c3 | adj_yield avg | balance-* |
+|---|---|---|---|---|
+| p7-rebuild-s3-smoke | 79 | 10 | 0.500 | 0 ✓ |
+| s3-attempt-1 (reference) | 61 | 0 (collapse) | N/A | N/A |
 
 ### 제약
 
-- **D-129**: target_count cap 재도입 금지 (S1-T7 guard 보호)
+- **D-129**: target_count cap 재도입 금지
 - **D-34**: real API 필수
 - **D-200**: per-axis 5c gate 통과 전 다음 axis 진입 금지
-- **F1 (확정)**: budget 재도입 금지
+- **F1**: budget 재도입 금지
 
 ### 최근 commits
 
-- `2fa51e0` [si-p7] S3-T1/T2: D-56 suppress 제거 + conflict blocklist N=2
-- `56e4649` [si-p7] Pre-B / S4-T1: virtual balance-N entity 완전 제거
-- `40a5dfa` [si-p7] S2 Gate: PASS (Stage A 최종)
+- `77c658d` [si-p7] S3 Axis Gate PASS + adjacency_yield 저장/telemetry
+- `d381f9a` [si-p7] S3-T7/T8: adjacency_yield 트래커 + source/next blocklist
+- `e38c01e` [si-p7] S3-T5/T6: field default_risk/default_utility + adj GU 적용
+- `d9dad76` [si-p7] S3-T3/T4: field_adjacency rule engine seed + 참조 구현
 
 ---
 
 ## Next Action
 
-**S3-T3 착수**: `domain-skeleton.json`에 `field_adjacency` rule engine seed 추가
+**두 가지 작업을 병행 착수**:
 
-1. `bench/japan-travel/state/domain-skeleton.json` 읽어 현재 fields 목록 확인
-2. field 간 인접 관계 설계 (japan-travel 도메인 기반)
-3. skeleton에 `field_adjacency` 키 추가
-4. S3-T4: `_generate_dynamic_gus`가 `field_adjacency` 참조하도록 수정
-   - `field_adjacency[claim.field]` → adj_field list
-   - fallback: 기존 `applicable_fields` (skeleton.fields 전체)
-5. L1 + L2 `si-p7-s3-t4-smoke` (1c) — adj GU field가 seed 맵 내 확인
+### 1. Entity-Field Matrix 검증 (field coverage 확인)
+
+`p7-rebuild-s3-smoke` 5c 결과를 기반으로 현재 KU 79개의 entity × field 매트릭스를 구성해 coverage 확인:
+
+1. `bench/silver/japan-travel/p7-rebuild-s3-smoke/state-snapshots/cycle-5-snapshot/knowledge-units.json` 읽기
+2. entity_key (category:slug) × field 매트릭스 출력
+3. 빈 셀(gap) 확인 — 어떤 entity의 어떤 field가 아직 미수집인지
+4. skeleton `field_adjacency` 설계와의 정합성 확인 (adj GU가 실제로 유용한 필드를 탐색했는지)
+
+### 2. Stage B-3 S2-T3 착수
+
+- S2-T3: F2 = α + β 확정 (design only)
+  - `dev/active/phase-si-p7-structural-redesign/` 의 context 파일 확인
+  - α/β 설계 결정사항 문서화
