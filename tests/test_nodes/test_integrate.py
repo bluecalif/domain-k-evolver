@@ -1036,6 +1036,64 @@ class TestFieldAdjacencyRuleEngine:
 
 
 # ---------------------------------------------------------------------------
+# S3-T6: skeleton default_risk / default_utility 사용
+# ---------------------------------------------------------------------------
+
+class TestSkeletonFieldDefaults:
+    """S3-T6: adj GU 생성 시 skeleton fields[].default_risk/default_utility 참조."""
+
+    _SKELETON = {
+        "categories": [{"slug": "transport"}],
+        "fields": [
+            {"name": "price", "categories": ["*"], "default_risk": "financial", "default_utility": "high"},
+            {"name": "tips",  "categories": ["*"], "default_risk": "informational", "default_utility": "medium"},
+        ],
+        "axes": [],
+        "field_adjacency": {
+            "how_to_use": ["price", "tips"],
+        },
+    }
+
+    def test_adj_gu_uses_field_default_risk_and_utility(self) -> None:
+        """adj GU의 risk_level/expected_utility 가 skeleton default 값 사용."""
+        claim = {
+            "claim_id": "CL-001",
+            "entity_key": "d:transport:bus",
+            "field": "how_to_use",
+        }
+        gus = _generate_dynamic_gus(claim, [], self._SKELETON, "normal", 5)
+        gu_by_field = {g["target"]["field"]: g for g in gus}
+
+        assert "price" in gu_by_field
+        assert gu_by_field["price"]["risk_level"] == "financial"
+        assert gu_by_field["price"]["expected_utility"] == "high"
+
+        assert "tips" in gu_by_field
+        assert gu_by_field["tips"]["risk_level"] == "informational"
+        assert gu_by_field["tips"]["expected_utility"] == "medium"
+
+    def test_fallback_when_no_defaults_in_skeleton(self) -> None:
+        """skeleton에 default 없으면 hardcoded fallback('medium'/'convenience') 사용."""
+        skeleton_no_defaults = {
+            "categories": [{"slug": "transport"}],
+            "fields": [
+                {"name": "price", "categories": ["*"]},
+                {"name": "tips",  "categories": ["*"]},
+            ],
+            "axes": [],
+        }
+        claim = {
+            "claim_id": "CL-002",
+            "entity_key": "d:transport:bus",
+            "field": "how_to_use",
+        }
+        gus = _generate_dynamic_gus(claim, [], skeleton_no_defaults, "normal", 5)
+        for g in gus:
+            assert g["risk_level"] == "convenience"
+            assert g["expected_utility"] == "medium"
+
+
+# ---------------------------------------------------------------------------
 # Stage E: Fix A — observed_at = today (D-62)
 # ---------------------------------------------------------------------------
 

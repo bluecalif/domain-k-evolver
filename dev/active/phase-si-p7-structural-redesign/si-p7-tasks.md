@@ -114,8 +114,13 @@ _P2: condition_split 보수화 전 D-56/blocklist root cause 먼저 해결_
   - `field_adjacency[field]` → `applicable_fields` 교집합; fallback: applicable_fields
   - **L1**: `TestFieldAdjacencyRuleEngine` 3 cases ✓ (841 passed)
   - **L2**: `si-p7-s3-t4-smoke` (1c) — adj GU 5건, 모두 field_adjacency 값 내 ✓, balance-* 0 ✓, KU 13→24
-- [ ] **S3-T5** `fields[].default_risk`, `default_utility` skeleton 추가
-- [ ] **S3-T6** dynamic GU 가 skeleton default 사용
+- [x] **S3-T5** `fields[].default_risk`, `default_utility` skeleton 추가
+  - `cycle-0-snapshot/domain-skeleton.json`: 11개 field에 default_risk/default_utility 추가
+  - 설계: price/acceptance→financial, policy/eligibility→policy, tips/duration→informational, 나머지→convenience
+- [x] **S3-T6** dynamic GU 가 skeleton default 사용
+  - `_generate_dynamic_gus`: `field_defaults` 맵 구축 → adj GU `risk_level`/`expected_utility` 에 적용
+  - fallback: default 없으면 "medium"/"convenience" 유지
+  - **L1**: `TestSkeletonFieldDefaults` 2 cases ✓ (843 passed)
 - [ ] **S3-T7 (보수화)** rule yield tracker — 약화 임계 5c 평균 < 0.05 (강한 신호만)
   - **L2**: `si-p7-s3-t7-smoke` (5c) — `state.adjacency_yield`
 - [ ] **S3-T8** blocklist N cycle 동안 source/next 양쪽 배제

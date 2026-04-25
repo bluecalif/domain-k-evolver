@@ -32,17 +32,17 @@
     {"slug": "payment", "description": "결제수단"}
   ],
   "fields": [
-    {"name": "price", "type": "object", "categories": ["*"], "description": "가격 정보"},
-    {"name": "hours", "type": "string", "categories": ["attraction", "dining"], "description": "운영시간"},
-    {"name": "policy", "type": "string", "categories": ["regulation", "pass-ticket"], "description": "규정/조건"},
-    {"name": "location", "type": "object", "categories": ["attraction", "dining", "accommodation"], "description": "위치"},
-    {"name": "duration", "type": "string", "categories": ["transport", "pass-ticket"], "description": "소요/유효기간"},
-    {"name": "eligibility", "type": "string", "categories": ["pass-ticket", "regulation"], "description": "이용 자격"},
-    {"name": "how_to_use", "type": "string", "categories": ["transport", "payment", "connectivity"], "description": "이용 방법"},
-    {"name": "etiquette", "type": "string", "categories": ["dining", "accommodation"], "description": "에티켓/매너"},
-    {"name": "tips", "type": "string", "categories": ["*"], "description": "실용 팁"},
-    {"name": "acceptance", "type": "string", "categories": ["payment"], "description": "사용 가능 범위"},
-    {"name": "where_to_buy", "type": "string", "categories": ["pass-ticket", "connectivity"], "description": "구매처/방법"}
+    {"name": "price",       "type": "object", "categories": ["*"],                                   "description": "가격 정보",    "default_risk": "financial",    "default_utility": "high"},
+    {"name": "hours",       "type": "string", "categories": ["attraction", "dining"],                "description": "운영시간",     "default_risk": "convenience",  "default_utility": "medium"},
+    {"name": "policy",      "type": "string", "categories": ["regulation", "pass-ticket"],           "description": "규정/조건",    "default_risk": "policy",       "default_utility": "high"},
+    {"name": "location",    "type": "object", "categories": ["attraction", "dining", "accommodation"],"description": "위치",        "default_risk": "convenience",  "default_utility": "medium"},
+    {"name": "duration",    "type": "string", "categories": ["transport", "pass-ticket"],            "description": "소요/유효기간","default_risk": "informational","default_utility": "medium"},
+    {"name": "eligibility", "type": "string", "categories": ["pass-ticket", "regulation"],           "description": "이용 자격",    "default_risk": "policy",       "default_utility": "high"},
+    {"name": "how_to_use",  "type": "string", "categories": ["transport", "payment", "connectivity"],"description": "이용 방법",    "default_risk": "convenience",  "default_utility": "high"},
+    {"name": "etiquette",   "type": "string", "categories": ["dining", "accommodation"],             "description": "에티켓/매너",  "default_risk": "convenience",  "default_utility": "medium"},
+    {"name": "tips",        "type": "string", "categories": ["*"],                                   "description": "실용 팁",      "default_risk": "informational","default_utility": "medium"},
+    {"name": "acceptance",  "type": "string", "categories": ["payment"],                             "description": "사용 가능 범위","default_risk": "financial",   "default_utility": "high"},
+    {"name": "where_to_buy","type": "string", "categories": ["pass-ticket", "connectivity"],         "description": "구매처/방법",  "default_risk": "convenience",  "default_utility": "medium"}
   ],
   "relations": [
     {"name": "covers_route", "source": "transport", "target": "transport", "description": "노선 커버 구간"},

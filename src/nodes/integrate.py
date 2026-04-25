@@ -222,6 +222,15 @@ def _generate_dynamic_gus(
     else:
         adj_candidates = applicable_fields
 
+    # S3-T6: field별 skeleton default 조회용 맵
+    field_defaults: dict[str, dict] = {
+        f["name"]: {
+            "default_utility": f.get("default_utility", "medium"),
+            "default_risk": f.get("default_risk", "convenience"),
+        }
+        for f in fields
+    }
+
     # 부모 claim entity_key에서 geography 추론
     geo = _infer_geography(entity_key, skeleton)
     gu_axis_tags = {"geography": geo} if geo else {}
@@ -233,11 +242,12 @@ def _generate_dynamic_gus(
             continue
         slot = (entity_key, adj_field)
         if slot not in existing_slots:
+            defaults = field_defaults.get(adj_field, {})
             gu = {
                 "gap_type": "missing",
                 "target": {"entity_key": entity_key, "field": adj_field},
-                "expected_utility": "medium",
-                "risk_level": "convenience",
+                "expected_utility": defaults.get("default_utility", "medium"),
+                "risk_level": defaults.get("default_risk", "convenience"),
                 "resolution_criteria": f"{parts[-1]} {adj_field} 정보 수집",
                 "status": "open",
                 "trigger": "A:adjacent_gap",
