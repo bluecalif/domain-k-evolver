@@ -240,17 +240,44 @@ VERDICT: FAIL  (exit=1, V/O FAIL: V1, V2, O1, O2, VxO)
 - ? T10 검증 보류 (M9 telemetry 필요)
 - 신규 발견: **V2 connectivity +1 regression**, **M7 conflict regen 6건** (정책 위반)
 
-**다음 액션**: S3 diagnosis sub-tasks closure → Stage B-3 진입 검토.
+**다음 액션**: S3 Diagnosis 2-Trial Plan 진입 → Trial 2 PASS 후 Stage B-3/B-4 mechanistic 재정의.
 
-### S3 Diagnosis Sub-tasks (S3 FAIL 후속, Stage B-3 진입 전 closure)
+### S3 Diagnosis 2-Trial Plan (확정 2026-04-26, Trial 3 F 폐기)
 
-- [ ] **SI-P7-S3-DIAG-ATTRACTION** — attraction 카테고리 entity discovery 후 GU 생성 블로커 추적 (M1 1.08× 직접 원인 = T9 무작동)
-- [ ] **SI-P7-S3-DIAG-T10-T14** — telemetry M5b/M9/M10/M11 추가 후 c4 zero / sweep 동작 정밀 진단
-- [ ] **SI-P7-S3-DIAG-YIELD** — adj_yield 28% 후퇴 (M6 0.72) → dynamic_cap 8/15/20 ablation
-- [ ] **SI-P7-S3-DIAG-M7** (신규) — conflict 해소 field 에 adj GU 재생성 6건 정책 분석
-- [ ] **SI-P7-S3-DIAG-CONNECTIVITY** (신규) — connectivity vacant +1 regression 원인 추적
+| Trial | Cumulative fix | 5c trial | M-Gate 목적 |
+|-------|----------------|----------|-------------|
+| **1** | A (DIAG-ATTRACTION) + B (DIAG-T10-T14 telemetry) | `p7-rebuild-s3-trial1-smoke` | T9 root cause fix 작동 검증 + strict 모드 활성화 |
+| **2** | A+B + C (DIAG-YIELD) + D (DIAG-M7) + E (DIAG-CONNECTIVITY) | `p7-rebuild-s3-trial2-smoke` | 5개 fix 통합 효과 — V/O 모두 PASS 확인 (S3 closure) |
+
+각 trial 종료 후 → `entity-field-matrix.json` 생성 → `python scripts/check_s3_gu_gate.py --baseline bench/silver/japan-travel/p7-rebuild-s3-smoke --target bench/silver/japan-travel/<trial> --json <trial>/m-gate-report.json [--strict]` → JSON 보존.
+
+#### Trial 1 sub-tasks (구현 순서: B → A)
+
+- [ ] **SI-P7-S3-DIAG-T10-T14** (Trial 1 의 B, 먼저) — telemetry M5b/M9/M10/M11 추가 + Gate 평가 함수 활성화
+  - **M5b** `cap_hit_count` per cycle in trajectory — `src/nodes/integrate.py:280`, `src/state.py`, `scripts/run_readiness.py`
+  - **M9** `gu['origin'] ∈ {claim_loop, post_cycle_sweep}` — `src/nodes/integrate.py:570-597`, `schemas/gap-unit.json`
+  - **M10** `gu['created_cycle']: int` (ISO date 대체) — `src/state.py`, `src/nodes/integrate.py:255`, `src/nodes/seed.py`
+  - **M11** trajectory row 에 `adj_gen_count`, `wildcard_gen_count` — `src/nodes/integrate.py`, `src/nodes/seed.py`, `scripts/run_readiness.py`
+  - **Gate 활성화**: `scripts/check_s3_gu_gate.py` 의 `_na_result("M5b", ...)` 등 4개 → 실 평가 함수 교체
+  - **L1**: telemetry emit + Gate 활성화 unit tests
+- [ ] **SI-P7-S3-DIAG-ATTRACTION** (Trial 1 의 A, 두 번째) — attraction 카테고리 GU 생성 블로커 추적 (M1 1.08× 직접 원인 = T9 무작동)
+  - telemetry 활용 (`gu['origin']`, `created_cycle`, `adj_gen_count`) 로 정밀 진단
+  - 진입점: `src/nodes/integrate.py:_generate_dynamic_gus`, `src/nodes/seed.py:_get_initial_gus_for_entity`
+  - root cause 가설 → fix 구현 → L1 unit test
+- [ ] **Trial 1 실행** — `scripts/run_readiness.py --cycles 5 --trial-id si-p7-s3-trial1-smoke`
+- [ ] **Trial 1 M-Gate 판정** — `--strict` 모드 활성화. PASS 시 Trial 2 진입, FAIL 시 root cause 재추적
+
+#### Trial 2 sub-tasks (Trial 1 PASS 후, 누적 적용)
+
+- [ ] **SI-P7-S3-DIAG-YIELD** (C) — M6 0.72 (adj_yield 28% 후퇴) 원인 추적 + dynamic_cap 8/15/20 ablation, 최적값 결정
+- [ ] **SI-P7-S3-DIAG-M7** (D) — conflict 해소 field 에 adj GU 재생성 6건 정책 위반. seed/integrate 단계의 conflict_field 필터 추가
+- [ ] **SI-P7-S3-DIAG-CONNECTIVITY** (E) — connectivity vacant +1 regression 원인 (cap 제거 후 wildcard 분배 변동 가능)
+- [ ] **Trial 2 실행** — `scripts/run_readiness.py --cycles 5 --trial-id si-p7-s3-trial2-smoke`
+- [ ] **Trial 2 M-Gate 판정** — V/O 6/6 PASS + M 8/8 PASS 목표. PASS → S3 closure → Stage B-3/B-4 reorg 진입
 
 ### Stage B-3 — condition_split 재정의 (S2-T3~T8, D-195 보수화)
+
+> ⚠️ **Trial 2 PASS 후 mechanistic 기준으로 재정의 필요.** 현 task 정의는 narrative G1~G5 PASS 가정 기반. T9 fix 후 attraction adj GU 생성 패턴이 condition_split 로직과 충돌 가능성 있어 axis-gate 도 V/O + M criteria 패턴으로 재구성 예정.
 
 **사전 작업**: S2-T6 시작 직전 V-T11 cherry-pick — `git cherry-pick f61c864` (config.py + integrate.py + tests)
 
@@ -276,6 +303,8 @@ FAIL 시: V-T11 토글로 narrowing (T6/T7/T8 개별 off → 어느 rule 이 폭
 ```
 
 ### Stage B-4 — balance 대체 (S4-T2~T4)
+
+> ⚠️ **Trial 2 PASS 후 mechanistic 기준으로 재정의 필요.** VxO frontier_health 7/8 healthy 기준 충족 시 balance 기준도 mechanistic 으로 재구성. virtual entity 0 + deficit_score 발동률 단독 PASS 는 narrative 가정.
 
 - [ ] **S4-T2** `coverage_map.deficit_score` 기반 카테고리 결핍 계산
 - [ ] **S4-T3** field 선택 → S3 `field_adjacency` 통일
