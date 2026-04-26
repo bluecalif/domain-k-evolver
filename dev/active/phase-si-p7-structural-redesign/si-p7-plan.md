@@ -82,12 +82,12 @@ entity-field-matrix 분석으로 확인된 3가지 vacant 패턴 수정 + 구조
 | D-207 field_adjacency 제거 | applicable_fields 전체 사용, direct pair 차단 해제 | `integrate.py:221` |
 | D-208 dynamic_cap 고정 | `open_count * 0.2` 제거, normal=8/jump=20 고정 | `integrate.py:282` |
 
-**Gate (5c smoke — GU 생성 안정성 중심, G1~G5)**:
-- G1: adj_gen > 0 전 cycle (단 1개 cycle도 0 없음) — 연속성
-- G2: entity-specific adj GU ≥ 5 (5c 누계) — 특정성
-- G3: c2 또는 c3 adj_gen ≥ c1 adj_gen — 전파성 (chain propagation)
-- G4: regulation 카테고리 GU ≥ 1, attraction ku_only 슬롯 증가 — 커버리지 확장
-- G5: conflict 재생성=0, adjacency_yield avg ≥ 0.3, KU c5 ≥ 65 — 회귀 없음
+**Gate (5c smoke — M-Gate, V/O composite + M1~M8 mechanistic)**:
+- ⚠️ 종전 G1~G5 narrative Gate 폐기 (false PASS 발급, 2026-04-26 재판정 → FAIL).
+- 신 Gate 정의/임계값/근거: **`si-p7-gate-mechanistic.md`** (V/O 의미론, M criteria 임계값, exit code 정책).
+- 구현: `scripts/check_s3_gu_gate.py` (V1/V2/V3, O1/O2, VxO + M1~M8 + telemetry-deferred M5b/M9/M10/M11)
+- 1차 신호: Vacant 감소 + Open GU 분포 (V/O FAIL = unconditional FAIL).
+- 보조 신호: T9~T14 fix 직접 검증 (M1=T9, M2=T11, M3=T12, M4=T13, M5=T14).
 
 #### Stage B-3 — condition_split 재정의 (S2-T5~T8)
 

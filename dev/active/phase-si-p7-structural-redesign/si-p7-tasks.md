@@ -199,44 +199,56 @@ _entity-field-matrix 분석으로 발견된 3가지 vacant 패턴 (P1/P2/P3) 수
   - `_compute_dynamic_gu_cap(mode)` (인자 단순화)
   - **L1**: `test_dynamic_cap_fixed_normal_8`, `test_dynamic_cap_fixed_jump_20`, `test_dynamic_cap_not_open_count_dependent` ✓ (859 passed)
 
-### S3 GU Gate (5c smoke) ✅ PASS
+### S3 GU Gate (5c smoke) ❌ FAIL → Stage B-3 진입 보류
+
+> ⚠️ **종전 narrative G1~G5 PASS 판정은 무효 (false PASS).** entity-field-matrix 정량 비교에서 attraction abandoned (v=77, open_gu=0), vacant 11% 만 감소, adj_yield 28% 후퇴 확인.
+> 신 Gate: **M-Gate** (V/O composite + M1~M8 mechanistic). 의미론·임계값 근거 → `si-p7-gate-mechanistic.md`
+> 구현: `scripts/check_s3_gu_gate.py` | 리포트: `bench/silver/japan-travel/p7-rebuild-s3-gu-smoke/m-gate-report.json`
+
+**baseline**: `p7-rebuild-s3-smoke` (commit fd83861) → **target**: `p7-rebuild-s3-gu-smoke` (commit fbbebbc)
+**재판정 일자**: 2026-04-26
 
 ```
-trial: bench/silver/japan-travel/p7-rebuild-s3-gu-smoke/  (5c real API, commit fbbebbc)
-결과:
-  KU active: c1=34→c5=101 (c5 ≥65 ✓)
-  GU open:   c1=36→c5=2 (정상 수렴)
-  mode:      c1=normal, c2~c5=jump
+=== Primary (V/O composite) ===
+V1  vacant_total_reduction        : Δ=11 (need ≥29 = P-zone 97×30%)            FAIL
+V2  per_cat_vacant_no_regression  : attraction +5; connectivity +1             FAIL
+V3  untouched_entity_bound        : target=0, baseline=0                       PASS
+O1  active_frontier_existence     : abandoned: attraction(v=77,o=0)            FAIL
+O2  open_gu_category_coverage     : KL(vacant_share || open_share) = ∞         FAIL
+VxO frontier_health               : 7/8 cats healthy; attraction 단독 fail     FAIL
 
-[G1] 연속성 ⚠️ 조건부 PASS
-  adj_open 추이: c1_start=0→c2_start=8→c3_start=10→c4_start=16→c5_start=7
-  adj_gen 추정: c1(8) c2(4) c3(6) c4(0) c5(0)
-  c4/c5 adj_gen=0은 KU 포화(c4 active=94)로 인한 자연 소진
-  → attempt-1 즉시 붕괴(c1=0)와 달리 c3까지 지속 생성 → 조건부 PASS
+=== Mechanistic (T9~T14 검증) ===
+M1  named_entity_adj_gu_count (T9)  : 14/13=1.08× (need ≥2× ∧ ≥12)             FAIL
+M2  wildcard_parallel_pair    (T11) : 3/4=0.75 (need ≥0.7)                     PASS
+M3  reg+pass_ticket_gu_count  (T12) : 31/12=2.58×                              PASS
+M4  adj_gu_field_diversity    (T13) : 7 vs 5 (Δ=+2 ∧ ≥6)                       PASS
+M5  late_cycle_adj_gen        (T14) : Δc4=0, Δc5=2 weak PASS / strict FAIL     PASS
+M6  adj_yield_floor                 : 0.362/0.500=0.72 (need ≥0.9)             FAIL
+M7  conflict_regen_zero             : violations=6 (정책 위반 신호)              FAIL
+M8  ku_active_sanity                : 101/79=1.28                              PASS
 
-[G2] 특정성 ✅ PASS
-  entity-specific adj GU (wildcard 제외): 14개 ≥ 5 ✓
-  총 adj GU: 20개 (entity-specific 14, wildcard 6)
+Telemetry-deferred (NA, gate 통과 무관):
+  M5b dynamic_cap_hit, M9 sweep_attribution, M10 created_cycle, M11 per_cycle_counts
 
-[G3] 전파성 ✅ PASS
-  adj_gen 시퀀스: 8→4→6 (c2→c3 uptick, 단조 감소 아님) ✓
-  chain propagation 확인
-
-[G4] 커버리지 ✅ PASS
-  regulation GU: 18개 ≥ 1 ✓ (per_cat_cap 제거 효과)
-  attraction ku_only: 27개 ≥ 3 ✓
-
-[G5] 안정성 ✅ PASS
-  conflict field 재생성: 0 ✓ (recent_conflict_fields=[])
-  balance-* GU: 0 ✓
-  adj_yield 5c avg: 0.362 ≥ 0.3 ✓
-  KU c5: 101 ≥ 65 ✓
-
-entity-field-matrix.json: vacant=172, ku_only=80, gu_open=4, ku_gu=123
-  (attraction vacant=77/ku_only=27 — entity 26개, 수집 공간 잔존)
-
-판정: PASS → Stage B-3 (S2-T3~T8) 진입
+VERDICT: FAIL  (exit=1, V/O FAIL: V1, V2, O1, O2, VxO)
 ```
+
+**해석**:
+- ✓ T11/T12/T13 작동 확인 (M2/M3/M4 PASS)
+- ✗ **T9 거의 무작동** (M1 1.08×) → attraction abandoned root cause 후보
+- ⚠ T14 부분 작동 (Δc4=0 ∧ Δc5=2) — c4 한 cycle drought 후 회복
+- ? T10 검증 보류 (M9 telemetry 필요)
+- 신규 발견: **V2 connectivity +1 regression**, **M7 conflict regen 6건** (정책 위반)
+
+**다음 액션**: S3 diagnosis sub-tasks closure → Stage B-3 진입 검토.
+
+### S3 Diagnosis Sub-tasks (S3 FAIL 후속, Stage B-3 진입 전 closure)
+
+- [ ] **SI-P7-S3-DIAG-ATTRACTION** — attraction 카테고리 entity discovery 후 GU 생성 블로커 추적 (M1 1.08× 직접 원인 = T9 무작동)
+- [ ] **SI-P7-S3-DIAG-T10-T14** — telemetry M5b/M9/M10/M11 추가 후 c4 zero / sweep 동작 정밀 진단
+- [ ] **SI-P7-S3-DIAG-YIELD** — adj_yield 28% 후퇴 (M6 0.72) → dynamic_cap 8/15/20 ablation
+- [ ] **SI-P7-S3-DIAG-M7** (신규) — conflict 해소 field 에 adj GU 재생성 6건 정책 분석
+- [ ] **SI-P7-S3-DIAG-CONNECTIVITY** (신규) — connectivity vacant +1 regression 원인 추적
 
 ### Stage B-3 — condition_split 재정의 (S2-T3~T8, D-195 보수화)
 

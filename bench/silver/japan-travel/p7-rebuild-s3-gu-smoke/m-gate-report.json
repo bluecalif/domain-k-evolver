@@ -1,0 +1,156 @@
+{
+  "baseline": "bench\\silver\\japan-travel\\p7-rebuild-s3-smoke",
+  "target": "bench\\silver\\japan-travel\\p7-rebuild-s3-gu-smoke",
+  "self_mode": false,
+  "strict": false,
+  "verdict": {
+    "code": 1,
+    "label": "FAIL  (V/O FAIL: V1, V2, O1, O2, VxO)"
+  },
+  "results": [
+    {
+      "id": "V1",
+      "label": "vacant_total_reduction",
+      "detail": "Δ=11 (need ≥29; P-zone 97×30%)",
+      "passed": false,
+      "is_v_or_o": true,
+      "is_telemetry_deferred": false
+    },
+    {
+      "id": "V2",
+      "label": "per_category_vacant_no_regression",
+      "detail": "attraction +5; connectivity +1",
+      "passed": false,
+      "is_v_or_o": true,
+      "is_telemetry_deferred": false
+    },
+    {
+      "id": "V3",
+      "label": "untouched_entity_bound",
+      "detail": "target=0, baseline=0",
+      "passed": true,
+      "is_v_or_o": true,
+      "is_telemetry_deferred": false
+    },
+    {
+      "id": "O1",
+      "label": "active_frontier_existence",
+      "detail": "abandoned: attraction(v=77,o=0)",
+      "passed": false,
+      "is_v_or_o": true,
+      "is_telemetry_deferred": false
+    },
+    {
+      "id": "O2",
+      "label": "open_gu_category_coverage",
+      "detail": "KL(vacant_share || open_share) = ∞ (max 0.5)",
+      "passed": false,
+      "is_v_or_o": true,
+      "is_telemetry_deferred": false
+    },
+    {
+      "id": "VxO",
+      "label": "frontier_health",
+      "detail": "7/8 cats healthy; failed: attraction(v=77,o=0,base=72)",
+      "passed": false,
+      "is_v_or_o": true,
+      "is_telemetry_deferred": false
+    },
+    {
+      "id": "M1",
+      "label": "named_entity_adj_gu_count",
+      "detail": "target=14, baseline=13, ratio=1.08 (need ≥12 ∧ ≥2.0×)",
+      "passed": false,
+      "is_v_or_o": false,
+      "is_telemetry_deferred": false
+    },
+    {
+      "id": "M2",
+      "label": "wildcard_parallel_pair_ratio",
+      "detail": "3/4=0.75 (need ≥0.7)",
+      "passed": true,
+      "is_v_or_o": false,
+      "is_telemetry_deferred": false
+    },
+    {
+      "id": "M3",
+      "label": "reg_pass_ticket_gu_count",
+      "detail": "target=31, baseline=12, ratio=2.58 (need ≥18 ∧ ≥1.5×)",
+      "passed": true,
+      "is_v_or_o": false,
+      "is_telemetry_deferred": false
+    },
+    {
+      "id": "M4",
+      "label": "adj_gu_field_diversity",
+      "detail": "target=7, baseline=5 (need ≥+2 ∧ ≥6)",
+      "passed": true,
+      "is_v_or_o": false,
+      "is_telemetry_deferred": false
+    },
+    {
+      "id": "M5",
+      "label": "late_cycle_adj_gen",
+      "detail": "Δc4=0, Δc5=2; Δc4>0 ∨ Δc5>0 (weak)",
+      "passed": true,
+      "is_v_or_o": false,
+      "is_telemetry_deferred": false
+    },
+    {
+      "id": "M6",
+      "label": "adj_yield_floor",
+      "detail": "target=0.362, baseline=0.500, ratio=0.72 (need ≥0.9)",
+      "passed": false,
+      "is_v_or_o": false,
+      "is_telemetry_deferred": false
+    },
+    {
+      "id": "M7",
+      "label": "conflict_regen_zero",
+      "detail": "violations=6 (loose check; M10 telemetry needed for strict)",
+      "passed": false,
+      "is_v_or_o": false,
+      "is_telemetry_deferred": false
+    },
+    {
+      "id": "M8",
+      "label": "ku_active_sanity",
+      "detail": "target=101, baseline=79, ratio=1.28 (need ≥0.95)",
+      "passed": true,
+      "is_v_or_o": false,
+      "is_telemetry_deferred": false
+    },
+    {
+      "id": "M5b",
+      "label": "dynamic_cap_hit",
+      "detail": "telemetry pending (cap_hit_count emit 필요)",
+      "passed": null,
+      "is_v_or_o": false,
+      "is_telemetry_deferred": true
+    },
+    {
+      "id": "M9",
+      "label": "sweep_attribution",
+      "detail": "telemetry pending (gu['origin'] emit 필요)",
+      "passed": null,
+      "is_v_or_o": false,
+      "is_telemetry_deferred": true
+    },
+    {
+      "id": "M10",
+      "label": "created_cycle",
+      "detail": "telemetry pending (cycle int 필드 필요)",
+      "passed": null,
+      "is_v_or_o": false,
+      "is_telemetry_deferred": true
+    },
+    {
+      "id": "M11",
+      "label": "per_cycle_counts",
+      "detail": "telemetry pending (adj/wildcard count emit 필요)",
+      "passed": null,
+      "is_v_or_o": false,
+      "is_telemetry_deferred": true
+    }
+  ]
+}
