@@ -16,6 +16,7 @@ from src.nodes.integrate import (
     _generate_dynamic_gus,
     _infer_geography,
     _find_matching_ku,
+    _compute_dynamic_gu_cap,
 )
 from tests.conftest import make_minimal_state
 
@@ -807,7 +808,7 @@ class TestSuppressRemovalRegression:
             "entity_key": "d:transport:new-bus",
             "field": "how_to_use",
         }
-        gus = _generate_dynamic_gus(claim, [], self._SKELETON, "normal", 5)
+        gus = _generate_dynamic_gus(claim, [], self._SKELETON, "normal")
         fields = {gu["target"]["field"] for gu in gus}
         assert "price" in fields, "D-56 제거 후 price adjacent GU가 생성되어야 함"
         assert "tips" in fields
@@ -819,7 +820,7 @@ class TestSuppressRemovalRegression:
             "entity_key": "d:transport:jr-pass",
             "field": "price",
         }
-        gus = _generate_dynamic_gus(claim, [], self._SKELETON, "normal", 5)
+        gus = _generate_dynamic_gus(claim, [], self._SKELETON, "normal")
         fields = {gu["target"]["field"] for gu in gus}
         assert "tips" in fields
         assert "how_to_use" in fields
@@ -962,7 +963,7 @@ class TestRecentConflictFieldsBlocklist:
 # ---------------------------------------------------------------------------
 
 class TestFieldAdjacencyRuleEngine:
-    """S3-T4: _generate_dynamic_gus 가 skeleton.field_adjacency 를 우선 참조."""
+    """S3-T13 후: field_adjacency 제거 → applicable_fields 전체 사용 검증."""
 
     _SKELETON_WITH_MAP = {
         "categories": [{"slug": "transport"}],
@@ -990,18 +991,17 @@ class TestFieldAdjacencyRuleEngine:
     }
 
     def test_uses_adjacency_map_when_present(self) -> None:
-        """claim.field 가 field_adjacency 에 있으면 해당 list만 사용."""
+        """S3-T13 후: field_adjacency 무시 → applicable_fields 전체 사용."""
         claim = {
             "claim_id": "CL-001",
             "entity_key": "d:transport:jr-pass",
             "field": "price",
         }
-        gus = _generate_dynamic_gus(claim, [], self._SKELETON_WITH_MAP, "normal", 5)
+        gus = _generate_dynamic_gus(claim, [], self._SKELETON_WITH_MAP, "normal")
         fields = {gu["target"]["field"] for gu in gus}
-        assert fields == {"how_to_use", "tips"}, (
-            f"field_adjacency['price'] 대로만 생성돼야 함, got {fields}"
+        assert fields == {"tips", "how_to_use", "where_to_buy"}, (
+            f"S3-T13 후 field_adjacency 제거 → applicable_fields 전체 사용, got {fields}"
         )
-        assert "where_to_buy" not in fields, "adjacency map에 없는 where_to_buy는 생성되지 않아야 함"
 
     def test_fallback_when_field_not_in_map(self) -> None:
         """claim.field 가 field_adjacency 에 없으면 applicable_fields 전체 사용."""
@@ -1010,7 +1010,7 @@ class TestFieldAdjacencyRuleEngine:
             "entity_key": "d:transport:jr-pass",
             "field": "tips",  # 맵에 없음
         }
-        gus = _generate_dynamic_gus(claim, [], self._SKELETON_WITH_MAP, "normal", 5)
+        gus = _generate_dynamic_gus(claim, [], self._SKELETON_WITH_MAP, "normal")
         fields = {gu["target"]["field"] for gu in gus}
         # tips 제외 나머지 applicable fields 모두 생성
         assert "price" in fields
@@ -1037,7 +1037,7 @@ class TestFieldAdjacencyRuleEngine:
             "entity_key": "d:transport:bus",
             "field": "price",
         }
-        gus = _generate_dynamic_gus(claim, [], skeleton, "normal", 5)
+        gus = _generate_dynamic_gus(claim, [], skeleton, "normal")
         fields = {gu["target"]["field"] for gu in gus}
         assert "hours" not in fields, "category 미적용 field는 제외되어야 함"
         assert "tips" in fields
@@ -1069,7 +1069,7 @@ class TestSkeletonFieldDefaults:
             "entity_key": "d:transport:bus",
             "field": "how_to_use",
         }
-        gus = _generate_dynamic_gus(claim, [], self._SKELETON, "normal", 5)
+        gus = _generate_dynamic_gus(claim, [], self._SKELETON, "normal")
         gu_by_field = {g["target"]["field"]: g for g in gus}
 
         assert "price" in gu_by_field
@@ -1095,7 +1095,7 @@ class TestSkeletonFieldDefaults:
             "entity_key": "d:transport:bus",
             "field": "how_to_use",
         }
-        gus = _generate_dynamic_gus(claim, [], skeleton_no_defaults, "normal", 5)
+        gus = _generate_dynamic_gus(claim, [], skeleton_no_defaults, "normal")
         for g in gus:
             assert g["risk_level"] == "convenience"
             assert g["expected_utility"] == "medium"
@@ -1932,3 +1932,193 @@ class TestIntegrationResultDist:
         entry = dist[0]
         assert entry["total_claims"] == 2
         assert 0.0 <= entry["added_ratio"] <= 1.0
+
+
+# ---------------------------------------------------------------------------
+# S3-T9 L1: canonical_entity_key + existing_ku_slots
+# ---------------------------------------------------------------------------
+
+class TestS3T9CanonicalEntityKeyAndKuSlots:
+    """S3-T9 Bug A/B: canonical_entity_key 우선 + existing_ku_slots 중복 방지."""
+
+    _SKELETON = {
+        "categories": [{"slug": "transport"}],
+        "fields": [
+            {"name": "price", "categories": ["*"]},
+            {"name": "tips", "categories": ["*"]},
+            {"name": "how_to_use", "categories": ["transport"]},
+        ],
+        "axes": [],
+    }
+
+    def test_adj_gu_uses_canonical_entity_key(self) -> None:
+        """canonical_entity_key 가 claim.entity_key 보다 우선 사용됨."""
+        claim = {"claim_id": "CL-001", "entity_key": "d:transport:bus-raw", "field": "price"}
+        gus = _generate_dynamic_gus(
+            claim, [], self._SKELETON, "normal",
+            canonical_entity_key="d:transport:bus",
+        )
+        entity_keys = {gu["target"]["entity_key"] for gu in gus}
+        assert "d:transport:bus" in entity_keys
+        assert "d:transport:bus-raw" not in entity_keys
+
+    def test_adj_gu_skips_existing_ku_slot(self) -> None:
+        """existing_ku_slots 에 있는 슬롯은 adj GU 생성 건너뜀."""
+        claim = {"claim_id": "CL-001", "entity_key": "d:transport:bus", "field": "price"}
+        existing_ku_slots = {("d:transport:bus", "tips")}
+        gus = _generate_dynamic_gus(
+            claim, [], self._SKELETON, "normal",
+            existing_ku_slots=existing_ku_slots,
+        )
+        fields = {gu["target"]["field"] for gu in gus}
+        assert "tips" not in fields
+        assert "how_to_use" in fields
+
+
+# ---------------------------------------------------------------------------
+# S3-T10 L1: post-cycle new-KU adj sweep
+# ---------------------------------------------------------------------------
+
+class TestS3T10NewKuSweep:
+    """S3-T10: claim loop 후 adds 기반 adj sweep."""
+
+    _SKELETON = {
+        "categories": [{"slug": "transport"}],
+        "fields": [
+            {"name": "price", "categories": ["*"]},
+            {"name": "tips", "categories": ["*"]},
+            {"name": "how_to_use", "categories": ["transport"]},
+        ],
+        "axes": [],
+    }
+
+    def _make_claim(self, gu_id: str, entity_key: str, field: str, value: str) -> dict:
+        return {
+            "claim_id": f"CL-{gu_id}",
+            "entity_key": entity_key,
+            "field": field,
+            "value": value,
+            "source_gu_id": gu_id,
+            "evidence": {"eu_id": f"EU-{gu_id}", "observed_at": "2026-03-04", "credibility": 0.8},
+        }
+
+    def test_new_ku_sweep_creates_adj_gus(self) -> None:
+        """신규 KU 추가 후 해당 entity의 adjacent field GU가 생성됨."""
+        state = make_minimal_state(
+            gap_map=[{"gu_id": "GU-0001", "status": "open",
+                      "target": {"entity_key": "d:transport:bus", "field": "price"}}],
+            current_claims=[self._make_claim("GU-0001", "d:transport:bus", "price", "700 JPY")],
+            domain_skeleton=self._SKELETON,
+            current_mode={"mode": "normal"},
+        )
+        result = integrate_node(state)
+        adj_gus = [
+            gu for gu in result["gap_map"]
+            if gu.get("trigger") == "A:adjacent_gap"
+            and gu.get("target", {}).get("entity_key") == "d:transport:bus"
+        ]
+        adj_fields = {gu["target"]["field"] for gu in adj_gus}
+        assert adj_fields & {"tips", "how_to_use"}
+
+    def test_sweep_deduplicates_same_entity(self) -> None:
+        """동일 entity KU 2개 추가 시 같은 adj 슬롯은 중복 생성 안 됨."""
+        state = make_minimal_state(
+            gap_map=[
+                {"gu_id": "GU-0001", "status": "open",
+                 "target": {"entity_key": "d:transport:bus", "field": "price"}},
+                {"gu_id": "GU-0002", "status": "open",
+                 "target": {"entity_key": "d:transport:bus", "field": "tips"}},
+            ],
+            current_claims=[
+                self._make_claim("GU-0001", "d:transport:bus", "price", "700 JPY"),
+                self._make_claim("GU-0002", "d:transport:bus", "tips", "buy early"),
+            ],
+            domain_skeleton=self._SKELETON,
+            current_mode={"mode": "normal"},
+        )
+        result = integrate_node(state)
+        adj_gus = [gu for gu in result["gap_map"] if gu.get("trigger") == "A:adjacent_gap"]
+        slots = [(gu["target"]["entity_key"], gu["target"]["field"]) for gu in adj_gus]
+        assert len(slots) == len(set(slots)), f"중복 adj GU 슬롯 발견: {slots}"
+
+    def test_sweep_respects_cap(self) -> None:
+        """sweep 포함 전체 adj GU 수는 normal mode cap(8) 초과 안 됨."""
+        skeleton = {
+            "categories": [{"slug": "transport"}],
+            "fields": [
+                {"name": "price", "categories": ["*"]},
+                {"name": "tips", "categories": ["*"]},
+            ],
+            "axes": [],
+        }
+        gap_map = []
+        claims = []
+        for i in range(10):
+            gu_id = f"GU-{i + 1:04d}"
+            ek = f"d:transport:entity{i}"
+            gap_map.append({"gu_id": gu_id, "status": "open",
+                            "target": {"entity_key": ek, "field": "price"}})
+            claims.append({
+                "claim_id": f"CL-{i + 1:04d}",
+                "entity_key": ek,
+                "field": "price",
+                "value": "1000 JPY",
+                "source_gu_id": gu_id,
+                "evidence": {"eu_id": f"EU-{i + 1:04d}", "observed_at": "2026-03-04", "credibility": 0.8},
+            })
+        state = make_minimal_state(
+            gap_map=gap_map,
+            current_claims=claims,
+            domain_skeleton=skeleton,
+            current_mode={"mode": "normal"},
+        )
+        result = integrate_node(state)
+        adj_gus = [gu for gu in result["gap_map"] if gu.get("trigger") == "A:adjacent_gap"]
+        assert len(adj_gus) <= 8, f"cap 초과: adj_gu count={len(adj_gus)}"
+
+
+# ---------------------------------------------------------------------------
+# S3-T13 L1: field_adjacency 무시 → applicable_fields 전체 사용
+# ---------------------------------------------------------------------------
+
+class TestS3T13AdjUsesApplicableFields:
+    """S3-T13: field_adjacency map 무시 — applicable_fields 전체 adj 탐색."""
+
+    def test_adj_gu_uses_all_applicable_fields_not_adjacency_list(self) -> None:
+        """field_adjacency 에 없는 field도 applicable_fields 에 있으면 adj GU 생성."""
+        skeleton = {
+            "categories": [{"slug": "transport"}],
+            "fields": [
+                {"name": "price", "categories": ["*"]},
+                {"name": "tips", "categories": ["*"]},
+                {"name": "where_to_buy", "categories": ["transport"]},
+            ],
+            "axes": [],
+            "field_adjacency": {
+                "price": ["tips"],  # where_to_buy 는 adjacency에 없음
+            },
+        }
+        claim = {"claim_id": "CL-001", "entity_key": "d:transport:bus", "field": "price"}
+        gus = _generate_dynamic_gus(claim, [], skeleton, "normal")
+        fields = {gu["target"]["field"] for gu in gus}
+        assert "where_to_buy" in fields, "S3-T13: adjacency 무시 → where_to_buy 포함돼야 함"
+        assert "tips" in fields
+
+
+# ---------------------------------------------------------------------------
+# S3-T14 L1: _compute_dynamic_gu_cap 고정
+# ---------------------------------------------------------------------------
+
+class TestS3T14DynamicCap:
+    """S3-T14: _compute_dynamic_gu_cap — mode 기반 고정값 (open_count 의존 제거)."""
+
+    def test_dynamic_cap_fixed_normal_8(self) -> None:
+        assert _compute_dynamic_gu_cap("normal") == 8
+
+    def test_dynamic_cap_fixed_jump_20(self) -> None:
+        assert _compute_dynamic_gu_cap("jump") == 20
+
+    def test_dynamic_cap_not_open_count_dependent(self) -> None:
+        """open_count 값과 무관하게 normal mode는 항상 8 반환."""
+        # _compute_dynamic_gu_cap(mode) — 인자 1개, open_count 전달 불가
+        assert _compute_dynamic_gu_cap("normal") == 8

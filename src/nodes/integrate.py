@@ -9,7 +9,6 @@ from __future__ import annotations
 import json
 import logging
 from datetime import date
-from math import ceil
 from typing import Any
 
 from src.state import EvolverState
@@ -178,8 +177,9 @@ def _generate_dynamic_gus(
     gap_map: list[dict],
     skeleton: dict,
     mode: str,
-    open_count: int,
     blocklist_fields: set[str] | None = None,
+    canonical_entity_key: str | None = None,
+    existing_ku_slots: set[tuple] | None = None,
 ) -> list[dict]:
     """동적 GU 발견 (Trigger A: 인접 Gap).
 
@@ -187,26 +187,29 @@ def _generate_dynamic_gus(
     Field 억제(D-56) 제거 — S3-T3 rule engine이 올바른 대체제.
     blocklist_fields: S3-T2 conflict 반복 field 차단 (N=2 cycle window).
     S3-T8: source field(claim.field) 도 blocklist 확인 — source/next 양쪽 배제.
+    canonical_entity_key: S3-T9 Bug A — resolver 경유 canonical key (우선).
+    existing_ku_slots: S3-T9 Bug B — 기존 KU 슬롯 병합으로 중복 GU 방지.
     """
     if blocklist_fields is None:
         blocklist_fields = set()
-    entity_key = claim.get("entity_key", "")
+    entity_key = canonical_entity_key or claim.get("entity_key", "")
     field = claim.get("field", "")
 
     # S3-T8: source field 도 blocklist 확인 — conflict 분야는 adj 탐색 자체 배제
     if field in blocklist_fields:
         return []
 
-    # 기존 GU에 이미 있는 슬롯
+    # 기존 GU에 이미 있는 슬롯 + KU 슬롯 병합 (S3-T9 Bug B)
     existing_slots = {
         (gu.get("target", {}).get("entity_key"), gu.get("target", {}).get("field"))
         for gu in gap_map
     }
+    if existing_ku_slots:
+        existing_slots |= existing_ku_slots
 
     new_gus: list[dict] = []
 
     # 같은 entity의 다른 필드 중 Gap Map에 없는 것
-    categories = [c["slug"] for c in skeleton.get("categories", [])]
     parts = entity_key.split(":")
     if len(parts) < 3:
         return []
@@ -218,14 +221,8 @@ def _generate_dynamic_gus(
         if "*" in f.get("categories", []) or category in f.get("categories", [])
     ]
 
-    # S3-T4: field_adjacency rule engine — 해당 field의 우선 adjacent 목록 사용.
-    # fallback: applicable_fields (rule engine seed 없을 때 기존 동작 유지).
-    field_adjacency = skeleton.get("field_adjacency", {})
-    if field in field_adjacency:
-        applicable_set = set(applicable_fields)
-        adj_candidates = [f for f in field_adjacency[field] if f in applicable_set]
-    else:
-        adj_candidates = applicable_fields
+    # S3-T13: field_adjacency 규칙 제거 — applicable_fields 전체 사용
+    adj_candidates = applicable_fields
 
     # S3-T6: field별 skeleton default 조회용 맵
     field_defaults: dict[str, dict] = {
@@ -279,11 +276,9 @@ def _next_ledger_id(ledger: list[dict]) -> str:
     return f"CL-{max_id + 1:04d}"
 
 
-def _compute_dynamic_gu_cap(mode: str, open_count: int) -> int:
-    """동적 GU 상한 계산."""
-    if mode == "jump":
-        return min(max(10, ceil(open_count * 0.6)), 30)
-    return min(max(4, ceil(open_count * 0.2)), 12)
+def _compute_dynamic_gu_cap(mode: str) -> int:
+    """동적 GU 상한 계산 (S3-T14: 고정 — open_count 의존 제거)."""
+    return 20 if mode == "jump" else 8
 
 
 def integrate_node(
@@ -307,8 +302,7 @@ def integrate_node(
     current_cycle = state.get("current_cycle", 1)
     recent_conflict_fields: list[dict] = list(state.get("recent_conflict_fields", []))
 
-    open_count = sum(1 for gu in gap_map if gu.get("status") == "open")
-    dynamic_cap = _compute_dynamic_gu_cap(mode, open_count)
+    dynamic_cap = _compute_dynamic_gu_cap(mode)
 
     # KU ID 카운터
     max_ku_id = 0
@@ -558,7 +552,13 @@ def integrate_node(
 
         # 동적 GU 발견 (Trigger A)
         if len(new_dynamic_gus) < dynamic_cap:
-            discovered = _generate_dynamic_gus(claim, gap_map + new_dynamic_gus, skeleton, mode, open_count, blocklist_fields)
+            _ku_slots = {(ku.get("entity_key"), ku.get("field")) for ku in kus}
+            discovered = _generate_dynamic_gus(
+                claim, gap_map + new_dynamic_gus, skeleton, mode,
+                blocklist_fields,
+                canonical_entity_key=entity_key,
+                existing_ku_slots=_ku_slots,
+            )
             remaining = dynamic_cap - len(new_dynamic_gus)
             for dgu in discovered[:remaining]:
                 max_gu_id += 1
@@ -566,6 +566,35 @@ def integrate_node(
                 if mode == "jump":
                     dgu["expansion_mode"] = "jump"
                 new_dynamic_gus.append(dgu)
+
+    # S3-T10: post-cycle new-KU adj sweep — claim loop 이후 신규 KU 기반 추가 탐색
+    _sweep_entity_seen: set[str] = set()
+    _sweep_ku_slots = {(ku.get("entity_key"), ku.get("field")) for ku in kus}
+    for _sweep_ku in adds:
+        if len(new_dynamic_gus) >= dynamic_cap:
+            break
+        _sweep_ek = _sweep_ku.get("entity_key", "")
+        if not _sweep_ek or _sweep_ek in _sweep_entity_seen:
+            continue
+        _sweep_entity_seen.add(_sweep_ek)
+        _sweep_claim = {
+            "entity_key": _sweep_ek,
+            "field": _sweep_ku.get("field", ""),
+            "claim_id": _sweep_ku.get("ku_id", ""),
+        }
+        _sweep_discovered = _generate_dynamic_gus(
+            _sweep_claim, gap_map + new_dynamic_gus, skeleton, mode,
+            blocklist_fields,
+            canonical_entity_key=_sweep_ek,
+            existing_ku_slots=_sweep_ku_slots,
+        )
+        _sweep_remaining = dynamic_cap - len(new_dynamic_gus)
+        for dgu in _sweep_discovered[:_sweep_remaining]:
+            max_gu_id += 1
+            dgu["gu_id"] = f"GU-{max_gu_id:04d}"
+            if mode == "jump":
+                dgu["expansion_mode"] = "jump"
+            new_dynamic_gus.append(dgu)
 
     # 동적 GU를 gap_map에 추가
     gap_map.extend(new_dynamic_gus)

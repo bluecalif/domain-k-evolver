@@ -18,7 +18,6 @@ from src.nodes.seed import (
     _determine_gap_type,
     _determine_risk_level,
     _get_entities_by_category,
-    _get_per_category_cap,
     seed_node,
 )
 
@@ -170,10 +169,8 @@ class TestSeedNode:
             result = seed_node(state)
 
         gap_map = result["gap_map"]
-        # Bootstrap GU >= 20
+        # Bootstrap GU >= 20 (per_cat_cap 제거(S3-T12) 후 상한 없음)
         assert len(gap_map) >= 20
-        # Bootstrap GU <= 40
-        assert len(gap_map) <= 40
 
     def test_all_categories_covered(
         self, skeleton: dict, kus: list[dict], policies: dict,
@@ -290,3 +287,74 @@ class TestSeedNode:
             entity_key = gu["target"]["entity_key"]
             for excl in excludes:
                 assert excl.lower() not in entity_key.lower()
+
+
+# ---------------------------------------------------------------------------
+# S3-T11 L1: entity-specific 시 wildcard GU 병행 생성
+# ---------------------------------------------------------------------------
+
+class TestS3T11WildcardParallel:
+    """S3-T11: entity-specific GU 생성 시 WILDCARD_PARALLEL_FIELDS 에 해당하면 wildcard GU도 병행."""
+
+    _SKELETON = {
+        "domain": "test",
+        "categories": [{"slug": "transport"}],
+        "fields": [
+            {"name": "price", "categories": ["*"]},   # WILDCARD_PARALLEL_FIELDS 포함
+        ],
+    }
+    # "bus" 엔티티가 알려지도록 KU 제공 (field는 price가 아닌 것 — price GU 생성 보장)
+    _KUS = [{"ku_id": "KU-0001", "entity_key": "test:transport:bus",
+             "field": "tips", "status": "active"}]
+
+    def test_seed_also_creates_wildcard_for_entity_specific_fields(self) -> None:
+        """price (WILDCARD_PARALLEL_FIELDS) 는 entity-specific + wildcard GU 동시 생성."""
+        state = {"domain_skeleton": self._SKELETON, "knowledge_units": self._KUS, "policies": {}}
+        result = seed_node(state)
+        price_gus = [gu for gu in result["gap_map"] if gu["target"]["field"] == "price"]
+        entity_keys = {gu["target"]["entity_key"] for gu in price_gus}
+        assert "test:transport:bus" in entity_keys, "entity-specific GU 없음"
+        assert "test:transport:*" in entity_keys, "wildcard 병행 GU 없음"
+
+
+# ---------------------------------------------------------------------------
+# S3-T12 L1: per_cat_cap 제거 — 모든 필드 포함
+# ---------------------------------------------------------------------------
+
+class TestS3T12NoPerCatCap:
+    """S3-T12: _get_per_category_cap 삭제 후 regulation+price 등 다수 필드 모두 포함."""
+
+    _SKELETON = {
+        "domain": "test",
+        "categories": [{"slug": "attraction"}],
+        "fields": [
+            {"name": "price",      "categories": ["*"]},
+            {"name": "hours",      "categories": ["attraction"]},
+            {"name": "location",   "categories": ["attraction"]},
+            {"name": "duration",   "categories": ["attraction"]},
+            {"name": "regulation", "categories": ["attraction"]},
+        ],
+    }
+
+    def test_seed_no_per_cat_cap_all_fields_present(self) -> None:
+        """per_cat_cap 제거 후 attraction 카테고리 5개 필드 모두 GU 생성."""
+        state = {"domain_skeleton": self._SKELETON, "knowledge_units": [], "policies": {}}
+        result = seed_node(state)
+        attraction_gus = [gu for gu in result["gap_map"]
+                          if gu["target"]["entity_key"].startswith("test:attraction:")]
+        present_fields = {gu["target"]["field"] for gu in attraction_gus}
+        expected = {"price", "hours", "location", "duration", "regulation"}
+        assert expected <= present_fields, (
+            f"누락 필드(per_cat_cap 잔재 의심): {expected - present_fields}"
+        )
+
+    def test_seed_no_per_cat_cap_regression(self) -> None:
+        """기존 cap=3 이면 누락됐을 4번째+ 필드가 이제 포함됨 (regression guard)."""
+        state = {"domain_skeleton": self._SKELETON, "knowledge_units": [], "policies": {}}
+        result = seed_node(state)
+        attraction_gus = [gu for gu in result["gap_map"]
+                          if gu["target"]["entity_key"].startswith("test:attraction:")]
+        # cap=3 시대엔 최대 3개, 이제 5개 이상이어야 함
+        assert len(attraction_gus) >= 4, (
+            f"per_cat_cap=3 회귀 의심: attraction GU count={len(attraction_gus)}"
+        )

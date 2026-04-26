@@ -36,6 +36,9 @@ WILDCARD_FIELDS = {"tips", "etiquette"}
 ENTITY_SPECIFIC_FIELDS = {"price", "hours", "location", "duration", "how_to_use",
                           "acceptance", "where_to_buy", "eligibility", "policy"}
 
+# --- entity-specific GU 생성 시 wildcard GU도 병행 생성할 필드 (S3-T11) ---
+WILDCARD_PARALLEL_FIELDS = {"price", "duration", "how_to_use", "acceptance", "where_to_buy"}
+
 
 def _build_field_matrix(skeleton: dict) -> list[tuple[str, str]]:
     """1단계: Category × Field 적용 매트릭스 구성.
@@ -182,16 +185,6 @@ def _get_entities_by_category(
     return result
 
 
-def _get_per_category_cap(n_categories: int) -> int:
-    """§4: 카테고리당 상한."""
-    if n_categories <= 5:
-        return 6
-    elif n_categories <= 8:
-        return 4
-    else:
-        return 3
-
-
 def _is_excluded(entity_key: str, scope_boundary: dict) -> bool:
     """§5: Scope 경계 판정."""
     excludes = scope_boundary.get("excludes", [])
@@ -218,8 +211,6 @@ def seed_node(state: EvolverState) -> dict:
 
     categories = [c["slug"] for c in skeleton.get("categories", [])]
     core_categories = set(skeleton.get("core_categories", categories))
-    n_categories = len(categories)
-    per_cat_cap = _get_per_category_cap(n_categories)
 
     # 1단계: Category × Field 매트릭스
     slots = _build_field_matrix(skeleton)
@@ -229,7 +220,6 @@ def seed_node(state: EvolverState) -> dict:
 
     # 2~3단계: 각 슬롯에 대해 gap_type 판정 + 엔티티 확장
     raw_gus: list[dict[str, Any]] = []
-    cat_counts: dict[str, int] = {cat: 0 for cat in categories}
 
     for cat, field in slots:
         gap_type = _determine_gap_type(cat, field, kus, today)
@@ -290,6 +280,20 @@ def seed_node(state: EvolverState) -> dict:
                     "status": "open",
                     "category": cat,
                 })
+
+            # S3-T11: entity-specific 생성 후 wildcard GU도 병행 등록
+            if field in WILDCARD_PARALLEL_FIELDS:
+                wildcard_ek = f"{domain}:{cat}:*"
+                if not _is_excluded(wildcard_ek, scope_boundary):
+                    raw_gus.append({
+                        "gap_type": gap_type,
+                        "target": {"entity_key": wildcard_ek, "field": field},
+                        "expected_utility": expected_utility,
+                        "risk_level": risk_level,
+                        "resolution_criteria": f"{cat} {field} 정보 수집",
+                        "status": "open",
+                        "category": cat,
+                    })
         else:
             # 와일드카드 (엔티티 없거나 generic 필드)
             entity_key = f"{domain}:{cat}:*"
@@ -321,18 +325,10 @@ def seed_node(state: EvolverState) -> dict:
         g["category"],
     ))
 
-    # 카테고리당 상한 적용
-    capped: list[dict[str, Any]] = []
-    for gu in deduped:
-        cat = gu["category"]
-        if cat_counts[cat] < per_cat_cap:
-            capped.append(gu)
-            cat_counts[cat] += 1
-
-    # 최소 커버리지 보장: 빈 카테고리에 최소 1개
+    # 최소 커버리지 보장: 빈 카테고리에 최소 1개 (S3-T12: per_cat_cap 제거 후 deduped 직접 사용)
+    cats_covered = {gu["category"] for gu in deduped}
     for cat in categories:
-        if cat_counts[cat] == 0:
-            # 해당 카테고리의 첫 번째 필드로 GU 추가
+        if cat not in cats_covered:
             cat_fields = [
                 f["name"] for f in skeleton.get("fields", [])
                 if "*" in f.get("categories", []) or cat in f.get("categories", [])
@@ -341,7 +337,7 @@ def seed_node(state: EvolverState) -> dict:
                 field = cat_fields[0]
                 risk_level = _determine_risk_level(cat, field)
                 expected_utility = _determine_expected_utility(risk_level, field, cat, core_categories)
-                capped.append({
+                deduped.append({
                     "gap_type": "missing",
                     "target": {"entity_key": f"{domain}:{cat}:*", "field": field},
                     "expected_utility": expected_utility,
@@ -350,17 +346,16 @@ def seed_node(state: EvolverState) -> dict:
                     "status": "open",
                     "category": cat,
                 })
-                cat_counts[cat] += 1
 
     # 최종 정렬 + GU ID 부여
-    capped.sort(key=lambda g: (
+    deduped.sort(key=lambda g: (
         _UTILITY_ORDER.get(g["expected_utility"], 99),
         _RISK_ORDER.get(g["risk_level"], 99),
         g["category"],
     ))
 
     gap_map: list[dict[str, Any]] = []
-    for i, gu in enumerate(capped, start=1):
+    for i, gu in enumerate(deduped, start=1):
         gu_entry = {
             "gu_id": f"GU-{i:04d}",
             "gap_type": gu["gap_type"],
