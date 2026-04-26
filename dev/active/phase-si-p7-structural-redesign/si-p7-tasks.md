@@ -21,6 +21,15 @@ Stage C → S5a 5c gate → Stage D
 Stage D → 15c L3 통합 trial → readiness-report (silver-phase-gate-check)
 ```
 
+> **Gate 필수 선행 조건 (모든 5c/15c trial 공통)**
+> trial 완료 직후 → Gate 판정 전 반드시 `entity-field-matrix.json` 생성. matrix 없이 Gate 선언 불가.
+> ```bash
+> python scripts/analyze_trajectory.py \
+>   --bench-root bench/silver/japan-travel/{trial_id} \
+>   --matrix
+> ```
+> vacant/ku_only/gu_open 분포 확인 후 Gate 기준 적용.
+
 ---
 
 ## Stage A — 제어 루프 복구 (S1 + S2-T1/T2)

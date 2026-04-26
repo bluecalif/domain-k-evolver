@@ -66,12 +66,60 @@ trial_id = {phase}-{YYYYMMDD}-{short_tag}[-run{N}]
 
 ```
 bench/silver/{domain}/{trial_id}/
-├── trial-card.md          # 실행 전 (필수)
-├── config.snapshot.json   # 실행 시작 시 자동 기록
-├── state/                 # KU / GU / conflict_ledger
-├── trajectory/            # cycle 별 planned vs actual
-├── telemetry/             # telemetry.v1.jsonl (P5 이후)
-└── readiness-report.md    # 실행 후 (gate 결과)
+├── trial-card.md              # 실행 전 (필수)
+├── config.snapshot.json       # 실행 시작 시 자동 기록
+├── state/                     # KU / GU / conflict_ledger
+├── trajectory/                # cycle 별 planned vs actual
+├── telemetry/                 # telemetry.v1.jsonl (P5 이후)
+├── entity-field-matrix.json   # 실행 후 (필수) — standard matrix
+└── readiness-report.md        # 실행 후 (gate 결과)
+```
+
+### entity-field-matrix.json 규격
+
+실행 완료 후 **최종 cycle snapshot 기준**으로 자동 생성. 모든 trial 에 필수.
+
+```json
+{
+  "trial_id": "...",
+  "cycle": 5,
+  "generated_at": "...",
+  "categories": {
+    "{category}": {
+      "entities": ["slug-a", "slug-b", "*"],
+      "fields": ["price", "hours", ...],
+      "matrix": {
+        "{slug}": {
+          "{field}": {
+            "state": "ku_gu | ku_only | gu_open | vacant",
+            "ku_ids": ["KU-xxxx"],
+            "gu_ids": ["GU-xxxx"]
+          }
+        }
+      }
+    }
+  },
+  "summary": {
+    "total_slots": 0,
+    "ku_gu": 0,
+    "ku_only": 0,
+    "gu_open": 0,
+    "vacant": 0
+  }
+}
+```
+
+**state 값 정의**:
+- `ku_gu`   — KU + GU 모두 존재 (GU resolved, KU 생성됨)
+- `ku_only` — KU 존재, 해당 entity-field GU 없음 (seed 또는 wildcard GU 파생)
+- `gu_open` — GU open, KU 미생성 (수집 진행 중)
+- `vacant`  — KU·GU 모두 없음 (미탐색 슬롯)
+
+**생성 명령**:
+```bash
+python scripts/analyze_trajectory.py \
+  --bench-root bench/silver/{domain}/{trial_id} \
+  --matrix
 ```
 
 **상위 레지스트리**: `bench/silver/INDEX.md` — 모든 trial 1행 1trial.
@@ -148,6 +196,7 @@ PYTHONUTF8=1 python scripts/run_readiness.py \
 ## 상태
 - [ ] config.snapshot.json 기록됨
 - [ ] 실행 완료
+- [ ] entity-field-matrix.json 생성됨
 - [ ] readiness-report.md 작성됨
 - [ ] INDEX.md row 갱신
 ```
@@ -214,6 +263,7 @@ trial-card 작성 후, 실행이 끝나면 다음을 안내한다:
 | `goal` 을 "테스트", "확인" 같이 비움 | 가설 없는 trial → diff 불가 | 측정 대상까지 함께 받기 |
 | INDEX.md 직접 수정 (run 후 row 만 추가) | 추적 누락, status=running 단계 부재 | Step 5 의 2단계 update 그대로 |
 | 다른 phase 의 trial 에 cross-write | 규칙 2 위반 | `--bench-root` 플래그 필수 |
+| `entity-field-matrix.json` 없이 trial 완료 선언 | coverage 공백 불가시 — 집계 지표(adj_yield, gap_resolution)만으로는 vacant 슬롯 탐지 불가 | 실행 후 `--matrix` 옵션으로 소급 생성 |
 
 ---
 

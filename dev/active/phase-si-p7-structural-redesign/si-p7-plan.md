@@ -1,6 +1,6 @@
 # SI-P7 Structural Redesign — Plan (rebuild / attempt 2)
 
-> Last Updated: 2026-04-25
+> Last Updated: 2026-04-26
 > Status: Planning (착수 전, attempt 1 v5 분석 입력 반영)
 > Branch: `feature/si-p7-rebuild` (from `2ebd435` Pre-P7 baseline)
 > Single source of truth: **`docs/structural-redesign-tasks_CC.md` v2**
@@ -62,28 +62,47 @@ phase 종료 시:
 - defer 분포: defer_reason 다양성 (단일 reason 80% 미만)
 - KU c5: pre-A 72 ±20% 이내
 
-### Stage B — S2-T5~T8 (condition_split) + S3 (adjacent rule engine) + S4 (virtual 제거)
+### Stage B — S3-T9~T14 (GU generation extension) + S2-T5~T8 + S4
 
-**v5 known-pitfall (S2)**: T5~T8 강제 condition_split → c1 KU +59 폭증 → KU/GU 불균형 → c3+ 고착. v5 §4.3.
+**Stage B 구성**:
+```
+B-1/B-2 (S3, 완료) → B-1 Extension (S3-T9~T14) → B-3 (S2) → B-4 (S4)
+```
+
+#### Stage B-1 Extension — GU 생성 범위 확장 (S3-T9~T14) ← 신규
+
+entity-field-matrix 분석으로 확인된 3가지 vacant 패턴 수정 + 구조적 제약 제거 (D-203~D-208):
+
+| 결정 | 변경 내용 | 파일 |
+|---|---|---|
+| D-203 Bug A/B | `_generate_dynamic_gus` canonical entity_key + KU 슬롯 포함 | `integrate.py:193` |
+| D-204 new-KU sweep | claim loop 이후 `adds` 기반 adj sweep | `integrate.py` |
+| D-205 wildcard 병행 | seed entity-specific GU 생성 시 wildcard GU도 추가 | `seed.py:259` |
+| D-206 per_cat_cap 제거 | cap 없이 전체 eligible GU 등록 | `seed.py:185,324` |
+| D-207 field_adjacency 제거 | applicable_fields 전체 사용, direct pair 차단 해제 | `integrate.py:221` |
+| D-208 dynamic_cap 고정 | `open_count * 0.2` 제거, normal=8/jump=20 고정 | `integrate.py:282` |
+
+**Gate (5c smoke — GU 생성 안정성 중심, G1~G5)**:
+- G1: adj_gen > 0 전 cycle (단 1개 cycle도 0 없음) — 연속성
+- G2: entity-specific adj GU ≥ 5 (5c 누계) — 특정성
+- G3: c2 또는 c3 adj_gen ≥ c1 adj_gen — 전파성 (chain propagation)
+- G4: regulation 카테고리 GU ≥ 1, attraction ku_only 슬롯 증가 — 커버리지 확장
+- G5: conflict 재생성=0, adjacency_yield avg ≥ 0.3, KU c5 ≥ 65 — 회귀 없음
+
+#### Stage B-3 — condition_split 재정의 (S2-T5~T8)
+
+**v5 known-pitfall**: T5~T8 강제 condition_split → c1 KU +59 폭증 → KU/GU 불균형 → c3+ 고착.
 
 **Conservatization (S2-T5~T8)**:
-- T6 (값 구조 차이): value 길이 임계 (existing/claim 모두 ≥ 2 chars), set/range 변환 시 명시적 marker 필요
-- T7 (condition_axes 강제): claim 의 conditions 필드가 비어있지 않을 때만 split
-- T8 (axis_tags 차이): 단일 axis 차이만 (geography 만, 다중 axis 차이는 hold)
+- T6: value 길이 임계 (≥ 2 chars), set/range 변환 시 명시적 marker 필요
+- T7: claim.conditions 비어있지 않을 때만 split
+- T8: 단일 axis 차이만 (geography), 다중 axis → hold
 
-**v5 known-pitfall (S3)**: adjacent rule engine + suppress (mean×1.5) + blocklist (N=3) + yield tracker 조합 → GU pool 고갈 → c4/c5 cycle skip. v5 §4.5.
+**Gate**: c1 ΔKU ≤ +35, GU 양산 ≥ 65, adj_gen c3+ 0 cycle 없음
 
-**Conservatization (S3)**:
-- suppress 임계 mean×2.0 (1.5 → 2.0)
-- blocklist window N=2 (3 → 2)
-- yield tracker 약화 임계 5c 평균 < 0.05 (강한 신호만)
+#### Stage B-4 — balance 대체 (S4-T2~T4)
 
-**Tasks**: baseline v2 §S2 (T3~T8) + V-T11 토글 인프라 cherry-pick + §S3 (T1~T8) + §S4 (T1~T4).
-
-**Gate (5c smoke, 각 axis 별)**:
-- S2: c1 ΔKU ≤ +35 (s2-attempt-1 +59 대비), GU 양산 ≥ 65 (s2-attempt-1 49 대비)
-- S3: GU_open c3+ ≥ 5 (s3-attempt-1 0 대비), target_count c5 ≥ 3
-- S4: virtual entity = 0, deficit_score 발동률 ≥ 50%
+**Gate**: virtual entity = 0, deficit_score 발동률 ≥ 50%, KU c5 ≥ 75
 
 ### Stage C — S5a (Entity Discovery Node)
 

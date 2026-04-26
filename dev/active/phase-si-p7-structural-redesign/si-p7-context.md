@@ -1,6 +1,6 @@
 # SI-P7 Structural Redesign — Context (rebuild)
 
-> Last Updated: 2026-04-25
+> Last Updated: 2026-04-26
 > 본 문서는 **구현 착수 시 코드 + 문서 + attempt 1 lessons 맥락** 을 빠르게 복원하기 위한 포인터 모음.
 
 ---
@@ -54,7 +54,12 @@
 | `src/nodes/collect.py` | 218-230 (defer), `_build_parse_prompt` | S1, S2-a |
 | `src/nodes/mode.py` | `mode_node` target_count | S1 |
 | `src/nodes/integrate.py` | 80-132 (`_detect_conflict`) | S2 condition_split |
-| `src/nodes/integrate.py` | 176-253 (`_generate_dynamic_gus`) | S3 rule engine |
+| `src/nodes/integrate.py` | 176-253 (`_generate_dynamic_gus`) | S3 rule engine + **S3-T9/T13/T14** |
+| `src/nodes/integrate.py` | claim loop 이후 (~line 570) | **S3-T10** new-KU adj sweep |
+| `src/nodes/integrate.py` | 282-286 (`_compute_dynamic_gu_cap`) | **S3-T14** cap 공식 |
+| `src/nodes/seed.py` | 185-191 (`_get_per_category_cap`) | **S3-T12** per_cat_cap 제거 |
+| `src/nodes/seed.py` | 259-292 (entity-specific 브랜치) | **S3-T11** wildcard 병행 생성 |
+| `src/nodes/seed.py` | 324-330 (cap 적용 루프) | **S3-T12** cap 루프 제거 |
 | `src/nodes/critique.py` | 187-269 (balance + feedback) | S2 feedback, S4 virtual 제거, S5a β |
 | `src/utils/entity_resolver.py` | similarity | S5a pre-filter (0.85) |
 | `src/utils/metrics.py` | — | S2 distribution, S3 yield, S5a 수명 |
@@ -94,6 +99,34 @@
 - **D-194** Primary Introducer = S2 (5-trial sequential ablation)
 - **D-195** S2 내부 primary subtask = T5~T8 (condition_split 강화)
 - **D-196** S1 adj_gen oscillation 메커니즘 = 1단계 adj chain 억제 + sort 제거 + FIFO batch clustering
+
+### 3.2-B S3 GU Generation Extension (신규, 2026-04-26)
+
+entity-field-matrix 분석으로 확인된 3가지 vacant 패턴과 구조적 GU 생성 제약 4가지 제거:
+
+- **D-203 (P1 fix — Bug A/B)**: `_generate_dynamic_gus`가 `claim.get("entity_key")` (raw) 사용 → canonical entity_key 사용으로 수정. `existing_slots`에 KU 슬롯 미포함 → `existing_ku_slots` 파라미터 추가. `integrate_node` 호출부에서 canonical key 전달.
+  - **Why:** wildcard GU 해소 시 claim entity_key = `attraction:*` → adj GU도 wildcard 단위로만 생성. named entity별 hours/tips/price adj GU 불가.
+  - **How to apply:** S3-T9 구현 시 `_generate_dynamic_gus` 시그니처 변경 + 호출부 수정.
+
+- **D-204 (P1 fix — new-KU sweep)**: post-cycle `adds` 리스트 기반 adj sweep 추가. claim이 없어도 신규 KU 생성 시 adj GU 자동 발견.
+  - **Why:** wildcard 해소로 파생된 named entity KU (`kitakami:location`)에 대해 adj GU 트리거 기회가 없음. claim loop 종료 후 `adds` 순회로 해결.
+  - **How to apply:** S3-T10 구현, `sweep_entity_seen` set으로 중복 방지, 기존 `dynamic_cap` 공유.
+
+- **D-205 (P2 fix — seed wildcard 병행)**: seed.py entity-specific 브랜치에서 wildcard GU도 함께 생성. `transport:*/price` 등 wildcard 슬롯 영구 미등록 문제 해결.
+  - **Why:** named entity 존재 시 `elif ENTITY_SPECIFIC_FIELDS and known_entities:` 브랜치만 진입, wildcard(`*`) 슬롯 건너뜀.
+  - **How to apply:** S3-T11 구현, `(cat, field)` wildcard가 이미 `seen`에 있으면 skip.
+
+- **D-206 (P3 fix — per_cat_cap 제거)**: `_get_per_category_cap` 및 cap 적용 루프 완전 제거. regulation/price, suica/eligibility 등 15개 슬롯 영구 미등록 문제 해결.
+  - **Why:** n_categories=8 → per_cat_cap=4. regulation이 eligibility 4개(critical)로 cap 소진 → price/tips 미등록.
+  - **How to apply:** S3-T12 구현. 최소 커버리지 보장 로직(`seed.py:332-353`)은 유지.
+
+- **D-207 (field_adjacency 규칙 제거)**: `_generate_dynamic_gus`의 field_adjacency 조회 브랜치 제거 → 항상 `applicable_fields` 전체 사용.
+  - **Why:** field_adjacency는 "speed mitigator"로 설계됐으나 실제로는 direct pair에 대한 ultimate blocker. `location → price` 직접 생성 불가. applicable_fields 전체가 더 단순하고 dynamic_cap이 실질적 rate control.
+  - **How to apply:** S3-T13 구현. skeleton의 `field_adjacency` 데이터 자체는 보존.
+
+- **D-208 (dynamic_cap 공식 수정)**: `open_count * 0.2` 제거 → 고정 cap: normal=8, jump=20.
+  - **Why:** 현재 공식 `min(max(4, ceil(open_count * 0.2)), 12)` — open GU 감소 시 adj GU cap이 위축. GU pool이 수렴할수록 adj GU 생성이 제한되는 음의 피드백 루프 → vacant 슬롯 영구 미해결.
+  - **How to apply:** S3-T14 구현. `_compute_dynamic_gu_cap(mode)` 인자에서 `open_count` 제거.
 
 ### 3.3 이전 phase 계승
 - D-67/D-68/D-69/D-70 (observed_at, evidence-count weighting, multi-evidence boost)

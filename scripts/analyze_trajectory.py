@@ -915,6 +915,173 @@ def build_json_output(
 # Main
 # ══════════════════════════════════════════════════════════════════════
 
+def generate_entity_field_matrix(base: Path) -> None:
+    """entity-field-matrix.json 생성 — Gate 판정 전 필수 아티팩트."""
+    import re
+    from datetime import date as _date
+
+    ku_path   = base / "state" / "knowledge-units.json"
+    gap_path  = base / "state" / "gap-map.json"
+    skel_path = Path("bench/japan-travel/state-snapshots/cycle-0-snapshot/domain-skeleton.json")
+    prev_path = Path("bench/silver/japan-travel/p7-rebuild-s3-smoke/entity-field-matrix.json")
+
+    if not ku_path.exists() or not gap_path.exists():
+        print("Error: state/knowledge-units.json or gap-map.json not found")
+        return
+    if not skel_path.exists():
+        print(f"Error: skeleton not found at {skel_path}")
+        return
+
+    kus  = load_json(ku_path)
+    gmap = load_json(gap_path)
+    skel = load_json(skel_path)
+    prev = load_json(prev_path) if prev_path.exists() else {}
+
+    domain     = skel.get("domain", "japan-travel")
+    cat_defs   = skel.get("categories", [])
+    field_defs = skel.get("fields", [])
+
+    ku_map: dict[tuple, list] = {}
+    for ku in kus:
+        if ku.get("status") not in ("active", "disputed"):
+            continue
+        ku_map.setdefault((ku["entity_key"], ku["field"]), []).append(ku["ku_id"])
+
+    gu_map: dict[tuple, list] = {}
+    for gu in gmap:
+        t = gu.get("target", {})
+        slot = (t.get("entity_key", ""), t.get("field", ""))
+        gu_map.setdefault(slot, []).append({
+            "gu_id": gu.get("gu_id"),
+            "status": gu.get("status"),
+            "trigger": gu.get("trigger", ""),
+        })
+
+    def ents_for_cat(cat: str) -> list[str]:
+        slugs: set[str] = set()
+        for ek, _ in list(ku_map.keys()) + list(gu_map.keys()):
+            p = ek.split(":")
+            if len(p) == 3 and p[0] == domain and p[1] == cat and p[2] != "*":
+                slugs.add(p[2])
+        prev_order = prev.get("categories", {}).get(cat, {}).get("entities", [])
+        ordered = [s for s in prev_order if s in slugs]
+        ordered += sorted(slugs - set(ordered))
+        return ordered
+
+    def app_fields(cat: str) -> list[str]:
+        return [f["name"] for f in field_defs
+                if "*" in f.get("categories", []) or cat in f.get("categories", [])]
+
+    def slot_state(ek: str, field: str) -> str:
+        has_ku = (ek, field) in ku_map
+        gus    = gu_map.get((ek, field), [])
+        if has_ku and gus:   return "ku_gu"
+        if has_ku:            return "ku_only"
+        if gus:
+            return "gu_open" if any(g["status"] == "open" for g in gus) else "gu_resolved_no_wildcard_ku"
+        return "vacant"
+
+    def make_note(ek: str, field: str, state: str, cat: str) -> str | None:
+        parts  = ek.split(":")
+        slug   = parts[2] if len(parts) == 3 else "?"
+        gus    = gu_map.get((ek, field), [])
+        ku_ids = ku_map.get((ek, field), [])
+        adj_gus = [g for g in gus if "adjacent" in g.get("trigger", "")]
+        prev_note = (prev.get("categories", {}).get(cat, {})
+                        .get("matrix", {}).get(slug, {})
+                        .get(field, {}).get("note"))
+        if state == "ku_only":
+            if prev_note: return prev_note
+            nums = [int(m.group(1)) for k in ku_ids if (m := re.search(r"KU-(\d+)", k))]
+            return ("seed KU — entity-specific GU 미생성" if nums and max(nums) <= 13
+                    else "entity-specific GU 없음 (wildcard-GU 파생 KU)")
+        if state == "ku_gu" and adj_gus:
+            return f"adj {'/'.join(g['gu_id'] for g in adj_gus)} 해소 후 KU 생성"
+        if state == "ku_gu" and prev_note:
+            return prev_note
+        if state == "gu_resolved_no_wildcard_ku":
+            return prev_note or "GU resolved, KU는 specific entity 수준으로 생성됨"
+        return None
+
+    summary: dict[str, int] = {
+        "ku_gu": 0, "ku_only": 0, "gu_open": 0, "vacant": 0,
+        "gu_resolved_no_wildcard_ku": 0, "total": 0,
+    }
+    by_cat: dict[str, dict] = {}
+    cat_data: dict[str, dict] = {}
+
+    for cdef in cat_defs:
+        cat    = cdef["slug"]
+        fields = app_fields(cat)
+        ents   = ents_for_cat(cat)
+        ct: dict[str, int] = {k: 0 for k in summary}
+        matrix_rows: dict[str, dict] = {}
+
+        for slug in ents + ["*"]:
+            ek  = f"{domain}:{cat}:{slug}"
+            row: dict[str, dict] = {}
+            for field in fields:
+                st    = slot_state(ek, field)
+                entry: dict = {
+                    "state":   st,
+                    "ku_ids":  ku_map.get((ek, field), []),
+                    "gu_ids":  [g["gu_id"] for g in gu_map.get((ek, field), [])],
+                }
+                note = make_note(ek, field, st, cat)
+                if note:
+                    entry["note"] = note
+                row[field] = entry
+                ct[st]    = ct.get(st, 0) + 1
+                ct["total"] += 1
+                summary[st]      = summary.get(st, 0) + 1
+                summary["total"] += 1
+            matrix_rows[slug] = row
+
+        cat_data[cat] = {"entities": ents, "fields": fields, "matrix": matrix_rows}
+        prev_anom = prev.get("categories", {}).get(cat, {}).get("anomalies")
+        if prev_anom:
+            cat_data[cat]["anomalies"] = prev_anom
+        by_cat[cat] = ct
+
+    # trial_id from bench-root dir name
+    trial_id = base.name
+
+    matrix_out = {
+        "trial_id":   trial_id,
+        "cycle":      len(load_json(base / "trajectory" / "trajectory.json")),
+        "generated_at": str(_date.today()),
+        "generation_method": "auto",
+        "note": f"analyze_trajectory.py --matrix で生成. KU/GU: state/*.json 최종 cycle 기준.",
+        "state_definitions": {
+            "ku_gu":  "KU + GU 모두 존재 (GU resolved, KU 생성됨)",
+            "ku_only": "KU 존재, 해당 entity-field GU 없음 (seed 또는 wildcard-GU 파생)",
+            "gu_open": "GU open, KU 미생성 (수집 진행 중)",
+            "vacant":  "KU·GU 모두 없음 (미탐색 슬롯)",
+            "gu_resolved_no_wildcard_ku": "GU resolved되었으나 KU가 specific entity 수준으로 생성됨",
+        },
+        "categories": cat_data,
+        "summary": {
+            "total_slots": summary["total"],
+            "ku_gu":       summary["ku_gu"],
+            "gu_resolved_no_wildcard_ku": summary["gu_resolved_no_wildcard_ku"],
+            "ku_only":     summary["ku_only"],
+            "gu_open":     summary["gu_open"],
+            "vacant":      summary["vacant"],
+            "by_category": by_cat,
+        },
+    }
+
+    out_path = base / "entity-field-matrix.json"
+    with open(out_path, "w", encoding="utf-8") as f:
+        json.dump(matrix_out, f, ensure_ascii=False, indent=2)
+
+    s = matrix_out["summary"]
+    print(f"entity-field-matrix.json 생성 완료: {out_path}")
+    print(f"  총 슬롯: {s['total_slots']} | ku_gu={s['ku_gu']} ku_only={s['ku_only']} gu_open={s['gu_open']} vacant={s['vacant']}")
+    for cat, ct in s["by_category"].items():
+        print(f"  {cat:<15}: total={ct['total']} ku_gu={ct['ku_gu']} ku_only={ct['ku_only']} vacant={ct['vacant']}")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Analyze trajectory results (deep analysis)")
     parser.add_argument(
@@ -922,11 +1089,25 @@ def main() -> None:
         default="bench/japan-travel-auto",
         help="Bench result directory (default: bench/japan-travel-auto)",
     )
+    parser.add_argument(
+        "--bench-root",
+        dest="bench_root",
+        default=None,
+        help="Silver trial root directory (alias for --dir, e.g. bench/silver/japan-travel/p7-s3-gu-smoke)",
+    )
     parser.add_argument("--report", action="store_true", help="Generate docs/phase2-analysis.md")
     parser.add_argument("--json", action="store_true", dest="json_output", help="JSON output to stdout")
+    parser.add_argument("--matrix", action="store_true", help="Generate entity-field-matrix.json (Gate 필수 아티팩트)")
     args = parser.parse_args()
 
-    base = Path(args.dir)
+    # --bench-root overrides --dir
+    base = Path(args.bench_root if args.bench_root else args.dir)
+
+    # ── Matrix-only mode ──
+    if args.matrix and not args.json_output and not args.report:
+        generate_entity_field_matrix(base)
+        return
+
     traj_path = base / "trajectory" / "trajectory.json"
     ku_path = base / "state" / "knowledge-units.json"
     gap_path = base / "state" / "gap-map.json"

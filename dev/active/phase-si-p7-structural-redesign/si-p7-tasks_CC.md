@@ -41,7 +41,7 @@
 
 ### S2-T5~T8 — condition_split 재정의
 
-- [ ] **S2-T3** 확정 (D-181 기록, 구현 불필요 — 설계 결정만)
+- [x] **S2-T3** 확정 (D-181 기록, 구현 불필요 — 설계 결정만) — α(query 재작성) + β(aggressive mode) 확정, structural-redesign-tasks_CC.md §D-181 완료
 - [ ] **S2-T4** F2 = α + β 구현 (α query 재작성 + β mode 전환). **β 는 S5a-T11 과 동반 구현** 필요
 - [ ] **S2-T5** condition_split (a): parse prompt "조건어 추출"
 - [ ] **S2-T6** condition_split (b) **재정의**: "값 구조 차이" (axis_tags/conditions/값 format) 감지 → 자동 split

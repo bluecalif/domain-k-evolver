@@ -1,6 +1,6 @@
 # Project Overall Tasks
-> Last Updated: 2026-04-18
-> Status: Bronze 완료 (85/85) · Silver P0 (32) · P1 (12) · P3R (8) · P2 (14) · Gap-Res (12) · P4 (42) · **P5 완료 (15/15, Gate PASS)** · **P6 착수 예정** · 821 tests
+> Last Updated: 2026-04-26
+> Status: Bronze 완료 (85/85) · Silver P0 (32) · P1 (12) · P3R (8) · P2 (14) · Gap-Res (12) · P4 (42) · **P5 완료 (15/15, Gate PASS)** · **SI-P7 rebuild 진행 중** (18/47, Stage B-1 Extension S3-T9~T14 착수) · 847 tests
 
 ## Summary
 
@@ -31,7 +31,7 @@
 | P5 Telemetry & Dashboard | 15 | 4 | 9 | 1 | **15/15** ✅ | **Gate PASS** (821 tests, S10 PASS, LOC 986) |
 | P6 Consolidation & KB Release | TBD | — | — | — | 0 | 착수 예정 (A→B→C) |
 | SI-P7 Structural Redesign (Attempt 1) | ~52 (Step A 10 / Step B 14 / Step V 11 / Step C 12 + V-T1~T11 instrumentation) | — | — | — | Step A/B + Step V 완료 | **Archived** (main `a33dfdb`, tag `si-p7-attempt-1`). v5 sequential ablation → D-194/195/196 |
-| SI-P7 Structural Redesign (Attempt 2 rebuild) | ~46 (Stage A 11 / Stage B 18 / Stage C 12 / Stage D 3 + 문서 3) | 8 | 16 | 9 | 0/46 | **Planning** on `feature/si-p7-rebuild` from `2ebd435`. Axis-gated + per-axis 5c smoke gate (D-200~D-202) |
+| SI-P7 Structural Redesign (Attempt 2 rebuild) | ~47 (Stage A 9 / Stage B 24 [+6 GU ext] / Stage C 12 / Stage D 3 + 문서 3) | 10 | 18 | 9 | 18/47 | **Stage B-1 Extension** (S3-T9~T14 착수 중, D-203~D-208). S1/S2-T1T2/Pre-B/S3-T1~T8 gate PASS. `feature/si-p7-rebuild` |
 | M1 Multi-Domain (suspended) | 7 | 2 | 3 | 2 | 0/7 | P6 완료 후 활성화 |
 | X Cross-phase | 7 | 7 | 0 | 0 | 0/7 | — |
 | **Silver 합계** | **134+** | — | — | — | **67/134+** | — |

@@ -1,209 +1,159 @@
 # Session Compact
 
-> Generated: 2026-04-25
+> Generated: 2026-04-26
 > Source: Conversation compaction via /compact-and-go
 
 ## Goal
 
-SI-P7 rebuild Stage B 계속 진행. S3 Axis (Stage B-1/B-2) 완료 → S3 Axis Gate PASS → Stage B-3 (S2-T3~T8) 착수 준비.
-
----
+SI-P7 Stage B-1 Extension S3-T9~T14 구현 완료 → L1 테스트 추가 → 847+N tests PASS → S3 GU Gate smoke trial 통과.
 
 ## Completed
 
-### S3-T3: field_adjacency rule engine seed
-
-- [x] `bench/japan-travel/state-snapshots/cycle-0-snapshot/domain-skeleton.json` 에 `field_adjacency` 추가
-  - 11개 field → 2~3 next_fields (japan-travel 도메인 기반)
-  - `price→[how_to_use,where_to_buy,tips]`, `policy→[eligibility,how_to_use,tips]`, `location→[hours,tips]` 등
-  - commit `d9dad76`
-
-### S3-T4: _generate_dynamic_gus rule engine 참조
-
-- [x] `src/nodes/integrate.py`: `field_adjacency[claim.field]` 우선, `applicable_fields` 교집합으로 category 제약, fallback 기존 방식
-- [x] **L1**: `TestFieldAdjacencyRuleEngine` 3 cases ✓
-- [x] **L2**: `si-p7-s3-t4-smoke` (1c) — adj GU 5건 모두 field_adjacency 값 내, balance-* 0, KU 13→24
-  - commit `d9dad76`
-
-### S3-T5: fields[].default_risk / default_utility skeleton 추가
-
-- [x] 11개 field에 `default_risk` / `default_utility` 추가
-  - price/acceptance → financial/high | policy/eligibility → policy/high
-  - how_to_use → convenience/high | tips/duration → informational/medium
-  - hours/location/etiquette/where_to_buy → convenience/medium
-  - commit `e38c01e`
-
-### S3-T6: dynamic GU skeleton default 참조
-
-- [x] `_generate_dynamic_gus`: `field_defaults` 맵으로 adj field별 default 조회
-  - 기존 `"medium"/"convenience"` 하드코딩 제거
-  - fallback: skeleton default 없으면 "medium"/"convenience" 유지
-- [x] **L1**: `TestSkeletonFieldDefaults` 2 cases ✓ (843 passed)
-  - commit `e38c01e`
-
-### S3-T7: adjacency_yield 트래커
-
-- [x] `src/state.py`: `adjacency_yield: list[dict]` 추가
-- [x] `src/nodes/integrate.py`: `adj_yield = adj_resolved / max(adj_open_at_start, 1)` 매 cycle 누적 (최근 10c)
-- [x] `src/utils/state_io.py`: `adjacency-yield.json` → `_OPTIONAL_LIST_FILES` 등록 (snapshot 포함)
-- [x] `src/obs/telemetry.py`: `_latest_adj_yield()` + `adjacency_yield` 키 추가
-- [x] `schemas/telemetry.v1.schema.json`: `adjacency_yield` 필드 추가
-- [x] **L1**: `TestAdjacencyYieldTracker` 3 cases ✓
-- [x] **L2**: S3 Axis Gate (5c) 와 합산 검증 — 5c avg=0.500 >> 0.05 ✓
-  - commit `d381f9a`, `77c658d`
-
-### S3-T8: blocklist source/next 양쪽 배제
-
-- [x] `_generate_dynamic_gus`: `claim.field in blocklist_fields` → 즉시 `[]` 반환 (source 배제)
-  - S3-T2(next 차단) + S3-T8(source 차단) 합산으로 conflict field 완전 억제
-- [x] **L1**: `test_source_field_blocklisted_skips_all_adj` ✓ (847 passed)
-  - commit `d381f9a`
-
-### S3 Axis Gate (5c smoke) ✅ PASS
-
-- [x] `bench/silver/japan-travel/p7-rebuild-s3-smoke/` (5c real API)
-  - KU c5=79 (기준 ≥70 ✓)
-  - GU_open c3=10 (기준 ≥5 ✓) — attempt-1 collapse 없음
-  - target_count c5=2 (조건부 ✓ — GU 2개만 남아 수렴, not collapse)
-  - conflict field 재생성=0, balance-*=0
-  - adjacency_yield 5 entries, 5c avg=0.500 ✓
-  - commit `77c658d`
-
----
+- [x] `integrate.py` S3-T9 Bug A: `_generate_dynamic_gus` 시그니처 변경
+  - `open_count` 제거, `canonical_entity_key: str | None = None` 추가
+  - `entity_key = canonical_entity_key or claim.get("entity_key", "")`
+- [x] `integrate.py` S3-T9 Bug B: `existing_ku_slots` 파라미터 추가 → `existing_slots |= existing_ku_slots`
+- [x] `integrate.py` S3-T13: `field_adjacency` lookup 브랜치 삭제 → `adj_candidates = applicable_fields`
+- [x] `integrate.py` S3-T14: `_compute_dynamic_gu_cap(mode)` 고정 (normal=8, jump=20), `open_count` 의존 제거
+- [x] `integrate.py` S3-T10: post-cycle new-KU adj sweep 추가 (claim loop 이후 `adds` 기반)
+- [x] `integrate.py` 호출부 업데이트: `canonical_entity_key=entity_key`, `existing_ku_slots=_ku_slots` 전달
+- [x] `integrate.py` `from math import ceil` 제거 (불필요)
+- [x] `integrate.py` `open_count = sum(...)` 변수 제거 (S3-T14로 불필요)
+- [x] `seed.py` `WILDCARD_PARALLEL_FIELDS` 상수 추가 (S3-T11)
+- [x] `seed.py` `_get_per_category_cap` 함수 삭제 (S3-T12)
+- [x] `seed.py` `n_categories`, `per_cat_cap`, `cat_counts` 제거 (S3-T12)
+- [x] `seed.py` entity-specific 브랜치에 wildcard 병행 생성 추가 (S3-T11)
+- [x] `seed.py` capped 루프 삭제 → `deduped` 직접 사용, 최소 커버리지 `cats_covered` 기반으로 변경 (S3-T12)
+- [x] `tests/test_nodes/test_seed.py`: `_get_per_category_cap` import 제거
+- [x] `tests/test_nodes/test_integrate.py`: 모든 `_generate_dynamic_gus(..., "normal", 5)` → `(..., "normal")` 수정 (7군데)
+- [x] `tests/test_nodes/test_integrate.py`: `TestFieldAdjacencyRuleEngine` 클래스 docstring 업데이트
 
 ## Current State
 
-- **브랜치**: `feature/si-p7-rebuild`
-- **최신 commit**: `77c658d`
-- **테스트**: 847 passed, 3 skipped
-- **Stage A**: 완료
-- **Pre-Stage B (S4-T1)**: 완료
-- **Stage B-1/B-2 (S3 전체)**: **완료** — S3 Axis Gate PASS
-- **다음**: Stage B-3 (S2-T3~T8)
+- **Branch**: `feature/si-p7-rebuild`
+- **테스트**: 마지막 실행 직전 중단됨 — `open_count=5` 인자 수정 완료 직후
+- **아직 미확인**: 전체 pytest 통과 여부
+- **미완료 테스트 수정**: `TestFieldAdjacencyRuleEngine.test_uses_adjacency_map_when_present` 기대값 업데이트 필요
 
 ### Changed Files (this session)
 
-| 파일 | 변경 |
-|---|---|
-| `bench/japan-travel/state-snapshots/cycle-0-snapshot/domain-skeleton.json` | field_adjacency + default_risk/utility 추가 |
-| `src/nodes/integrate.py` | S3-T4(rule engine) + S3-T6(default) + S3-T7(yield tracker) + S3-T8(source blocklist) |
-| `src/state.py` | `adjacency_yield: list[dict]` 추가 |
-| `src/utils/state_io.py` | adjacency-yield.json → _OPTIONAL_LIST_FILES |
-| `src/obs/telemetry.py` | adjacency_yield 추가 |
-| `schemas/telemetry.v1.schema.json` | adjacency_yield 필드 추가 |
-| `tests/test_nodes/test_integrate.py` | S3-T4/T6/T7/T8 테스트 추가 |
-| `dev/active/phase-si-p7-structural-redesign/si-p7-tasks.md` | S3-T3~T8 + Gate 완료 마킹 |
-| `bench/silver/japan-travel/p7-s3-t4-smoke/` | S3-T4 1c smoke 결과 |
-| `bench/silver/japan-travel/p7-rebuild-s3-smoke/` | S3 Axis Gate 5c smoke 결과 |
+- `src/nodes/integrate.py` — S3-T9/T10/T13/T14 모두 적용
+- `src/nodes/seed.py` — S3-T11/T12 적용
+- `tests/test_nodes/test_seed.py` — `_get_per_category_cap` import 제거
+- `tests/test_nodes/test_integrate.py` — 호출부 + docstring 수정
 
----
+### 주요 코드 위치
+
+```
+src/nodes/integrate.py
+  line ~175: _generate_dynamic_gus (S3-T9 Bug A/B + S3-T13 적용)
+  line ~279: _compute_dynamic_gu_cap (S3-T14 적용, mode만)
+  line ~307: integrate_node (open_count 변수 제거)
+  line ~556: 호출부 (canonical_entity_key, existing_ku_slots 전달)
+  line ~570: S3-T10 sweep 블록
+
+src/nodes/seed.py
+  line ~38: WILDCARD_PARALLEL_FIELDS 상수
+  line ~284: S3-T11 wildcard 병행 생성
+  line ~328: S3-T12 최소 커버리지 (cats_covered 기반)
+```
 
 ## Remaining / TODO
 
-### Stage B-3 (S2-T3~T8) — condition_split 재정의
+### 즉시 처리 (다음 액션)
 
-> **사전 작업**: S2-T6 시작 직전 V-T11 cherry-pick — `git cherry-pick f61c864` (config.py + integrate.py + tests)
+- [ ] **테스트 수정**: `TestFieldAdjacencyRuleEngine.test_uses_adjacency_map_when_present` 기대값 업데이트
+  - S3-T13 후 behavior: `field_adjacency` 무시 → applicable_fields 전체 사용
+  - claim: `{entity_key: "d:transport:jr-pass", field: "price"}`
+  - `_SKELETON_WITH_MAP` applicable fields (transport): `{price, tips, how_to_use, where_to_buy}`
+  - price 제외 → adj GUs: `{tips, how_to_use, where_to_buy}`
+  - 기존 기대: `fields == {"how_to_use", "tips"}` → 신규 기대: `fields == {"tips", "how_to_use", "where_to_buy"}`
+- [ ] **전체 pytest 통과 확인** (`python -m pytest -q`)
+- [ ] **L1 테스트 추가** (S3-T9~T14용 — `tests/test_nodes/test_integrate.py`, `tests/test_nodes/test_seed.py`)
 
-- [ ] **S2-T3** F2 = α + β 확정 (D-181 design only, 구현 불필요)
-- [ ] **S2-T4** F2 구현 — α (query 재작성) + β (aggressive mode, S5a-T11 동반)
-- [ ] **S2-T5** condition_split (a): parse prompt "조건어 추출"
-- [ ] **S2-T6 (보수화)** "값 구조 차이" 감지 → condition_split (임계: ≥2 chars, set/range 변환 시 명시적 marker)
-- [ ] **S2-T7 (보수화)** skeleton.fields[].condition_axes 강제 (임계: conditions 필드 비어있지 않을 때)
-- [ ] **S2-T8 (보수화)** axis_tags 차이 → condition_split (임계: 단일 axis 차이만)
+### L1 테스트 목록 (추가 대상)
 
-### S2 Axis Gate (5c smoke)
+**test_integrate.py** (S3-T9, T10, T13, T14):
+- `test_adj_gu_uses_canonical_entity_key` — canonical_entity_key 파라미터 사용 확인
+- `test_adj_gu_skips_existing_ku_slot` — existing_ku_slots 병합으로 중복 방지
+- `test_new_ku_sweep_creates_adj_gus` — adds 기반 sweep에서 adj GU 생성
+- `test_sweep_respects_cap` — sweep이 dynamic_cap 공유
+- `test_sweep_deduplicates` — 동일 entity 중복 sweep 방지
+- `test_adj_gu_uses_all_applicable_fields_not_adjacency_list` — S3-T13: field_adjacency 무시
+- `test_dynamic_cap_fixed_normal_8` — normal mode cap=8
+- `test_dynamic_cap_fixed_jump_20` — jump mode cap=20
+- `test_dynamic_cap_not_open_count_dependent` — open_count 변화 무관
 
-```
-trial: bench/silver/japan-travel/p7-rebuild-s2-smoke/
-PASS 기준:
-- c1 ΔKU ≤ +35
-- GU 양산 ≥ 65
-- KU c5 ≥ 90
-- adj_gen: c3+ 0 cycle 없음
-FAIL 시: V-T11 토글로 narrowing
-```
+**test_seed.py** (S3-T11, T12):
+- `test_seed_also_creates_wildcard_for_entity_specific_fields` — entity-specific 시 wildcard 병행
+- `test_seed_no_per_cat_cap_regulation_price_included` — per_cat_cap 제거로 regulation+price 모두 포함
+- `test_seed_no_per_cat_cap_regression` — 기존 cap으로 누락됐던 슬롯이 이제 포함
 
-### Stage B-4 (S4-T2~T4)
+### 이후
 
-- [ ] S4-T2: coverage_map.deficit_score 카테고리 결핍 계산
-- [ ] S4-T3: field 선택 → S3 field_adjacency 통일
-- [ ] S4-T4: S5a validated entity 대상만 balance GU
-
-### Stage C (S5a), Stage D (15c L3)
-
----
+- [ ] S3 GU Gate smoke trial (`bench/silver/japan-travel/p7-rebuild-s3-gu-smoke/`)
+  - G1: adj GU 생성 전 cycle 없음
+  - G2: entity-specific adj GU ≥ 5 (5c 누계)
+  - G3: c2/c3 adj_gen ≥ c1 (chain propagation)
+  - G4: regulation GU ≥ 1, attraction ku_only ≥ 3
+  - G5: conflict 재생성=0, balance-*=0, adj_yield avg ≥ 0.3, KU c5 ≥ 65
+- [ ] step-update 커밋 (S3-T9~T14 완료)
+- [ ] Stage B-3: S2-T3~T8 (condition_split 보수화)
 
 ## Key Decisions
 
-### 이번 세션 확정
-
-- **S3-T7 L2 합산**: S3-T7 5c smoke를 S3 Axis Gate와 합산 → API 비용 절감
-- **field_adjacency 설계**: 11개 field → 2~3 next_fields, category constraint 교집합 필터 필수
-- **adjacency_yield 저장**: _OPTIONAL_LIST_FILES 등록 + telemetry emit → 검증 가능성 확보
-- **S3 Gate 판정**: c5 targets=2는 healthy convergence (GU 2개 남음), attempt-1 collapse(targets=0)와 구별 → 조건부 PASS
-
-### 이전 세션에서 유지
-
-- **Option B**: Pre-B(S4-T1) → S3 → S2 → S4-T2~T4 순서
-- **D-129/F1**: target_count cap/budget 재도입 금지
-- **S2-T6 V-T11**: `git cherry-pick f61c864` 사전 적용 필요
-
----
+- **D-203** S3-T9 Bug A: `_generate_dynamic_gus`에 `canonical_entity_key` 파라미터 추가 (기존 `open_count` 위치 인자 제거)
+- **D-204** S3-T10: claim loop 이후 `adds` 기반 new-KU adj sweep (entity dedup 포함)
+- **D-205** S3-T11: `WILDCARD_PARALLEL_FIELDS = {price, duration, how_to_use, acceptance, where_to_buy}` — entity-specific 후 wildcard 병행
+- **D-206** S3-T12: `_get_per_category_cap` 삭제, `deduped` 직접 사용, 최소 커버리지만 유지
+- **D-207** S3-T13: `field_adjacency` lookup 완전 제거 → `adj_candidates = applicable_fields`
+- **D-208** S3-T14: `_compute_dynamic_gu_cap(mode)` 고정 (normal=8, jump=20)
 
 ## Context
 
+### TestFieldAdjacencyRuleEngine 수정 상세
+
+```python
+# _SKELETON_WITH_MAP 기준
+# claim: entity_key="d:transport:jr-pass", field="price"
+# applicable_fields (transport): [price, tips, how_to_use, where_to_buy]
+# adj_candidates = applicable_fields (S3-T13: field_adjacency 무시)
+# price == claim.field → skip
+# → GUs: {tips, how_to_use, where_to_buy}
+
+# test_uses_adjacency_map_when_present 수정:
+# OLD: assert fields == {"how_to_use", "tips"}
+# NEW: assert fields == {"tips", "how_to_use", "where_to_buy"}
+```
+
+### 구현 순서 검증
+
+S3-T9 → T13 → T14 → T10 (integrate.py) → T11 → T12 (seed.py) 순서 완료.
+
+### 테스트 현황
+
+중단 직전: 310 passed, 1 failed (`test_uses_adjacency_map_when_present` — open_count 수정 후 재확인 필요)
+→ 실제 실패는 `test_uses_adjacency_map_when_present`의 기대값 불일치 (S3-T13 행동 변화)
+
 다음 세션에서는 답변에 한국어를 사용하세요.
-
-### S2-T3~T8 설계 사전 정보
-
-- **V-T11**: S2-T6 시작 전 cherry-pick 필요 (`git cherry-pick f61c864`)
-  - config.py + integrate.py + tests — condition_split toggle 인프라
-- **F2 = α + β**:
-  - α: critique rx에서 plan으로 query 재작성 파라미터 전달
-  - β: aggressive mode entity_discovery 파라미터 override (S5a-T11 동반 구현)
-- **condition_split 보수화 임계**:
-  - S2-T6: existing/claim 모두 ≥ 2 chars, set/range 변환 시 명시적 marker
-  - S2-T7: claim.conditions 필드 비어있지 않을 때만
-  - S2-T8: 단일 axis 차이만 (geography), 다중 axis 차이는 hold
-
-### S3 Axis Gate 최종 비교
-
-| trial | KU c5 | GU_open c3 | adj_yield avg | balance-* |
-|---|---|---|---|---|
-| p7-rebuild-s3-smoke | 79 | 10 | 0.500 | 0 ✓ |
-| s3-attempt-1 (reference) | 61 | 0 (collapse) | N/A | N/A |
-
-### 제약
-
-- **D-129**: target_count cap 재도입 금지
-- **D-34**: real API 필수
-- **D-200**: per-axis 5c gate 통과 전 다음 axis 진입 금지
-- **F1**: budget 재도입 금지
-
-### 최근 commits
-
-- `77c658d` [si-p7] S3 Axis Gate PASS + adjacency_yield 저장/telemetry
-- `d381f9a` [si-p7] S3-T7/T8: adjacency_yield 트래커 + source/next blocklist
-- `e38c01e` [si-p7] S3-T5/T6: field default_risk/default_utility + adj GU 적용
-- `d9dad76` [si-p7] S3-T3/T4: field_adjacency rule engine seed + 참조 구현
-
----
 
 ## Next Action
 
-**두 가지 작업을 병행 착수**:
+**즉시**: `TestFieldAdjacencyRuleEngine.test_uses_adjacency_map_when_present` 기대값 수정
 
-### 1. Entity-Field Matrix 검증 (field coverage 확인)
+```python
+# 수정 위치: tests/test_nodes/test_integrate.py
+# test_uses_adjacency_map_when_present 함수
+# OLD:
+assert fields == {"how_to_use", "tips"}, (
+    f"field_adjacency['price'] 대로만 생성돼야 함, got {fields}"
+)
+assert "where_to_buy" not in fields, "adjacency map에 없는 where_to_buy는 생성되지 않아야 함"
 
-`p7-rebuild-s3-smoke` 5c 결과를 기반으로 현재 KU 79개의 entity × field 매트릭스를 구성해 coverage 확인:
+# NEW (S3-T13 후: applicable_fields 전체 사용):
+assert fields == {"tips", "how_to_use", "where_to_buy"}, (
+    f"S3-T13 후 field_adjacency 제거 → applicable_fields 전체 사용, got {fields}"
+)
+```
 
-1. `bench/silver/japan-travel/p7-rebuild-s3-smoke/state-snapshots/cycle-5-snapshot/knowledge-units.json` 읽기
-2. entity_key (category:slug) × field 매트릭스 출력
-3. 빈 셀(gap) 확인 — 어떤 entity의 어떤 field가 아직 미수집인지
-4. skeleton `field_adjacency` 설계와의 정합성 확인 (adj GU가 실제로 유용한 필드를 탐색했는지)
-
-### 2. Stage B-3 S2-T3 착수
-
-- S2-T3: F2 = α + β 확정 (design only)
-  - `dev/active/phase-si-p7-structural-redesign/` 의 context 파일 확인
-  - α/β 설계 결정사항 문서화
+그 후 `python -m pytest -q` 전체 통과 확인 → L1 테스트 추가 → pytest 재확인 → 커밋.
