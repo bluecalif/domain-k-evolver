@@ -402,10 +402,14 @@ def seed_node(state: EvolverState) -> dict:
     )
     initial_metrics["rates"] = actual_rates
 
+    wildcard_count = sum(
+        1 for gu in gap_map if gu["target"]["entity_key"].endswith(":*")
+    )
     return {
         "gap_map": gap_map,
         "metrics": initial_metrics,
         "current_cycle": 1,
+        "_diag_wildcard_gen_count": wildcard_count,
     }
 
 

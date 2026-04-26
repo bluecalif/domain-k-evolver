@@ -396,3 +396,16 @@ class TestM9SeedOrigin:
             assert gu.get("created_cycle") == 1, (
                 f"GU {gu.get('gu_id')} created_cycle={gu.get('created_cycle')} (expected 1)"
             )
+
+    def test_seed_returns_wildcard_gen_count(self) -> None:
+        """SI-P7 M11: seed_node 가 _diag_wildcard_gen_count 를 반환 (wildcard entity_key GU 수)."""
+        state = {"domain_skeleton": self._SKELETON, "knowledge_units": [], "policies": {}}
+        result = seed_node(state)
+        count = result.get("_diag_wildcard_gen_count")
+        assert isinstance(count, int) and count >= 0, f"_diag_wildcard_gen_count={count}"
+        # WILDCARD_FIELDS (tips) 가 있으므로 적어도 1개 이상
+        wildcard_gus = [gu for gu in result["gap_map"]
+                        if gu["target"]["entity_key"].endswith(":*")]
+        assert count == len(wildcard_gus), (
+            f"count={count} vs len(wildcard_gus)={len(wildcard_gus)}"
+        )

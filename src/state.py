@@ -244,4 +244,6 @@ class EvolverState(TypedDict, total=False):
     # Diagnostic fields (진단 전용, orchestrator가 cycle마다 읽고 제거)
     _diag_search_by_gu: dict | None       # collect: {gu_id: search_result_count}
     _diag_adjacent_gap_count: int | None  # integrate: 신규 dynamic GU 수
+    _diag_wildcard_gen_count: int | None  # seed(c1): wildcard GU 생성 수 (M11)
+    _diag_cap_hit_count: int | None       # integrate: dynamic_cap 도달 여부 (M5b, 0/1)
     _diag_resolved_gus: list | None       # integrate: resolved GU gu_id 목록

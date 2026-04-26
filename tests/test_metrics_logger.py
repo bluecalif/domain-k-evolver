@@ -115,3 +115,40 @@ class TestMetricsLogger:
         state = _make_state()
         entry = logger.log(1, state)
         assert entry["collect_failure_rate"] == 0.0
+
+    def test_m11_adj_gen_count_in_entry(self):
+        """SI-P7 M11: adj_gen_count = state._diag_adjacent_gap_count."""
+        logger = MetricsLogger()
+        state = _make_state()
+        state["_diag_adjacent_gap_count"] = 5
+        entry = logger.log(1, state)
+        assert entry["adj_gen_count"] == 5
+
+    def test_m11_wildcard_gen_count_in_entry(self):
+        """SI-P7 M11: wildcard_gen_count = state._diag_wildcard_gen_count."""
+        logger = MetricsLogger()
+        state = _make_state()
+        state["_diag_wildcard_gen_count"] = 12
+        entry = logger.log(1, state)
+        assert entry["wildcard_gen_count"] == 12
+
+    def test_m11_counts_default_zero_when_missing(self):
+        """adj/wildcard count 없는 state → 0 기본값."""
+        logger = MetricsLogger()
+        entry = logger.log(1, _make_state())
+        assert entry["adj_gen_count"] == 0
+        assert entry["wildcard_gen_count"] == 0
+
+    def test_m5b_cap_hit_count_in_entry(self):
+        """SI-P7 M5b: cap_hit_count = state._diag_cap_hit_count."""
+        logger = MetricsLogger()
+        state = _make_state()
+        state["_diag_cap_hit_count"] = 1
+        entry = logger.log(1, state)
+        assert entry["cap_hit_count"] == 1
+
+    def test_m5b_cap_hit_default_zero(self):
+        """_diag_cap_hit_count 없는 state → cap_hit_count 0."""
+        logger = MetricsLogger()
+        entry = logger.log(1, _make_state())
+        assert entry["cap_hit_count"] == 0

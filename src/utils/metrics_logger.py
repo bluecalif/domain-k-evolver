@@ -66,6 +66,9 @@ class MetricsLogger:
             "llm_tokens": llm_tokens,
             "search_calls": search_calls,
             "fetch_calls": fetch_calls,
+            "adj_gen_count": state.get("_diag_adjacent_gap_count") or 0,
+            "wildcard_gen_count": state.get("_diag_wildcard_gen_count") or 0,
+            "cap_hit_count": state.get("_diag_cap_hit_count", 0) or 0,
         }
         self.entries.append(entry)
         return entry
