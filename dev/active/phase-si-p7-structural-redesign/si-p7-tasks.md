@@ -1,6 +1,6 @@
 # SI-P7 Structural Redesign — Tasks (rebuild)
 
-> Last Updated: 2026-04-25
+> Last Updated: 2026-04-26
 > Status: In Progress (Stage A)
 > 단일 진실 소스: **`docs/structural-redesign-tasks_CC.md` v2** (task 상세)
 > 본 문서: 착수 순서 + checklist + L1/L2/L3 checkpoint + axis-gate 통과 기준
@@ -143,7 +143,90 @@ trial: bench/silver/japan-travel/p7-rebuild-s3-smoke/  (5c real API)
 - adjacency_yield 5 entries, 5c avg=0.500 (>> 0.05 ✓) [S3-T7 L2 합산 검증]
 - adj GU fields: where_to_buy/how_to_use/price/eligibility/tips (field_adjacency 값 내 ✓)
 
-판정: PASS → Stage B-3 (S2-T3~T8) 진입 가능
+판정: PASS → Stage B-1 Extension (S3-T9~T14) 진입
+```
+
+### Stage B-1 Extension — GU 생성 범위 확장 (S3-T9~T14)
+
+_entity-field-matrix 분석으로 발견된 3가지 vacant 패턴 (P1/P2/P3) 수정. S3 Gate PASS 이후 추가 태스크. 결과 지표 후퇴 없음 (adj GU 증가 방향)._
+
+> **Vacant 패턴 요약**
+> - P1 (75 slots): wildcard-first 후 named entity adj GU 미생성 — Bug A (raw entity_key) + S3-T10 미구현
+> - P2 (7 slots): entity-specific GU 생성 시 wildcard(\*) 슬롯 미생성 — seed.py:259 브랜치 구조
+> - P3 (15 slots): per_cat_cap=4 (8 categories) → regulation 4 eligibility GU로 cap 소진 → price/tips 미등록
+> - 추가: field_adjacency direct-pair 차단 효과 → applicable_fields 전체로 확장
+> - 추가: dynamic_cap `open_count * 0.2` → open GU 감소 시 adj GU 생성 위축
+
+- [x] **S3-T9** `_generate_dynamic_gus` Bug A/B 수정 (P1) — `src/nodes/integrate.py:193`
+  - **Bug A**: 시그니처에 `canonical_entity_key` 파라미터 추가 → `entity_key = canonical_entity_key or claim.get("entity_key", "")`
+  - **Bug B**: `existing_ku_slots` 파라미터 추가 → `existing_slots |= existing_ku_slots` (KU 슬롯 병합)
+  - `integrate_node` 호출부 (~line 561): canonical entity_key 전달 + `existing_ku_slots` 계산 전달
+  - **L1**: `test_adj_gu_uses_canonical_entity_key`, `test_adj_gu_skips_existing_ku_slot` ✓ (859 passed)
+
+- [x] **S3-T10** post-cycle new-KU adj sweep (P1) — `src/nodes/integrate.py` (claim loop 이후)
+  - `adds` 리스트 순회: 이번 cycle 신규 KU 각각에 대해 `_generate_dynamic_gus` 호출
+  - `sweep_entity_seen` set으로 동일 entity 중복 방지
+  - cap 내에서만 등록 (기존 `dynamic_cap` 공유)
+  - **L1**: `test_new_ku_sweep_creates_adj_gus`, `test_sweep_respects_cap`, `test_sweep_deduplicates` ✓ (859 passed)
+
+- [x] **S3-T11** seed.py wildcard GU 병행 생성 (P2) — `src/nodes/seed.py:284-296`
+  - `WILDCARD_PARALLEL_FIELDS = {price, duration, how_to_use, acceptance, where_to_buy}`
+  - entity-specific 브랜치에서 entity별 GU 생성 후 wildcard slot (`cat:*`) 추가 생성
+  - **L1**: `test_seed_also_creates_wildcard_for_entity_specific_fields` ✓ (859 passed)
+
+- [x] **S3-T12** per_cat_cap 제거 (P3) — `src/nodes/seed.py`
+  - `_get_per_category_cap` 함수 제거 + cap 적용 루프 제거
+  - `deduped` 직접 사용, 최소 커버리지(`cats_covered`) 기반으로 변경
+  - **L1**: `test_seed_no_per_cat_cap_all_fields_present`, `test_seed_no_per_cat_cap_regression` ✓ (859 passed)
+  - **수정**: `test_bootstrap_gu_count` 상한(40) 제거 (per_cat_cap 잔재)
+
+- [x] **S3-T13** `_generate_dynamic_gus` field_adjacency 규칙 제거 — `src/nodes/integrate.py:224`
+  - `field_adjacency` lookup 브랜치 삭제 → 항상 `adj_candidates = applicable_fields` 사용
+  - **L1**: `test_adj_gu_uses_all_applicable_fields_not_adjacency_list` ✓ (859 passed)
+  - **수정**: `test_uses_adjacency_map_when_present` 기대값 → `{"tips", "how_to_use", "where_to_buy"}`
+
+- [x] **S3-T14** dynamic_cap 공식 수정 — `src/nodes/integrate.py:279-281`
+  - `open_count * 0.2` 제거, 고정 cap: normal=`8`, jump=`20`
+  - `_compute_dynamic_gu_cap(mode)` (인자 단순화)
+  - **L1**: `test_dynamic_cap_fixed_normal_8`, `test_dynamic_cap_fixed_jump_20`, `test_dynamic_cap_not_open_count_dependent` ✓ (859 passed)
+
+### S3 GU Gate (5c smoke) ✅ PASS
+
+```
+trial: bench/silver/japan-travel/p7-rebuild-s3-gu-smoke/  (5c real API, commit fbbebbc)
+결과:
+  KU active: c1=34→c5=101 (c5 ≥65 ✓)
+  GU open:   c1=36→c5=2 (정상 수렴)
+  mode:      c1=normal, c2~c5=jump
+
+[G1] 연속성 ⚠️ 조건부 PASS
+  adj_open 추이: c1_start=0→c2_start=8→c3_start=10→c4_start=16→c5_start=7
+  adj_gen 추정: c1(8) c2(4) c3(6) c4(0) c5(0)
+  c4/c5 adj_gen=0은 KU 포화(c4 active=94)로 인한 자연 소진
+  → attempt-1 즉시 붕괴(c1=0)와 달리 c3까지 지속 생성 → 조건부 PASS
+
+[G2] 특정성 ✅ PASS
+  entity-specific adj GU (wildcard 제외): 14개 ≥ 5 ✓
+  총 adj GU: 20개 (entity-specific 14, wildcard 6)
+
+[G3] 전파성 ✅ PASS
+  adj_gen 시퀀스: 8→4→6 (c2→c3 uptick, 단조 감소 아님) ✓
+  chain propagation 확인
+
+[G4] 커버리지 ✅ PASS
+  regulation GU: 18개 ≥ 1 ✓ (per_cat_cap 제거 효과)
+  attraction ku_only: 27개 ≥ 3 ✓
+
+[G5] 안정성 ✅ PASS
+  conflict field 재생성: 0 ✓ (recent_conflict_fields=[])
+  balance-* GU: 0 ✓
+  adj_yield 5c avg: 0.362 ≥ 0.3 ✓
+  KU c5: 101 ≥ 65 ✓
+
+entity-field-matrix.json: vacant=172, ku_only=80, gu_open=4, ku_gu=123
+  (attraction vacant=77/ku_only=27 — entity 26개, 수집 공간 잔존)
+
+판정: PASS → Stage B-3 (S2-T3~T8) 진입
 ```
 
 ### Stage B-3 — condition_split 재정의 (S2-T3~T8, D-195 보수화)
@@ -256,10 +339,10 @@ PASS 기준:
 
 | Size | Count | Tasks |
 |---|---|---|
-| S | 8 | S1-T1/T2/T3/T7, S2-T1/T2/T3, S4-T1 |
-| M | 14 | S1-T4/T5/T6 ~~T8/T9~~, S2-T4/T5/T6/T7/T8, S3-T1~T8 부분 |
+| S | 10 | S1-T1/T2/T3/T7, S2-T1/T2/T3, S4-T1, S3-T12/T13 |
+| M | 18 | S1-T4/T5/T6 ~~T8/T9~~, S2-T4/T5/T6/T7/T8, S3-T1~T8 부분, S3-T9/T10/T11/T14 |
 | L | 9 | S5a-T3/T5/T6/T7/T8/T9/T10/T11/T12 |
-| XL | 0 | (S5a 통합은 12 tasks 로 분해됨) |
+| XL | 0 | — |
 
-**Total**: ~41 tasks (Stage A: 9, Stage B: 18, Stage C: 12, Stage D: 3) + 문서 3
-_(T8/T9 DROP으로 -2)_
+**Total**: ~47 tasks (Stage A: 9, Stage B: 24 [+6 GU extension], Stage C: 12, Stage D: 3) + 문서 3
+_(S3-T9~T14 신규 추가, T8/T9 DROP으로 -2)_

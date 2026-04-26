@@ -1,0 +1,1535 @@
+{
+  "trial_id": "p7-rebuild-s3-gu-smoke",
+  "cycle": 5,
+  "generated_at": "2026-04-26",
+  "generation_method": "manual_retroactive",
+  "note": "S3-T9~T14 적용 후. KU/GU 기준: state/*.json c5 최종.",
+  "state_definitions": {
+    "ku_gu": "KU + GU 모두 존재",
+    "ku_only": "KU 존재, GU 없음",
+    "gu_open": "GU open, KU 미생성",
+    "vacant": "KU·GU 모두 없음",
+    "gu_resolved_no_wildcard_ku": "GU resolved, wildcard 슬롯 KU 없음"
+  },
+  "summary": {
+    "vacant": 172,
+    "ku_only": 80,
+    "gu_open": 4,
+    "ku_gu": 123,
+    "total": 191
+  },
+  "categories": {
+    "transport": {
+      "entities": [
+        "airport-transfer",
+        "shinkansen"
+      ],
+      "fields": [
+        "price",
+        "duration",
+        "how_to_use",
+        "tips"
+      ],
+      "matrix": {
+        "airport-transfer": {
+          "price": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          },
+          "duration": {
+            "state": "ku_gu",
+            "ku_ids": [
+              "KU-0083"
+            ],
+            "gu_ids": [
+              "GU-0043"
+            ]
+          },
+          "how_to_use": {
+            "state": "ku_only",
+            "ku_ids": [
+              "KU-0009"
+            ],
+            "gu_ids": []
+          },
+          "tips": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          }
+        },
+        "shinkansen": {
+          "price": {
+            "state": "ku_only",
+            "ku_ids": [
+              "KU-0013"
+            ],
+            "gu_ids": []
+          },
+          "duration": {
+            "state": "ku_gu",
+            "ku_ids": [
+              "KU-0082"
+            ],
+            "gu_ids": [
+              "GU-0042"
+            ]
+          },
+          "how_to_use": {
+            "state": "ku_only",
+            "ku_ids": [
+              "KU-0005"
+            ],
+            "gu_ids": []
+          },
+          "tips": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          }
+        },
+        "*": {
+          "price": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          },
+          "duration": {
+            "state": "ku_gu",
+            "ku_ids": [
+              "KU-0084"
+            ],
+            "gu_ids": [
+              "GU-0044"
+            ]
+          },
+          "how_to_use": {
+            "state": "ku_gu",
+            "ku_ids": [
+              "KU-0101"
+            ],
+            "gu_ids": [
+              "GU-0063"
+            ]
+          },
+          "tips": {
+            "state": "ku_gu",
+            "ku_ids": [
+              "KU-0089"
+            ],
+            "gu_ids": [
+              "GU-0045"
+            ]
+          }
+        }
+      }
+    },
+    "accommodation": {
+      "entities": [],
+      "fields": [
+        "price",
+        "location",
+        "etiquette",
+        "tips"
+      ],
+      "matrix": {
+        "*": {
+          "price": {
+            "state": "ku_gu",
+            "ku_ids": [
+              "KU-0026"
+            ],
+            "gu_ids": [
+              "GU-0006"
+            ]
+          },
+          "location": {
+            "state": "ku_gu",
+            "ku_ids": [
+              "KU-0038"
+            ],
+            "gu_ids": [
+              "GU-0020"
+            ]
+          },
+          "etiquette": {
+            "state": "ku_gu",
+            "ku_ids": [
+              "KU-0037"
+            ],
+            "gu_ids": [
+              "GU-0021"
+            ]
+          },
+          "tips": {
+            "state": "ku_gu",
+            "ku_ids": [
+              "KU-0039"
+            ],
+            "gu_ids": [
+              "GU-0022"
+            ]
+          }
+        }
+      }
+    },
+    "attraction": {
+      "entities": [
+        "aizu",
+        "beppu",
+        "daibutsu",
+        "ginzan-onsen",
+        "gujo-hachiman",
+        "himeji-castle",
+        "itsukushima-shrine",
+        "junguria-okinawa",
+        "kumamoto",
+        "kusatsu-onsen",
+        "manza-onsen",
+        "matsumoto",
+        "matsuyama",
+        "mt-fuji",
+        "nagano",
+        "noboribetsu",
+        "ozu",
+        "sapporo",
+        "tamatebako-restaurant",
+        "teamlab-forest-fukuoka",
+        "tokyo",
+        "tokyo-shibuya-sky",
+        "uji",
+        "yokohama",
+        "yufuin",
+        "yuzawa"
+      ],
+      "fields": [
+        "price",
+        "hours",
+        "location",
+        "tips"
+      ],
+      "matrix": {
+        "aizu": {
+          "price": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          },
+          "hours": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          },
+          "location": {
+            "state": "ku_only",
+            "ku_ids": [
+              "KU-0060"
+            ],
+            "gu_ids": []
+          },
+          "tips": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          }
+        },
+        "beppu": {
+          "price": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          },
+          "hours": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          },
+          "location": {
+            "state": "ku_only",
+            "ku_ids": [
+              "KU-0072"
+            ],
+            "gu_ids": []
+          },
+          "tips": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          }
+        },
+        "daibutsu": {
+          "price": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          },
+          "hours": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          },
+          "location": {
+            "state": "ku_only",
+            "ku_ids": [
+              "KU-0056"
+            ],
+            "gu_ids": []
+          },
+          "tips": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          }
+        },
+        "ginzan-onsen": {
+          "price": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          },
+          "hours": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          },
+          "location": {
+            "state": "ku_only",
+            "ku_ids": [
+              "KU-0059"
+            ],
+            "gu_ids": []
+          },
+          "tips": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          }
+        },
+        "gujo-hachiman": {
+          "price": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          },
+          "hours": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          },
+          "location": {
+            "state": "ku_only",
+            "ku_ids": [
+              "KU-0065"
+            ],
+            "gu_ids": []
+          },
+          "tips": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          }
+        },
+        "himeji-castle": {
+          "price": {
+            "state": "ku_only",
+            "ku_ids": [
+              "KU-0020"
+            ],
+            "gu_ids": []
+          },
+          "hours": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          },
+          "location": {
+            "state": "ku_only",
+            "ku_ids": [
+              "KU-0076"
+            ],
+            "gu_ids": []
+          },
+          "tips": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          }
+        },
+        "itsukushima-shrine": {
+          "price": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          },
+          "hours": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          },
+          "location": {
+            "state": "ku_only",
+            "ku_ids": [
+              "KU-0077"
+            ],
+            "gu_ids": []
+          },
+          "tips": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          }
+        },
+        "junguria-okinawa": {
+          "price": {
+            "state": "ku_only",
+            "ku_ids": [
+              "KU-0021"
+            ],
+            "gu_ids": []
+          },
+          "hours": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          },
+          "location": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          },
+          "tips": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          }
+        },
+        "kumamoto": {
+          "price": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          },
+          "hours": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          },
+          "location": {
+            "state": "ku_only",
+            "ku_ids": [
+              "KU-0073"
+            ],
+            "gu_ids": []
+          },
+          "tips": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          }
+        },
+        "kusatsu-onsen": {
+          "price": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          },
+          "hours": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          },
+          "location": {
+            "state": "ku_only",
+            "ku_ids": [
+              "KU-0061"
+            ],
+            "gu_ids": []
+          },
+          "tips": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          }
+        },
+        "manza-onsen": {
+          "price": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          },
+          "hours": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          },
+          "location": {
+            "state": "ku_only",
+            "ku_ids": [
+              "KU-0063"
+            ],
+            "gu_ids": []
+          },
+          "tips": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          }
+        },
+        "matsumoto": {
+          "price": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          },
+          "hours": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          },
+          "location": {
+            "state": "ku_only",
+            "ku_ids": [
+              "KU-0064"
+            ],
+            "gu_ids": []
+          },
+          "tips": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          }
+        },
+        "matsuyama": {
+          "price": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          },
+          "hours": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          },
+          "location": {
+            "state": "ku_only",
+            "ku_ids": [
+              "KU-0069"
+            ],
+            "gu_ids": []
+          },
+          "tips": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          }
+        },
+        "mt-fuji": {
+          "price": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          },
+          "hours": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          },
+          "location": {
+            "state": "ku_only",
+            "ku_ids": [
+              "KU-0075"
+            ],
+            "gu_ids": []
+          },
+          "tips": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          }
+        },
+        "nagano": {
+          "price": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          },
+          "hours": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          },
+          "location": {
+            "state": "ku_only",
+            "ku_ids": [
+              "KU-0067"
+            ],
+            "gu_ids": []
+          },
+          "tips": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          }
+        },
+        "noboribetsu": {
+          "price": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          },
+          "hours": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          },
+          "location": {
+            "state": "ku_only",
+            "ku_ids": [
+              "KU-0058"
+            ],
+            "gu_ids": []
+          },
+          "tips": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          }
+        },
+        "ozu": {
+          "price": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          },
+          "hours": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          },
+          "location": {
+            "state": "ku_only",
+            "ku_ids": [
+              "KU-0070"
+            ],
+            "gu_ids": []
+          },
+          "tips": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          }
+        },
+        "sapporo": {
+          "price": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          },
+          "hours": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          },
+          "location": {
+            "state": "ku_only",
+            "ku_ids": [
+              "KU-0057"
+            ],
+            "gu_ids": []
+          },
+          "tips": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          }
+        },
+        "tamatebako-restaurant": {
+          "price": {
+            "state": "ku_only",
+            "ku_ids": [
+              "KU-0022"
+            ],
+            "gu_ids": []
+          },
+          "hours": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          },
+          "location": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          },
+          "tips": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          }
+        },
+        "teamlab-forest-fukuoka": {
+          "price": {
+            "state": "ku_only",
+            "ku_ids": [
+              "KU-0024"
+            ],
+            "gu_ids": []
+          },
+          "hours": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          },
+          "location": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          },
+          "tips": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          }
+        },
+        "tokyo": {
+          "price": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          },
+          "hours": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          },
+          "location": {
+            "state": "ku_only",
+            "ku_ids": [
+              "KU-0074"
+            ],
+            "gu_ids": []
+          },
+          "tips": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          }
+        },
+        "tokyo-shibuya-sky": {
+          "price": {
+            "state": "ku_only",
+            "ku_ids": [
+              "KU-0023"
+            ],
+            "gu_ids": []
+          },
+          "hours": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          },
+          "location": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          },
+          "tips": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          }
+        },
+        "uji": {
+          "price": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          },
+          "hours": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          },
+          "location": {
+            "state": "ku_only",
+            "ku_ids": [
+              "KU-0068"
+            ],
+            "gu_ids": []
+          },
+          "tips": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          }
+        },
+        "yokohama": {
+          "price": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          },
+          "hours": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          },
+          "location": {
+            "state": "ku_only",
+            "ku_ids": [
+              "KU-0062"
+            ],
+            "gu_ids": []
+          },
+          "tips": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          }
+        },
+        "yufuin": {
+          "price": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          },
+          "hours": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          },
+          "location": {
+            "state": "ku_only",
+            "ku_ids": [
+              "KU-0071"
+            ],
+            "gu_ids": []
+          },
+          "tips": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          }
+        },
+        "yuzawa": {
+          "price": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          },
+          "hours": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          },
+          "location": {
+            "state": "ku_only",
+            "ku_ids": [
+              "KU-0066"
+            ],
+            "gu_ids": []
+          },
+          "tips": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          }
+        },
+        "*": {
+          "price": {
+            "state": "gu_resolved_no_wildcard_ku",
+            "ku_ids": [],
+            "gu_ids": [
+              "GU-0007"
+            ]
+          },
+          "hours": {
+            "state": "ku_gu",
+            "ku_ids": [
+              "KU-0078"
+            ],
+            "gu_ids": [
+              "GU-0023"
+            ]
+          },
+          "location": {
+            "state": "gu_resolved_no_wildcard_ku",
+            "ku_ids": [],
+            "gu_ids": [
+              "GU-0024"
+            ]
+          },
+          "tips": {
+            "state": "ku_gu",
+            "ku_ids": [
+              "KU-0054"
+            ],
+            "gu_ids": [
+              "GU-0025"
+            ]
+          }
+        }
+      }
+    },
+    "dining": {
+      "entities": [],
+      "fields": [
+        "price",
+        "hours",
+        "location",
+        "etiquette",
+        "tips"
+      ],
+      "matrix": {
+        "*": {
+          "price": {
+            "state": "ku_gu",
+            "ku_ids": [
+              "KU-0025"
+            ],
+            "gu_ids": [
+              "GU-0008"
+            ]
+          },
+          "hours": {
+            "state": "ku_gu",
+            "ku_ids": [
+              "KU-0044"
+            ],
+            "gu_ids": [
+              "GU-0031"
+            ]
+          },
+          "location": {
+            "state": "ku_gu",
+            "ku_ids": [
+              "KU-0043"
+            ],
+            "gu_ids": [
+              "GU-0032"
+            ]
+          },
+          "etiquette": {
+            "state": "ku_gu",
+            "ku_ids": [
+              "KU-0045"
+            ],
+            "gu_ids": [
+              "GU-0033"
+            ]
+          },
+          "tips": {
+            "state": "ku_gu",
+            "ku_ids": [
+              "KU-0047"
+            ],
+            "gu_ids": [
+              "GU-0034"
+            ]
+          }
+        }
+      }
+    },
+    "regulation": {
+      "entities": [
+        "customs-allowance",
+        "emergency",
+        "tax-free",
+        "tourist-visa",
+        "visit-japan-web"
+      ],
+      "fields": [
+        "price",
+        "policy",
+        "eligibility",
+        "tips"
+      ],
+      "matrix": {
+        "customs-allowance": {
+          "price": {
+            "state": "ku_gu",
+            "ku_ids": [
+              "KU-0029"
+            ],
+            "gu_ids": [
+              "GU-0012"
+            ]
+          },
+          "policy": {
+            "state": "ku_only",
+            "ku_ids": [
+              "KU-0006"
+            ],
+            "gu_ids": []
+          },
+          "eligibility": {
+            "state": "ku_gu",
+            "ku_ids": [
+              "KU-0016"
+            ],
+            "gu_ids": [
+              "GU-0002"
+            ]
+          },
+          "tips": {
+            "state": "ku_gu",
+            "ku_ids": [
+              "KU-0086"
+            ],
+            "gu_ids": [
+              "GU-0048"
+            ]
+          }
+        },
+        "emergency": {
+          "price": {
+            "state": "ku_gu",
+            "ku_ids": [
+              "KU-0028"
+            ],
+            "gu_ids": [
+              "GU-0013"
+            ]
+          },
+          "policy": {
+            "state": "ku_only",
+            "ku_ids": [
+              "KU-0008"
+            ],
+            "gu_ids": []
+          },
+          "eligibility": {
+            "state": "ku_gu",
+            "ku_ids": [
+              "KU-0018"
+            ],
+            "gu_ids": [
+              "GU-0003"
+            ]
+          },
+          "tips": {
+            "state": "ku_gu",
+            "ku_ids": [
+              "KU-0092"
+            ],
+            "gu_ids": [
+              "GU-0051"
+            ]
+          }
+        },
+        "tax-free": {
+          "price": {
+            "state": "ku_gu",
+            "ku_ids": [
+              "KU-0031"
+            ],
+            "gu_ids": [
+              "GU-0015"
+            ]
+          },
+          "policy": {
+            "state": "ku_only",
+            "ku_ids": [
+              "KU-0011"
+            ],
+            "gu_ids": []
+          },
+          "eligibility": {
+            "state": "ku_gu",
+            "ku_ids": [
+              "KU-0014"
+            ],
+            "gu_ids": [
+              "GU-0005"
+            ]
+          },
+          "tips": {
+            "state": "ku_gu",
+            "ku_ids": [
+              "KU-0087"
+            ],
+            "gu_ids": [
+              "GU-0046"
+            ]
+          }
+        },
+        "tourist-visa": {
+          "price": {
+            "state": "ku_gu",
+            "ku_ids": [
+              "KU-0027"
+            ],
+            "gu_ids": [
+              "GU-0011"
+            ]
+          },
+          "policy": {
+            "state": "ku_only",
+            "ku_ids": [
+              "KU-0003"
+            ],
+            "gu_ids": []
+          },
+          "eligibility": {
+            "state": "ku_gu",
+            "ku_ids": [
+              "KU-0015"
+            ],
+            "gu_ids": [
+              "GU-0001"
+            ]
+          },
+          "tips": {
+            "state": "ku_gu",
+            "ku_ids": [
+              "KU-0085"
+            ],
+            "gu_ids": [
+              "GU-0047"
+            ]
+          }
+        },
+        "visit-japan-web": {
+          "price": {
+            "state": "ku_gu",
+            "ku_ids": [
+              "KU-0030"
+            ],
+            "gu_ids": [
+              "GU-0014"
+            ]
+          },
+          "policy": {
+            "state": "ku_gu",
+            "ku_ids": [
+              "KU-0088"
+            ],
+            "gu_ids": [
+              "GU-0049"
+            ]
+          },
+          "eligibility": {
+            "state": "ku_gu",
+            "ku_ids": [
+              "KU-0017"
+            ],
+            "gu_ids": [
+              "GU-0004"
+            ]
+          },
+          "tips": {
+            "state": "ku_gu",
+            "ku_ids": [
+              "KU-0090"
+            ],
+            "gu_ids": [
+              "GU-0050"
+            ]
+          }
+        },
+        "*": {
+          "price": {
+            "state": "ku_gu",
+            "ku_ids": [
+              "KU-0032"
+            ],
+            "gu_ids": [
+              "GU-0016"
+            ]
+          },
+          "policy": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          },
+          "eligibility": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          },
+          "tips": {
+            "state": "ku_gu",
+            "ku_ids": [
+              "KU-0053"
+            ],
+            "gu_ids": [
+              "GU-0019"
+            ]
+          }
+        }
+      }
+    },
+    "pass-ticket": {
+      "entities": [
+        "jr-pass",
+        "suica"
+      ],
+      "fields": [
+        "price",
+        "policy",
+        "duration",
+        "eligibility",
+        "tips",
+        "where_to_buy"
+      ],
+      "matrix": {
+        "jr-pass": {
+          "price": {
+            "state": "ku_only",
+            "ku_ids": [
+              "KU-0002"
+            ],
+            "gu_ids": []
+          },
+          "policy": {
+            "state": "ku_gu",
+            "ku_ids": [
+              "KU-0033"
+            ],
+            "gu_ids": [
+              "GU-0017"
+            ]
+          },
+          "duration": {
+            "state": "ku_gu",
+            "ku_ids": [
+              "KU-0055"
+            ],
+            "gu_ids": [
+              "GU-0035"
+            ]
+          },
+          "eligibility": {
+            "state": "ku_only",
+            "ku_ids": [
+              "KU-0001"
+            ],
+            "gu_ids": []
+          },
+          "tips": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          },
+          "where_to_buy": {
+            "state": "ku_gu",
+            "ku_ids": [
+              "KU-0097"
+            ],
+            "gu_ids": [
+              "GU-0058"
+            ]
+          }
+        },
+        "suica": {
+          "price": {
+            "state": "gu_open",
+            "ku_ids": [],
+            "gu_ids": [
+              "GU-0065"
+            ]
+          },
+          "policy": {
+            "state": "ku_gu",
+            "ku_ids": [
+              "KU-0034"
+            ],
+            "gu_ids": [
+              "GU-0018"
+            ]
+          },
+          "duration": {
+            "state": "ku_gu",
+            "ku_ids": [
+              "KU-0079"
+            ],
+            "gu_ids": [
+              "GU-0036"
+            ]
+          },
+          "eligibility": {
+            "state": "ku_gu",
+            "ku_ids": [
+              "KU-0096"
+            ],
+            "gu_ids": [
+              "GU-0059"
+            ]
+          },
+          "tips": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          },
+          "where_to_buy": {
+            "state": "ku_only",
+            "ku_ids": [
+              "KU-0012"
+            ],
+            "gu_ids": []
+          }
+        },
+        "*": {
+          "price": {
+            "state": "gu_open",
+            "ku_ids": [],
+            "gu_ids": [
+              "GU-0064"
+            ]
+          },
+          "policy": {
+            "state": "ku_gu",
+            "ku_ids": [
+              "KU-0098"
+            ],
+            "gu_ids": [
+              "GU-0060"
+            ]
+          },
+          "duration": {
+            "state": "ku_gu",
+            "ku_ids": [
+              "KU-0081"
+            ],
+            "gu_ids": [
+              "GU-0037"
+            ]
+          },
+          "eligibility": {
+            "state": "ku_gu",
+            "ku_ids": [
+              "KU-0095"
+            ],
+            "gu_ids": [
+              "GU-0061"
+            ]
+          },
+          "tips": {
+            "state": "ku_gu",
+            "ku_ids": [
+              "KU-0080"
+            ],
+            "gu_ids": [
+              "GU-0038"
+            ]
+          },
+          "where_to_buy": {
+            "state": "ku_gu",
+            "ku_ids": [
+              "KU-0100"
+            ],
+            "gu_ids": [
+              "GU-0062"
+            ]
+          }
+        }
+      }
+    },
+    "connectivity": {
+      "entities": [
+        "sim-card"
+      ],
+      "fields": [
+        "price",
+        "how_to_use",
+        "tips",
+        "where_to_buy"
+      ],
+      "matrix": {
+        "sim-card": {
+          "price": {
+            "state": "ku_only",
+            "ku_ids": [
+              "KU-0007"
+            ],
+            "gu_ids": []
+          },
+          "how_to_use": {
+            "state": "ku_gu",
+            "ku_ids": [
+              "KU-0036"
+            ],
+            "gu_ids": [
+              "GU-0026"
+            ]
+          },
+          "tips": {
+            "state": "ku_gu",
+            "ku_ids": [
+              "KU-0091"
+            ],
+            "gu_ids": [
+              "GU-0054"
+            ]
+          },
+          "where_to_buy": {
+            "state": "ku_gu",
+            "ku_ids": [
+              "KU-0041"
+            ],
+            "gu_ids": [
+              "GU-0029"
+            ]
+          }
+        },
+        "*": {
+          "price": {
+            "state": "vacant",
+            "ku_ids": [],
+            "gu_ids": []
+          },
+          "how_to_use": {
+            "state": "ku_gu",
+            "ku_ids": [
+              "KU-0035"
+            ],
+            "gu_ids": [
+              "GU-0027"
+            ]
+          },
+          "tips": {
+            "state": "ku_gu",
+            "ku_ids": [
+              "KU-0040"
+            ],
+            "gu_ids": [
+              "GU-0028"
+            ]
+          },
+          "where_to_buy": {
+            "state": "ku_gu",
+            "ku_ids": [
+              "KU-0042"
+            ],
+            "gu_ids": [
+              "GU-0030"
+            ]
+          }
+        }
+      }
+    },
+    "payment": {
+      "entities": [
+        "ic-card",
+        "price"
+      ],
+      "fields": [
+        "price",
+        "how_to_use",
+        "tips",
+        "acceptance"
+      ],
+      "matrix": {
+        "ic-card": {
+          "price": {
+            "state": "ku_gu",
+            "ku_ids": [
+              "KU-0046"
+            ],
+            "gu_ids": [
+              "GU-0009"
+            ]
+          },
+          "how_to_use": {
+            "state": "ku_only",
+            "ku_ids": [
+              "KU-0004"
+            ],
+            "gu_ids": []
+          },
+          "tips": {
+            "state": "ku_gu",
+            "ku_ids": [
+              "KU-0094"
+            ],
+            "gu_ids": [
+              "GU-0055"
+            ]
+          },
+          "acceptance": {
+            "state": "ku_gu",
+            "ku_ids": [
+              "KU-0048"
+            ],
+            "gu_ids": [
+              "GU-0040"
+            ]
+          }
+        },
+        "price": {
+          "price": {
+            "state": "ku_only",
+            "ku_ids": [
+              "KU-0019"
+            ],
+            "gu_ids": []
+          },
+          "how_to_use": {
+            "state": "ku_gu",
+            "ku_ids": [
+              "KU-0052"
+            ],
+            "gu_ids": [
+              "GU-0052"
+            ]
+          },
+          "tips": {
+            "state": "ku_gu",
+            "ku_ids": [
+              "KU-0051"
+            ],
+            "gu_ids": [
+              "GU-0053"
+            ]
+          },
+          "acceptance": {
+            "state": "ku_gu",
+            "ku_ids": [
+              "KU-0099"
+            ],
+            "gu_ids": [
+              "GU-0057"
+            ]
+          }
+        },
+        "*": {
+          "price": {
+            "state": "gu_resolved_no_wildcard_ku",
+            "ku_ids": [],
+            "gu_ids": [
+              "GU-0010"
+            ]
+          },
+          "how_to_use": {
+            "state": "ku_gu",
+            "ku_ids": [
+              "KU-0093"
+            ],
+            "gu_ids": [
+              "GU-0056"
+            ]
+          },
+          "tips": {
+            "state": "ku_gu",
+            "ku_ids": [
+              "KU-0049"
+            ],
+            "gu_ids": [
+              "GU-0039"
+            ]
+          },
+          "acceptance": {
+            "state": "ku_gu",
+            "ku_ids": [
+              "KU-0050"
+            ],
+            "gu_ids": [
+              "GU-0041"
+            ]
+          }
+        }
+      }
+    }
+  }
+}
