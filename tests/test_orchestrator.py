@@ -223,6 +223,47 @@ class TestOrchestrator:
         orch.run(initial_state=state)
         assert len(orch.logger.entries) == 3
 
+    def test_metrics_logging_preserves_diag_telemetry(self, tmp_path):
+        """텔레메트리 버그 fix: _diag_* 필드가 logger.log() 호출 시점에 보존되어야 함.
+
+        Bug: 이전에는 _diag_* 삭제 후 logger.log() 호출 → trajectory.json 의
+        adj_gen_count/wildcard_gen_count/cap_hit_count 가 모두 0 으로 기록.
+        Fix: logger.log() 를 _diag_ 삭제 블록 이전으로 이동.
+        """
+        bench_base = _setup_bench(tmp_path)
+        cfg = EvolverConfig(
+            orchestrator=OrchestratorConfig(
+                max_cycles=1,
+                bench_path=str(bench_base / "bench"),
+                bench_domain="test-domain",
+            ),
+        )
+        orch = Orchestrator(cfg)
+        state = _make_minimal_state()
+
+        def mock_run(s, c):
+            # 그래프 노드가 _diag_* 필드를 emit 한 상황을 시뮬레이션
+            s["_diag_adjacent_gap_count"] = 7
+            s["_diag_wildcard_gen_count"] = 3
+            s["_diag_cap_hit_count"] = 1
+            s["_diag_resolved_gus"] = ["GU-0001"]
+            s["_diag_search_by_gu"] = {"GU-0001": 2}
+            return CycleResult(cycle=c, state=s)
+
+        orch._run_single_cycle = mock_run
+        orch.run(initial_state=state)
+
+        # 1) trajectory entry 에 telemetry 가 0 이 아닌 실제 값으로 기록되어야 함
+        assert len(orch.logger.entries) == 1
+        entry = orch.logger.entries[0]
+        assert entry["adj_gen_count"] == 7, f"adj_gen_count 보존 실패: {entry}"
+        assert entry["wildcard_gen_count"] == 3, f"wildcard_gen_count 보존 실패: {entry}"
+        assert entry["cap_hit_count"] == 1, f"cap_hit_count 보존 실패: {entry}"
+
+        # 2) logger.log() 후에는 _diag_* 가 state 에서 제거되어야 함 (오염 방지)
+        # orch.run() 이후 state 는 자체 보관되지 않으므로, mock_run 내부에서 검증.
+        # (여기서는 telemetry 보존만 검증)
+
     def test_save_metrics(self, tmp_path):
         """Metrics JSON/CSV 저장."""
         bench_base = _setup_bench(tmp_path)

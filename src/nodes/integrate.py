@@ -180,6 +180,7 @@ def _generate_dynamic_gus(
     blocklist_fields: set[str] | None = None,
     canonical_entity_key: str | None = None,
     existing_ku_slots: set[tuple] | None = None,
+    conflict_slots: set[tuple] | None = None,
 ) -> list[dict]:
     """동적 GU 발견 (Trigger A: 인접 Gap).
 
@@ -189,9 +190,13 @@ def _generate_dynamic_gus(
     S3-T8: source field(claim.field) 도 blocklist 확인 — source/next 양쪽 배제.
     canonical_entity_key: S3-T9 Bug A — resolver 경유 canonical key (우선).
     existing_ku_slots: S3-T9 Bug B — 기존 KU 슬롯 병합으로 중복 GU 방지.
+    conflict_slots: DIAG-M7 — conflict_ledger 의 (entity_key, field) 집합. 해당 슬롯은
+        adj GU 재생성 금지 (conflict 해소 전 동일 field 탐색 재시도 방지).
     """
     if blocklist_fields is None:
         blocklist_fields = set()
+    if conflict_slots is None:
+        conflict_slots = set()
     entity_key = canonical_entity_key or claim.get("entity_key", "")
     field = claim.get("field", "")
 
@@ -241,6 +246,9 @@ def _generate_dynamic_gus(
         if adj_field == field:
             continue
         if adj_field in blocklist_fields:
+            continue
+        # DIAG-M7: conflict_ledger 에 이미 등록된 (entity, field) 슬롯은 adj GU 재생성 금지
+        if (entity_key, adj_field) in conflict_slots:
             continue
         slot = (entity_key, adj_field)
         if slot not in existing_slots:
@@ -333,6 +341,17 @@ def integrate_node(
         if e.get("cycle", 0) >= current_cycle - _BLOCKLIST_WINDOW + 1
     ]
     blocklist_fields: set[str] = {e["field"] for e in recent_conflict_fields}
+
+    # DIAG-M7: conflict_ledger 의 (entity_key, field) 집합 — adj GU 재생성 금지 슬롯
+    ku_by_id = {ku.get("ku_id"): ku for ku in kus}
+    conflict_slots: set[tuple[str, str]] = set()
+    for _cl_entry in conflict_ledger:
+        _ku = ku_by_id.get(_cl_entry.get("ku_id"))
+        if _ku:
+            _ek = _ku.get("entity_key", "")
+            _fld = _ku.get("field", "")
+            if _ek and _fld:
+                conflict_slots.add((_ek, _fld))
 
     # S3-T7: 통합 시작 시점의 open adj GU 수 (yield 분모)
     adj_open_at_start = sum(
@@ -558,6 +577,7 @@ def integrate_node(
                 blocklist_fields,
                 canonical_entity_key=entity_key,
                 existing_ku_slots=_ku_slots,
+                conflict_slots=conflict_slots,
             )
             remaining = dynamic_cap - len(new_dynamic_gus)
             for dgu in discovered[:remaining]:
@@ -569,21 +589,48 @@ def integrate_node(
                 dgu["created_cycle"] = current_cycle
                 new_dynamic_gus.append(dgu)
 
-    # S3-T10: post-cycle new-KU adj sweep — 독립 budget (claim loop cap 소진과 무관)
-    # DIAG-ATTRACTION fix: attraction처럼 wildcard-only seed 카테고리의 named entity KU는
-    # claim loop에서 cap 소진 후 추가되므로 sweep은 별도 budget으로 실행해야 함.
+    # S3-T10: post-cycle adj sweep — 독립 budget (claim loop cap 소진과 무관)
+    # DIAG-ATTRACTION fix (b221aed): attraction wildcard-only seed 카테고리의 named entity KU는
+    #   claim loop cap 소진 후 추가되므로 sweep 은 별도 budget 으로 실행.
+    # DIAG-SWEEP-SCOPE fix (옵션 E): adds 만 순회 + budget=dynamic_cap=8 로는
+    #   wildcard cascade (예: attraction:*:location resolve → 22 entity location KU 동시 생성) 시
+    #   8 entity 만 처리되고 14 entity 영구 vacant. 또한 cycle 2+ 에서 기존 KU entity 의 GU 가
+    #   resolve 되어도 (예: pass-ticket suica:duration GU 해소 후 suica entity 의 다른 field)
+    #   sweep 대상에서 제외. 두 결함을 동시 해소.
     _claim_loop_gu_count = len(new_dynamic_gus)
-    _sweep_entity_seen: set[str] = set()
-    _sweep_ku_slots = {(ku.get("entity_key"), ku.get("field")) for ku in kus}
-    _sweep_budget = dynamic_cap
+
+    # (1) sweep 대상 entity 수집 — adds entity ∪ resolved-this-cycle entity (wildcard 제외)
+    _sweep_entity_to_ku: dict[str, dict] = {}
+    for _ku in adds:
+        _ek = _ku.get("entity_key", "")
+        if _ek and _ek != "*" and _ek not in _sweep_entity_to_ku:
+            _sweep_entity_to_ku[_ek] = _ku
+    for _gu_id in diag_resolved_gus:
+        for _gu in gap_map:
+            if _gu.get("gu_id") != _gu_id:
+                continue
+            _ek = (_gu.get("target") or {}).get("entity_key", "")
+            if not _ek or _ek == "*":
+                # wildcard GU resolve — entity-specific KU 는 이미 adds 에서 수집됨
+                break
+            if _ek in _sweep_entity_to_ku:
+                break
+            for _existing_ku in kus:
+                if _existing_ku.get("entity_key") == _ek:
+                    _sweep_entity_to_ku[_ek] = _existing_ku
+                    break
+            break
+
+    # (2) 동적 budget — entity 수에 비례 확장 (wildcard cascade 대응).
+    #     일반 cycle (entity ≤ 4): budget=dynamic_cap=8 동일.
+    #     cascade cycle (entity 22): budget=66 → 카테고리당 평균 3 adj field cover.
+    _sweep_budget = max(dynamic_cap, len(_sweep_entity_to_ku) * 3)
     _sweep_added = 0
-    for _sweep_ku in adds:
+    _sweep_ku_slots = {(ku.get("entity_key"), ku.get("field")) for ku in kus}
+
+    for _sweep_ek, _sweep_ku in _sweep_entity_to_ku.items():
         if _sweep_added >= _sweep_budget:
             break
-        _sweep_ek = _sweep_ku.get("entity_key", "")
-        if not _sweep_ek or _sweep_ek in _sweep_entity_seen:
-            continue
-        _sweep_entity_seen.add(_sweep_ek)
         _sweep_claim = {
             "entity_key": _sweep_ek,
             "field": _sweep_ku.get("field", ""),
@@ -594,6 +641,7 @@ def integrate_node(
             blocklist_fields,
             canonical_entity_key=_sweep_ek,
             existing_ku_slots=_sweep_ku_slots,
+            conflict_slots=conflict_slots,
         )
         _sweep_remaining = _sweep_budget - _sweep_added
         for dgu in _sweep_discovered[:_sweep_remaining]:

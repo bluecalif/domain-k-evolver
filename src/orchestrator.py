@@ -130,18 +130,21 @@ class Orchestrator:
 
             state = result.state
 
-            # 진단 필드 추출 후 state에서 제거
+            # 진단 필드 추출 (state에서 제거하기 전에 cycle_ctx 캡처)
             cycle_ctx = self._extract_cycle_ctx(state, cycle_num)
-            for k in list(state.keys()):
-                if k.startswith("_diag_"):
-                    del state[k]
             ku_after = len(state.get("knowledge_units", []))
             gu_after = len(state.get("gap_map", []))
             logger.info("  Graph 완료: %.1fs (KU %d→%d, GU %d→%d)",
                         graph_elapsed, ku_before, ku_after, gu_before, gu_after)
 
-            # Metrics 기록 (rollback 판정에 필요)
+            # Metrics 기록 (rollback 판정에 필요) — _diag_* 필드 삭제 전에 호출해야
+            # adj_gen_count/wildcard_gen_count/cap_hit_count telemetry 가 보존됨
             self.logger.log(cycle_num, state)
+
+            # _diag_* 필드 제거 (telemetry 기록 후)
+            for k in list(state.keys()):
+                if k.startswith("_diag_"):
+                    del state[k]
 
             # Novelty + Coverage Map 갱신 (P4)
             self._update_novelty_and_coverage(state)

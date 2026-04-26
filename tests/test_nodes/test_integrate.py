@@ -2042,7 +2042,11 @@ class TestS3T10NewKuSweep:
         assert len(slots) == len(set(slots)), f"중복 adj GU 슬롯 발견: {slots}"
 
     def test_sweep_respects_combined_cap(self) -> None:
-        """sweep 독립 budget: claim loop + sweep 합산 ≤ 2 × dynamic_cap(16)."""
+        """sweep + claim_loop 합산 ≤ 16 — 10 entity × 1 adj field 자연 bound 검증.
+
+        SWEEP-SCOPE fix 후 sweep budget = max(8, 10*3) = 30 이지만
+        skeleton 의 adj 가능 field 가 entity 당 1 개 ('tips') 이므로 자연 bound 로 ≤ 16 유지.
+        """
         skeleton = {
             "categories": [{"slug": "transport"}],
             "fields": [
@@ -2075,6 +2079,119 @@ class TestS3T10NewKuSweep:
         result = integrate_node(state)
         adj_gus = [gu for gu in result["gap_map"] if gu.get("trigger") == "A:adjacent_gap"]
         assert len(adj_gus) <= 16, f"2×cap 초과: adj_gu count={len(adj_gus)}"
+
+    def test_sweep_handles_wildcard_cascade(self) -> None:
+        """DIAG-SWEEP-SCOPE: wildcard GU resolve 로 다수 entity KU 동시 생성 시
+        sweep budget 이 entity 수에 비례 확장되어 모든 entity 가 adj GU 를 받아야 함.
+
+        시나리오: attraction:*:location wildcard GU 1 개 → 12 named entity location KU 생성.
+        고정 budget=8 이면 8 entity 만 처리되고 4 entity 는 영구 vacant.
+        """
+        skeleton = {
+            "categories": [{"slug": "attraction"}],
+            "fields": [
+                {"name": "location", "categories": ["attraction"]},
+                {"name": "hours", "categories": ["attraction"]},
+                {"name": "price", "categories": ["*"]},
+                {"name": "tips", "categories": ["*"]},
+            ],
+            "axes": [],
+        }
+        # wildcard GU 1 개
+        gap_map = [{
+            "gu_id": "GU-0001", "status": "open",
+            "target": {"entity_key": "d:attraction:*", "field": "location"},
+        }]
+        # 12 named entity claim (모두 같은 wildcard GU 가 source)
+        entities = [f"d:attraction:spot{i:02d}" for i in range(12)]
+        claims = [
+            {
+                "claim_id": f"CL-{i:04d}",
+                "entity_key": ek,
+                "field": "location",
+                "value": f"loc-{i}",
+                "source_gu_id": "GU-0001",
+                "evidence": {"eu_id": f"EU-{i:04d}", "observed_at": "2026-03-04", "credibility": 0.8},
+            }
+            for i, ek in enumerate(entities)
+        ]
+        state = make_minimal_state(
+            gap_map=gap_map,
+            current_claims=claims,
+            domain_skeleton=skeleton,
+            current_mode={"mode": "normal"},
+        )
+        result = integrate_node(state)
+        adj_gus = [gu for gu in result["gap_map"] if gu.get("trigger") == "A:adjacent_gap"]
+        # 각 entity 가 최소 1 개 adj GU 를 받아야 함 (wildcard cascade 전체 cover)
+        entities_with_adj = {gu["target"]["entity_key"] for gu in adj_gus}
+        missing = set(entities) - entities_with_adj
+        assert not missing, (
+            f"wildcard cascade 시 일부 entity 가 adj GU 미생성: missing={sorted(missing)}, "
+            f"adj_gu_count={len(adj_gus)}"
+        )
+
+    def test_sweep_includes_resolved_entity_with_existing_ku(self) -> None:
+        """DIAG-SWEEP-SCOPE: 기존 KU 가 있는 entity 의 named GU 가 이번 cycle 에 resolve 되면
+        sweep 대상에 포함되어야 함 (KU 자체는 cycle 신규가 아니어도).
+
+        시나리오: pass-ticket suica entity 가 c1 에 KU-A 생성. c2 에 suica:duration GU 가
+        resolve → suica 의 다른 field (price/eligibility/tips) 에 adj GU 생성되어야 함.
+        """
+        skeleton = {
+            "categories": [{"slug": "pass-ticket"}],
+            "fields": [
+                {"name": "policy", "categories": ["pass-ticket"]},
+                {"name": "duration", "categories": ["pass-ticket"]},
+                {"name": "price", "categories": ["*"]},
+                {"name": "tips", "categories": ["*"]},
+            ],
+            "axes": [],
+        }
+        # 기존 KU (c1 에 생성) + 이번 cycle 에 resolve 될 named GU
+        existing_ku = {
+            "ku_id": "KU-0001",
+            "entity_key": "d:pass-ticket:suica",
+            "field": "policy",
+            "value": "tap-and-go",
+            "status": "active",
+            "evidence_links": ["EU-prev"],
+            "confidence": 0.8,
+        }
+        gap_map = [{
+            "gu_id": "GU-0010", "status": "open",
+            "target": {"entity_key": "d:pass-ticket:suica", "field": "duration"},
+        }]
+        # claim 은 update 만 발생 (suica:duration 새 KU 생성 → adds 에 포함되지만,
+        # 핵심은 sweep 이 GU 의 entity 도 처리하는지). adds 와 무관하게 작동 검증을 위해
+        # claim entity_key 를 다른 entity 로 변경해도 sweep 대상에 suica 가 포함되어야 한다.
+        # 여기서는 단순화해 GU resolve 시나리오만 검증.
+        claim = {
+            "claim_id": "CL-0010",
+            "entity_key": "d:pass-ticket:suica",
+            "field": "duration",
+            "value": "unlimited",
+            "source_gu_id": "GU-0010",
+            "evidence": {"eu_id": "EU-0010", "observed_at": "2026-03-04", "credibility": 0.8},
+        }
+        state = make_minimal_state(
+            knowledge_units=[existing_ku],
+            gap_map=gap_map,
+            current_claims=[claim],
+            domain_skeleton=skeleton,
+            current_mode={"mode": "normal"},
+        )
+        result = integrate_node(state)
+        adj_gus = [gu for gu in result["gap_map"] if gu.get("trigger") == "A:adjacent_gap"]
+        suica_adj = [
+            gu for gu in adj_gus
+            if gu["target"]["entity_key"] == "d:pass-ticket:suica"
+        ]
+        suica_adj_fields = {gu["target"]["field"] for gu in suica_adj}
+        # policy/duration 은 이미 KU/GU 가 있으니 제외, price/tips 중 1+ 생성 기대
+        assert suica_adj_fields & {"price", "tips"}, (
+            f"suica 의 다른 field 에 adj GU 생성되어야 함: suica_adj={suica_adj}"
+        )
 
     def test_sweep_independent_budget_when_claim_loop_full(self) -> None:
         """DIAG-ATTRACTION: claim loop cap 소진 후에도 sweep은 독립 budget으로 실행됨."""
