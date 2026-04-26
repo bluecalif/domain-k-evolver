@@ -365,6 +365,8 @@ def seed_node(state: EvolverState) -> dict:
             "resolution_criteria": gu["resolution_criteria"],
             "status": "open",
             "created_at": today.isoformat(),
+            "origin": "seed_bootstrap",
+            "created_cycle": 1,
         }
         gap_map.append(gu_entry)
 

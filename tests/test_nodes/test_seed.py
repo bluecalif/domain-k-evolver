@@ -358,3 +358,41 @@ class TestS3T12NoPerCatCap:
         assert len(attraction_gus) >= 4, (
             f"per_cat_cap=3 회귀 의심: attraction GU count={len(attraction_gus)}"
         )
+
+
+# ---------------------------------------------------------------------------
+# SI-P7 M9 telemetry — origin attribution
+# ---------------------------------------------------------------------------
+
+
+class TestM9SeedOrigin:
+    """seed_node 가 생성한 모든 GU 에 origin='seed_bootstrap' 부여."""
+
+    _SKELETON = {
+        "domain": "test",
+        "categories": [{"slug": "transport"}, {"slug": "attraction"}],
+        "fields": [
+            {"name": "price", "categories": ["*"]},
+            {"name": "tips", "categories": ["*"]},
+            {"name": "hours", "categories": ["attraction"]},
+        ],
+    }
+
+    def test_all_seed_gus_have_origin_seed_bootstrap(self) -> None:
+        state = {"domain_skeleton": self._SKELETON, "knowledge_units": [], "policies": {}}
+        result = seed_node(state)
+        gap_map = result["gap_map"]
+        assert gap_map, "seed gap_map empty"
+        for gu in gap_map:
+            assert gu.get("origin") == "seed_bootstrap", (
+                f"GU {gu.get('gu_id')} origin={gu.get('origin')} (expected seed_bootstrap)"
+            )
+
+    def test_all_seed_gus_have_created_cycle_1(self) -> None:
+        """SI-P7 M10: seed_bootstrap GU 의 created_cycle 은 1 (seed_node 진입 직후)."""
+        state = {"domain_skeleton": self._SKELETON, "knowledge_units": [], "policies": {}}
+        result = seed_node(state)
+        for gu in result["gap_map"]:
+            assert gu.get("created_cycle") == 1, (
+                f"GU {gu.get('gu_id')} created_cycle={gu.get('created_cycle')} (expected 1)"
+            )

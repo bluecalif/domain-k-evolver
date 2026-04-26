@@ -565,6 +565,8 @@ def integrate_node(
                 dgu["gu_id"] = f"GU-{max_gu_id:04d}"
                 if mode == "jump":
                     dgu["expansion_mode"] = "jump"
+                dgu["origin"] = "claim_loop"
+                dgu["created_cycle"] = current_cycle
                 new_dynamic_gus.append(dgu)
 
     # S3-T10: post-cycle new-KU adj sweep — claim loop 이후 신규 KU 기반 추가 탐색
@@ -594,6 +596,8 @@ def integrate_node(
             dgu["gu_id"] = f"GU-{max_gu_id:04d}"
             if mode == "jump":
                 dgu["expansion_mode"] = "jump"
+            dgu["origin"] = "post_cycle_sweep"
+            dgu["created_cycle"] = current_cycle
             new_dynamic_gus.append(dgu)
 
     # 동적 GU를 gap_map에 추가

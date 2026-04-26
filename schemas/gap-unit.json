@@ -88,6 +88,16 @@
       "type": "string",
       "enum": ["base", "jump"],
       "description": "(optional) 생성 시 확장 모드. base=기본 상한, jump=Quantum Jump 상한"
+    },
+    "origin": {
+      "type": "string",
+      "enum": ["seed_bootstrap", "claim_loop", "post_cycle_sweep"],
+      "description": "(optional, SI-P7 M9) GU 생성 경로. seed_bootstrap=seed_node, claim_loop=integrate claim loop _generate_dynamic_gus, post_cycle_sweep=integrate post-cycle new-KU adj sweep"
+    },
+    "created_cycle": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "(optional, SI-P7 M10) GU 생성 시점의 cycle 번호. seed_bootstrap=1, integrate origin=integrate 실행 cycle"
     }
   },
   "additionalProperties": false

@@ -2078,6 +2078,81 @@ class TestS3T10NewKuSweep:
 
 
 # ---------------------------------------------------------------------------
+# SI-P7 M9 telemetry — dynamic GU origin attribution
+# ---------------------------------------------------------------------------
+
+
+class TestM9DynamicGuOrigin:
+    """integrate_node dynamic GU 의 origin ∈ {claim_loop, post_cycle_sweep}."""
+
+    _SKELETON = {
+        "categories": [{"slug": "transport"}],
+        "fields": [
+            {"name": "price", "categories": ["*"]},
+            {"name": "tips", "categories": ["*"]},
+            {"name": "how_to_use", "categories": ["transport"]},
+        ],
+        "axes": [],
+    }
+
+    def _make_claim(self, gu_id: str, entity_key: str, field: str, value: str) -> dict:
+        return {
+            "claim_id": f"CL-{gu_id}",
+            "entity_key": entity_key,
+            "field": field,
+            "value": value,
+            "source_gu_id": gu_id,
+            "evidence": {"eu_id": f"EU-{gu_id}", "observed_at": "2026-03-04", "credibility": 0.8},
+        }
+
+    def test_claim_loop_dynamic_gus_have_origin(self) -> None:
+        """claim 처리 시 _generate_dynamic_gus 가 만든 adj GU 는 origin='claim_loop'."""
+        state = make_minimal_state(
+            gap_map=[{"gu_id": "GU-0001", "status": "open",
+                      "target": {"entity_key": "d:transport:bus", "field": "price"}}],
+            current_claims=[self._make_claim("GU-0001", "d:transport:bus", "price", "700 JPY")],
+            domain_skeleton=self._SKELETON,
+            current_mode={"mode": "normal"},
+        )
+        result = integrate_node(state)
+        dynamic_gus = [
+            gu for gu in result["gap_map"]
+            if gu.get("trigger") == "A:adjacent_gap"
+        ]
+        assert dynamic_gus, "dynamic GU 생성 안 됨"
+        valid = {"claim_loop", "post_cycle_sweep"}
+        for gu in dynamic_gus:
+            assert gu.get("origin") in valid, (
+                f"GU {gu.get('gu_id')} origin={gu.get('origin')} (expected ∈ {valid})"
+            )
+        # claim 이 처리된 시나리오는 claim_loop origin 이 최소 1개 있어야 함
+        assert any(gu.get("origin") == "claim_loop" for gu in dynamic_gus), (
+            f"claim_loop origin 부재. origins={[gu.get('origin') for gu in dynamic_gus]}"
+        )
+
+    def test_dynamic_gus_have_created_cycle(self) -> None:
+        """SI-P7 M10: dynamic GU 의 created_cycle = current_cycle."""
+        state = make_minimal_state(
+            gap_map=[{"gu_id": "GU-0001", "status": "open",
+                      "target": {"entity_key": "d:transport:bus", "field": "price"}}],
+            current_claims=[self._make_claim("GU-0001", "d:transport:bus", "price", "700 JPY")],
+            domain_skeleton=self._SKELETON,
+            current_mode={"mode": "normal"},
+        )
+        state["current_cycle"] = 3
+        result = integrate_node(state)
+        dynamic_gus = [
+            gu for gu in result["gap_map"]
+            if gu.get("trigger") == "A:adjacent_gap"
+        ]
+        assert dynamic_gus
+        for gu in dynamic_gus:
+            assert gu.get("created_cycle") == 3, (
+                f"GU {gu.get('gu_id')} created_cycle={gu.get('created_cycle')} (expected 3)"
+            )
+
+
+# ---------------------------------------------------------------------------
 # S3-T13 L1: field_adjacency 무시 → applicable_fields 전체 사용
 # ---------------------------------------------------------------------------
 
