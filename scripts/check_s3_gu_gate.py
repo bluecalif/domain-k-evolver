@@ -60,6 +60,10 @@ M4_MIN_DELTA = 2
 M4_MIN_ABS = 6
 M6_MIN_RATIO = 0.9
 M8_MIN_RATIO = 0.95
+M9_ORIGIN_COVERAGE_MIN = 0.90
+M10_CYCLE_COVERAGE_MIN = 0.90
+
+_GU_VALID_ORIGINS = frozenset({"claim_loop", "post_cycle_sweep", "seed_bootstrap"})
 
 VXO_VACANT_FLOOR_PER_ENTITY = 0.5
 VXO_OPEN_RATIO_MIN = 0.05
@@ -468,6 +472,68 @@ def eval_m8(b: TrialData, t: TrialData, *, self_mode: bool) -> Result:
     return Result("M8", "ku_active_sanity", detail, passed)
 
 
+def eval_m5b(t: TrialData) -> Result:
+    """M5b: cap_hit_count telemetry 존재 여부 — trajectory 100% coverage."""
+    if not t.trajectory:
+        return Result("M5b", "dynamic_cap_hit", "no trajectory", False)
+    total = len(t.trajectory)
+    present = sum(1 for e in t.trajectory if "cap_hit_count" in e)
+    passed = present == total
+    return Result(
+        "M5b", "dynamic_cap_hit",
+        f"coverage={present}/{total} (need 100%)",
+        passed,
+    )
+
+
+def eval_m9(t: TrialData) -> Result:
+    """M9: adj GU origin attribution ≥ 90% coverage."""
+    adj = [g for g in t.gap_map if g.get("trigger") == "A:adjacent_gap"]
+    if not adj:
+        return Result("M9", "sweep_attribution", "no adj GUs", None)
+    total = len(adj)
+    with_origin = sum(1 for g in adj if g.get("origin") in _GU_VALID_ORIGINS)
+    coverage = with_origin / total
+    passed = coverage >= M9_ORIGIN_COVERAGE_MIN
+    return Result(
+        "M9", "sweep_attribution",
+        f"coverage={with_origin}/{total}={coverage:.2f} (need ≥{M9_ORIGIN_COVERAGE_MIN})",
+        passed,
+    )
+
+
+def eval_m10(t: TrialData) -> Result:
+    """M10: created_cycle int 필드 ≥ 90% coverage in adj GUs."""
+    adj = [g for g in t.gap_map if g.get("trigger") == "A:adjacent_gap"]
+    if not adj:
+        return Result("M10", "created_cycle", "no adj GUs", None)
+    total = len(adj)
+    with_cycle = sum(1 for g in adj if isinstance(g.get("created_cycle"), int))
+    coverage = with_cycle / total
+    passed = coverage >= M10_CYCLE_COVERAGE_MIN
+    return Result(
+        "M10", "created_cycle",
+        f"coverage={with_cycle}/{total}={coverage:.2f} (need ≥{M10_CYCLE_COVERAGE_MIN})",
+        passed,
+    )
+
+
+def eval_m11(t: TrialData) -> Result:
+    """M11: adj_gen_count + wildcard_gen_count telemetry 존재 — trajectory 100% coverage."""
+    if not t.trajectory:
+        return Result("M11", "per_cycle_counts", "no trajectory", False)
+    total = len(t.trajectory)
+    with_adj = sum(1 for e in t.trajectory if "adj_gen_count" in e)
+    with_wc = sum(1 for e in t.trajectory if "wildcard_gen_count" in e)
+    present = min(with_adj, with_wc)
+    passed = present == total
+    return Result(
+        "M11", "per_cycle_counts",
+        f"adj={with_adj}/{total} wc={with_wc}/{total} (need 100%)",
+        passed,
+    )
+
+
 def _na_result(rid: str, label: str, why: str) -> Result:
     return Result(rid, label, why, None, is_telemetry_deferred=True)
 
@@ -571,10 +637,10 @@ def main(argv: list[str] | None = None) -> int:
         eval_m6(b, t, self_mode=self_mode),
         eval_m7(b, t, self_mode=self_mode),
         eval_m8(b, t, self_mode=self_mode),
-        _na_result("M5b", "dynamic_cap_hit", "telemetry pending (cap_hit_count emit 필요)"),
-        _na_result("M9", "sweep_attribution", "telemetry pending (gu['origin'] emit 필요)"),
-        _na_result("M10", "created_cycle", "telemetry pending (cycle int 필드 필요)"),
-        _na_result("M11", "per_cycle_counts", "telemetry pending (adj/wildcard count emit 필요)"),
+        eval_m5b(t),
+        eval_m9(t),
+        eval_m10(t),
+        eval_m11(t),
     ]
 
     code, label = compute_verdict(results)

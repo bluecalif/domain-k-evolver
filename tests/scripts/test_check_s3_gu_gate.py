@@ -18,7 +18,12 @@ import pytest
 
 from scripts.check_s3_gu_gate import (
     Result,
+    TrialData,
     compute_verdict,
+    eval_m5b,
+    eval_m9,
+    eval_m10,
+    eval_m11,
     load_trial,
     main,
 )
@@ -189,3 +194,85 @@ def test_main_strict_flag_tightens_m5(tmp_path):
     strict = {r["id"]: r for r in json.loads(out_strict.read_text(encoding="utf-8"))["results"]}
     assert weak["M5"]["passed"] is True
     assert strict["M5"]["passed"] is False
+
+
+# ── M5b/M9/M10/M11 eval functions (L2) ────────────────────────
+
+
+def _make_trial(**overrides) -> TrialData:
+    defaults: dict = dict(
+        path=Path("."),
+        matrix={"summary": {"vacant": 0, "by_category": {}}, "categories": {}},
+        gap_map=[],
+        knowledge_units=[],
+        conflict_ledger=[],
+        adjacency_yield=[],
+        trajectory=[],
+        snapshots_dir=Path("."),
+    )
+    defaults.update(overrides)
+    return TrialData(**defaults)
+
+
+def _adj_gu(origin: str | None = None, created_cycle: int | str | None = None) -> dict:
+    g: dict = {"trigger": "A:adjacent_gap", "target": {"entity_key": "d:cat:slug", "field": "f"}}
+    if origin is not None:
+        g["origin"] = origin
+    if created_cycle is not None:
+        g["created_cycle"] = created_cycle
+    return g
+
+
+class TestEvalM5b:
+    def test_pass_when_all_entries_have_cap_hit_count(self):
+        t = _make_trial(trajectory=[{"cycle": 1, "cap_hit_count": 0}, {"cycle": 2, "cap_hit_count": 1}])
+        r = eval_m5b(t)
+        assert r.passed is True
+
+    def test_fail_when_entries_missing_cap_hit_count(self):
+        t = _make_trial(trajectory=[{"cycle": 1}, {"cycle": 2}])
+        r = eval_m5b(t)
+        assert r.passed is False
+
+
+class TestEvalM9:
+    def test_pass_when_adj_gus_have_valid_origin(self):
+        t = _make_trial(gap_map=[
+            _adj_gu("claim_loop"),
+            _adj_gu("post_cycle_sweep"),
+            _adj_gu("seed_bootstrap"),
+        ])
+        r = eval_m9(t)
+        assert r.passed is True
+
+    def test_fail_when_adj_gus_missing_origin(self):
+        t = _make_trial(gap_map=[_adj_gu() for _ in range(5)])
+        r = eval_m9(t)
+        assert r.passed is False
+
+
+class TestEvalM10:
+    def test_pass_when_adj_gus_have_int_created_cycle(self):
+        t = _make_trial(gap_map=[_adj_gu(created_cycle=1), _adj_gu(created_cycle=3)])
+        r = eval_m10(t)
+        assert r.passed is True
+
+    def test_fail_when_adj_gus_missing_created_cycle(self):
+        t = _make_trial(gap_map=[_adj_gu() for _ in range(5)])
+        r = eval_m10(t)
+        assert r.passed is False
+
+
+class TestEvalM11:
+    def test_pass_when_all_entries_have_both_counts(self):
+        t = _make_trial(trajectory=[
+            {"cycle": 1, "adj_gen_count": 3, "wildcard_gen_count": 5},
+            {"cycle": 2, "adj_gen_count": 0, "wildcard_gen_count": 0},
+        ])
+        r = eval_m11(t)
+        assert r.passed is True
+
+    def test_fail_when_entries_missing_counts(self):
+        t = _make_trial(trajectory=[{"cycle": 1}, {"cycle": 2}])
+        r = eval_m11(t)
+        assert r.passed is False
