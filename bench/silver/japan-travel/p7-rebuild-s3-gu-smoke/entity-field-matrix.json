@@ -2,1596 +2,345 @@
   "trial_id": "p7-rebuild-s3-gu-smoke",
   "cycle": 5,
   "generated_at": "2026-04-26",
-  "generation_method": "manual_retroactive",
-  "note": "S3-T9~T14 적용 후. KU/GU: state/*.json c5 최종. p7-rebuild-s3-smoke 대비: adj GU 20개(entity-specific 14), KU 101.",
+  "generation_method": "auto",
+  "note": "analyze_trajectory.py --matrix 로 생성. KU/GU: state/*.json 최종 cycle 기준.",
   "state_definitions": {
     "ku_gu": "KU + GU 모두 존재 (GU resolved, KU 생성됨)",
     "ku_only": "KU 존재, 해당 entity-field GU 없음 (seed 또는 wildcard-GU 파생)",
     "gu_open": "GU open, KU 미생성 (수집 진행 중)",
     "vacant": "KU·GU 모두 없음 (미탐색 슬롯)",
-    "gu_resolved_no_wildcard_ku": "GU resolved되었으나 KU가 specific entity 수준으로 생성됨"
+    "gu_resolved_no_wildcard_ku": "GU resolved되었으나 KU가 specific entity 수준으로 생성됨 — wildcard 슬롯 자체에는 KU 없음"
   },
   "categories": {
     "transport": {
-      "entities": [
-        "shinkansen",
-        "airport-transfer"
-      ],
-      "fields": [
-        "price",
-        "duration",
-        "how_to_use",
-        "tips"
-      ],
+      "entities": ["shinkansen", "airport-transfer"],
+      "fields": ["price", "duration", "how_to_use", "tips"],
       "matrix": {
         "shinkansen": {
-          "price": {
-            "state": "ku_only",
-            "ku_ids": [
-              "KU-0013"
-            ],
-            "gu_ids": [],
-            "note": "seed KU — entity-specific GU 미생성"
-          },
-          "duration": {
-            "state": "ku_gu",
-            "ku_ids": [
-              "KU-0082"
-            ],
-            "gu_ids": [
-              "GU-0042"
-            ]
-          },
-          "how_to_use": {
-            "state": "ku_only",
-            "ku_ids": [
-              "KU-0005"
-            ],
-            "gu_ids": [],
-            "note": "KU-0005 seed + adj GU-0040 해소"
-          },
-          "tips": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          }
+          "price": {"state": "ku_only", "ku_ids": ["KU-0013"], "gu_ids": [], "note": "seed"},
+          "duration": {"state": "ku_gu", "ku_ids": ["KU-0082"], "gu_ids": ["GU-0042"]},
+          "how_to_use": {"state": "ku_only", "ku_ids": ["KU-0005"], "gu_ids": [], "note": "KU-0005 seed + adj GU-0040 해소"},
+          "tips": {"state": "vacant", "ku_ids": [], "gu_ids": []}
         },
         "airport-transfer": {
-          "price": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          },
-          "duration": {
-            "state": "ku_gu",
-            "ku_ids": [
-              "KU-0083"
-            ],
-            "gu_ids": [
-              "GU-0043"
-            ]
-          },
-          "how_to_use": {
-            "state": "ku_only",
-            "ku_ids": [
-              "KU-0009"
-            ],
-            "gu_ids": [],
-            "note": "KU-0009 seed + adj GU-0042 해소"
-          },
-          "tips": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          }
+          "price": {"state": "vacant", "ku_ids": [], "gu_ids": []},
+          "duration": {"state": "ku_gu", "ku_ids": ["KU-0083"], "gu_ids": ["GU-0043"]},
+          "how_to_use": {"state": "ku_only", "ku_ids": ["KU-0009"], "gu_ids": [], "note": "KU-0009 seed + adj GU-0042 해소"},
+          "tips": {"state": "vacant", "ku_ids": [], "gu_ids": []}
         },
         "*": {
-          "price": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          },
-          "duration": {
-            "state": "ku_gu",
-            "ku_ids": [
-              "KU-0084"
-            ],
-            "gu_ids": [
-              "GU-0044"
-            ]
-          },
-          "how_to_use": {
-            "state": "ku_gu",
-            "ku_ids": [
-              "KU-0101"
-            ],
-            "gu_ids": [
-              "GU-0063"
-            ],
-            "note": "adj GU-0063 해소 후 KU 생성"
-          },
-          "tips": {
-            "state": "ku_gu",
-            "ku_ids": [
-              "KU-0089"
-            ],
-            "gu_ids": [
-              "GU-0045"
-            ]
-          }
+          "price": {"state": "vacant", "ku_ids": [], "gu_ids": []},
+          "duration": {"state": "ku_gu", "ku_ids": ["KU-0084"], "gu_ids": ["GU-0044"]},
+          "how_to_use": {"state": "ku_gu", "ku_ids": ["KU-0101"], "gu_ids": ["GU-0063"], "note": "adj GU-0063 해소 후 KU 생성"},
+          "tips": {"state": "ku_gu", "ku_ids": ["KU-0089"], "gu_ids": ["GU-0045"]}
         }
       }
     },
     "accommodation": {
       "entities": [],
-      "fields": [
-        "price",
-        "location",
-        "etiquette",
-        "tips"
-      ],
+      "fields": ["price", "location", "etiquette", "tips"],
       "matrix": {
         "*": {
-          "price": {
-            "state": "ku_gu",
-            "ku_ids": [
-              "KU-0026"
-            ],
-            "gu_ids": [
-              "GU-0006"
-            ]
-          },
-          "location": {
-            "state": "ku_gu",
-            "ku_ids": [
-              "KU-0038"
-            ],
-            "gu_ids": [
-              "GU-0020"
-            ]
-          },
-          "etiquette": {
-            "state": "ku_gu",
-            "ku_ids": [
-              "KU-0037"
-            ],
-            "gu_ids": [
-              "GU-0021"
-            ]
-          },
-          "tips": {
-            "state": "ku_gu",
-            "ku_ids": [
-              "KU-0039"
-            ],
-            "gu_ids": [
-              "GU-0022"
-            ]
-          }
+          "price": {"state": "ku_gu", "ku_ids": ["KU-0026"], "gu_ids": ["GU-0006"]},
+          "location": {"state": "ku_gu", "ku_ids": ["KU-0038"], "gu_ids": ["GU-0020"]},
+          "etiquette": {"state": "ku_gu", "ku_ids": ["KU-0037"], "gu_ids": ["GU-0021"]},
+          "tips": {"state": "ku_gu", "ku_ids": ["KU-0039"], "gu_ids": ["GU-0022"]}
         }
       }
     },
     "attraction": {
-      "entities": [
-        "himeji-castle",
-        "sapporo",
-        "noboribetsu",
-        "ginzan-onsen",
-        "aizu",
-        "kusatsu-onsen",
-        "yokohama",
-        "manza-onsen",
-        "matsumoto",
-        "gujo-hachiman",
-        "yuzawa",
-        "nagano",
-        "uji",
-        "matsuyama",
-        "ozu",
-        "yufuin",
-        "beppu",
-        "kumamoto",
-        "daibutsu",
-        "itsukushima-shrine",
-        "junguria-okinawa",
-        "mt-fuji",
-        "tamatebako-restaurant",
-        "teamlab-forest-fukuoka",
-        "tokyo",
-        "tokyo-shibuya-sky"
-      ],
-      "fields": [
-        "price",
-        "hours",
-        "location",
-        "tips"
-      ],
+      "entities": ["himeji-castle", "sapporo", "noboribetsu", "ginzan-onsen", "aizu", "kusatsu-onsen", "yokohama", "manza-onsen", "matsumoto", "gujo-hachiman", "yuzawa", "nagano", "uji", "matsuyama", "ozu", "yufuin", "beppu", "kumamoto", "daibutsu", "itsukushima-shrine", "junguria-okinawa", "mt-fuji", "tamatebako-restaurant", "teamlab-forest-fukuoka", "tokyo", "tokyo-shibuya-sky"],
+      "fields": ["price", "hours", "location", "tips"],
       "matrix": {
         "himeji-castle": {
-          "price": {
-            "state": "ku_only",
-            "ku_ids": [
-              "KU-0020"
-            ],
-            "gu_ids": [],
-            "note": "wildcard GU-0006 수집 파생"
-          },
-          "hours": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          },
-          "location": {
-            "state": "ku_only",
-            "ku_ids": [
-              "KU-0076"
-            ],
-            "gu_ids": [],
-            "note": "entity-specific GU 없음 (wildcard-GU 파생 KU)"
-          },
-          "tips": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          }
+          "price": {"state": "ku_only", "ku_ids": ["KU-0020"], "gu_ids": [], "note": "wildcard GU-0006 수집 파생"},
+          "hours": {"state": "vacant", "ku_ids": [], "gu_ids": []},
+          "location": {"state": "ku_only", "ku_ids": ["KU-0076"], "gu_ids": [], "note": "entity-specific GU 없음 (wildcard-GU 파생 KU)"},
+          "tips": {"state": "vacant", "ku_ids": [], "gu_ids": []}
         },
         "sapporo": {
-          "price": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          },
-          "hours": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          },
-          "location": {
-            "state": "ku_only",
-            "ku_ids": [
-              "KU-0057"
-            ],
-            "gu_ids": [],
-            "note": "wildcard GU-0015 수집 파생 — adj GU 미생성"
-          },
-          "tips": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          }
+          "price": {"state": "vacant", "ku_ids": [], "gu_ids": []},
+          "hours": {"state": "vacant", "ku_ids": [], "gu_ids": []},
+          "location": {"state": "ku_only", "ku_ids": ["KU-0057"], "gu_ids": [], "note": "wildcard GU-0015 수집 파생 — adj GU 미생성"},
+          "tips": {"state": "vacant", "ku_ids": [], "gu_ids": []}
         },
         "noboribetsu": {
-          "price": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          },
-          "hours": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          },
-          "location": {
-            "state": "ku_only",
-            "ku_ids": [
-              "KU-0058"
-            ],
-            "gu_ids": [],
-            "note": "wildcard GU-0015 수집 파생 — adj GU 미생성"
-          },
-          "tips": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          }
+          "price": {"state": "vacant", "ku_ids": [], "gu_ids": []},
+          "hours": {"state": "vacant", "ku_ids": [], "gu_ids": []},
+          "location": {"state": "ku_only", "ku_ids": ["KU-0058"], "gu_ids": [], "note": "wildcard GU-0015 수집 파생 — adj GU 미생성"},
+          "tips": {"state": "vacant", "ku_ids": [], "gu_ids": []}
         },
         "ginzan-onsen": {
-          "price": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          },
-          "hours": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          },
-          "location": {
-            "state": "ku_only",
-            "ku_ids": [
-              "KU-0059"
-            ],
-            "gu_ids": [],
-            "note": "wildcard GU-0015 수집 파생 — adj GU 미생성"
-          },
-          "tips": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          }
+          "price": {"state": "vacant", "ku_ids": [], "gu_ids": []},
+          "hours": {"state": "vacant", "ku_ids": [], "gu_ids": []},
+          "location": {"state": "ku_only", "ku_ids": ["KU-0059"], "gu_ids": [], "note": "wildcard GU-0015 수집 파생 — adj GU 미생성"},
+          "tips": {"state": "vacant", "ku_ids": [], "gu_ids": []}
         },
         "aizu": {
-          "price": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          },
-          "hours": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          },
-          "location": {
-            "state": "ku_only",
-            "ku_ids": [
-              "KU-0060"
-            ],
-            "gu_ids": [],
-            "note": "wildcard GU-0015 수집 파생 — adj GU 미생성"
-          },
-          "tips": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          }
+          "price": {"state": "vacant", "ku_ids": [], "gu_ids": []},
+          "hours": {"state": "vacant", "ku_ids": [], "gu_ids": []},
+          "location": {"state": "ku_only", "ku_ids": ["KU-0060"], "gu_ids": [], "note": "wildcard GU-0015 수집 파생 — adj GU 미생성"},
+          "tips": {"state": "vacant", "ku_ids": [], "gu_ids": []}
         },
         "kusatsu-onsen": {
-          "price": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          },
-          "hours": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          },
-          "location": {
-            "state": "ku_only",
-            "ku_ids": [
-              "KU-0061"
-            ],
-            "gu_ids": [],
-            "note": "wildcard GU-0015 수집 파생 — adj GU 미생성"
-          },
-          "tips": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          }
+          "price": {"state": "vacant", "ku_ids": [], "gu_ids": []},
+          "hours": {"state": "vacant", "ku_ids": [], "gu_ids": []},
+          "location": {"state": "ku_only", "ku_ids": ["KU-0061"], "gu_ids": [], "note": "wildcard GU-0015 수집 파생 — adj GU 미생성"},
+          "tips": {"state": "vacant", "ku_ids": [], "gu_ids": []}
         },
         "yokohama": {
-          "price": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          },
-          "hours": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          },
-          "location": {
-            "state": "ku_only",
-            "ku_ids": [
-              "KU-0062"
-            ],
-            "gu_ids": [],
-            "note": "wildcard GU-0015 수집 파생 — adj GU 미생성"
-          },
-          "tips": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          }
+          "price": {"state": "vacant", "ku_ids": [], "gu_ids": []},
+          "hours": {"state": "vacant", "ku_ids": [], "gu_ids": []},
+          "location": {"state": "ku_only", "ku_ids": ["KU-0062"], "gu_ids": [], "note": "wildcard GU-0015 수집 파생 — adj GU 미생성"},
+          "tips": {"state": "vacant", "ku_ids": [], "gu_ids": []}
         },
         "manza-onsen": {
-          "price": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          },
-          "hours": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          },
-          "location": {
-            "state": "ku_only",
-            "ku_ids": [
-              "KU-0063"
-            ],
-            "gu_ids": [],
-            "note": "wildcard GU-0015 수집 파생 — adj GU 미생성"
-          },
-          "tips": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          }
+          "price": {"state": "vacant", "ku_ids": [], "gu_ids": []},
+          "hours": {"state": "vacant", "ku_ids": [], "gu_ids": []},
+          "location": {"state": "ku_only", "ku_ids": ["KU-0063"], "gu_ids": [], "note": "wildcard GU-0015 수집 파생 — adj GU 미생성"},
+          "tips": {"state": "vacant", "ku_ids": [], "gu_ids": []}
         },
         "matsumoto": {
-          "price": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          },
-          "hours": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          },
-          "location": {
-            "state": "ku_only",
-            "ku_ids": [
-              "KU-0064"
-            ],
-            "gu_ids": [],
-            "note": "wildcard GU-0015 수집 파생 — adj GU 미생성"
-          },
-          "tips": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          }
+          "price": {"state": "vacant", "ku_ids": [], "gu_ids": []},
+          "hours": {"state": "vacant", "ku_ids": [], "gu_ids": []},
+          "location": {"state": "ku_only", "ku_ids": ["KU-0064"], "gu_ids": [], "note": "wildcard GU-0015 수집 파생 — adj GU 미생성"},
+          "tips": {"state": "vacant", "ku_ids": [], "gu_ids": []}
         },
         "gujo-hachiman": {
-          "price": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          },
-          "hours": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          },
-          "location": {
-            "state": "ku_only",
-            "ku_ids": [
-              "KU-0065"
-            ],
-            "gu_ids": [],
-            "note": "wildcard GU-0015 수집 파생 — adj GU 미생성"
-          },
-          "tips": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          }
+          "price": {"state": "vacant", "ku_ids": [], "gu_ids": []},
+          "hours": {"state": "vacant", "ku_ids": [], "gu_ids": []},
+          "location": {"state": "ku_only", "ku_ids": ["KU-0065"], "gu_ids": [], "note": "wildcard GU-0015 수집 파생 — adj GU 미생성"},
+          "tips": {"state": "vacant", "ku_ids": [], "gu_ids": []}
         },
         "yuzawa": {
-          "price": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          },
-          "hours": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          },
-          "location": {
-            "state": "ku_only",
-            "ku_ids": [
-              "KU-0066"
-            ],
-            "gu_ids": [],
-            "note": "wildcard GU-0015 수집 파생 — adj GU 미생성"
-          },
-          "tips": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          }
+          "price": {"state": "vacant", "ku_ids": [], "gu_ids": []},
+          "hours": {"state": "vacant", "ku_ids": [], "gu_ids": []},
+          "location": {"state": "ku_only", "ku_ids": ["KU-0066"], "gu_ids": [], "note": "wildcard GU-0015 수집 파생 — adj GU 미생성"},
+          "tips": {"state": "vacant", "ku_ids": [], "gu_ids": []}
         },
         "nagano": {
-          "price": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          },
-          "hours": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          },
-          "location": {
-            "state": "ku_only",
-            "ku_ids": [
-              "KU-0067"
-            ],
-            "gu_ids": [],
-            "note": "wildcard GU-0015 수집 파생 — adj GU 미생성"
-          },
-          "tips": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          }
+          "price": {"state": "vacant", "ku_ids": [], "gu_ids": []},
+          "hours": {"state": "vacant", "ku_ids": [], "gu_ids": []},
+          "location": {"state": "ku_only", "ku_ids": ["KU-0067"], "gu_ids": [], "note": "wildcard GU-0015 수집 파생 — adj GU 미생성"},
+          "tips": {"state": "vacant", "ku_ids": [], "gu_ids": []}
         },
         "uji": {
-          "price": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          },
-          "hours": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          },
-          "location": {
-            "state": "ku_only",
-            "ku_ids": [
-              "KU-0068"
-            ],
-            "gu_ids": [],
-            "note": "wildcard GU-0015 수집 파생 — adj GU 미생성"
-          },
-          "tips": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          }
+          "price": {"state": "vacant", "ku_ids": [], "gu_ids": []},
+          "hours": {"state": "vacant", "ku_ids": [], "gu_ids": []},
+          "location": {"state": "ku_only", "ku_ids": ["KU-0068"], "gu_ids": [], "note": "wildcard GU-0015 수집 파생 — adj GU 미생성"},
+          "tips": {"state": "vacant", "ku_ids": [], "gu_ids": []}
         },
         "matsuyama": {
-          "price": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          },
-          "hours": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          },
-          "location": {
-            "state": "ku_only",
-            "ku_ids": [
-              "KU-0069"
-            ],
-            "gu_ids": [],
-            "note": "wildcard GU-0015 수집 파생 — adj GU 미생성"
-          },
-          "tips": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          }
+          "price": {"state": "vacant", "ku_ids": [], "gu_ids": []},
+          "hours": {"state": "vacant", "ku_ids": [], "gu_ids": []},
+          "location": {"state": "ku_only", "ku_ids": ["KU-0069"], "gu_ids": [], "note": "wildcard GU-0015 수집 파생 — adj GU 미생성"},
+          "tips": {"state": "vacant", "ku_ids": [], "gu_ids": []}
         },
         "ozu": {
-          "price": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          },
-          "hours": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          },
-          "location": {
-            "state": "ku_only",
-            "ku_ids": [
-              "KU-0070"
-            ],
-            "gu_ids": [],
-            "note": "wildcard GU-0015 수집 파생 — adj GU 미생성"
-          },
-          "tips": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          }
+          "price": {"state": "vacant", "ku_ids": [], "gu_ids": []},
+          "hours": {"state": "vacant", "ku_ids": [], "gu_ids": []},
+          "location": {"state": "ku_only", "ku_ids": ["KU-0070"], "gu_ids": [], "note": "wildcard GU-0015 수집 파생 — adj GU 미생성"},
+          "tips": {"state": "vacant", "ku_ids": [], "gu_ids": []}
         },
         "yufuin": {
-          "price": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          },
-          "hours": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          },
-          "location": {
-            "state": "ku_only",
-            "ku_ids": [
-              "KU-0071"
-            ],
-            "gu_ids": [],
-            "note": "wildcard GU-0015 수집 파생 — adj GU 미생성"
-          },
-          "tips": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          }
+          "price": {"state": "vacant", "ku_ids": [], "gu_ids": []},
+          "hours": {"state": "vacant", "ku_ids": [], "gu_ids": []},
+          "location": {"state": "ku_only", "ku_ids": ["KU-0071"], "gu_ids": [], "note": "wildcard GU-0015 수집 파생 — adj GU 미생성"},
+          "tips": {"state": "vacant", "ku_ids": [], "gu_ids": []}
         },
         "beppu": {
-          "price": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          },
-          "hours": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          },
-          "location": {
-            "state": "ku_only",
-            "ku_ids": [
-              "KU-0072"
-            ],
-            "gu_ids": [],
-            "note": "wildcard GU-0015 수집 파생 — adj GU 미생성"
-          },
-          "tips": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          }
+          "price": {"state": "vacant", "ku_ids": [], "gu_ids": []},
+          "hours": {"state": "vacant", "ku_ids": [], "gu_ids": []},
+          "location": {"state": "ku_only", "ku_ids": ["KU-0072"], "gu_ids": [], "note": "wildcard GU-0015 수집 파생 — adj GU 미생성"},
+          "tips": {"state": "vacant", "ku_ids": [], "gu_ids": []}
         },
         "kumamoto": {
-          "price": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          },
-          "hours": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          },
-          "location": {
-            "state": "ku_only",
-            "ku_ids": [
-              "KU-0073"
-            ],
-            "gu_ids": [],
-            "note": "wildcard GU-0015 수집 파생 — adj GU 미생성"
-          },
-          "tips": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          }
+          "price": {"state": "vacant", "ku_ids": [], "gu_ids": []},
+          "hours": {"state": "vacant", "ku_ids": [], "gu_ids": []},
+          "location": {"state": "ku_only", "ku_ids": ["KU-0073"], "gu_ids": [], "note": "wildcard GU-0015 수집 파생 — adj GU 미생성"},
+          "tips": {"state": "vacant", "ku_ids": [], "gu_ids": []}
         },
         "daibutsu": {
-          "price": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          },
-          "hours": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          },
-          "location": {
-            "state": "ku_only",
-            "ku_ids": [
-              "KU-0056"
-            ],
-            "gu_ids": [],
-            "note": "entity-specific GU 없음 (wildcard-GU 파생 KU)"
-          },
-          "tips": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          }
+          "price": {"state": "vacant", "ku_ids": [], "gu_ids": []},
+          "hours": {"state": "vacant", "ku_ids": [], "gu_ids": []},
+          "location": {"state": "ku_only", "ku_ids": ["KU-0056"], "gu_ids": [], "note": "entity-specific GU 없음 (wildcard-GU 파생 KU)"},
+          "tips": {"state": "vacant", "ku_ids": [], "gu_ids": []}
         },
         "itsukushima-shrine": {
-          "price": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          },
-          "hours": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          },
-          "location": {
-            "state": "ku_only",
-            "ku_ids": [
-              "KU-0077"
-            ],
-            "gu_ids": [],
-            "note": "entity-specific GU 없음 (wildcard-GU 파생 KU)"
-          },
-          "tips": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          }
+          "price": {"state": "vacant", "ku_ids": [], "gu_ids": []},
+          "hours": {"state": "vacant", "ku_ids": [], "gu_ids": []},
+          "location": {"state": "ku_only", "ku_ids": ["KU-0077"], "gu_ids": [], "note": "entity-specific GU 없음 (wildcard-GU 파생 KU)"},
+          "tips": {"state": "vacant", "ku_ids": [], "gu_ids": []}
         },
         "junguria-okinawa": {
-          "price": {
-            "state": "ku_only",
-            "ku_ids": [
-              "KU-0021"
-            ],
-            "gu_ids": [],
-            "note": "entity-specific GU 없음 (wildcard-GU 파생 KU)"
-          },
-          "hours": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          },
-          "location": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          },
-          "tips": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          }
+          "price": {"state": "ku_only", "ku_ids": ["KU-0021"], "gu_ids": [], "note": "entity-specific GU 없음 (wildcard-GU 파생 KU)"},
+          "hours": {"state": "vacant", "ku_ids": [], "gu_ids": []},
+          "location": {"state": "vacant", "ku_ids": [], "gu_ids": []},
+          "tips": {"state": "vacant", "ku_ids": [], "gu_ids": []}
         },
         "mt-fuji": {
-          "price": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          },
-          "hours": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          },
-          "location": {
-            "state": "ku_only",
-            "ku_ids": [
-              "KU-0075"
-            ],
-            "gu_ids": [],
-            "note": "entity-specific GU 없음 (wildcard-GU 파생 KU)"
-          },
-          "tips": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          }
+          "price": {"state": "vacant", "ku_ids": [], "gu_ids": []},
+          "hours": {"state": "vacant", "ku_ids": [], "gu_ids": []},
+          "location": {"state": "ku_only", "ku_ids": ["KU-0075"], "gu_ids": [], "note": "entity-specific GU 없음 (wildcard-GU 파생 KU)"},
+          "tips": {"state": "vacant", "ku_ids": [], "gu_ids": []}
         },
         "tamatebako-restaurant": {
-          "price": {
-            "state": "ku_only",
-            "ku_ids": [
-              "KU-0022"
-            ],
-            "gu_ids": [],
-            "note": "entity-specific GU 없음 (wildcard-GU 파생 KU)"
-          },
-          "hours": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          },
-          "location": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          },
-          "tips": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          }
+          "price": {"state": "ku_only", "ku_ids": ["KU-0022"], "gu_ids": [], "note": "entity-specific GU 없음 (wildcard-GU 파생 KU)"},
+          "hours": {"state": "vacant", "ku_ids": [], "gu_ids": []},
+          "location": {"state": "vacant", "ku_ids": [], "gu_ids": []},
+          "tips": {"state": "vacant", "ku_ids": [], "gu_ids": []}
         },
         "teamlab-forest-fukuoka": {
-          "price": {
-            "state": "ku_only",
-            "ku_ids": [
-              "KU-0024"
-            ],
-            "gu_ids": [],
-            "note": "entity-specific GU 없음 (wildcard-GU 파생 KU)"
-          },
-          "hours": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          },
-          "location": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          },
-          "tips": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          }
+          "price": {"state": "ku_only", "ku_ids": ["KU-0024"], "gu_ids": [], "note": "entity-specific GU 없음 (wildcard-GU 파생 KU)"},
+          "hours": {"state": "vacant", "ku_ids": [], "gu_ids": []},
+          "location": {"state": "vacant", "ku_ids": [], "gu_ids": []},
+          "tips": {"state": "vacant", "ku_ids": [], "gu_ids": []}
         },
         "tokyo": {
-          "price": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          },
-          "hours": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          },
-          "location": {
-            "state": "ku_only",
-            "ku_ids": [
-              "KU-0074"
-            ],
-            "gu_ids": [],
-            "note": "entity-specific GU 없음 (wildcard-GU 파생 KU)"
-          },
-          "tips": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          }
+          "price": {"state": "vacant", "ku_ids": [], "gu_ids": []},
+          "hours": {"state": "vacant", "ku_ids": [], "gu_ids": []},
+          "location": {"state": "ku_only", "ku_ids": ["KU-0074"], "gu_ids": [], "note": "entity-specific GU 없음 (wildcard-GU 파생 KU)"},
+          "tips": {"state": "vacant", "ku_ids": [], "gu_ids": []}
         },
         "tokyo-shibuya-sky": {
-          "price": {
-            "state": "ku_only",
-            "ku_ids": [
-              "KU-0023"
-            ],
-            "gu_ids": [],
-            "note": "entity-specific GU 없음 (wildcard-GU 파생 KU)"
-          },
-          "hours": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          },
-          "location": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          },
-          "tips": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          }
+          "price": {"state": "ku_only", "ku_ids": ["KU-0023"], "gu_ids": [], "note": "entity-specific GU 없음 (wildcard-GU 파생 KU)"},
+          "hours": {"state": "vacant", "ku_ids": [], "gu_ids": []},
+          "location": {"state": "vacant", "ku_ids": [], "gu_ids": []},
+          "tips": {"state": "vacant", "ku_ids": [], "gu_ids": []}
         },
         "*": {
-          "price": {
-            "state": "gu_resolved_no_wildcard_ku",
-            "ku_ids": [],
-            "gu_ids": [
-              "GU-0007"
-            ],
-            "note": "GU resolved됐으나 KU는 shrines-temples/dual-pricing/himeji-castle 등 specific entity로 생성됨"
-          },
-          "hours": {
-            "state": "ku_gu",
-            "ku_ids": [
-              "KU-0078"
-            ],
-            "gu_ids": [
-              "GU-0023"
-            ]
-          },
-          "location": {
-            "state": "gu_resolved_no_wildcard_ku",
-            "ku_ids": [],
-            "gu_ids": [
-              "GU-0024"
-            ],
-            "note": "GU resolved됐으나 KU는 kitakami~kumamoto 22개 specific entity로 생성됨"
-          },
-          "tips": {
-            "state": "ku_gu",
-            "ku_ids": [
-              "KU-0054"
-            ],
-            "gu_ids": [
-              "GU-0025"
-            ]
-          }
+          "price": {"state": "gu_resolved_no_wildcard_ku", "ku_ids": [], "gu_ids": ["GU-0007"], "note": "GU resolved됐으나 KU는 shrines-temples/dual-pricing/himeji-castle 등 specific entity로 생성됨"},
+          "hours": {"state": "ku_gu", "ku_ids": ["KU-0078"], "gu_ids": ["GU-0023"]},
+          "location": {"state": "gu_resolved_no_wildcard_ku", "ku_ids": [], "gu_ids": ["GU-0024"], "note": "GU resolved됐으나 KU는 kitakami~kumamoto 22개 specific entity로 생성됨"},
+          "tips": {"state": "ku_gu", "ku_ids": ["KU-0054"], "gu_ids": ["GU-0025"]}
         }
       }
     },
     "dining": {
       "entities": [],
-      "fields": [
-        "price",
-        "hours",
-        "location",
-        "etiquette",
-        "tips"
-      ],
+      "fields": ["price", "hours", "location", "etiquette", "tips"],
       "matrix": {
         "*": {
-          "price": {
-            "state": "ku_gu",
-            "ku_ids": [
-              "KU-0025"
-            ],
-            "gu_ids": [
-              "GU-0008"
-            ]
-          },
-          "hours": {
-            "state": "ku_gu",
-            "ku_ids": [
-              "KU-0044"
-            ],
-            "gu_ids": [
-              "GU-0031"
-            ]
-          },
-          "location": {
-            "state": "ku_gu",
-            "ku_ids": [
-              "KU-0043"
-            ],
-            "gu_ids": [
-              "GU-0032"
-            ]
-          },
-          "etiquette": {
-            "state": "ku_gu",
-            "ku_ids": [
-              "KU-0045"
-            ],
-            "gu_ids": [
-              "GU-0033"
-            ]
-          },
-          "tips": {
-            "state": "ku_gu",
-            "ku_ids": [
-              "KU-0047"
-            ],
-            "gu_ids": [
-              "GU-0034"
-            ]
-          }
+          "price": {"state": "ku_gu", "ku_ids": ["KU-0025"], "gu_ids": ["GU-0008"]},
+          "hours": {"state": "ku_gu", "ku_ids": ["KU-0044"], "gu_ids": ["GU-0031"]},
+          "location": {"state": "ku_gu", "ku_ids": ["KU-0043"], "gu_ids": ["GU-0032"]},
+          "etiquette": {"state": "ku_gu", "ku_ids": ["KU-0045"], "gu_ids": ["GU-0033"]},
+          "tips": {"state": "ku_gu", "ku_ids": ["KU-0047"], "gu_ids": ["GU-0034"]}
         }
       }
     },
     "regulation": {
-      "entities": [
-        "tourist-visa",
-        "customs-allowance",
-        "emergency",
-        "visit-japan-web",
-        "tax-free"
-      ],
-      "fields": [
-        "price",
-        "policy",
-        "eligibility",
-        "tips"
-      ],
+      "entities": ["tourist-visa", "customs-allowance", "emergency", "visit-japan-web", "tax-free"],
+      "fields": ["price", "policy", "eligibility", "tips"],
       "matrix": {
         "tourist-visa": {
-          "price": {
-            "state": "ku_gu",
-            "ku_ids": [
-              "KU-0027"
-            ],
-            "gu_ids": [
-              "GU-0011"
-            ]
-          },
-          "policy": {
-            "state": "ku_only",
-            "ku_ids": [
-              "KU-0003"
-            ],
-            "gu_ids": [],
-            "note": "seed"
-          },
-          "eligibility": {
-            "state": "ku_gu",
-            "ku_ids": [
-              "KU-0015"
-            ],
-            "gu_ids": [
-              "GU-0001"
-            ]
-          },
-          "tips": {
-            "state": "ku_gu",
-            "ku_ids": [
-              "KU-0085"
-            ],
-            "gu_ids": [
-              "GU-0047"
-            ],
-            "note": "adj GU-0047 해소 후 KU 생성"
-          }
+          "price": {"state": "ku_gu", "ku_ids": ["KU-0027"], "gu_ids": ["GU-0011"]},
+          "policy": {"state": "ku_only", "ku_ids": ["KU-0003"], "gu_ids": [], "note": "seed"},
+          "eligibility": {"state": "ku_gu", "ku_ids": ["KU-0015"], "gu_ids": ["GU-0001"]},
+          "tips": {"state": "ku_gu", "ku_ids": ["KU-0085"], "gu_ids": ["GU-0047"], "note": "adj GU-0047 해소 후 KU 생성"}
         },
         "customs-allowance": {
-          "price": {
-            "state": "ku_gu",
-            "ku_ids": [
-              "KU-0029"
-            ],
-            "gu_ids": [
-              "GU-0012"
-            ]
-          },
-          "policy": {
-            "state": "ku_only",
-            "ku_ids": [
-              "KU-0006"
-            ],
-            "gu_ids": [],
-            "note": "seed"
-          },
-          "eligibility": {
-            "state": "ku_gu",
-            "ku_ids": [
-              "KU-0016"
-            ],
-            "gu_ids": [
-              "GU-0002"
-            ]
-          },
-          "tips": {
-            "state": "ku_gu",
-            "ku_ids": [
-              "KU-0086"
-            ],
-            "gu_ids": [
-              "GU-0048"
-            ],
-            "note": "adj GU-0048 해소 후 KU 생성"
-          }
+          "price": {"state": "ku_gu", "ku_ids": ["KU-0029"], "gu_ids": ["GU-0012"]},
+          "policy": {"state": "ku_only", "ku_ids": ["KU-0006"], "gu_ids": [], "note": "seed"},
+          "eligibility": {"state": "ku_gu", "ku_ids": ["KU-0016"], "gu_ids": ["GU-0002"]},
+          "tips": {"state": "ku_gu", "ku_ids": ["KU-0086"], "gu_ids": ["GU-0048"], "note": "adj GU-0048 해소 후 KU 생성"}
         },
         "emergency": {
-          "price": {
-            "state": "ku_gu",
-            "ku_ids": [
-              "KU-0028"
-            ],
-            "gu_ids": [
-              "GU-0013"
-            ]
-          },
-          "policy": {
-            "state": "ku_only",
-            "ku_ids": [
-              "KU-0008"
-            ],
-            "gu_ids": [],
-            "note": "seed"
-          },
-          "eligibility": {
-            "state": "ku_gu",
-            "ku_ids": [
-              "KU-0018"
-            ],
-            "gu_ids": [
-              "GU-0003"
-            ]
-          },
-          "tips": {
-            "state": "ku_gu",
-            "ku_ids": [
-              "KU-0092"
-            ],
-            "gu_ids": [
-              "GU-0051"
-            ],
-            "note": "adj GU-0051 해소 후 KU 생성"
-          }
+          "price": {"state": "ku_gu", "ku_ids": ["KU-0028"], "gu_ids": ["GU-0013"]},
+          "policy": {"state": "ku_only", "ku_ids": ["KU-0008"], "gu_ids": [], "note": "seed"},
+          "eligibility": {"state": "ku_gu", "ku_ids": ["KU-0018"], "gu_ids": ["GU-0003"]},
+          "tips": {"state": "ku_gu", "ku_ids": ["KU-0092"], "gu_ids": ["GU-0051"], "note": "adj GU-0051 해소 후 KU 생성"}
         },
         "visit-japan-web": {
-          "price": {
-            "state": "ku_gu",
-            "ku_ids": [
-              "KU-0030"
-            ],
-            "gu_ids": [
-              "GU-0014"
-            ]
-          },
-          "policy": {
-            "state": "ku_gu",
-            "ku_ids": [
-              "KU-0088"
-            ],
-            "gu_ids": [
-              "GU-0049"
-            ],
-            "note": "adj GU-0049 해소 후 KU 생성"
-          },
-          "eligibility": {
-            "state": "ku_gu",
-            "ku_ids": [
-              "KU-0017"
-            ],
-            "gu_ids": [
-              "GU-0004"
-            ]
-          },
-          "tips": {
-            "state": "ku_gu",
-            "ku_ids": [
-              "KU-0090"
-            ],
-            "gu_ids": [
-              "GU-0050"
-            ],
-            "note": "adj GU-0050 해소 후 KU 생성"
-          }
+          "price": {"state": "ku_gu", "ku_ids": ["KU-0030"], "gu_ids": ["GU-0014"]},
+          "policy": {"state": "ku_gu", "ku_ids": ["KU-0088"], "gu_ids": ["GU-0049"], "note": "adj GU-0049 해소 후 KU 생성"},
+          "eligibility": {"state": "ku_gu", "ku_ids": ["KU-0017"], "gu_ids": ["GU-0004"]},
+          "tips": {"state": "ku_gu", "ku_ids": ["KU-0090"], "gu_ids": ["GU-0050"], "note": "adj GU-0050 해소 후 KU 생성"}
         },
         "tax-free": {
-          "price": {
-            "state": "ku_gu",
-            "ku_ids": [
-              "KU-0031"
-            ],
-            "gu_ids": [
-              "GU-0015"
-            ]
-          },
-          "policy": {
-            "state": "ku_only",
-            "ku_ids": [
-              "KU-0011"
-            ],
-            "gu_ids": [],
-            "note": "seed"
-          },
-          "eligibility": {
-            "state": "ku_gu",
-            "ku_ids": [
-              "KU-0014"
-            ],
-            "gu_ids": [
-              "GU-0005"
-            ]
-          },
-          "tips": {
-            "state": "ku_gu",
-            "ku_ids": [
-              "KU-0087"
-            ],
-            "gu_ids": [
-              "GU-0046"
-            ],
-            "note": "adj GU-0046 해소 후 KU 생성"
-          }
+          "price": {"state": "ku_gu", "ku_ids": ["KU-0031"], "gu_ids": ["GU-0015"]},
+          "policy": {"state": "ku_only", "ku_ids": ["KU-0011"], "gu_ids": [], "note": "seed"},
+          "eligibility": {"state": "ku_gu", "ku_ids": ["KU-0014"], "gu_ids": ["GU-0005"]},
+          "tips": {"state": "ku_gu", "ku_ids": ["KU-0087"], "gu_ids": ["GU-0046"], "note": "adj GU-0046 해소 후 KU 생성"}
         },
         "*": {
-          "price": {
-            "state": "ku_gu",
-            "ku_ids": [
-              "KU-0032"
-            ],
-            "gu_ids": [
-              "GU-0016"
-            ]
-          },
-          "policy": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          },
-          "eligibility": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          },
-          "tips": {
-            "state": "ku_gu",
-            "ku_ids": [
-              "KU-0053"
-            ],
-            "gu_ids": [
-              "GU-0019"
-            ]
-          }
+          "price": {"state": "ku_gu", "ku_ids": ["KU-0032"], "gu_ids": ["GU-0016"]},
+          "policy": {"state": "vacant", "ku_ids": [], "gu_ids": []},
+          "eligibility": {"state": "vacant", "ku_ids": [], "gu_ids": []},
+          "tips": {"state": "ku_gu", "ku_ids": ["KU-0053"], "gu_ids": ["GU-0019"]}
         }
       },
-      "anomalies": [
-        {
-          "entity": "visit-japan-web",
-          "field": "how_to_use",
-          "ku_ids": [
-            "KU-0010"
-          ],
-          "note": "how_to_use는 regulation 카테고리 applicable_fields 외부 — seed KU 존재하나 field_adjacency 트리거 불가"
-        }
-      ]
+      "anomalies": [{"entity": "visit-japan-web", "field": "how_to_use", "ku_ids": ["KU-0010"], "note": "how_to_use는 regulation 카테고리 applicable_fields 외부 — seed KU 존재하나 field_adjacency 트리거 불가"}]
     },
     "pass-ticket": {
-      "entities": [
-        "jr-pass",
-        "suica"
-      ],
-      "fields": [
-        "price",
-        "policy",
-        "duration",
-        "eligibility",
-        "tips",
-        "where_to_buy"
-      ],
+      "entities": ["jr-pass", "suica"],
+      "fields": ["price", "policy", "duration", "eligibility", "tips", "where_to_buy"],
       "matrix": {
         "jr-pass": {
-          "price": {
-            "state": "ku_only",
-            "ku_ids": [
-              "KU-0002"
-            ],
-            "gu_ids": [],
-            "note": "KU-0002 seed + adj GU-0045 해소 후 KU-0075~0078 추가"
-          },
-          "policy": {
-            "state": "ku_gu",
-            "ku_ids": [
-              "KU-0033"
-            ],
-            "gu_ids": [
-              "GU-0017"
-            ]
-          },
-          "duration": {
-            "state": "ku_gu",
-            "ku_ids": [
-              "KU-0055"
-            ],
-            "gu_ids": [
-              "GU-0035"
-            ]
-          },
-          "eligibility": {
-            "state": "ku_only",
-            "ku_ids": [
-              "KU-0001"
-            ],
-            "gu_ids": [],
-            "note": "KU-0001 seed + adj GU-0030 해소"
-          },
-          "tips": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          },
-          "where_to_buy": {
-            "state": "ku_gu",
-            "ku_ids": [
-              "KU-0097"
-            ],
-            "gu_ids": [
-              "GU-0058"
-            ],
-            "note": "adj GU-0058 해소 후 KU 생성"
-          }
+          "price": {"state": "ku_only", "ku_ids": ["KU-0002"], "gu_ids": [], "note": "KU-0002 seed + adj GU-0045 해소 후 KU-0075~0078 추가"},
+          "policy": {"state": "ku_gu", "ku_ids": ["KU-0033"], "gu_ids": ["GU-0017"]},
+          "duration": {"state": "ku_gu", "ku_ids": ["KU-0055"], "gu_ids": ["GU-0035"]},
+          "eligibility": {"state": "ku_only", "ku_ids": ["KU-0001"], "gu_ids": [], "note": "KU-0001 seed + adj GU-0030 해소"},
+          "tips": {"state": "vacant", "ku_ids": [], "gu_ids": []},
+          "where_to_buy": {"state": "ku_gu", "ku_ids": ["KU-0097"], "gu_ids": ["GU-0058"], "note": "adj GU-0058 해소 후 KU 생성"}
         },
         "suica": {
-          "price": {
-            "state": "gu_open",
-            "ku_ids": [],
-            "gu_ids": [
-              "GU-0065"
-            ]
-          },
-          "policy": {
-            "state": "ku_gu",
-            "ku_ids": [
-              "KU-0034"
-            ],
-            "gu_ids": [
-              "GU-0018"
-            ]
-          },
-          "duration": {
-            "state": "ku_gu",
-            "ku_ids": [
-              "KU-0079"
-            ],
-            "gu_ids": [
-              "GU-0036"
-            ]
-          },
-          "eligibility": {
-            "state": "ku_gu",
-            "ku_ids": [
-              "KU-0096"
-            ],
-            "gu_ids": [
-              "GU-0059"
-            ],
-            "note": "adj GU-0059 해소 후 KU 생성"
-          },
-          "tips": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          },
-          "where_to_buy": {
-            "state": "ku_only",
-            "ku_ids": [
-              "KU-0012"
-            ],
-            "gu_ids": [],
-            "note": "seed"
-          }
+          "price": {"state": "gu_open", "ku_ids": [], "gu_ids": ["GU-0065"]},
+          "policy": {"state": "ku_gu", "ku_ids": ["KU-0034"], "gu_ids": ["GU-0018"]},
+          "duration": {"state": "ku_gu", "ku_ids": ["KU-0079"], "gu_ids": ["GU-0036"]},
+          "eligibility": {"state": "ku_gu", "ku_ids": ["KU-0096"], "gu_ids": ["GU-0059"], "note": "adj GU-0059 해소 후 KU 생성"},
+          "tips": {"state": "vacant", "ku_ids": [], "gu_ids": []},
+          "where_to_buy": {"state": "ku_only", "ku_ids": ["KU-0012"], "gu_ids": [], "note": "seed"}
         },
         "*": {
-          "price": {
-            "state": "gu_open",
-            "ku_ids": [],
-            "gu_ids": [
-              "GU-0064"
-            ]
-          },
-          "policy": {
-            "state": "ku_gu",
-            "ku_ids": [
-              "KU-0098"
-            ],
-            "gu_ids": [
-              "GU-0060"
-            ],
-            "note": "adj GU-0060 해소 후 KU 생성"
-          },
-          "duration": {
-            "state": "ku_gu",
-            "ku_ids": [
-              "KU-0081"
-            ],
-            "gu_ids": [
-              "GU-0037"
-            ]
-          },
-          "eligibility": {
-            "state": "ku_gu",
-            "ku_ids": [
-              "KU-0095"
-            ],
-            "gu_ids": [
-              "GU-0061"
-            ],
-            "note": "adj GU-0061 해소 후 KU 생성"
-          },
-          "tips": {
-            "state": "ku_gu",
-            "ku_ids": [
-              "KU-0080"
-            ],
-            "gu_ids": [
-              "GU-0038"
-            ]
-          },
-          "where_to_buy": {
-            "state": "ku_gu",
-            "ku_ids": [
-              "KU-0100"
-            ],
-            "gu_ids": [
-              "GU-0062"
-            ],
-            "note": "adj GU-0062 해소 후 KU 생성"
-          }
+          "price": {"state": "gu_open", "ku_ids": [], "gu_ids": ["GU-0064"]},
+          "policy": {"state": "ku_gu", "ku_ids": ["KU-0098"], "gu_ids": ["GU-0060"], "note": "adj GU-0060 해소 후 KU 생성"},
+          "duration": {"state": "ku_gu", "ku_ids": ["KU-0081"], "gu_ids": ["GU-0037"]},
+          "eligibility": {"state": "ku_gu", "ku_ids": ["KU-0095"], "gu_ids": ["GU-0061"], "note": "adj GU-0061 해소 후 KU 생성"},
+          "tips": {"state": "ku_gu", "ku_ids": ["KU-0080"], "gu_ids": ["GU-0038"]},
+          "where_to_buy": {"state": "ku_gu", "ku_ids": ["KU-0100"], "gu_ids": ["GU-0062"], "note": "adj GU-0062 해소 후 KU 생성"}
         }
       }
     },
     "connectivity": {
-      "entities": [
-        "sim-card"
-      ],
-      "fields": [
-        "price",
-        "how_to_use",
-        "tips",
-        "where_to_buy"
-      ],
+      "entities": ["sim-card"],
+      "fields": ["price", "how_to_use", "tips", "where_to_buy"],
       "matrix": {
         "sim-card": {
-          "price": {
-            "state": "ku_only",
-            "ku_ids": [
-              "KU-0007"
-            ],
-            "gu_ids": [],
-            "note": "seed — entity-specific GU 미생성"
-          },
-          "how_to_use": {
-            "state": "ku_gu",
-            "ku_ids": [
-              "KU-0036"
-            ],
-            "gu_ids": [
-              "GU-0026"
-            ]
-          },
-          "tips": {
-            "state": "ku_gu",
-            "ku_ids": [
-              "KU-0091"
-            ],
-            "gu_ids": [
-              "GU-0054"
-            ],
-            "note": "adj GU-0054 해소 후 KU 생성"
-          },
-          "where_to_buy": {
-            "state": "ku_gu",
-            "ku_ids": [
-              "KU-0041"
-            ],
-            "gu_ids": [
-              "GU-0029"
-            ]
-          }
+          "price": {"state": "ku_only", "ku_ids": ["KU-0007"], "gu_ids": [], "note": "seed — entity-specific GU 미생성"},
+          "how_to_use": {"state": "ku_gu", "ku_ids": ["KU-0036"], "gu_ids": ["GU-0026"]},
+          "tips": {"state": "ku_gu", "ku_ids": ["KU-0091"], "gu_ids": ["GU-0054"], "note": "adj GU-0054 해소 후 KU 생성"},
+          "where_to_buy": {"state": "ku_gu", "ku_ids": ["KU-0041"], "gu_ids": ["GU-0029"]}
         },
         "*": {
-          "price": {
-            "state": "vacant",
-            "ku_ids": [],
-            "gu_ids": []
-          },
-          "how_to_use": {
-            "state": "ku_gu",
-            "ku_ids": [
-              "KU-0035"
-            ],
-            "gu_ids": [
-              "GU-0027"
-            ]
-          },
-          "tips": {
-            "state": "ku_gu",
-            "ku_ids": [
-              "KU-0040"
-            ],
-            "gu_ids": [
-              "GU-0028"
-            ]
-          },
-          "where_to_buy": {
-            "state": "ku_gu",
-            "ku_ids": [
-              "KU-0042"
-            ],
-            "gu_ids": [
-              "GU-0030"
-            ]
-          }
+          "price": {"state": "vacant", "ku_ids": [], "gu_ids": []},
+          "how_to_use": {"state": "ku_gu", "ku_ids": ["KU-0035"], "gu_ids": ["GU-0027"]},
+          "tips": {"state": "ku_gu", "ku_ids": ["KU-0040"], "gu_ids": ["GU-0028"]},
+          "where_to_buy": {"state": "ku_gu", "ku_ids": ["KU-0042"], "gu_ids": ["GU-0030"]}
         }
       }
     },
     "payment": {
-      "entities": [
-        "ic-card",
-        "price"
-      ],
-      "fields": [
-        "price",
-        "how_to_use",
-        "tips",
-        "acceptance"
-      ],
+      "entities": ["ic-card", "price"],
+      "fields": ["price", "how_to_use", "tips", "acceptance"],
       "matrix": {
         "ic-card": {
-          "price": {
-            "state": "ku_gu",
-            "ku_ids": [
-              "KU-0046"
-            ],
-            "gu_ids": [
-              "GU-0009"
-            ]
-          },
-          "how_to_use": {
-            "state": "ku_only",
-            "ku_ids": [
-              "KU-0004"
-            ],
-            "gu_ids": [],
-            "note": "KU-0004 seed + adj GU-0038 해소"
-          },
-          "tips": {
-            "state": "ku_gu",
-            "ku_ids": [
-              "KU-0094"
-            ],
-            "gu_ids": [
-              "GU-0055"
-            ],
-            "note": "adj GU-0055 해소 후 KU 생성"
-          },
-          "acceptance": {
-            "state": "ku_gu",
-            "ku_ids": [
-              "KU-0048"
-            ],
-            "gu_ids": [
-              "GU-0040"
-            ]
-          }
+          "price": {"state": "ku_gu", "ku_ids": ["KU-0046"], "gu_ids": ["GU-0009"]},
+          "how_to_use": {"state": "ku_only", "ku_ids": ["KU-0004"], "gu_ids": [], "note": "KU-0004 seed + adj GU-0038 해소"},
+          "tips": {"state": "ku_gu", "ku_ids": ["KU-0094"], "gu_ids": ["GU-0055"], "note": "adj GU-0055 해소 후 KU 생성"},
+          "acceptance": {"state": "ku_gu", "ku_ids": ["KU-0048"], "gu_ids": ["GU-0040"]}
         },
         "price": {
-          "price": {
-            "state": "ku_only",
-            "ku_ids": [
-              "KU-0019"
-            ],
-            "gu_ids": [],
-            "note": "entity-specific GU 없음 (wildcard-GU 파생 KU)"
-          },
-          "how_to_use": {
-            "state": "ku_gu",
-            "ku_ids": [
-              "KU-0052"
-            ],
-            "gu_ids": [
-              "GU-0052"
-            ],
-            "note": "adj GU-0052 해소 후 KU 생성"
-          },
-          "tips": {
-            "state": "ku_gu",
-            "ku_ids": [
-              "KU-0051"
-            ],
-            "gu_ids": [
-              "GU-0053"
-            ],
-            "note": "adj GU-0053 해소 후 KU 생성"
-          },
-          "acceptance": {
-            "state": "ku_gu",
-            "ku_ids": [
-              "KU-0099"
-            ],
-            "gu_ids": [
-              "GU-0057"
-            ],
-            "note": "adj GU-0057 해소 후 KU 생성"
-          }
+          "price": {"state": "ku_only", "ku_ids": ["KU-0019"], "gu_ids": [], "note": "entity-specific GU 없음 (wildcard-GU 파생 KU)"},
+          "how_to_use": {"state": "ku_gu", "ku_ids": ["KU-0052"], "gu_ids": ["GU-0052"], "note": "adj GU-0052 해소 후 KU 생성"},
+          "tips": {"state": "ku_gu", "ku_ids": ["KU-0051"], "gu_ids": ["GU-0053"], "note": "adj GU-0053 해소 후 KU 생성"},
+          "acceptance": {"state": "ku_gu", "ku_ids": ["KU-0099"], "gu_ids": ["GU-0057"], "note": "adj GU-0057 해소 후 KU 생성"}
         },
         "*": {
-          "price": {
-            "state": "gu_resolved_no_wildcard_ku",
-            "ku_ids": [],
-            "gu_ids": [
-              "GU-0010"
-            ],
-            "note": "GU resolved, KU는 specific entity 수준으로 생성됨"
-          },
-          "how_to_use": {
-            "state": "ku_gu",
-            "ku_ids": [
-              "KU-0093"
-            ],
-            "gu_ids": [
-              "GU-0056"
-            ],
-            "note": "adj GU-0056 해소 후 KU 생성"
-          },
-          "tips": {
-            "state": "ku_gu",
-            "ku_ids": [
-              "KU-0049"
-            ],
-            "gu_ids": [
-              "GU-0039"
-            ]
-          },
-          "acceptance": {
-            "state": "ku_gu",
-            "ku_ids": [
-              "KU-0050"
-            ],
-            "gu_ids": [
-              "GU-0041"
-            ]
-          }
+          "price": {"state": "gu_resolved_no_wildcard_ku", "ku_ids": [], "gu_ids": ["GU-0010"], "note": "GU resolved, KU는 specific entity 수준으로 생성됨"},
+          "how_to_use": {"state": "ku_gu", "ku_ids": ["KU-0093"], "gu_ids": ["GU-0056"], "note": "adj GU-0056 해소 후 KU 생성"},
+          "tips": {"state": "ku_gu", "ku_ids": ["KU-0049"], "gu_ids": ["GU-0039"]},
+          "acceptance": {"state": "ku_gu", "ku_ids": ["KU-0050"], "gu_ids": ["GU-0041"]}
         }
       }
     }
@@ -1604,70 +353,14 @@
     "gu_open": 2,
     "vacant": 86,
     "by_category": {
-      "transport": {
-        "total": 12,
-        "ku_gu": 5,
-        "ku_only": 3,
-        "gu_open": 0,
-        "vacant": 4,
-        "gu_resolved_no_wildcard_ku": 0
-      },
-      "accommodation": {
-        "total": 4,
-        "ku_gu": 4,
-        "ku_only": 0,
-        "gu_open": 0,
-        "vacant": 0,
-        "gu_resolved_no_wildcard_ku": 0
-      },
-      "attraction": {
-        "total": 108,
-        "ku_gu": 2,
-        "ku_only": 27,
-        "gu_open": 0,
-        "vacant": 77,
-        "gu_resolved_no_wildcard_ku": 2
-      },
-      "dining": {
-        "total": 5,
-        "ku_gu": 5,
-        "ku_only": 0,
-        "gu_open": 0,
-        "vacant": 0,
-        "gu_resolved_no_wildcard_ku": 0
-      },
-      "regulation": {
-        "total": 24,
-        "ku_gu": 18,
-        "ku_only": 4,
-        "gu_open": 0,
-        "vacant": 2,
-        "gu_resolved_no_wildcard_ku": 0
-      },
-      "pass-ticket": {
-        "total": 18,
-        "ku_gu": 11,
-        "ku_only": 3,
-        "gu_open": 2,
-        "vacant": 2,
-        "gu_resolved_no_wildcard_ku": 0
-      },
-      "connectivity": {
-        "total": 8,
-        "ku_gu": 6,
-        "ku_only": 1,
-        "gu_open": 0,
-        "vacant": 1,
-        "gu_resolved_no_wildcard_ku": 0
-      },
-      "payment": {
-        "total": 12,
-        "ku_gu": 9,
-        "ku_only": 2,
-        "gu_open": 0,
-        "vacant": 0,
-        "gu_resolved_no_wildcard_ku": 1
-      }
+      "transport": {"total": 12, "ku_gu": 5, "ku_only": 3, "gu_open": 0, "vacant": 4},
+      "accommodation": {"total": 4, "ku_gu": 4, "ku_only": 0, "gu_open": 0, "vacant": 0},
+      "attraction": {"total": 108, "ku_gu": 2, "ku_only": 27, "gu_open": 0, "vacant": 77, "gu_resolved_no_wildcard_ku": 2},
+      "dining": {"total": 5, "ku_gu": 5, "ku_only": 0, "gu_open": 0, "vacant": 0},
+      "regulation": {"total": 24, "ku_gu": 18, "ku_only": 4, "gu_open": 0, "vacant": 2},
+      "pass-ticket": {"total": 18, "ku_gu": 11, "ku_only": 3, "gu_open": 2, "vacant": 2},
+      "connectivity": {"total": 8, "ku_gu": 6, "ku_only": 1, "gu_open": 0, "vacant": 1},
+      "payment": {"total": 12, "ku_gu": 9, "ku_only": 2, "gu_open": 0, "vacant": 0, "gu_resolved_no_wildcard_ku": 1}
     }
   }
 }

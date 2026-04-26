@@ -993,7 +993,7 @@ def generate_entity_field_matrix(base: Path) -> None:
         if state == "ku_only":
             if prev_note: return prev_note
             nums = [int(m.group(1)) for k in ku_ids if (m := re.search(r"KU-(\d+)", k))]
-            return ("seed KU — entity-specific GU 미생성" if nums and max(nums) <= 13
+            return ("seed" if nums and max(nums) <= 13
                     else "entity-specific GU 없음 (wildcard-GU 파생 KU)")
         if state == "ku_gu" and adj_gus:
             return f"adj {'/'.join(g['gu_id'] for g in adj_gus)} 해소 후 KU 생성"
@@ -1041,7 +1041,11 @@ def generate_entity_field_matrix(base: Path) -> None:
         prev_anom = prev.get("categories", {}).get(cat, {}).get("anomalies")
         if prev_anom:
             cat_data[cat]["anomalies"] = prev_anom
-        by_cat[cat] = ct
+        ordered = {"total": ct["total"], "ku_gu": ct["ku_gu"], "ku_only": ct["ku_only"],
+                   "gu_open": ct["gu_open"], "vacant": ct["vacant"]}
+        if ct["gu_resolved_no_wildcard_ku"]:
+            ordered["gu_resolved_no_wildcard_ku"] = ct["gu_resolved_no_wildcard_ku"]
+        by_cat[cat] = ordered
 
     # trial_id from bench-root dir name
     trial_id = base.name
@@ -1051,15 +1055,15 @@ def generate_entity_field_matrix(base: Path) -> None:
         "cycle":      len(load_json(base / "trajectory" / "trajectory.json")),
         "generated_at": str(_date.today()),
         "generation_method": "auto",
-        "note": f"analyze_trajectory.py --matrix で生成. KU/GU: state/*.json 최종 cycle 기준.",
+        "note": f"analyze_trajectory.py --matrix 로 생성. KU/GU: state/*.json 최종 cycle 기준.",
         "state_definitions": {
             "ku_gu":  "KU + GU 모두 존재 (GU resolved, KU 생성됨)",
             "ku_only": "KU 존재, 해당 entity-field GU 없음 (seed 또는 wildcard-GU 파생)",
             "gu_open": "GU open, KU 미생성 (수집 진행 중)",
             "vacant":  "KU·GU 모두 없음 (미탐색 슬롯)",
-            "gu_resolved_no_wildcard_ku": "GU resolved되었으나 KU가 specific entity 수준으로 생성됨",
+            "gu_resolved_no_wildcard_ku": "GU resolved되었으나 KU가 specific entity 수준으로 생성됨 — wildcard 슬롯 자체에는 KU 없음",
         },
-        "categories": cat_data,
+        "categories": "__CATEGORIES__",
         "summary": {
             "total_slots": summary["total"],
             "ku_gu":       summary["ku_gu"],
@@ -1067,18 +1071,52 @@ def generate_entity_field_matrix(base: Path) -> None:
             "ku_only":     summary["ku_only"],
             "gu_open":     summary["gu_open"],
             "vacant":      summary["vacant"],
-            "by_category": by_cat,
+            "by_category": "__BY_CAT__",
         },
     }
 
+    # Build compact categories string (each matrix cell on one line)
+    def _cat_str(data: dict) -> str:
+        ls = ['{']
+        items = list(data.items())
+        for ci, (cat, cd) in enumerate(items):
+            ls.append(f'    "{cat}": {{')
+            ls.append(f'      "entities": {json.dumps(cd["entities"], ensure_ascii=False)},')
+            ls.append(f'      "fields": {json.dumps(cd["fields"], ensure_ascii=False)},')
+            ls.append('      "matrix": {')
+            mat = list(cd["matrix"].items())
+            for ei, (ent, row) in enumerate(mat):
+                ls.append(f'        "{ent}": {{')
+                row_items = list(row.items())
+                for fi, (fld, cell) in enumerate(row_items):
+                    cell_s = json.dumps(cell, ensure_ascii=False)
+                    comma = ',' if fi < len(row_items) - 1 else ''
+                    ls.append(f'          "{fld}": {cell_s}{comma}')
+                ls.append(f'        }}{("," if ei < len(mat)-1 else "")}')
+            if "anomalies" in cd:
+                ls.append('      },')
+                ls.append(f'      "anomalies": {json.dumps(cd["anomalies"], ensure_ascii=False)}')
+            else:
+                ls.append('      }')
+            ls.append(f'    }}{("," if ci < len(items)-1 else "")}')
+        ls.append('  }')
+        return '\n'.join(ls)
+
+    json_str = json.dumps(matrix_out, ensure_ascii=False, indent=2)
+    json_str = json_str.replace('"__CATEGORIES__"', _cat_str(cat_data))
+    by_cat_lines = [f'      {json.dumps(c, ensure_ascii=False)}: {json.dumps(v, ensure_ascii=False)}'
+                    for c, v in by_cat.items()]
+    json_str = json_str.replace('"__BY_CAT__"',
+                                '{\n' + ',\n'.join(by_cat_lines) + '\n    }')
+
     out_path = base / "entity-field-matrix.json"
     with open(out_path, "w", encoding="utf-8") as f:
-        json.dump(matrix_out, f, ensure_ascii=False, indent=2)
+        f.write(json_str)
 
     s = matrix_out["summary"]
     print(f"entity-field-matrix.json 생성 완료: {out_path}")
     print(f"  총 슬롯: {s['total_slots']} | ku_gu={s['ku_gu']} ku_only={s['ku_only']} gu_open={s['gu_open']} vacant={s['vacant']}")
-    for cat, ct in s["by_category"].items():
+    for cat, ct in by_cat.items():
         print(f"  {cat:<15}: total={ct['total']} ku_gu={ct['ku_gu']} ku_only={ct['ku_only']} vacant={ct['vacant']}")
 
 
