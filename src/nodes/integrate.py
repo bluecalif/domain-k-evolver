@@ -569,11 +569,16 @@ def integrate_node(
                 dgu["created_cycle"] = current_cycle
                 new_dynamic_gus.append(dgu)
 
-    # S3-T10: post-cycle new-KU adj sweep — claim loop 이후 신규 KU 기반 추가 탐색
+    # S3-T10: post-cycle new-KU adj sweep — 독립 budget (claim loop cap 소진과 무관)
+    # DIAG-ATTRACTION fix: attraction처럼 wildcard-only seed 카테고리의 named entity KU는
+    # claim loop에서 cap 소진 후 추가되므로 sweep은 별도 budget으로 실행해야 함.
+    _claim_loop_gu_count = len(new_dynamic_gus)
     _sweep_entity_seen: set[str] = set()
     _sweep_ku_slots = {(ku.get("entity_key"), ku.get("field")) for ku in kus}
+    _sweep_budget = dynamic_cap
+    _sweep_added = 0
     for _sweep_ku in adds:
-        if len(new_dynamic_gus) >= dynamic_cap:
+        if _sweep_added >= _sweep_budget:
             break
         _sweep_ek = _sweep_ku.get("entity_key", "")
         if not _sweep_ek or _sweep_ek in _sweep_entity_seen:
@@ -590,7 +595,7 @@ def integrate_node(
             canonical_entity_key=_sweep_ek,
             existing_ku_slots=_sweep_ku_slots,
         )
-        _sweep_remaining = dynamic_cap - len(new_dynamic_gus)
+        _sweep_remaining = _sweep_budget - _sweep_added
         for dgu in _sweep_discovered[:_sweep_remaining]:
             max_gu_id += 1
             dgu["gu_id"] = f"GU-{max_gu_id:04d}"
@@ -599,6 +604,7 @@ def integrate_node(
             dgu["origin"] = "post_cycle_sweep"
             dgu["created_cycle"] = current_cycle
             new_dynamic_gus.append(dgu)
+            _sweep_added += 1
 
     # 동적 GU를 gap_map에 추가
     gap_map.extend(new_dynamic_gus)
@@ -666,6 +672,7 @@ def integrate_node(
     if len(_prev_adj_yield) > 10:
         _prev_adj_yield = _prev_adj_yield[-10:]
 
+    _cap_hit = 1 if _claim_loop_gu_count >= dynamic_cap else 0
     return {
         "knowledge_units": kus,
         "gap_map": gap_map,
@@ -673,6 +680,7 @@ def integrate_node(
         "dispute_queue": dispute_queue,
         "conflict_ledger": conflict_ledger,
         "_diag_adjacent_gap_count": len(new_dynamic_gus),
+        "_diag_cap_hit_count": _cap_hit,
         "_diag_resolved_gus": diag_resolved_gus,
         "integration_result_dist": _prev_dist,
         "recent_conflict_fields": recent_conflict_fields,

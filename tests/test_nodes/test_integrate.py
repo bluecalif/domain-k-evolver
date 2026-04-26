@@ -2041,8 +2041,8 @@ class TestS3T10NewKuSweep:
         slots = [(gu["target"]["entity_key"], gu["target"]["field"]) for gu in adj_gus]
         assert len(slots) == len(set(slots)), f"중복 adj GU 슬롯 발견: {slots}"
 
-    def test_sweep_respects_cap(self) -> None:
-        """sweep 포함 전체 adj GU 수는 normal mode cap(8) 초과 안 됨."""
+    def test_sweep_respects_combined_cap(self) -> None:
+        """sweep 독립 budget: claim loop + sweep 합산 ≤ 2 × dynamic_cap(16)."""
         skeleton = {
             "categories": [{"slug": "transport"}],
             "fields": [
@@ -2074,7 +2074,64 @@ class TestS3T10NewKuSweep:
         )
         result = integrate_node(state)
         adj_gus = [gu for gu in result["gap_map"] if gu.get("trigger") == "A:adjacent_gap"]
-        assert len(adj_gus) <= 8, f"cap 초과: adj_gu count={len(adj_gus)}"
+        assert len(adj_gus) <= 16, f"2×cap 초과: adj_gu count={len(adj_gus)}"
+
+    def test_sweep_independent_budget_when_claim_loop_full(self) -> None:
+        """DIAG-ATTRACTION: claim loop cap 소진 후에도 sweep은 독립 budget으로 실행됨."""
+        # 2-category skeleton: regulation(높은 우선순위) + attraction(낮은 우선순위)
+        skeleton = {
+            "categories": [{"slug": "regulation"}, {"slug": "attraction"}],
+            "fields": [
+                {"name": "price", "categories": ["*"]},
+                {"name": "tips", "categories": ["*"]},
+                {"name": "hours", "categories": ["attraction"]},
+            ],
+            "axes": [],
+        }
+        # regulation 8개 GU → claim loop가 8개 adj GU 생성해 cap 소진
+        gap_map = []
+        claims = []
+        for i in range(8):
+            gu_id = f"GU-{i + 1:04d}"
+            ek = f"d:regulation:rule{i}"
+            gap_map.append({"gu_id": gu_id, "status": "open",
+                            "target": {"entity_key": ek, "field": "price"}})
+            claims.append({
+                "claim_id": f"CL-{i + 1:04d}",
+                "entity_key": ek,
+                "field": "price",
+                "value": "free",
+                "source_gu_id": gu_id,
+                "evidence": {"eu_id": f"EU-R{i:04d}", "observed_at": "2026-03-04", "credibility": 0.8},
+            })
+        # attraction wildcard GU 1개 + claim이 named entity KU 추가
+        gap_map.append({"gu_id": "GU-0009", "status": "open",
+                        "target": {"entity_key": "d:attraction:*", "field": "price"}})
+        claims.append({
+            "claim_id": "CL-0009",
+            "entity_key": "d:attraction:senso-ji",
+            "field": "price",
+            "value": "free",
+            "source_gu_id": "GU-0009",
+            "evidence": {"eu_id": "EU-A0001", "observed_at": "2026-03-04", "credibility": 0.8},
+        })
+        state = make_minimal_state(
+            gap_map=gap_map,
+            current_claims=claims,
+            domain_skeleton=skeleton,
+            current_mode={"mode": "normal"},
+        )
+        result = integrate_node(state)
+        # sweep이 attraction senso-ji의 tips/hours adj GU를 생성했는지 확인
+        adj_gus = [gu for gu in result["gap_map"] if gu.get("trigger") == "A:adjacent_gap"]
+        attraction_adj = [
+            gu for gu in adj_gus
+            if "attraction:senso-ji" in gu.get("target", {}).get("entity_key", "")
+        ]
+        assert len(attraction_adj) >= 1, (
+            f"claim loop cap 소진 후 sweep이 attraction adj GU를 생성해야 함. "
+            f"전체 adj={len(adj_gus)}, attraction_adj={attraction_adj}"
+        )
 
 
 # ---------------------------------------------------------------------------
