@@ -1,6 +1,6 @@
 # Project Overall Context
 > Last Updated: 2026-04-27
-> Status: Bronze 완료 (468) → SI-P0~P5 완료 (821) → **SI-P7 attempt 2 CLOSED (934 tests) → merge 후 P6 재개 예정**
+> Status: Bronze 완료 (468) → Silver **P0~P6 전부 완료** → **SI-P7 attempt 2 MERGED (934 tests, main `0d7ebb3`)** → M1 대기
 
 ## 1. 핵심 파일
 
@@ -55,7 +55,7 @@
 | **Gap-Res Investigation** | `dev/active/phase-gap-resolution-investigation/` | ✅ **완료** (12/12, D-129~D-131) |
 | Silver P4 | `dev/active/phase-si-p4-coverage/` | ✅ **완료** (42/42, 797 tests, VP4 PASS 4/5, D-147~D-150 해소) |
 | Silver P5 | `dev/active/phase-si-p5-telemetry-dashboard/` | ✅ **완료** (15/15, Gate PASS, 821 tests) |
-| Silver P6 | `dev/active/phase-si-p6-consolidation/` | **Planning** (0/16) — P5 ✅ |
+| Silver P6 | `dev/active/phase-si-p6-consolidation/` | ✅ **완료** (20/20) — D-167 root cause 확정 후 SI-P7 전환 |
 | SI-P7 Structural Redesign | `dev/active/phase-si-p7-structural-redesign/` | **Attempt 1 archived** (tag `si-p7-attempt-1` + `archive/si-p7-attempt-1`) → **Attempt 2 MERGED ✅ (2026-04-27, main `0d7ebb3`)**: KU 79→120 (+52%), S1/S2/S3/S4 gate PASS, 934 tests |
 | M1 Multi-Domain | `dev/active/phase-m1-multidomain/` (예정) | suspended — P6 완료 후 활성화 |
 

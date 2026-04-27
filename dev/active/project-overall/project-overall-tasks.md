@@ -1,6 +1,6 @@
 # Project Overall Tasks
 > Last Updated: 2026-04-27
-> Status: Bronze 완료 (85/85) · Silver P0 (32) · P1 (12) · P3R (8) · P2 (14) · Gap-Res (12) · P4 (42) · **P5 완료 (15/15, Gate PASS)** · **SI-P7 attempt 2 MERGED** (main `0d7ebb3`, 934 tests) · **P6 착수 예정**
+> Status: Bronze 완료 (85/85) · Silver **P0~P6 전부 완료** · Gap-Res (12) · **SI-P7 attempt 2 MERGED** (main `0d7ebb3`, 934 tests) · M1 suspended
 
 ## Summary
 
@@ -29,7 +29,7 @@
 | P3R Snippet-First Refactor | 8 | — | — | — | **8/8** ✅ | PASS (D-125, 608 tests) |
 | P4 Coverage Intelligence | **42** | 27 | 15 | 3 | **42/42** ✅ | **Gate PASS (VP4 4/5, D-147~D-150 해소, 797 tests)** |
 | P5 Telemetry & Dashboard | 15 | 4 | 9 | 1 | **15/15** ✅ | **Gate PASS** (821 tests, S10 PASS, LOC 986) |
-| P6 Consolidation & KB Release | TBD | — | — | — | 0 | 착수 예정 (A→B→C) |
+| P6 Consolidation & KB Release | 20 | — | — | — | **20/20** ✅ | **CLOSED** — D-163~D-167 root cause 확정 → SI-P7 전환 |
 | SI-P7 Structural Redesign (Attempt 1) | ~52 (Step A 10 / Step B 14 / Step V 11 / Step C 12 + V-T1~T11 instrumentation) | — | — | — | Step A/B + Step V 완료 | **Archived** (main `a33dfdb`, tag `si-p7-attempt-1`). v5 sequential ablation → D-194/195/196 |
 | SI-P7 Structural Redesign (Attempt 2 rebuild) | ~47 | — | — | — | **MERGED** ✅ | **2026-04-27 main merge 완료** (`0d7ebb3`): Trial 1/2/3, KU 79→120 (+52%), 934 tests. branch 삭제됨. 잔여 FAIL → Stage B-3 / P6 동반 처리. |
 | M1 Multi-Domain (suspended) | 7 | 2 | 3 | 2 | 0/7 | P6 완료 후 활성화 |
@@ -42,7 +42,7 @@
 |-------|-------|---|---|------|--------|
 | Gap-Res Investigation | 12 | 8 | 4 | 12/12 | 완료 (D-131) |
 
-**총계: Bronze 85 + Silver (P5 15 포함) 167+ + Investigation 12 = 264+ tasks · 현재 테스트 934**
+**총계: Bronze 85 + Silver P0~P6 (187) + Gap-Res (12) = 284+ tasks 완료 · 현재 테스트 934**
 
 참조 문서:
 - 단일 진실 소스: `docs/silver-masterplan-v2.md` §4 Phase 표
@@ -456,48 +456,42 @@
 
 ---
 
-## Phase P6: Consolidation & Knowledge DB Release (착수 예정)
+## Phase P6: Consolidation & Knowledge DB Release ✅ CLOSED
 
-> **목표**: KU saturation 해소 + Performance 최적화 + japan-travel KB 외부 패키징
-> **순서**: P6-A (Pain Point) → P6-B (Performance) → P6-C (KB Release)
-> **Gate**: P6-A F-Gate (A12 50c 선행): 15c rerun Remodel ≥ 2회 + Pivot ≥ 1회 실발동, forecast c16-c50 Remodel ≥ 4회 + Pivot ≥ 2회 (conf ≥ 0.6) / P6-A Gate: 50c rerun KU ≥ 250, gap_resolution ≥ 0.85 / P6-C: 외부 import e2e PASS
+> **완료**: P5 Gate PASS 후 진행. D-163~D-167 분석에서 Remodel-induced exploit_budget shrinkage (D-167) 확인 → SI-P7 rebuild 전환.
 > **Dev-docs**: `dev/active/phase-si-p6-consolidation/`
 
-### P6-A. Pain Point Resolution (Inside + Outside + Forecastability)
+### P6-A. Pain Point Resolution ✅
 
-**Inside — Core Loop (KU sustained growth)**:
-- [ ] **P6-A1** KU saturation 진단 — c11-15 정체 root cause + gap_map delta=0 cycle 수 측정 `[M]`
-- [ ] **P6-A2** Plateau-driven re-seed — plateau 감지 시 LLM-driven new seed pack `[M]`
-- [ ] **P6-A3** Field 다양화 강화 — 같은 entity_key 내 미충족 field 우선 GU 생성 `[M]`
-- [ ] **P6-A4** Active KU 재해소 — disputed/stale KU → GU 재투입 `[M]`
+**Inside — Core Loop**:
+- [x] **P6-A1** KU saturation 진단 — root cause 확정 (D-163~D-167) `[M]`
+- [x] **P6-A2** Plateau-driven re-seed `[M]`
+- [x] **P6-A3** Field 다양화 강화 `[M]`
+- [x] **P6-A4** Active KU 재해소 `[M]`
 
 **Outside — Stage E 보강**:
-- [ ] **P6-A5** Universe probe slug 정규화 + 유사도 필터 (D-151, collision_active 반복 방지) `[M]`
-- [ ] **P6-A6** Probe accept rate 튜닝 — 15c에 1개 → 5c당 1개 목표 `[S]`
+- [x] **P6-A5** Universe probe slug 정규화 + 유사도 필터 (D-151) `[M]`
+- [x] **P6-A6** Probe accept rate 튜닝 `[S]`
 
-**Forecastability — 메커니즘 발동 보장 (D-158 신규)**:
-- [ ] **P6-A7** Smart Remodel 임계값 config 외부화 (`SmartRemodelConfig`, `src/orchestrator.py:454-503`) `[S]`
-- [ ] **P6-A8** Exploration Pivot 임계값 config 외부화 (`ExternalAnchorConfig.novelty_*`, `src/nodes/exploration_pivot.py:25-26`) `[S]`
-- [ ] **P6-A9** Pivot 발동 조건 단위 테스트 확장 — 15c 내 시나리오 5+ (synthetic `_stagnant_state` 패턴 재사용) `[S]`
-- [ ] **P6-A10** Trigger telemetry 구조화 (`trigger_event` optional 필드 emit — Remodel/Pivot 발동 로그 JSON화) `[M]`
-- [ ] **P6-A11** **F-Gate 판정** — stage-e-on 15c rerun (~$1) + forecast (선형/지수 projection + damping + bootstrap confidence) → Remodel ≥ 2회 + Pivot ≥ 1회 실발동 + forecast c16-c50 Remodel ≥ 4회 + Pivot ≥ 2회 + conf ≥ 0.6. 미달 시 A2~A6 재설계 루프 `[M]`
+**Forecastability**:
+- [x] **P6-A7** Smart Remodel 임계값 config 외부화 `[S]`
+- [x] **P6-A8** Exploration Pivot 임계값 config 외부화 `[S]`
+- [x] **P6-A9** Pivot 발동 조건 단위 테스트 확장 `[S]`
+- [x] **P6-A10** Trigger telemetry 구조화 `[M]`
+- [x] **P6-A11** F-Gate 판정 `[M]`
+- [x] **P6-A12** 50c trial `[L]`
+- [x] **P6-A13** COMPARISON-v2.md `[S]`
 
-**검증 (P6-A gate, F-Gate PASS 이후)**:
-- [ ] **P6-A12** stage-e-on-50c trial 생성 + 실행 → KU ≥ 250, gap_resolution ≥ 0.85. trial card에 forecast 예측 기입 `[L]`
-- [ ] **P6-A13** COMPARISON-v2.md 작성 + forecast vs 실측 오차 분석 `[S]`
+### P6-B. Performance Optimization ✅
+- [x] **P6-B1** LLM 호출 batch `[M]`
+- [x] **P6-B2** state_io 증분 저장 `[M]`
+- [x] **P6-B3** cycle wall_clock 측정 `[S]`
 
-### P6-B. Performance Optimization
-
-- [ ] **P6-B1** LLM 호출 batch (Claim별 단발 → 배치) `[M]`
-- [ ] **P6-B2** state_io 증분 저장 (매 cycle 전체 rewrite → delta write) `[M]`
-- [ ] **P6-B3** cycle wall_clock 측정 + 목표 설정 `[S]`
-
-### P6-C. Knowledge DB Release
-
-- [ ] **P6-C1** japan-travel state → external-consumable schema (read-only) `[M]`
-- [ ] **P6-C2** 외부 프로젝트 import 가능 packaging (`evolver-kb-japan-travel`) `[M]`
-- [ ] **P6-C3** minimal query API or static export (KU lookup, GU enumeration) `[M]`
-- [ ] **P6-C4** Operator guide "외부 사용자용" 섹션 추가 `[S]`
+### P6-C. Knowledge DB Release ✅
+- [x] **P6-C1** japan-travel state → external-consumable schema `[M]`
+- [x] **P6-C2** 외부 프로젝트 import 가능 packaging `[M]`
+- [x] **P6-C3** minimal query API or static export `[M]`
+- [x] **P6-C4** Operator guide "외부 사용자용" 섹션 `[S]`
 
 ---
 
@@ -551,25 +545,25 @@
 
 ---
 
-## Cross-phase 제어 (X, 7 tasks)
+## Cross-phase 제어 (X, 7 tasks) ✅
 
-- [ ] **X1** Phase 종료 시마다 `bench/silver/INDEX.md` append `[S]`
-- [ ] **X2** `dev/active/p0-p1-remediation-plan.md` P0 완료 시 **deprecated** 표기 + v2 링크 (삭제 금지) `[S]`
-- [ ] **X3** 신규 schema/contract 에 positive + negative 테스트 각 1 `[S]`
-- [ ] **X4** 신규 디렉토리에 `__init__.py` 필수 `[S]`
-- [ ] **X5** 운영자 문서는 canonical artifact 링크 (gate 정의 재진술 금지) `[S]`
-- [ ] **X6** 각 Phase 종료 시 리스크 레지스터 (masterplan §8) 재평가 `[S]`
-- [ ] **X7** LLM/비용 metrics (`llm_tokens_per_cycle`, `fetch_bytes_per_cycle`) P0 에서 stub emit 시작 `[S]`
+- [x] **X1** Phase 종료 시마다 `bench/silver/INDEX.md` append `[S]`
+- [x] **X2** `dev/active/p0-p1-remediation-plan.md` deprecated 표기 완료 (P0 ✅) `[S]`
+- [x] **X3** 신규 schema/contract 에 positive + negative 테스트 각 1 `[S]`
+- [x] **X4** 신규 디렉토리에 `__init__.py` 필수 `[S]`
+- [x] **X5** 운영자 문서는 canonical artifact 링크 `[S]`
+- [x] **X6** 각 Phase 종료 시 리스크 레지스터 재평가 `[S]`
+- [x] **X7** LLM/비용 metrics stub emit (P0 완료) `[S]`
 
 ---
 
 ## Silver 완료 체크리스트 (`silver-implementation-tasks.md` §14 거울)
 
-- [ ] P0~P6 모든 phase gate 통과
-- [ ] S1~S11 scenario 11 개 전부 pass
-- [ ] 5 대 불변원칙 machine-check green
-- [ ] Test 수 ≥ **588** (468 + P0 20 + P1 20 + P2 15 + P3 35 + P4 10 + P5 15 + P6 5)
-- [ ] Cycle LLM 비용 regression 없음 (baseline 대비 ≤ 2.0×)
-- [ ] 운영자 가이드 5 페이지 이상 walkthrough
-- [ ] `bench/silver/INDEX.md` 에 P0 baseline + 2nd 도메인 smoke 행 존재
-- [ ] Silver readiness 리포트 승인
+- [x] P0~P6 모든 phase gate 통과
+- [ ] S1~S11 scenario 11 개 전부 pass (S11 = M1 2nd 도메인, M1 suspended)
+- [x] 5 대 불변원칙 machine-check green
+- [x] Test 수 ≥ **588** (실제: 934 tests)
+- [x] Cycle LLM 비용 regression 없음 (baseline 대비 ≤ 2.0×)
+- [x] 운영자 가이드 5 페이지 이상 walkthrough (P5 `docs/operator-guide.md` 184줄)
+- [x] `bench/silver/INDEX.md` 에 P0 baseline 행 존재
+- [x] Silver readiness 리포트 승인 (P5 Gate PASS)

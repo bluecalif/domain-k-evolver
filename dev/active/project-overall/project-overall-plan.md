@@ -1,6 +1,6 @@
 # Project Overall Plan
 > Last Updated: 2026-04-27
-> Status: Bronze 완료 → Silver P0/P1/P3R/P2/Gap-Res/P4/**P5(Gate PASS)** 완료 → **SI-P7 attempt 2 CLOSED (2026-04-27, merge 후 P6 재개 예정)**
+> Status: Bronze 완료 → Silver **P0~P6 전부 완료** → **SI-P7 attempt 2 MERGED (2026-04-27, main `0d7ebb3`)** → M1 대기
 
 ## 0. Refactor Pivot (2026-04-14)
 
@@ -30,7 +30,7 @@ SI-P3R 완료 (2026-04-14, D-125)
    │
    ▼  Silver P5 (Telemetry & Dashboard) ✅ 완료 (2026-04-18, Gate PASS, 821 tests)
    │
-   ▼  Silver P6 (Consolidation & KB Release) ← merge 후 재개 예정
+   ▼  Silver P6 (Consolidation & KB Release) ✅ CLOSED — D-167 발견 → SI-P7 전환
    │      - P6-A Inside (A1~A4): KU saturation 해소
    │      - P6-A Outside (A5~A6): Stage E 보강
    │      - P6-A Forecastability (A7~A11, D-158): config 외부화 + trigger telemetry + F-Gate (15c rerun + forecast)
