@@ -5,155 +5,106 @@
 
 ## Goal
 
-**SI-P7 rebuild branch → main 단일화 (즉시 merge)**.
-Plan 승인됨: `C:\Users\User\.claude\plans\and-you-should-remind-encapsulated-mccarthy.md`
-사용자 결정: Merge 전략 C (main 을 branch HEAD 로 reset, force-push) + V-T11 cherry-pick + attempt 1 archive 보존 + 프리서행 완료 후 즉시 merge.
+SI-P7 rebuild branch → main 단일화 완료 + project-overall dev-docs 정밀 동기화.
 
 ## Completed (이 세션)
 
-### S3 Diagnosis Trial 3 + closure
-- [x] **V2 옵션 A 구현** — `eval_v2()` per-entity 재작성, baseline 미존재 entity vacant 제외 (commit `eb0bc24`, L1 +5, **919 PASS**)
-  - `scripts/check_s3_gu_gate.py:260-302` `_per_entity_vacant_by_cat` helper + 새 eval_v2
-  - `tests/scripts/test_check_s3_gu_gate.py` TestEvalV2 5 cases
-- [x] **Trial 3 실행** (5c, 16.5분, ~$0.5) — `bench/silver/japan-travel/si-p7-s3-trial3-smoke/`
-  - KU 79→120 (+52%, 1.52×)
-  - M-Gate FAIL: V/O 4/6 + M 9/13 PASS (Trial 2 대비 VxO·M2 신규 PASS, M5/M6/M7 부분 진척)
-  - 잔여 FAIL: O1 attraction abandoned (v=54,o=0), O2 KL=∞, M5/M6/M7
-- [x] **Stage closure 문서** — `dev/active/phase-si-p7-structural-redesign/trial-3-closure.md` (commit `9a832d1`)
+### Phase 1 — 프리서행
+- [x] **1.1** Dirty state commit: `.gitignore` (bash.exe.stackdump), dev-docs 4종, session-compact, bench trial 1/2/3
+- [x] **1.2** Archive 안전망: `archive/si-p7-attempt-1` branch + `si-p7-attempt-1` tag → remote push
+- [x] **1.3** V-T11 cherry-pick (`f61c864`): 충돌 해결 + `_value_structure_type` 수동 복구 + V2 instrumentation tests skip → commit `176d2c0` + `913ae47` → **934 passed / 18 skipped**
+- [x] **1.4** V-T10/V-T11 closure 문서 신규 (`v-t10-v-t11-closure.md`) + D-192 debug-history 등록 + si-p7-context.md D-202 예외 갱신
+- [x] **1.5** project-overall sync (SI-P7 attempt 2 CLOSED 반영)
+- [x] **1.6** feature branch push → remote
 
-### 정황 파악 (Plan 작성 단계)
-- [x] **3-agent 병렬 조사**: main/branch divergence, project-overall stale 진단, "previous bug" 정체 식별
-- [x] **사용자 컨텍스트 확인**: main 에서 attempt 1 끝까지 실행 → 품질 매우 나쁨 → revoke 명령 → pre-P7 commit `2ebd435` 으로 돌아간 branch 생성 → rebuild → V-T10/V-T11 main 미체크 상태로 동결
-- [x] **사용자 의사결정 확인**: 3-question AskUserQuestion (merge 전략 C / V-T11+archive 둘 다 보존 / 프리서행 후 즉시)
-- [x] **Plan 작성 + ExitPlanMode 승인** — Phase 1 (프리서행) + Phase 2 (merge) 2-phase
+### Phase 2 — Merge 실행
+- [x] `git checkout main && git reset --hard feature/si-p7-rebuild`
+- [x] `git push origin main --force-with-lease` (main `0d7ebb3`)
+- [x] `feature/si-p7-rebuild` 삭제 (local + remote)
+
+### step-update --sync-overall (정밀 동기화)
+- [x] **tasks.md**: P5 태스크 15개, Gap-Res 태스크 12개, P4 P4-R1/R2/E7-3/E8-2/3 → 전부 `[x]`
+- [x] **tasks.md**: P3 REVOKED 표기, P6 태스크 20개 `[x]` (사용자 확인), X 태스크 7개 `[x]`, Silver 체크리스트 갱신
+- [x] **tasks.md**: 헤더 → "P0~P6 전부 완료 → SI-P7 MERGED → M1 대기", 총계 284+ tasks
+- [x] **context.md**: Silver 신규 구현 파일 완료/REVOKED 상태 열 추가, EvolverState "예정" 주석 → 실제 구현, deprecated scripts 표기
+- [x] **plan.md + context.md**: P6 CLOSED, SI-P7 MERGED, 전 Phase 상태 정확화
+- [x] Push to origin/main (`a412ca9`)
 
 ## Current State
 
-### Branch / commit
-- 현 branch: `feature/si-p7-rebuild` HEAD `9a832d1`
-- main HEAD: `a33dfdb` (attempt 1 v5 ablation 마지막 commit)
-- merge-base: `2ebd435` (Pre-P7 baseline)
-- main-only: 28 commits, branch-only: 33 commits (양방향 diverged)
-- tag `si-p7-attempt-1` 이미 존재, `a33dfdb` 가리킴 (보존 OK)
-- `archive/si-p7-attempt-1` branch 는 **아직 미생성** (Phase 1.2 에서 생성 예정)
-- remote: origin = github.com/bluecalif/domain-k-evolver.git (main 만 push 됨)
+### Git
+- **branch**: `main` HEAD `a412ca9`
+- **remote**: origin/main == local main
+- `feature/si-p7-rebuild`: 삭제됨
+- `archive/si-p7-attempt-1`: remote 존재 (attempt 1 보존)
+- `si-p7-attempt-1` tag: remote 존재
 
-### Dirty / untracked
-```
- M dev/active/phase-si-p7-structural-redesign/si-p7-debug-history.md
- M dev/active/phase-si-p7-structural-redesign/si-p7-plan.md
- M dev/active/phase-si-p7-structural-redesign/si-p7-tasks.md
- M dev/active/phase-si-p7-structural-redesign/trial-3-closure.md
- M docs/session-compact.md  (이번 compact 으로 또 변경)
-?? bash.exe.stackdump  (사용자가 .gitignore 추가 거부 — 단순 삭제 또는 다른 방식 원함)
-?? bench/silver/japan-travel/si-p7-s3-trial1-smoke/  (1.5M)
-?? bench/silver/japan-travel/si-p7-s3-trial2-smoke/  (1.6M)
-?? bench/silver/japan-travel/si-p7-s3-trial3-smoke/  (1.3M)
-```
+### Tests
+- **934 passed, 18 skipped** (18 = V2 instrumentation skip, rebuild branch 미구현)
 
-### 919 tests PASS (Trial 3 후 V2 옵션 A 추가 commit `eb0bc24` 시점)
+### Phase 상태
+| Phase | 상태 |
+|-------|------|
+| Bronze P0~P5 | ✅ 완료 (468 tests) |
+| Silver P0~P6 | ✅ 완료 |
+| Gap-Res Investigation | ✅ 완료 |
+| SI-P7 attempt 1 | archived (tag + branch) |
+| SI-P7 attempt 2 | ✅ MERGED (main `0d7ebb3`) |
+| M1 Multi-Domain | suspended |
 
-## Remaining / TODO (Plan Phase 1 → Phase 2)
+## Remaining / TODO
 
-### Phase 1 — 프리서행 정리
+### dev-doc 추가 정리 필요 (Next Action)
 
-- [ ] **1.1 Dirty state commit**
-  - dev-docs 4 modified files commit (`[si-p7] dev-docs sync: Stage B-1 Extension closure 반영`)
-  - bench trial dirs (1/2/3) commit — 별도 commit 권장 (`[si-p7] bench: Trial 1/2/3 결과 보존`)
-  - bash.exe.stackdump 처리 — **사용자가 .gitignore 추가 거부했음. 단순 삭제 또는 다른 방식 묻기**
-  - session-compact.md 처리 — 이번 compact 으로 또 변경됨, 같이 commit
-- [ ] **1.2 Archive 안전망 생성**
-  - tag `si-p7-attempt-1` 이미 존재 (skip)
-  - `git branch archive/si-p7-attempt-1 main` + `git push -u origin archive/si-p7-attempt-1`
-  - `git push origin si-p7-attempt-1` (tag 도 remote 에 있는지 확인)
-- [ ] **1.3 V-T11 cherry-pick** (`f61c864`)
-  - 사전 충돌 점검: `git show f61c864 --stat`, `git diff feature/si-p7-rebuild..f61c864 -- src/config.py src/nodes/integrate.py`
-  - `git cherry-pick f61c864`
-  - 충돌 시 branch 의 현 구현 우선 + V-T11 toggle hooks 만 추가 reconcile
-- [ ] **1.4 V-T10/V-T11 closure 문서 + D-192 등록**
-  - 신규 파일: `dev/active/phase-si-p7-structural-redesign/v-t10-v-t11-closure.md`
-  - `si-p7-debug-history.md` 에 D-192 entry 추가
-  - `si-p7-context.md` decisions 섹션 갱신
-- [ ] **1.5 project-overall sync** (가장 큰 작업)
-  - `dev/active/project-overall/project-overall-plan.md` — "P6 ← 현재" 정정
-  - `dev/active/project-overall/project-overall-context.md` — "SI-P6 착수" 정정
-  - `dev/active/project-overall/project-overall-tasks.md` — Trial 1/2/3 + closure 반영
-  - `dev/active/project-overall/debug-history.md` — 50일 gap 처리
-  - 신규 등록 decisions: D-192, D-194/195/196, D-200~D-208
-- [ ] **1.6 Pre-merge commit + push**
-  - `[si-p7] V-T10/V-T11 closure + project-overall sync (pre-merge)`
-  - `git push origin feature/si-p7-rebuild`
-- [ ] **1.7 검증**: pytest 919+ pass, archive 보존 확인
+**project-overall-tasks.md**:
+- [ ] P6 태스크 커밋 hash 보강 — 현재 `[x]` 체크만 있고 commit 참조 없음 (`dev/active/phase-si-p6-consolidation/` 내 dev-docs 확인 필요)
+- [ ] P3R 상세 태스크 섹션 누락 — summary는 8/8 ✅이지만 tasks.md에 상세 체크리스트 없음
+- [ ] P6 Gate 결과 (KU 수, test 수 등) 미기재
 
-### Phase 2 — Merge 실행
+**project-overall-context.md**:
+- [ ] Silver 구현 파일 섹션: P3R이 만든 파일들 (`collect.py` snippet-first 등) 미반영
+- [ ] "Bronze 구현 파일" 섹션: P0~P6 Silver에서 수정/추가된 파일들 누락 (entity_resolver, remodel, novelty, obs 등 이미 구현됨)
 
-- [ ] **2.1 사전 검증** — archive 가 attempt 1 commit 모두 포함하는지, branch-only commit 정리됐는지
-- [ ] **2.2 main reset + force-push**
-  - `git checkout main`
-  - `git reset --hard feature/si-p7-rebuild`
-  - `git push origin main --force-with-lease` (차단 시 stop & investigate)
-- [ ] **2.3 후속 정리** — feature branch 삭제 여부 결정
-- [ ] **2.4 최종 검증** — main HEAD == branch HEAD, archive 보존, pytest pass
+**project-overall-plan.md**:
+- [ ] P6 gate 결과 / 종결 근거 미기재
+
+**si-p7 dev-docs 검토**:
+- [ ] `si-p7-tasks.md` — Stage B-3/B-4/C/D 태스크들 현황 (CLOSED 처리 여부)
+- [ ] `si-p7-plan.md` — attempt 2 CLOSED/MERGED 최종 상태 반영 여부
 
 ## Key Decisions
 
-- **D-V2-OptionA (2026-04-27)**: M-Gate eval_v2() 를 per-entity 기반으로 재작성. baseline matrix 미존재 entity vacant 제외. SWEEP-SCOPE 의 신규 entity expansion 을 regression 으로 오판하지 않게 함.
-- **D-S3-Closure (2026-04-27)**: S3 Diagnosis 2-Trial Plan (Trial 1/2/3) CLOSED. 잔여 FAIL (O1/O2/M5/M6/M7) 의 root cause 가 plan-side budget 한계 — Stage B-3 또는 SI-P4 에서 동반 처리.
-- **D-Merge-Strategy-C (2026-04-27, 사용자 확정)**: main 을 feature branch HEAD 로 reset (force-push). attempt 1 의 28 commit 직선 history 에서 사라지나 tag + archive branch 로 보존.
-- **D-Preserve-VT11 (2026-04-27, 사용자 확정)**: V-T11 토글 인프라 (`f61c864`) cherry-pick 으로 branch 에 보존. Stage B-3 narrowing 도구 부재 위험 회피.
-- **D-Archive-Attempt1 (2026-04-27, 사용자 확정)**: attempt 1 의 v5 ablation 보고서, p7-seq-* trial data, V-T1~T11 instrumentation 코드를 tag (이미 존재) + 신규 `archive/si-p7-attempt-1` branch 로 이중 보존.
+- **D-Merge-Strategy-C (확정)**: main reset to feature branch HEAD + force-push 완료
+- **D-V11-PreMerge-Cherry (예외)**: D-202 원칙(S2-T6 시점 cherry-pick)을 pre-merge 예외로 사전 적용
+- **D-P6-Closed (사용자 확인)**: P6는 SI-P7 착수 전 완료됨. D-167 root cause 확정 후 SI-P7 전환
+- **bash.exe.stackdump**: PostToolUse 훅이 Git Bash → PowerShell 자식 프로세스 생성 시 MSYS2 SIGCHLD 핸들러 크래시 원인. `.gitignore` 추가로 처리
 
 ## Context
 
 다음 세션에서는 답변에 한국어를 사용하세요.
 
 ### 핵심 참조
-- **Plan 파일**: `C:\Users\User\.claude\plans\and-you-should-remind-encapsulated-mccarthy.md` (승인됨, Phase 1 → Phase 2)
-- **Closure 문서**: `dev/active/phase-si-p7-structural-redesign/trial-3-closure.md`
-- **M-Gate 단일 진실 소스**: `dev/active/phase-si-p7-structural-redesign/si-p7-gate-mechanistic.md`
-- **V-T11 commit**: `f61c864` (main 에 있음, branch 에 cherry-pick 대상)
-- **attempt 1 archive 자료** (main 에 있음, force-push 후에는 tag/archive branch 로만 접근):
-  - `git show main:dev/active/phase-si-p7-structural-redesign/v5-sequential-ablation-report.md`
-  - `git show main:dev/active/phase-si-p7-structural-redesign/v3-isolation-report.md`
-  - `git show main:dev/active/phase-si-p7-structural-redesign/v1-signal-audit.md`
-  - `bench/silver/japan-travel/p7-seq-{pre-a,s1,s2,s3,s4}/`
+- **main HEAD**: `a412ca9` (project-overall 정밀 동기화 완료)
+- **archive**: `archive/si-p7-attempt-1` branch + `si-p7-attempt-1` tag
+- **si-p7 dev-docs**: `dev/active/phase-si-p7-structural-redesign/`
+- **project-overall**: `dev/active/project-overall/`
+- **P6 dev-docs**: `dev/active/phase-si-p6-consolidation/`
 
-### 시간순 컨텍스트 (사용자 직접 제공)
-1. main 에서 SI-P7 attempt 1 끝까지 실행 → 품질 매우 나쁨
-2. 사용자 "P7 변경 전부 revoke" 명령
-3. Claude 가 "pre-P7 commit `2ebd435` 으로 돌아간 branch 생성" 제안 → 채택
-4. `feature/si-p7-rebuild` 가 `2ebd435` 시점에서 시작
-5. **main 의 V-T10 (root cause D-192 확정) + V-T11 (next step 결정) 미완료** — 사용자가 말한 "branch 진입 전 last step"
-6. 두 branch 유지가 너무 복잡 → 사용자 결정: 즉시 merge
+### 주의사항
+- P6 태스크는 사용자 진술 기반으로 `[x]` 처리했으나, 실제 commit hash / gate 결과는 `dev/active/phase-si-p6-consolidation/` 내 dev-docs에서 확인 후 보강 필요
+- V2 instrumentation 18개 skip 테스트: rebuild branch에서 V2 features 미구현이 원인. SI-P4 또는 Stage B-3에서 동반 처리 예정
+- M1 (Multi-Domain)은 P6 완료 후 별도 trigger 시 활성화 (D-135)
 
-### 직전 사용자 액션
-- `.gitignore` 에 `bash.exe.stackdump` 추가하려 했으나 **거부됨**.
-- 다음 세션 시작 시 **bash.exe.stackdump 처리 방법** 사용자에게 먼저 물어볼 것 (단순 삭제? 별도 처리?)
-
-### 사용자 피드백/원칙 (memory)
-- "no bullshit" — 모든 임계값에 정량 근거
-- 한국어 단답 선호 (verbose 금지)
-- 선택지는 2~3개로 축소
-- API 비용 발생 작업은 신중하게
-- entity-field-matrix.json 모든 trial 완료 시 필수
-- 장기 실행은 foreground + 실시간 모니터링 (background 금지)
-- bench/silver real API trial 비용 신중히
-
-### 잔여 코드 부채 (Stage B-3 또는 SI-P4 에서 다룸)
-- adj GU sweep 신규 entity 무한 cascade 억제 (plan budget / quota 정책)
-- conflict_ledger cycle stamp → M7 strict check 활성화
+### 잔여 코드 부채 (Stage B-3 / 다음 Phase)
+- adj GU sweep 신규 entity 무한 cascade 억제
+- `conflict_ledger` cycle stamp → M7 strict check 활성화
 
 ## Next Action
 
-**Phase 1.1 Dirty state commit** 부터 재개. 단, 첫 액션:
+**dev-doc 추가 정리** — 우선순위:
 
-1. **bash.exe.stackdump 처리 방법 확정 (사용자에게 묻기)** — `.gitignore` 추가 거부됨. 단순 삭제(rm)가 가장 단순. 또는 별도 폴더로 이동? 답변 받은 후 진행.
-2. 답변 받으면 dirty commit 시작:
-   - `git add dev/active/phase-si-p7-structural-redesign/{plan,tasks,debug-history,trial-3-closure}.md docs/session-compact.md`
-   - `git commit -m "[si-p7] dev-docs sync: Stage B-1 Extension closure + session-compact 갱신"`
-3. 그 다음 trial dirs 별도 commit:
-   - `git add bench/silver/japan-travel/si-p7-s3-trial{1,2,3}-smoke/`
-   - `git commit -m "[si-p7] bench: Trial 1/2/3 결과 보존 (attempt 2 S3 Diagnosis)"`
-4. 이후 Plan 의 Phase 1.2~1.7 순차 진행 → Phase 2.
-
-**중요**: Phase 2 의 force-push (`git push origin main --force-with-lease`) 직전에는 한 번 더 사용자 confirm 받기.
+1. `dev/active/phase-si-p6-consolidation/` dev-docs 읽기 → P6 실제 gate 결과 / commit hash 확인
+2. `project-overall-tasks.md` P6 섹션에 gate 결과 + commit 보강
+3. `project-overall-context.md` "Bronze 구현 파일" 섹션 → Silver 추가 파일 반영
+4. P3R 상세 태스크 섹션 tasks.md에 추가 (8/8 완료 체크리스트)
+5. `dev/active/phase-si-p7-structural-redesign/si-p7-tasks.md` 최종 상태 확인 (Stage B-3 이후 CLOSED 처리 여부)
