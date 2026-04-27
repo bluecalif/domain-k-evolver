@@ -1,6 +1,6 @@
 # Project Overall Context
-> Last Updated: 2026-04-18
-> Status: Bronze 완료 (468) → SI-P0~P5 완료 (821) → **SI-P6 (Consolidation & KB Release) 착수**
+> Last Updated: 2026-04-27
+> Status: Bronze 완료 (468) → SI-P0~P5 완료 (821) → **SI-P7 attempt 2 CLOSED (934 tests) → merge 후 P6 재개 예정**
 
 ## 1. 핵심 파일
 
@@ -56,7 +56,7 @@
 | Silver P4 | `dev/active/phase-si-p4-coverage/` | ✅ **완료** (42/42, 797 tests, VP4 PASS 4/5, D-147~D-150 해소) |
 | Silver P5 | `dev/active/phase-si-p5-telemetry-dashboard/` | ✅ **완료** (15/15, Gate PASS, 821 tests) |
 | Silver P6 | `dev/active/phase-si-p6-consolidation/` | **Planning** (0/16) — P5 ✅ |
-| SI-P7 Structural Redesign | `dev/active/phase-si-p7-structural-redesign/` | **Attempt 1 archived** (main `a33dfdb` + tag `si-p7-attempt-1`) → **Attempt 2 (rebuild) Planning** on `feature/si-p7-rebuild` from `2ebd435`. Axis-gated + per-axis 5c smoke gate (D-200~D-202) |
+| SI-P7 Structural Redesign | `dev/active/phase-si-p7-structural-redesign/` | **Attempt 1 archived** (tag `si-p7-attempt-1` + `archive/si-p7-attempt-1` branch) → **Attempt 2 CLOSED (2026-04-27)**: KU 79→120 (+52%), S1/S2/S3/S4 gate PASS, Trial 1/2/3 완료 (934 tests). merge 대기 중 (`feature/si-p7-rebuild`) |
 | M1 Multi-Domain | `dev/active/phase-m1-multidomain/` (예정) | suspended — P6 완료 후 활성화 |
 
 ### Bronze 구현 파일 (현행)

@@ -1,6 +1,6 @@
 # Project Overall Plan
-> Last Updated: 2026-04-18
-> Status: Bronze 완료 → Silver P0/P1/P3R/P2/Gap-Res/P4/**P5(Gate PASS)** 완료 → **신규 P6 (Consolidation & KB Release) 착수**
+> Last Updated: 2026-04-27
+> Status: Bronze 완료 → Silver P0/P1/P3R/P2/Gap-Res/P4/**P5(Gate PASS)** 완료 → **SI-P7 attempt 2 CLOSED (2026-04-27, merge 후 P6 재개 예정)**
 
 ## 0. Refactor Pivot (2026-04-14)
 
@@ -30,7 +30,7 @@ SI-P3R 완료 (2026-04-14, D-125)
    │
    ▼  Silver P5 (Telemetry & Dashboard) ✅ 완료 (2026-04-18, Gate PASS, 821 tests)
    │
-   ▼  Silver P6 (Consolidation & KB Release) ← 현재
+   ▼  Silver P6 (Consolidation & KB Release) ← merge 후 재개 예정
    │      - P6-A Inside (A1~A4): KU saturation 해소
    │      - P6-A Outside (A5~A6): Stage E 보강
    │      - P6-A Forecastability (A7~A11, D-158): config 외부화 + trigger telemetry + F-Gate (15c rerun + forecast)
@@ -47,11 +47,11 @@ SI-P7 Structural Redesign (별도 track, P6 와 독립)
      - **D-195**: S2 내부 primary subtask = T5~T8 (condition_split 강화)
      - **D-196**: S1 adj_gen oscillation 메커니즘
      - 산출물: v5-sequential-ablation-report.md, V-T11 토글 인프라, 5-trial bench
-   - **Attempt 2 (rebuild) 착수**: branch `feature/si-p7-rebuild` from `2ebd435` Pre-P7 baseline
-     - 전략: axis-gated 재구현 + per-axis 5c smoke gate 의무 (D-200)
-     - Pitfall pre-declare + mitigation (D-201): S1-T9 critique rx, S2-T5~T8 보수화, S3 suppress/blocklist 보수화
-     - V-T11 cherry-pick 시점 = S2-T5~T8 시작 직전 (D-202)
-     - dev-docs: `dev/active/phase-si-p7-structural-redesign/si-p7-{plan,context,tasks,debug-history}.md`
+   - **Attempt 2 (rebuild) CLOSED (2026-04-27)**: Trial 1/2/3 완료. KU 79→120 (+52%). M-Gate V/O 4/6 + M 9/13 PASS. 잔여 FAIL (O1/O2/M5/M6/M7) = plan-side budget 한계 → Stage B-3/SI-P4 에서 동반 처리.
+     - 성과: S1/S2/S3/S4 gate PASS, GU 확장 6종 fix (D-203~D-208), V2 M-Gate eval_v2 per-entity
+     - V-T11 cherry-pick 완료: `feature/si-p7-rebuild` commit `176d2c0` (D-202 예외)
+     - merge 전략: Strategy C — main reset to branch HEAD + force-push (Phase 2 대기 중)
+     - 보존: `archive/si-p7-attempt-1` branch + `si-p7-attempt-1` tag
 ```
 
 - **P2 재판정 조건**: P3R 실 벤치 trial 성공 + P2 remodel 코드 실 bench 재실행(before/after metrics)
