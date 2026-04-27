@@ -74,6 +74,26 @@ attempt 1 v5 sequential ablation 으로 사전 식별된 axis 별 pitfall 과 mi
 
 ## 엔트리
 
+### 2026-04-27 — [pre-merge] V-T10 결론 등록 + V-T11 cherry-pick 완료
+
+**작업**: main (attempt 1) 에서 수행된 V-T10/V-T11 을 rebuild branch 에 이식/기록
+**환경**: `feature/si-p7-rebuild`, pre-merge Phase 1 정리
+
+**D-192 (V-T10 결론)**: v4 가설 매트릭스 접근 폐기 → Sequential Ablation 채택
+- 배경: v4-hypothesis-matrix.md Clear-gate NOT CLEARED → 5-trial sequential ablation 으로 전환
+- 결과: D-194 (Primary Introducer = S2), D-195 (T5~T8 subtask), D-196 (S1 adj oscillation) 도출
+- 참조: `git show archive/si-p7-attempt-1:dev/active/phase-si-p7-structural-redesign/v5-sequential-ablation-report.md`
+
+**V-T11 cherry-pick** (commit `f61c864` → `176d2c0`):
+- `SIP7AxisToggles` 에 `t6_struct_split / t7_axes_forced_split / t8_axis_tags_split` 추가
+- 충돌 해결: `_value_structure_type` 수동 복구, V2 instrumentation tests skip (commit `913ae47`)
+- D-202 예외 적용: pre-merge narrowing 인프라 보존 우선
+
+**검증**: 934 passed, 18 skipped (toggle tests 15개 신규 PASS)
+**참조**: `dev/active/phase-si-p7-structural-redesign/v-t10-v-t11-closure.md`
+
+---
+
 ### 2026-04-27 — [S3 Diagnosis] Trial 3 + V2 옵션 A + Stage closure
 
 **증상**: Trial 2 M-Gate FAIL. V2 transport+10/pass-ticket+1/connectivity+1, O1 transport abandoned (v=15,o=0), O2 KL=∞, VxO 2-cat 불건전, M2 0.00, M5/M6/M7 FAIL.

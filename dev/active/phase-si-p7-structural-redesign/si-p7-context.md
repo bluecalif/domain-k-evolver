@@ -84,6 +84,7 @@
   - **How to apply**: S1 plan = D-196 mitigation (S1-T9 critique rx), S2 plan = T5~T8 보수화, S3 plan = suppress/blocklist 임계 보수화.
 - **D-202 (V-T11 cherry-pick 시점)**: S2-T5~T8 재구현 시점에 V-T11 토글 인프라 cherry-pick (S2 narrowing 도구). 이유: 사전에 cherry-pick 하면 baseline 변경, 사후엔 fail 시 즉시 narrowing 불가.
   - **How to apply**: S2-T6 시작 직전 `git cherry-pick f61c864` (또는 `git show f61c864 -- src/config.py`).
+  - **예외 (2026-04-27)**: pre-merge Phase 1 정리 시 narrowing 인프라 보존 우선으로 사전 cherry-pick 수행. commit `176d2c0` + `913ae47`. 토글 인프라 이미 적용 완료 — S2-T6 시작 시 재cherry-pick 불필요.
 
 ### 3.2 Attempt 1 계승 (D-181~D-196)
 
