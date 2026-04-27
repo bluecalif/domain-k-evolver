@@ -257,16 +257,45 @@ def eval_v1(b: TrialData, t: TrialData, *, self_mode: bool) -> Result:
     return Result("V1", "vacant_total_reduction", detail, passed, is_v_or_o=True)
 
 
+def _per_entity_vacant_by_cat(t: TrialData) -> dict[str, dict[str, int]]:
+    """{cat: {entity_key_slug: vacant_field_count}} — matrix per-cell state 기준."""
+    out: dict[str, dict[str, int]] = {}
+    for cat, cat_data in t.matrix.get("categories", {}).items():
+        ent_vac: dict[str, int] = {}
+        for slug, fields in cat_data.get("matrix", {}).items():
+            ent_vac[slug] = sum(1 for c in fields.values() if c.get("state") == "vacant")
+        out[cat] = ent_vac
+    return out
+
+
 def eval_v2(b: TrialData, t: TrialData, *, self_mode: bool) -> Result:
-    bcv = _by_cat(b, "vacant")
-    tcv = _by_cat(t, "vacant")
-    regressions = []
-    for cat, tv in tcv.items():
-        bv = bcv.get(cat, 0)
-        if tv > bv:
-            regressions.append(f"{cat} +{tv - bv}")
+    """Per-category vacant no-regression — baseline matrix 미존재 entity 의 vacant 는 제외.
+
+    SWEEP-SCOPE / wildcard cascade 로 신규 entity 가 등장하면 cat 합계 비교는 expansion
+    부산물을 regression 으로 오판한다. baseline matrix 에 존재하던 (slug 기준) entity 의
+    vacant 만 비교한다 (옵션 A, 2026-04-27 결정).
+    """
+    b_ent = _per_entity_vacant_by_cat(b)
+    t_ent = _per_entity_vacant_by_cat(t)
+
+    regressions: list[str] = []
+    new_notes: list[str] = []
+    for cat, t_vac in t_ent.items():
+        b_vac = b_ent.get(cat, {})
+        baseline_keys = set(b_vac.keys())
+        existing_v = sum(v for k, v in t_vac.items() if k in baseline_keys)
+        new_v = sum(v for k, v in t_vac.items() if k not in baseline_keys)
+        baseline_total = sum(b_vac.values())
+        if existing_v > baseline_total:
+            regressions.append(f"{cat} +{existing_v - baseline_total}")
+        if new_v > 0:
+            new_keys = [k for k, v in t_vac.items() if k not in baseline_keys and v > 0]
+            new_notes.append(f"{cat}={new_v}({len(new_keys)}ent)")
+
     passed = len(regressions) == 0
-    detail = "no regression" if passed else "; ".join(regressions)
+    detail = "no regression on existing entities" if passed else "; ".join(regressions)
+    if new_notes:
+        detail += f" | new-entity vacant excluded: {', '.join(new_notes)}"
     return Result("V2", "per_category_vacant_no_regression", detail, passed, is_v_or_o=True)
 
 

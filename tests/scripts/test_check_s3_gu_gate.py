@@ -24,6 +24,7 @@ from scripts.check_s3_gu_gate import (
     eval_m9,
     eval_m10,
     eval_m11,
+    eval_v2,
     load_trial,
     main,
 )
@@ -261,6 +262,62 @@ class TestEvalM10:
         t = _make_trial(gap_map=[_adj_gu() for _ in range(5)])
         r = eval_m10(t)
         assert r.passed is False
+
+
+def _matrix_with(cat_entities: dict[str, dict[str, dict[str, str]]]) -> dict:
+    """cat_entities = {cat: {slug: {field: state}}}"""
+    cats: dict = {}
+    for cat, ents in cat_entities.items():
+        matrix: dict = {}
+        for slug, fields in ents.items():
+            matrix[slug] = {f: {"state": st, "ku_ids": [], "gu_ids": []} for f, st in fields.items()}
+        cats[cat] = {"entities": [s for s in ents if s != "*"], "fields": [], "matrix": matrix}
+    return {"summary": {"vacant": 0, "by_category": {}}, "categories": cats}
+
+
+class TestEvalV2:
+    def test_pass_when_existing_entities_no_regression(self):
+        b = _make_trial(matrix=_matrix_with({"transport": {"shinkansen": {"price": "ku_gu"}}}))
+        t = _make_trial(matrix=_matrix_with({"transport": {"shinkansen": {"price": "ku_gu"}}}))
+        r = eval_v2(b, t, self_mode=False)
+        assert r.passed is True
+
+    def test_excludes_new_entities_from_regression(self):
+        """baseline 에 없던 entity 의 vacant 는 regression 미산정."""
+        b = _make_trial(matrix=_matrix_with({"transport": {"shinkansen": {"price": "ku_gu"}}}))
+        t = _make_trial(matrix=_matrix_with({"transport": {
+            "shinkansen": {"price": "ku_gu"},
+            "new-bus-line": {"price": "vacant", "duration": "vacant"},
+        }}))
+        r = eval_v2(b, t, self_mode=False)
+        assert r.passed is True
+        assert "new-entity vacant excluded" in r.detail
+        assert "transport=2(1ent)" in r.detail
+
+    def test_fail_when_existing_entity_regresses(self):
+        """기존 entity 의 vacant 가 늘어나면 FAIL."""
+        b = _make_trial(matrix=_matrix_with({"transport": {"shinkansen": {"price": "ku_gu", "duration": "ku_gu"}}}))
+        t = _make_trial(matrix=_matrix_with({"transport": {"shinkansen": {"price": "vacant", "duration": "vacant"}}}))
+        r = eval_v2(b, t, self_mode=False)
+        assert r.passed is False
+        assert "transport +2" in r.detail
+
+    def test_wildcard_treated_as_entity_when_in_baseline(self):
+        """`*` 가 baseline 에 있으면 existing 으로 간주."""
+        b = _make_trial(matrix=_matrix_with({"transport": {"*": {"price": "vacant"}}}))
+        t = _make_trial(matrix=_matrix_with({"transport": {"*": {"price": "vacant"}}}))
+        r = eval_v2(b, t, self_mode=False)
+        assert r.passed is True
+
+    def test_wildcard_new_in_target_excluded(self):
+        """target 에 처음 등장한 `*` 슬롯의 vacant 는 제외."""
+        b = _make_trial(matrix=_matrix_with({"pass-ticket": {"jr-pass": {"price": "ku_gu"}}}))
+        t = _make_trial(matrix=_matrix_with({"pass-ticket": {
+            "jr-pass": {"price": "ku_gu"},
+            "*": {"price": "vacant", "where_to_buy": "vacant"},
+        }}))
+        r = eval_v2(b, t, self_mode=False)
+        assert r.passed is True
 
 
 class TestEvalM11:
