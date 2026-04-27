@@ -1,7 +1,7 @@
 # SI-P7 Structural Redesign — Plan (rebuild / attempt 2)
 
-> Last Updated: 2026-04-26
-> Status: Planning (착수 전, attempt 1 v5 분석 입력 반영)
+> Last Updated: 2026-04-27
+> Status: In Progress — Stage A ✅, Stage B-1/B-2 (S3) ✅, **Stage B-1 Extension (S3-T9~T14, S3 Diagnosis 2-Trial Plan) CLOSED 2026-04-27**. 다음: Stage B-3 (S2-T3~T8 condition_split).
 > Branch: `feature/si-p7-rebuild` (from `2ebd435` Pre-P7 baseline)
 > Single source of truth: **`docs/structural-redesign-tasks_CC.md` v2**
 > Attempt 1 archive: `main` branch + tag `si-p7-attempt-1` — v5 5-trial sequential ablation, V-T11 토글 인프라 포함
@@ -22,10 +22,13 @@ SI-P7 attempt 1 (main `a33dfdb`) 은 5축 (S1~S4) 일괄 구현 후 c3+ 고착 (
 
 ---
 
-## 2. Current State (2026-04-25)
+## 2. Current State (2026-04-27)
 
-- **브랜치**: `feature/si-p7-rebuild` @ `2ebd435` Pre-P7 baseline
-- **테스트**: 824 passed, 3 skipped (Pre-P7 깨끗한 상태)
+- **브랜치**: `feature/si-p7-rebuild` @ `9a832d1` (Stage CLOSED commit)
+- **테스트**: 919 passed, 3 skipped (Trial 3 전후 unchanged, V2 옵션 A 추가 +5)
+- **완료된 Stage**: Stage A (S1+S2-T1/T2), Pre-Stage B (S4-T1), Stage B-1/B-2 (S3-T1~T8), Stage B-1 Extension (S3-T9~T14)
+- **Stage B-1 Extension closure** (S3 Diagnosis 2-Trial Plan, 2026-04-27): Trial 1/2/3 (~$2.5 누적) → V/O 4/6 + M 9/13 PASS. 잔여 FAIL 의 root cause 가 plan-side budget 한계로 Stage B-3/B-4 또는 SI-P4 에서 다룸. Closure 문서: `trial-3-closure.md`
+- **다음 Stage**: B-3 (S2-T3~T8 condition_split, V-T11 cherry-pick 선행)
 - **Attempt 1 보존**:
   - `main` branch HEAD: `a33dfdb` (S1~S4 구현 + V-T5~V-T11 instrumentation/toggle)
   - `si-p7-attempt-1` tag (영구 archive)

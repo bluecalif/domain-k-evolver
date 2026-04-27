@@ -39,35 +39,36 @@
 - M5/M6/M7 모두 FAIL → 개선 (각각 0→4, 0.51→0.89, 27→17)
 - O1 cascade entity 가 transport → attraction 으로 이동. SWEEP-SCOPE 가 매 cycle 신규 entity 양산 → plan 미선택 → vacant.
 
-## Stage 종결 결정
+## Stage 종결 결정 — S3 Diagnosis 2-Trial Plan만 CLOSED
 
-**SI-P7 attempt 2 (rebuild) 를 닫고 다음 단계 (SI-P4) 로 이행한다.**
+**SI-P7 phase 자체는 닫지 않는다.** Stage B-1 Extension (S3-T9~T14, S3 Diagnosis) 만 종결하고 Stage B-3 (S2-T3~T8 condition_split) 으로 진행.
 
 ### 닫는 이유
 
 1. **V/O 핵심 (V1/V2/V3) 모두 PASS** — KU 1.52×, vacant 큰 폭 감소.
 2. **M-Gate 12/14 PASS** (V/O 4/6 + M 9/13) — V2 옵션 A fix 후 큰 개선.
 3. **잔여 FAIL 의 root cause 가 plan-side** — SWEEP-SCOPE 가 cycle 마다 신규 entity 양산하나 plan 노드가 budget 한계로 미선택. M-Gate 평가 측 변경만으로는 더 못 풀림.
-4. **Trial 비용 누적** — 3회 real API trial 완료. 추가 plan-side fix 는 SI-P4 (coverage) 와 작업 범위 중복.
+4. **Trial 비용 누적** — 3회 real API trial 완료 (~$2.5). 추가 plan-side fix 는 Stage B-3/B-4 (S2/S4 reorg) 또는 SI-P4 (coverage) 와 작업 범위 중복.
 
 ### 미해결 / 이월
 
-- **O1/O2 카테고리 abandonment**: SWEEP-SCOPE 신규 entity 의 plan 미선택. plan transport/attraction quota 또는 budget 확장이 필요. SI-P4 coverage 작업과 동반 처리 권장.
+- **O1/O2 카테고리 abandonment**: SWEEP-SCOPE 신규 entity 의 plan 미선택. plan quota 또는 budget 확장이 필요.
 - **M5/M6/M7**: 구조적 한계
   - M5 late cycle adj gen: c4 still 0
   - M6 adj_yield: 0.89 (0.9 임계 직전)
   - M7 conflict regen: loose check 17. ledger cycle 정보 추가 필요 (M10 telemetry 기반 strict 전환 가능)
 
-### 잔여 코드 부채
+### 잔여 코드 부채 (Stage B-3/B-4 또는 SI-P4 에서 다룸)
 
-- adj GU sweep 의 신규 entity 무한 cascade 억제 메커니즘 부재. SI-P4 budget 정책에서 다룰 후보.
+- adj GU sweep 의 신규 entity 무한 cascade 억제 메커니즘 부재.
 - conflict_ledger cycle stamp 미구현 → M7 strict 불가.
 
 ## Trial 3 → 다음 단계
 
-**다음**: SI-P4 (coverage) 착수
-- dev-docs: `dev/active/phase-si-p4-coverage/` 이미 존재
-- 시작점: `si-p4-coverage-plan.md` 검토
+**다음**: Stage B-3 (S2-T3~T8 condition_split 재정의)
+- 사전 작업: V-T11 cherry-pick (`git cherry-pick f61c864` — config.py + integrate.py + tests, S2-T6 시작 직전)
+- task 위치: `si-p7-tasks.md` §Stage B-3
+- v5 known-pitfall: T5~T8 강제 split 시 c1 ΔKU +59 폭증 → 보수화 임계 (T6/T7/T8) 의무
 
 ## 참조 경로
 

@@ -1,7 +1,7 @@
 # SI-P7 Structural Redesign — Tasks (rebuild)
 
-> Last Updated: 2026-04-26
-> Status: In Progress (Stage A)
+> Last Updated: 2026-04-27
+> Status: In Progress — Stage B-1 Extension 완료 (S3 Diagnosis 2-Trial Plan **CLOSED**, Trial 3 으로 마감). 다음: Stage B-3 (S2-T3~T8).
 > 단일 진실 소스: **`docs/structural-redesign-tasks_CC.md` v2** (task 상세)
 > 본 문서: 착수 순서 + checklist + L1/L2/L3 checkpoint + axis-gate 통과 기준
 
@@ -242,38 +242,45 @@ VERDICT: FAIL  (exit=1, V/O FAIL: V1, V2, O1, O2, VxO)
 
 **다음 액션**: S3 Diagnosis 2-Trial Plan 진입 → Trial 2 PASS 후 Stage B-3/B-4 mechanistic 재정의.
 
-### S3 Diagnosis 2-Trial Plan (확정 2026-04-26, Trial 3 F 폐기)
+### S3 Diagnosis 2-Trial Plan ✅ **CLOSED** (2026-04-27, Trial 3 추가 후 사용자 종결)
 
-| Trial | Cumulative fix | 5c trial | M-Gate 목적 |
-|-------|----------------|----------|-------------|
-| **1** | A (DIAG-ATTRACTION) + B (DIAG-T10-T14 telemetry) | `p7-rebuild-s3-trial1-smoke` | T9 root cause fix 작동 검증 + strict 모드 활성화 |
-| **2** | A+B + C (DIAG-YIELD) + D (DIAG-M7) + E (DIAG-CONNECTIVITY) | `p7-rebuild-s3-trial2-smoke` | 5개 fix 통합 효과 — V/O 모두 PASS 확인 (S3 closure) |
+| Trial | Cumulative fix | bench dir | M-Gate 결과 |
+|-------|----------------|-----------|-------------|
+| **1** | A (DIAG-ATTRACTION) + B (DIAG-T10-T14 telemetry) | `si-p7-s3-trial1-smoke` | FAIL (V/O 일부, M 일부) |
+| **2** | A+B + D (DIAG-M7) + 텔레메트리 fix + SWEEP-SCOPE | `si-p7-s3-trial2-smoke` | FAIL (V2 transport+10/pass-ticket+1/conn+1, O1 transport abandoned, O2 KL=∞, VxO, M2/M5/M6/M7) |
+| **3** | T2 + V2 옵션 A (M-Gate per-entity 평가) | `si-p7-s3-trial3-smoke` | FAIL (V/O 4/6, M 9/13). VxO·M2 신규 PASS, M5/M6/M7 부분 진척 |
 
-각 trial 종료 후 → `entity-field-matrix.json` 생성 → `python scripts/check_s3_gu_gate.py --baseline bench/silver/japan-travel/p7-rebuild-s3-smoke --target bench/silver/japan-travel/<trial> --json <trial>/m-gate-report.json [--strict]` → JSON 보존.
+각 trial: `entity-field-matrix.json` 생성 후 `scripts/check_s3_gu_gate.py --strict` JSON 보존.
 
-#### Trial 1 sub-tasks (구현 순서: B → A)
+#### Trial 1 sub-tasks (구현 순서: B → A) ✅
 
-- [ ] **SI-P7-S3-DIAG-T10-T14** (Trial 1 의 B, 먼저) — telemetry M5b/M9/M10/M11 추가 + Gate 평가 함수 활성화
-  - **M5b** `cap_hit_count` per cycle in trajectory — `src/nodes/integrate.py:280`, `src/state.py`, `scripts/run_readiness.py`
-  - **M9** `gu['origin'] ∈ {claim_loop, post_cycle_sweep}` — `src/nodes/integrate.py:570-597`, `schemas/gap-unit.json`
-  - **M10** `gu['created_cycle']: int` (ISO date 대체) — `src/state.py`, `src/nodes/integrate.py:255`, `src/nodes/seed.py`
-  - **M11** trajectory row 에 `adj_gen_count`, `wildcard_gen_count` — `src/nodes/integrate.py`, `src/nodes/seed.py`, `scripts/run_readiness.py`
-  - **Gate 활성화**: `scripts/check_s3_gu_gate.py` 의 `_na_result("M5b", ...)` 등 4개 → 실 평가 함수 교체
-  - **L1**: telemetry emit + Gate 활성화 unit tests
-- [ ] **SI-P7-S3-DIAG-ATTRACTION** (Trial 1 의 A, 두 번째) — attraction 카테고리 GU 생성 블로커 추적 (M1 1.08× 직접 원인 = T9 무작동)
-  - telemetry 활용 (`gu['origin']`, `created_cycle`, `adj_gen_count`) 로 정밀 진단
-  - 진입점: `src/nodes/integrate.py:_generate_dynamic_gus`, `src/nodes/seed.py:_get_initial_gus_for_entity`
-  - root cause 가설 → fix 구현 → L1 unit test
-- [ ] **Trial 1 실행** — `scripts/run_readiness.py --cycles 5 --trial-id si-p7-s3-trial1-smoke`
-- [ ] **Trial 1 M-Gate 판정** — `--strict` 모드 활성화. PASS 시 Trial 2 진입, FAIL 시 root cause 재추적
+- [x] **SI-P7-S3-DIAG-T10-T14** (Trial 1 의 B) — telemetry M5b/M9/M10/M11 추가 + Gate 평가 함수 활성화 (commit `4833186` Task #5)
+- [x] **SI-P7-S3-DIAG-ATTRACTION** (Trial 1 의 A) — sweep 독립 budget, attraction adj GU 생성 블로커 해소 (commit `b221aed`)
+- [x] **Trial 1 실행** — `bench/silver/japan-travel/si-p7-s3-trial1-smoke/` (5c real API)
+- [x] **Trial 1 M-Gate 판정** — FAIL (V/O 일부, M 일부) → Trial 2 진입
 
-#### Trial 2 sub-tasks (Trial 1 PASS 후, 누적 적용)
+#### Trial 2 sub-tasks ✅
 
-- [ ] **SI-P7-S3-DIAG-YIELD** (C) — M6 0.72 (adj_yield 28% 후퇴) 원인 추적 + dynamic_cap 8/15/20 ablation, 최적값 결정
-- [ ] **SI-P7-S3-DIAG-M7** (D) — conflict 해소 field 에 adj GU 재생성 6건 정책 위반. seed/integrate 단계의 conflict_field 필터 추가
-- [ ] **SI-P7-S3-DIAG-CONNECTIVITY** (E) — connectivity vacant +1 regression 원인 (cap 제거 후 wildcard 분배 변동 가능)
-- [ ] **Trial 2 실행** — `scripts/run_readiness.py --cycles 5 --trial-id si-p7-s3-trial2-smoke`
-- [ ] **Trial 2 M-Gate 판정** — V/O 6/6 PASS + M 8/8 PASS 목표. PASS → S3 closure → Stage B-3/B-4 reorg 진입
+- [DEFER] **SI-P7-S3-DIAG-YIELD** (C) — 코드 fix 불필요로 판정 (LLM 우선순위 문제, plan-side)
+- [x] **SI-P7-S3-DIAG-M7** (D) — `_generate_dynamic_gus` `conflict_slots` 파라미터 추가, 27→17 violations 개선 (commit `d287a17`)
+- [DEFER] **SI-P7-S3-DIAG-CONNECTIVITY** (E) — seed variance 로 판정, 코드 fix 불필요
+- [x] **추가 fix (T2 누적)**: 텔레메트리 로깅 순서 버그 fix + DIAG-SWEEP-SCOPE (옵션 E: C+D, sweep 범위 = adds ∪ resolved-this-cycle, 동적 budget) (commit `d287a17`)
+- [x] **Trial 2 실행** — `bench/silver/japan-travel/si-p7-s3-trial2-smoke/` (5c real API)
+- [x] **Trial 2 M-Gate 판정** — FAIL (transport cascade 신규 이슈) → 추가 trial 진입
+
+#### Trial 3 sub-tasks (Trial 2 V2 regression 보완) ✅
+
+- [x] **V2 옵션 A 구현** — `eval_v2()` per-entity 기반 재작성, baseline matrix 미존재 entity vacant 제외 (commit `eb0bc24`, L1 +5, 919 PASS)
+- [x] **Trial 3 실행** — `bench/silver/japan-travel/si-p7-s3-trial3-smoke/` (5c, 16.5분, ~$0.5, KU 79→120 +52%)
+- [x] **Trial 3 M-Gate 판정** — FAIL (V/O 4/6, M 9/13). 잔여 FAIL 의 root cause 가 plan-side budget 한계로 SI-P4 와 동반 처리 결정.
+- [x] **Stage closure 문서** — `dev/active/phase-si-p7-structural-redesign/trial-3-closure.md` (commit `9a832d1`)
+
+**Closure summary**:
+- 진척: V1/V2/V3 PASS, VxO·M2 신규 PASS, KU 1.52×
+- 잔여: O1/O2 (SWEEP-SCOPE 신규 entity 의 plan 미선택), M5/M6/M7 (구조적 한계)
+- 잔여 코드 부채 → Stage B-3/B-4 또는 SI-P4 에서 다룸:
+  - adj GU sweep 신규 entity 무한 cascade 억제 (plan budget / quota 정책)
+  - conflict_ledger cycle stamp (M7 strict check 활성화)
 
 ### Stage B-3 — condition_split 재정의 (S2-T3~T8, D-195 보수화)
 

@@ -1,182 +1,159 @@
 # Session Compact
 
-> Generated: 2026-04-26
+> Generated: 2026-04-27
 > Source: Conversation compaction via /compact-and-go
 
 ## Goal
 
-Trial 1 B (telemetry M5b/M9/M10/M11 emit) + Gate 활성화 + Trial 1 A (DIAG-ATTRACTION fix) → Trial 1 실행 + M-Gate 판정. 2-Trial Diagnosis Plan 의 S3 closure 목적.
+**SI-P7 rebuild branch → main 단일화 (즉시 merge)**.
+Plan 승인됨: `C:\Users\User\.claude\plans\and-you-should-remind-encapsulated-mccarthy.md`
+사용자 결정: Merge 전략 C (main 을 branch HEAD 로 reset, force-push) + V-T11 cherry-pick + attempt 1 archive 보존 + 프리서행 완료 후 즉시 merge.
 
-## Completed
+## Completed (이 세션)
 
-- [x] **M9: gu['origin'] attribution** (`2734bc1`)
-  - `schemas/gap-unit.json`: origin enum 추가
-  - `src/nodes/seed.py`: `origin: "seed_bootstrap"`
-  - `src/nodes/integrate.py`: `origin: "claim_loop"` / `"post_cycle_sweep"`
-- [x] **M10: gu['created_cycle'] int** (`2734bc1`, 896 tests PASS)
-- [x] **M11: trajectory adj_gen_count + wildcard_gen_count** (`8e20377`)
-  - `src/state.py`: `_diag_wildcard_gen_count` 추가
-  - `src/nodes/seed.py`: wildcard count 반환
-  - `src/utils/metrics_logger.py`: `adj_gen_count`, `wildcard_gen_count` entry
-- [x] **M5b: cap_hit_count** (`8e20377`, 902 tests PASS)
-  - `src/state.py`: `_diag_cap_hit_count` 추가
-  - `src/utils/metrics_logger.py`: `cap_hit_count` entry
-  - L1 tests: `test_m5b_*` 2개
-- [x] **Task #5: Gate 활성화** (`4833186`, 910 tests PASS)
-  - `scripts/check_s3_gu_gate.py`: `eval_m5b/m9/m10/m11` 4개 함수 추가
-  - `_na_result` 4개 → 실 평가 함수 교체
-  - L2 tests: 8개 (PASS/FAIL pair × 4)
-- [x] **DIAG-ATTRACTION root cause 확인 + fix** (현재 세션, 911 tests PASS)
-  - **Root cause**: attraction seed GU = 전부 wildcard. Cycle 1에서 regulation/payment 클레임이 `dynamic_cap=8` 선점 → sweep도 cap 공유로 차단 → attraction adj GU 0개.
-  - **Fix**: S3-T10 sweep에 claim loop와 독립된 자체 budget(`_sweep_budget = dynamic_cap`) 부여
-  - `src/nodes/integrate.py`: `_claim_loop_gu_count` 캡처, sweep 독립 budget, `_cap_hit = _claim_loop_gu_count >= dynamic_cap`
-  - L1 tests: `test_sweep_respects_combined_cap`, `test_sweep_independent_budget_when_claim_loop_full`
+### S3 Diagnosis Trial 3 + closure
+- [x] **V2 옵션 A 구현** — `eval_v2()` per-entity 재작성, baseline 미존재 entity vacant 제외 (commit `eb0bc24`, L1 +5, **919 PASS**)
+  - `scripts/check_s3_gu_gate.py:260-302` `_per_entity_vacant_by_cat` helper + 새 eval_v2
+  - `tests/scripts/test_check_s3_gu_gate.py` TestEvalV2 5 cases
+- [x] **Trial 3 실행** (5c, 16.5분, ~$0.5) — `bench/silver/japan-travel/si-p7-s3-trial3-smoke/`
+  - KU 79→120 (+52%, 1.52×)
+  - M-Gate FAIL: V/O 4/6 + M 9/13 PASS (Trial 2 대비 VxO·M2 신규 PASS, M5/M6/M7 부분 진척)
+  - 잔여 FAIL: O1 attraction abandoned (v=54,o=0), O2 KL=∞, M5/M6/M7
+- [x] **Stage closure 문서** — `dev/active/phase-si-p7-structural-redesign/trial-3-closure.md` (commit `9a832d1`)
+
+### 정황 파악 (Plan 작성 단계)
+- [x] **3-agent 병렬 조사**: main/branch divergence, project-overall stale 진단, "previous bug" 정체 식별
+- [x] **사용자 컨텍스트 확인**: main 에서 attempt 1 끝까지 실행 → 품질 매우 나쁨 → revoke 명령 → pre-P7 commit `2ebd435` 으로 돌아간 branch 생성 → rebuild → V-T10/V-T11 main 미체크 상태로 동결
+- [x] **사용자 의사결정 확인**: 3-question AskUserQuestion (merge 전략 C / V-T11+archive 둘 다 보존 / 프리서행 후 즉시)
+- [x] **Plan 작성 + ExitPlanMode 승인** — Phase 1 (프리서행) + Phase 2 (merge) 2-phase
 
 ## Current State
 
-### Branch
-`feature/si-p7-rebuild`
+### Branch / commit
+- 현 branch: `feature/si-p7-rebuild` HEAD `9a832d1`
+- main HEAD: `a33dfdb` (attempt 1 v5 ablation 마지막 commit)
+- merge-base: `2ebd435` (Pre-P7 baseline)
+- main-only: 28 commits, branch-only: 33 commits (양방향 diverged)
+- tag `si-p7-attempt-1` 이미 존재, `a33dfdb` 가리킴 (보존 OK)
+- `archive/si-p7-attempt-1` branch 는 **아직 미생성** (Phase 1.2 에서 생성 예정)
+- remote: origin = github.com/bluecalif/domain-k-evolver.git (main 만 push 됨)
 
-### Recent Commits (본 세션)
+### Dirty / untracked
 ```
-4833186 [si-p7] Task #5: Gate 활성화 — M5b/M9/M10/M11 _na_result → 실 평가 함수
-8e20377 [si-p7] Trial 1 B: M11/M5b telemetry — adj/wildcard/cap_hit 기록
-2734bc1 [si-p7] Trial 1 B: M9/M10 telemetry — gu origin + created_cycle 부여
+ M dev/active/phase-si-p7-structural-redesign/si-p7-debug-history.md
+ M dev/active/phase-si-p7-structural-redesign/si-p7-plan.md
+ M dev/active/phase-si-p7-structural-redesign/si-p7-tasks.md
+ M dev/active/phase-si-p7-structural-redesign/trial-3-closure.md
+ M docs/session-compact.md  (이번 compact 으로 또 변경)
+?? bash.exe.stackdump  (사용자가 .gitignore 추가 거부 — 단순 삭제 또는 다른 방식 원함)
+?? bench/silver/japan-travel/si-p7-s3-trial1-smoke/  (1.5M)
+?? bench/silver/japan-travel/si-p7-s3-trial2-smoke/  (1.6M)
+?? bench/silver/japan-travel/si-p7-s3-trial3-smoke/  (1.3M)
 ```
 
-### Uncommitted (DIAG-ATTRACTION fix)
-- `src/nodes/integrate.py` — S3-T10 sweep 독립 budget + `_cap_hit` 수정
-- `tests/test_nodes/test_integrate.py` — 기존 cap test 갱신 + 2개 신규
+### 919 tests PASS (Trial 3 후 V2 옵션 A 추가 commit `eb0bc24` 시점)
 
-### Test Count
-**911 PASS**, 3 skipped
+## Remaining / TODO (Plan Phase 1 → Phase 2)
 
-## Remaining / TODO
+### Phase 1 — 프리서행 정리
 
-### 즉시 (이번 세션 연속)
+- [ ] **1.1 Dirty state commit**
+  - dev-docs 4 modified files commit (`[si-p7] dev-docs sync: Stage B-1 Extension closure 반영`)
+  - bench trial dirs (1/2/3) commit — 별도 commit 권장 (`[si-p7] bench: Trial 1/2/3 결과 보존`)
+  - bash.exe.stackdump 처리 — **사용자가 .gitignore 추가 거부했음. 단순 삭제 또는 다른 방식 묻기**
+  - session-compact.md 처리 — 이번 compact 으로 또 변경됨, 같이 commit
+- [ ] **1.2 Archive 안전망 생성**
+  - tag `si-p7-attempt-1` 이미 존재 (skip)
+  - `git branch archive/si-p7-attempt-1 main` + `git push -u origin archive/si-p7-attempt-1`
+  - `git push origin si-p7-attempt-1` (tag 도 remote 에 있는지 확인)
+- [ ] **1.3 V-T11 cherry-pick** (`f61c864`)
+  - 사전 충돌 점검: `git show f61c864 --stat`, `git diff feature/si-p7-rebuild..f61c864 -- src/config.py src/nodes/integrate.py`
+  - `git cherry-pick f61c864`
+  - 충돌 시 branch 의 현 구현 우선 + V-T11 toggle hooks 만 추가 reconcile
+- [ ] **1.4 V-T10/V-T11 closure 문서 + D-192 등록**
+  - 신규 파일: `dev/active/phase-si-p7-structural-redesign/v-t10-v-t11-closure.md`
+  - `si-p7-debug-history.md` 에 D-192 entry 추가
+  - `si-p7-context.md` decisions 섹션 갱신
+- [ ] **1.5 project-overall sync** (가장 큰 작업)
+  - `dev/active/project-overall/project-overall-plan.md` — "P6 ← 현재" 정정
+  - `dev/active/project-overall/project-overall-context.md` — "SI-P6 착수" 정정
+  - `dev/active/project-overall/project-overall-tasks.md` — Trial 1/2/3 + closure 반영
+  - `dev/active/project-overall/debug-history.md` — 50일 gap 처리
+  - 신규 등록 decisions: D-192, D-194/195/196, D-200~D-208
+- [ ] **1.6 Pre-merge commit + push**
+  - `[si-p7] V-T10/V-T11 closure + project-overall sync (pre-merge)`
+  - `git push origin feature/si-p7-rebuild`
+- [ ] **1.7 검증**: pytest 919+ pass, archive 보존 확인
 
-- [ ] **DIAG-ATTRACTION commit** — 911 tests PASS 확인됨
-- [ ] **Trial 1 실행** — `python scripts/run_readiness.py --cycles 5 --trial-id si-p7-s3-trial1-smoke`
-  - 실행 전: API 키 확인, bench 디렉토리 확인
-  - 주의: real API 비용 발생
-- [ ] **Trial 1 M-Gate 판정**
-  ```bash
-  python scripts/analyze_trajectory.py \
-    --bench-root bench/silver/japan-travel/si-p7-s3-trial1-smoke --matrix
-  python scripts/check_s3_gu_gate.py \
-    --baseline bench/silver/japan-travel/p7-rebuild-s3-smoke \
-    --target   bench/silver/japan-travel/si-p7-s3-trial1-smoke \
-    --json     bench/silver/japan-travel/si-p7-s3-trial1-smoke/m-gate-report.json \
-    --strict
-  ```
-  - M1 목표: ≥ 26 named entity adj GU (2× baseline 13)
-  - M5b/M9/M10/M11: 이제 실 평가 (new trial에서 PASS 예상)
-  - V1 목표: Δ ≥ 29 vacant 감소
+### Phase 2 — Merge 실행
 
-### Trial 1 PASS 후 → Trial 2
-
-- [ ] **SI-P7-S3-DIAG-YIELD** (C) — M6 0.72 (adj_yield 28% 후퇴) + dynamic_cap ablation
-- [ ] **SI-P7-S3-DIAG-M7** (D) — conflict field adj GU 재생성 6건 정책 위반
-- [ ] **SI-P7-S3-DIAG-CONNECTIVITY** (E) — connectivity vacant +1 regression
-- [ ] **Trial 2 실행 + M-Gate** → V/O 6/6 PASS → S3 closure
+- [ ] **2.1 사전 검증** — archive 가 attempt 1 commit 모두 포함하는지, branch-only commit 정리됐는지
+- [ ] **2.2 main reset + force-push**
+  - `git checkout main`
+  - `git reset --hard feature/si-p7-rebuild`
+  - `git push origin main --force-with-lease` (차단 시 stop & investigate)
+- [ ] **2.3 후속 정리** — feature branch 삭제 여부 결정
+- [ ] **2.4 최종 검증** — main HEAD == branch HEAD, archive 보존, pytest pass
 
 ## Key Decisions
 
-- **DIAG-ATTRACTION fix = S3-T10 독립 budget**: sweep이 claim loop cap 소진과 무관하게 자체 `dynamic_cap` budget 보유. total max = 2 × dynamic_cap per cycle.
-- **_cap_hit = claim loop count 기반**: sweep adj GU는 cap_hit 카운트에 포함 안 됨.
-- **Trial 1 = A+B 누적 적용**: DIAG-ATTRACTION fix + telemetry 4종 모두 포함.
+- **D-V2-OptionA (2026-04-27)**: M-Gate eval_v2() 를 per-entity 기반으로 재작성. baseline matrix 미존재 entity vacant 제외. SWEEP-SCOPE 의 신규 entity expansion 을 regression 으로 오판하지 않게 함.
+- **D-S3-Closure (2026-04-27)**: S3 Diagnosis 2-Trial Plan (Trial 1/2/3) CLOSED. 잔여 FAIL (O1/O2/M5/M6/M7) 의 root cause 가 plan-side budget 한계 — Stage B-3 또는 SI-P4 에서 동반 처리.
+- **D-Merge-Strategy-C (2026-04-27, 사용자 확정)**: main 을 feature branch HEAD 로 reset (force-push). attempt 1 의 28 commit 직선 history 에서 사라지나 tag + archive branch 로 보존.
+- **D-Preserve-VT11 (2026-04-27, 사용자 확정)**: V-T11 토글 인프라 (`f61c864`) cherry-pick 으로 branch 에 보존. Stage B-3 narrowing 도구 부재 위험 회피.
+- **D-Archive-Attempt1 (2026-04-27, 사용자 확정)**: attempt 1 의 v5 ablation 보고서, p7-seq-* trial data, V-T1~T11 instrumentation 코드를 tag (이미 존재) + 신규 `archive/si-p7-attempt-1` branch 로 이중 보존.
 
 ## Context
 
 다음 세션에서는 답변에 한국어를 사용하세요.
 
-### 절대 경로 참조 (필독)
-
+### 핵심 참조
+- **Plan 파일**: `C:\Users\User\.claude\plans\and-you-should-remind-encapsulated-mccarthy.md` (승인됨, Phase 1 → Phase 2)
+- **Closure 문서**: `dev/active/phase-si-p7-structural-redesign/trial-3-closure.md`
 - **M-Gate 단일 진실 소스**: `dev/active/phase-si-p7-structural-redesign/si-p7-gate-mechanistic.md`
-- **M-Gate 구현**: `scripts/check_s3_gu_gate.py` + `scripts/_gate_helpers.py`
-- **M-Gate L1 tests**: `tests/scripts/test_gate_helpers.py` (20), `tests/scripts/test_check_s3_gu_gate.py` (21)
-- **M-Gate 실 재판정 JSON**: `bench/silver/japan-travel/p7-rebuild-s3-gu-smoke/m-gate-report.json`
-- **Telemetry 파일**: `src/nodes/integrate.py`, `src/nodes/seed.py`, `src/state.py`, `src/utils/metrics_logger.py`
-- **베이스라인 trial**: `bench/silver/japan-travel/p7-rebuild-s3-smoke/`
-- **타겟 trial (Trial 1)**: `bench/silver/japan-travel/si-p7-s3-trial1-smoke/` (미생성)
+- **V-T11 commit**: `f61c864` (main 에 있음, branch 에 cherry-pick 대상)
+- **attempt 1 archive 자료** (main 에 있음, force-push 후에는 tag/archive branch 로만 접근):
+  - `git show main:dev/active/phase-si-p7-structural-redesign/v5-sequential-ablation-report.md`
+  - `git show main:dev/active/phase-si-p7-structural-redesign/v3-isolation-report.md`
+  - `git show main:dev/active/phase-si-p7-structural-redesign/v1-signal-audit.md`
+  - `bench/silver/japan-travel/p7-seq-{pre-a,s1,s2,s3,s4}/`
 
-### Trial 1 실행 전 확인 사항
+### 시간순 컨텍스트 (사용자 직접 제공)
+1. main 에서 SI-P7 attempt 1 끝까지 실행 → 품질 매우 나쁨
+2. 사용자 "P7 변경 전부 revoke" 명령
+3. Claude 가 "pre-P7 commit `2ebd435` 으로 돌아간 branch 생성" 제안 → 채택
+4. `feature/si-p7-rebuild` 가 `2ebd435` 시점에서 시작
+5. **main 의 V-T10 (root cause D-192 확정) + V-T11 (next step 결정) 미완료** — 사용자가 말한 "branch 진입 전 last step"
+6. 두 branch 유지가 너무 복잡 → 사용자 결정: 즉시 merge
 
-```bash
-# 미커밋 파일 commit 먼저
-git -C "C:\Users\User\Learning\KBs-2026\domain-k-evolver" add src/nodes/integrate.py tests/test_nodes/test_integrate.py
-git -C "C:\Users\User\Learning\KBs-2026\domain-k-evolver" commit -m "[si-p7] DIAG-ATTRACTION: S3-T10 sweep 독립 budget — attraction adj GU 생성 블로커 해소"
+### 직전 사용자 액션
+- `.gitignore` 에 `bash.exe.stackdump` 추가하려 했으나 **거부됨**.
+- 다음 세션 시작 시 **bash.exe.stackdump 처리 방법** 사용자에게 먼저 물어볼 것 (단순 삭제? 별도 처리?)
 
-# API 키 확인
-echo $OPENAI_API_KEY | head -c 10
-echo $TAVILY_API_KEY | head -c 10
-
-# Trial 실행
-python scripts/run_readiness.py --cycles 5 --trial-id si-p7-s3-trial1-smoke
-```
-
-### M-Gate 사용법
-```bash
-python scripts/check_s3_gu_gate.py \
-  --baseline bench/silver/japan-travel/p7-rebuild-s3-smoke \
-  --target   bench/silver/japan-travel/si-p7-s3-trial1-smoke \
-  --json     bench/silver/japan-travel/si-p7-s3-trial1-smoke/m-gate-report.json \
-  --strict
-```
-
-### DIAG-ATTRACTION fix 상세
-
-**근본 원인**:
-1. attraction seed GU = 전부 wildcard (`japan-travel:attraction:*` × 4 fields)
-   - 이유: 최초 seed 시 attraction entity 없음 → `known_entities = []` → `else` 브랜치 → wildcard
-2. Cycle 1 claim loop: regulation/payment 클레임이 `dynamic_cap=8` 먼저 소진
-3. attraction 클레임이 처리될 때 `len(new_dynamic_gus) >= dynamic_cap` → adj GU 생성 불가
-4. S3-T10 sweep도 `len(new_dynamic_gus) >= dynamic_cap` → `break` → attraction sweep 불가
-5. Cycle 2-5: attraction wildcard GU 전부 resolved → plan에서 attraction target 없음 → 영구 방치
-
-**Fix 내용**:
-- `_claim_loop_gu_count = len(new_dynamic_gus)` (sweep 시작 전 캡처)
-- sweep에 `_sweep_budget = dynamic_cap`, `_sweep_added = 0` 독립 카운터
-- `_cap_hit = 1 if _claim_loop_gu_count >= dynamic_cap else 0`
-- 효과: cycle 1에서 sweep이 attraction senso-ji 등 named entity adj GU를 독립 budget으로 생성
-
-### 사용자 피드백/원칙
-- "no bullshit" — 모든 임계값에 정량 근거 명시
-- 답변은 한국어, 단답 선호 (verbose 금지)
+### 사용자 피드백/원칙 (memory)
+- "no bullshit" — 모든 임계값에 정량 근거
+- 한국어 단답 선호 (verbose 금지)
 - 선택지는 2~3개로 축소
-- bench/silver 의 trial 은 real API 비용 발생 → 신중히 진행
-- entity-field-matrix.json 은 모든 trial 완료 시 필수
+- API 비용 발생 작업은 신중하게
+- entity-field-matrix.json 모든 trial 완료 시 필수
+- 장기 실행은 foreground + 실시간 모니터링 (background 금지)
+- bench/silver real API trial 비용 신중히
+
+### 잔여 코드 부채 (Stage B-3 또는 SI-P4 에서 다룸)
+- adj GU sweep 신규 entity 무한 cascade 억제 (plan budget / quota 정책)
+- conflict_ledger cycle stamp → M7 strict check 활성화
 
 ## Next Action
 
-**DIAG-ATTRACTION commit 직후 Trial 1 실행**:
+**Phase 1.1 Dirty state commit** 부터 재개. 단, 첫 액션:
 
-1. commit:
-   ```bash
-   git add src/nodes/integrate.py tests/test_nodes/test_integrate.py
-   git commit -m "[si-p7] DIAG-ATTRACTION: S3-T10 sweep 독립 budget — attraction adj GU 생성 블로커 해소"
-   ```
+1. **bash.exe.stackdump 처리 방법 확정 (사용자에게 묻기)** — `.gitignore` 추가 거부됨. 단순 삭제(rm)가 가장 단순. 또는 별도 폴더로 이동? 답변 받은 후 진행.
+2. 답변 받으면 dirty commit 시작:
+   - `git add dev/active/phase-si-p7-structural-redesign/{plan,tasks,debug-history,trial-3-closure}.md docs/session-compact.md`
+   - `git commit -m "[si-p7] dev-docs sync: Stage B-1 Extension closure + session-compact 갱신"`
+3. 그 다음 trial dirs 별도 commit:
+   - `git add bench/silver/japan-travel/si-p7-s3-trial{1,2,3}-smoke/`
+   - `git commit -m "[si-p7] bench: Trial 1/2/3 결과 보존 (attempt 2 S3 Diagnosis)"`
+4. 이후 Plan 의 Phase 1.2~1.7 순차 진행 → Phase 2.
 
-2. Trial 1 실행 (real API, ~$0.5 예상):
-   ```bash
-   python scripts/run_readiness.py --cycles 5 --trial-id si-p7-s3-trial1-smoke
-   ```
-
-3. matrix 생성:
-   ```bash
-   python scripts/analyze_trajectory.py \
-     --bench-root bench/silver/japan-travel/si-p7-s3-trial1-smoke --matrix
-   ```
-
-4. M-Gate 판정:
-   ```bash
-   python scripts/check_s3_gu_gate.py \
-     --baseline bench/silver/japan-travel/p7-rebuild-s3-smoke \
-     --target   bench/silver/japan-travel/si-p7-s3-trial1-smoke \
-     --json     bench/silver/japan-travel/si-p7-s3-trial1-smoke/m-gate-report.json \
-     --strict
-   ```
-
-5. 결과에 따라:
-   - PASS → Trial 2 준비 (DIAG-YIELD/M7/CONNECTIVITY)
-   - FAIL → 추가 root cause 분석
+**중요**: Phase 2 의 force-push (`git push origin main --force-with-lease`) 직전에는 한 번 더 사용자 confirm 받기.

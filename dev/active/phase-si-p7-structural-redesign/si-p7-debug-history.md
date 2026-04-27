@@ -1,7 +1,7 @@
 # SI-P7 Structural Redesign — Debug History (rebuild)
 
-> Last Updated: 2026-04-25
-> Status: 착수 전 (구현 시작 시 entry 누적)
+> Last Updated: 2026-04-27
+> Status: Stage B-1 Extension (S3 Diagnosis 2-Trial Plan) CLOSED. 엔트리 누적 중.
 > Attempt 1 history (참조): `git show main:dev/active/phase-si-p7-structural-redesign/si-p7-debug-history.md`
 
 ---
@@ -74,7 +74,26 @@ attempt 1 v5 sequential ablation 으로 사전 식별된 axis 별 pitfall 과 mi
 
 ## 엔트리
 
-(구현 착수 시 누적 시작)
+### 2026-04-27 — [S3 Diagnosis] Trial 3 + V2 옵션 A + Stage closure
+
+**증상**: Trial 2 M-Gate FAIL. V2 transport+10/pass-ticket+1/connectivity+1, O1 transport abandoned (v=15,o=0), O2 KL=∞, VxO 2-cat 불건전, M2 0.00, M5/M6/M7 FAIL.
+**환경**: commit `d287a17` (Trial 2 fix 누적), trial 결과 `bench/silver/japan-travel/si-p7-s3-trial2-smoke/`
+**원인**:
+- transport cascade: SWEEP-SCOPE fix 가 transport wildcard `:*:duration` resolve → 4 신규 entity (osaka-universal-studios-japan 등) 등장 → adj GU 받았으나 plan 미선택 → vacant 누적
+- M-Gate eval_v2 가 summary by_category 수준 비교 → 신규 entity vacant 를 regression 으로 오판
+**해결 (옵션 A)**: `eval_v2()` per-entity 기반 재작성, baseline matrix 미존재 entity 의 vacant 제외
+- 변경: `scripts/check_s3_gu_gate.py:260-302` — `_per_entity_vacant_by_cat` helper + 새 eval_v2
+- L1 +5 (`TestEvalV2`): `tests/scripts/test_check_s3_gu_gate.py`
+**검증**:
+- L1: 919 PASS (+5 from baseline 914)
+- L3 Trial 3 (5c, 16.5분, ~$0.5): KU 79→120 (+52%, 1.52×). M-Gate 결과 V/O 4/6 + M 9/13 PASS (Trial 2 대비 VxO·M2 신규 PASS, M5/M6/M7 부분 진척: Δc5 0→4, M6 0.51→0.89, M7 27→17)
+- 잔여 FAIL: O1 attraction abandoned (v=54, o=0) — transport 패턴이 attraction 으로 이동, plan 미선택 동일 root cause
+**Decision (사용자, 2026-04-27)**: Stage B-1 Extension (S3 Diagnosis 2-Trial Plan) CLOSED. plan-side budget 한계 root cause 는 Stage B-3 (condition_split) 와 SI-P4 (coverage) 에서 동반 처리.
+**Commits**: `eb0bc24` (옵션 A V2), `9a832d1` (closure 문서)
+**Trial 결과 디스크**: `bench/silver/japan-travel/si-p7-s3-trial{1,2,3}-smoke/` (untracked)
+**잔여 코드 부채**:
+- adj GU sweep 신규 entity 무한 cascade 억제 (plan budget / quota 정책) — Stage B-3/B-4 또는 SI-P4
+- `conflict_ledger` cycle stamp → M7 strict check 활성화 가능
 
 ---
 
