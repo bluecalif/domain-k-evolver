@@ -49,9 +49,9 @@ SI-P7 Structural Redesign (별도 track, P6 와 독립)
      - 산출물: v5-sequential-ablation-report.md, V-T11 토글 인프라, 5-trial bench
    - **Attempt 2 (rebuild) CLOSED (2026-04-27)**: Trial 1/2/3 완료. KU 79→120 (+52%). M-Gate V/O 4/6 + M 9/13 PASS. 잔여 FAIL (O1/O2/M5/M6/M7) = plan-side budget 한계 → Stage B-3/SI-P4 에서 동반 처리.
      - 성과: S1/S2/S3/S4 gate PASS, GU 확장 6종 fix (D-203~D-208), V2 M-Gate eval_v2 per-entity
-     - V-T11 cherry-pick 완료: `feature/si-p7-rebuild` commit `176d2c0` (D-202 예외)
-     - merge 전략: Strategy C — main reset to branch HEAD + force-push (Phase 2 대기 중)
-     - 보존: `archive/si-p7-attempt-1` branch + `si-p7-attempt-1` tag
+     - V-T11 cherry-pick 완료: commit `176d2c0` (D-202 예외)
+     - **merge 완료 (2026-04-27)**: Strategy C 실행 완료. main `0d7ebb3`. feature branch 삭제.
+     - 보존: `archive/si-p7-attempt-1` branch + `si-p7-attempt-1` tag (remote)
 ```
 
 - **P2 재판정 조건**: P3R 실 벤치 trial 성공 + P2 remodel 코드 실 bench 재실행(before/after metrics)

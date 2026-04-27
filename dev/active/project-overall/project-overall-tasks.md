@@ -1,6 +1,6 @@
 # Project Overall Tasks
 > Last Updated: 2026-04-27
-> Status: Bronze 완료 (85/85) · Silver P0 (32) · P1 (12) · P3R (8) · P2 (14) · Gap-Res (12) · P4 (42) · **P5 완료 (15/15, Gate PASS)** · **SI-P7 attempt 2 CLOSED** (Trial 1/2/3 완료, Stage B-1 Extension) · 934 tests
+> Status: Bronze 완료 (85/85) · Silver P0 (32) · P1 (12) · P3R (8) · P2 (14) · Gap-Res (12) · P4 (42) · **P5 완료 (15/15, Gate PASS)** · **SI-P7 attempt 2 MERGED** (main `0d7ebb3`, 934 tests) · **P6 착수 예정**
 
 ## Summary
 
@@ -31,7 +31,7 @@
 | P5 Telemetry & Dashboard | 15 | 4 | 9 | 1 | **15/15** ✅ | **Gate PASS** (821 tests, S10 PASS, LOC 986) |
 | P6 Consolidation & KB Release | TBD | — | — | — | 0 | 착수 예정 (A→B→C) |
 | SI-P7 Structural Redesign (Attempt 1) | ~52 (Step A 10 / Step B 14 / Step V 11 / Step C 12 + V-T1~T11 instrumentation) | — | — | — | Step A/B + Step V 완료 | **Archived** (main `a33dfdb`, tag `si-p7-attempt-1`). v5 sequential ablation → D-194/195/196 |
-| SI-P7 Structural Redesign (Attempt 2 rebuild) | ~47 | — | — | — | **CLOSED** | **2026-04-27 종결**: Trial 1/2/3 완료, KU 79→120 (+52%), S1/S2/S3/S4 gate PASS, 934 tests. merge 대기 (`feature/si-p7-rebuild`). 잔여 FAIL → Stage B-3 / P6 동반 처리. |
+| SI-P7 Structural Redesign (Attempt 2 rebuild) | ~47 | — | — | — | **MERGED** ✅ | **2026-04-27 main merge 완료** (`0d7ebb3`): Trial 1/2/3, KU 79→120 (+52%), 934 tests. branch 삭제됨. 잔여 FAIL → Stage B-3 / P6 동반 처리. |
 | M1 Multi-Domain (suspended) | 7 | 2 | 3 | 2 | 0/7 | P6 완료 후 활성화 |
 | X Cross-phase | 7 | 7 | 0 | 0 | 0/7 | — |
 | **Silver 합계** | **134+** | — | — | — | **67/134+** | — |
@@ -42,7 +42,7 @@
 |-------|-------|---|---|------|--------|
 | Gap-Res Investigation | 12 | 8 | 4 | 12/12 | 완료 (D-131) |
 
-**총계: Bronze 85 + Silver (P5 15 포함) 167+ + Investigation 12 = 264+ tasks · 현재 테스트 821**
+**총계: Bronze 85 + Silver (P5 15 포함) 167+ + Investigation 12 = 264+ tasks · 현재 테스트 934**
 
 참조 문서:
 - 단일 진실 소스: `docs/silver-masterplan-v2.md` §4 Phase 표
@@ -333,10 +333,11 @@
 
 ---
 
-## Phase P3: Acquisition Expansion (22 tasks)
+## Phase P3: Acquisition Expansion ~~(22 tasks)~~ **REVOKED (D-120, 2026-04-13)**
 
-> **목표**: SEARCH/FETCH/PARSE 3단계 분리, provider 플러그인 3개, provenance, 비용 가드
-> **Gate**: fetch ≥ 80%, EU/claim ≥ 1.8, domain_entropy ≥ 2.5 bits, 비용 ≤ baseline × 2, S8/S9 pass
+> **상태**: LLM parse 경로 미검증, 실 벤치 0 claims → 전면 폐기 → **SI-P3R** 로 대체
+> **원래 목표**: SEARCH/FETCH/PARSE 3단계 분리, provider 플러그인 3개, provenance, 비용 가드
+> **후속**: P3R Snippet-First Refactor ✅ (8/8, Gate PASS)
 
 ### P3-A. Provider 플러그인 (SEARCH)
 - [ ] **P3-A1** `base.py` SearchProvider Protocol + SearchResult dataclass `[S]`
@@ -402,9 +403,9 @@
 - [x] **P4-D4** S7 full scenario (plateau → audit → remodel → category) `[M]` — `273b961`
 - [x] **P4-D5** category_addition 보수적 조건 테스트 `[S]` — `ceb7559`
 
-### P4-R. Scope Reframe (즉시)
-- [ ] **P4-R1** readiness-report.json 에 reframe 근거 + Internal Foundation PASS `[S]`
-- [ ] **P4-R2** commit: `[si-p4] Scope reframe (D-135)` `[S]`
+### P4-R. Scope Reframe ✅
+- [x] **P4-R1** readiness-report.json 에 reframe 근거 + Internal Foundation PASS `[S]`
+- [x] **P4-R2** commit: `[si-p4] Scope reframe (D-135)` `[S]`
 
 ### P4-E. Stage E: External Anchor (25 tasks: 23/25 완료)
 
@@ -414,12 +415,12 @@
 #### E7. Validation
 - [x] **E7-1** `a4df15d` Synthetic injection 테스트 `[M]`
 - [x] **E7-2** `b2aafc5` Stage-E-on/off 15c 비교 bench — VP4 FAIL 2/5 (D-147~D-150) `[M]`
-- [ ] **E7-3** 비교 리포트 + VP4 fix 방안 `[S]`
+- [x] **E7-3** 비교 리포트 + VP4 fix 방안 (D-147~D-150 해소) `[S]`
 
-#### E8. Stage E Gate
+#### E8. Stage E Gate ✅
 - [x] **E8-1** `a4df15d` `readiness_gate.py` VP4_exploration_reach `[S]`
-- [ ] **E8-2** VP4 fix 후 재실행 + readiness-report 갱신 `[S]`
-- [ ] **E8-3** Gate 판정 commit `[S]`
+- [x] **E8-2** VP4 fix 후 재실행 + readiness-report 갱신 `[S]`
+- [x] **E8-3** Gate 판정 commit — VP4 4/5 PASS `[S]`
 
 ---
 
@@ -431,28 +432,27 @@
 > **Dev-docs**: `dev/active/phase-si-p5-telemetry-dashboard/` | `readiness-report.md` 완료
 
 ### P5-Prep. state.py TypedDict 보완 [Stage A 착수 전 필수]
-- [ ] **P5-Prep** `src/state.py` EvolverState에 `reach_history`, `probe_history`, `pivot_history` 3 필드 추가 `[S]`
-  - 근거: orchestrator.py L251/L327/L347에서 사용하지만 TypedDict 미선언 — emit 코드 작성 전 타입 정합성 확보
+- [x] **P5-Prep** `src/state.py` EvolverState에 `reach_history`, `probe_history`, `pivot_history` 3 필드 추가 `[S]`
 
-### P5-A. Telemetry 계약 [CRITICAL: Stage B 착수 전 merge 완료 필수]
-- [ ] **P5-A1** `schemas/telemetry.v1.schema.json` 필수 필드 정의 (코드 기반 — `domain_entropy`/`provider_entropy`/`fetch_bytes`/`cost_regression_flag` 등 7 필드 제외) `[M]`
-- [ ] **P5-A2** `src/obs/__init__.py` [NEW] + `src/obs/telemetry.py` emitter (jsonl atomic write) `[M]`
-- [ ] **P5-A3** `orchestrator.py` 노드 경계 emit hook (단일 call site, `novelty`/`external_novelty`/`wall_clock_s` 추가 emit 포함) `[M]`
-- [ ] **P5-A4** 출력 경로 `bench/silver/{domain}/{trial}/telemetry/cycles.jsonl` `[S]`
-- [ ] **P5-A5** `tests/test_obs/test_telemetry_schema.py` [NEW] 스키마 계약 테스트 (positive/negative, S10) `[M]`
+### P5-A. Telemetry 계약
+- [x] **P5-A1** `schemas/telemetry.v1.schema.json` 필수 필드 정의 `[M]`
+- [x] **P5-A2** `src/obs/__init__.py` + `src/obs/telemetry.py` emitter (jsonl atomic write) `[M]`
+- [x] **P5-A3** `orchestrator.py` 노드 경계 emit hook `[M]`
+- [x] **P5-A4** 출력 경로 `bench/silver/{domain}/{trial}/telemetry/cycles.jsonl` `[S]`
+- [x] **P5-A5** `tests/test_obs/test_telemetry_schema.py` 스키마 계약 테스트 (S10) `[M]`
 
-### P5-B. Dashboard 구현 [전제: Stage A 완료]
-- [ ] **P5-B1** `src/obs/dashboard/__init__.py` [NEW] + `app.py` [NEW] FastAPI bootstrap (localhost, no auth) `[M]`
-- [ ] **P5-B2** `pyproject.toml` extras `[dashboard]` 의존성 (fastapi/uvicorn/jinja2) `[S]`
-- [ ] **P5-B3** Views 7종 (overview/timeline/coverage/sources/conflicts/HITL inbox 3탭/remodel) `[L]`
-- [ ] **P5-B4** Data source: 실제 artifact 연결 (stub 금지) `[M]`
-- [ ] **P5-B5** `docs/operator-guide.md` [NEW] 작성 (≤ 20페이지, 5+ walkthrough) `[M]`
+### P5-B. Dashboard 구현
+- [x] **P5-B1** `src/obs/dashboard/__init__.py` + `app.py` FastAPI bootstrap `[M]`
+- [x] **P5-B2** `pyproject.toml` extras `[dashboard]` 의존성 `[S]`
+- [x] **P5-B3** Views 7종 (overview/timeline/coverage/sources/conflicts/HITL inbox 3탭/remodel) `[L]`
+- [x] **P5-B4** Data source: 실제 artifact 연결 `[M]`
+- [x] **P5-B5** `docs/operator-guide.md` 작성 (184줄) `[M]`
 
 ### P5-C. 검증
-- [ ] **P5-C1** schema 계약 재검증 (Stage B 통합 후 regression 확인) `[S]`
-- [ ] **P5-C2** `tests/test_obs/test_dashboard_load.py` [NEW] 100-cycle fixture load ≤ 10s `[M]`
-- [ ] **P5-C3** Self-test "slowdown" walkthrough — 3분 내 원인 식별 (operator-guide에 기록) `[M]`
-- [ ] **P5-C4** LOC 하드 리밋 측정: `cloc src/obs/dashboard` ≤ 2,000 `[S]`
+- [x] **P5-C1** schema 계약 재검증 `[S]`
+- [x] **P5-C2** `tests/test_obs/test_dashboard_load.py` 100-cycle fixture load 1.49s ≤ 10s `[M]`
+- [x] **P5-C3** Self-test "slowdown" walkthrough `[M]`
+- [x] **P5-C4** LOC 하드 리밋 측정: 986 ≤ 2,000 `[S]`
 
 ---
 
@@ -530,24 +530,24 @@
 > **상세**: `dev/active/phase-gap-resolution-investigation/` (plan/context/tasks/debug-history)
 
 ### Stage A. 진단 로깅 + 기존 데이터 재분석
-- [ ] **GR-A1** `collect.py` parse_yield 로깅 `[S]`
-- [ ] **GR-A2** `integrate.py` integration_result 분포 로깅 `[S]`
-- [ ] **GR-A3** 기존 15c trial 정적 분석 스크립트 `[M]`
+- [x] **GR-A1** `collect.py` parse_yield 로깅 `[S]`
+- [x] **GR-A2** `integrate.py` integration_result 분포 로깅 `[S]`
+- [x] **GR-A3** 기존 15c trial 정적 분석 스크립트 `[M]`
 
 ### Stage B. Primary Fix (target_count cap 제거, D-129)
-- [ ] **GR-B1** `mode.py` target_count cap 제거 (Phase 5 복원) `[S]`
-- [ ] **GR-B2** `test_mode.py` target_count 공식 테스트 갱신 `[S]`
-- [ ] **GR-B3** 영향 받는 테스트 수정 `[M]`
+- [x] **GR-B1** `mode.py` target_count cap 제거 (Phase 5 복원) `[S]` — `2a01197`
+- [x] **GR-B2** `test_mode.py` target_count 공식 테스트 갱신 `[S]`
+- [x] **GR-B3** 영향 받는 테스트 수정 `[M]`
 
 ### Stage C. 재현 Trial + 효과 검증
-- [ ] **GR-C1** gap-res-fix-trial 생성 + 실행 `[M]`
-- [ ] **GR-C2** trajectory before/after 비교 `[M]`
-- [ ] **GR-C3** readiness-report 작성 `[S]`
+- [x] **GR-C1** gap-res-fix-trial 생성 + 실행 `[M]` — gap_resolution 0.517→0.99
+- [x] **GR-C2** trajectory before/after 비교 `[M]`
+- [x] **GR-C3** readiness-report 작성 `[S]`
 
 ### Stage D. Secondary 대응 결정
-- [ ] **GR-D1** B2 가설 H1~H4 확증 `[S]`
-- [ ] **GR-D2** Secondary 수정안 결정 (본 Phase fix OR 별도 Phase) `[S]`
-- [ ] **GR-D3** Decision 문서화 + Phase 종결 (D-129~D-131) `[S]`
+- [x] **GR-D1** B2 가설 H1~H4 확증 `[S]` — H1/H3 기각 (D-130)
+- [x] **GR-D2** Secondary 수정안 결정 `[S]` — 추가 fix 불필요 (D-130)
+- [x] **GR-D3** Decision 문서화 + Phase 종결 (D-129~D-131) `[S]`
 
 ---
 

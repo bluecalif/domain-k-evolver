@@ -49,14 +49,14 @@
 |-------|----------|-----------|
 | Silver P0 | `dev/active/phase-si-p0-foundation/` | ✅ **완료** (32/32, Gate PASS, 510 tests) |
 | Silver P1 | `dev/active/phase-si-p1-entity-resolution/` | ✅ **완료** (12/12, 544 tests, S4/S5/S6 pass) |
-| Silver P2 | `dev/active/phase-si-p2-remodel/` | **REVOKED** → remodel on/off 비교 실험으로 재설계 (D-127) |
+| Silver P2 | `dev/active/phase-si-p2-remodel/` | ✅ **완료** (14/14, Gate PASS, D-132/133, 613 tests) |
 | Silver P3 | `dev/active/phase-si-p3-acquisition/` | **REVOKED** (D-120, 2026-04-13) |
 | Silver P3R | `dev/active/phase-si-p3r-snippet-refactor/` | ✅ **완료** (8/8, Gate PASS, D-125, 608 tests) |
 | **Gap-Res Investigation** | `dev/active/phase-gap-resolution-investigation/` | ✅ **완료** (12/12, D-129~D-131) |
 | Silver P4 | `dev/active/phase-si-p4-coverage/` | ✅ **완료** (42/42, 797 tests, VP4 PASS 4/5, D-147~D-150 해소) |
 | Silver P5 | `dev/active/phase-si-p5-telemetry-dashboard/` | ✅ **완료** (15/15, Gate PASS, 821 tests) |
 | Silver P6 | `dev/active/phase-si-p6-consolidation/` | **Planning** (0/16) — P5 ✅ |
-| SI-P7 Structural Redesign | `dev/active/phase-si-p7-structural-redesign/` | **Attempt 1 archived** (tag `si-p7-attempt-1` + `archive/si-p7-attempt-1` branch) → **Attempt 2 CLOSED (2026-04-27)**: KU 79→120 (+52%), S1/S2/S3/S4 gate PASS, Trial 1/2/3 완료 (934 tests). merge 대기 중 (`feature/si-p7-rebuild`) |
+| SI-P7 Structural Redesign | `dev/active/phase-si-p7-structural-redesign/` | **Attempt 1 archived** (tag `si-p7-attempt-1` + `archive/si-p7-attempt-1`) → **Attempt 2 MERGED ✅ (2026-04-27, main `0d7ebb3`)**: KU 79→120 (+52%), S1/S2/S3/S4 gate PASS, 934 tests |
 | M1 Multi-Domain | `dev/active/phase-m1-multidomain/` (예정) | suspended — P6 완료 후 활성화 |
 
 ### Bronze 구현 파일 (현행)
@@ -78,21 +78,21 @@
 | `src/utils/readiness_gate.py` | 3-Viewpoint Readiness Gate |
 | `src/utils/llm_parse.py` | LLM 응답 JSON 추출 |
 | `src/tools/search.py` | WebSearch/WebFetch 도구 래퍼 |
-| `scripts/run_one_cycle.py` | 1사이클 Real API 실행 |
-| `scripts/run_bench.py` | N사이클 CLI 벤치 실행 |
-| `scripts/run_readiness.py` | Readiness 벤치마크 + Gate 판정 |
+| `scripts/run_one_cycle.py` | **deprecated** — `run_readiness.py --cycles 1` 로 대체 |
+| `scripts/run_bench.py` | **deprecated** — `run_readiness.py` 로 대체 |
+| `scripts/run_readiness.py` | **단일 실행 진입점** — Readiness 벤치마크 + Gate 판정 |
 
-### Silver 신규 구현 파일 (예정)
-| 파일 | Phase |
-|------|-------|
-| `src/utils/entity_resolver.py` | P1 |
-| `src/nodes/remodel.py` | P2 |
-| `src/adapters/providers/{base,tavily,ddg,curated}_provider.py` | P3 |
-| `src/adapters/fetch_pipeline.py` | P3 |
-| `src/utils/novelty.py`, `src/utils/coverage_map.py` | P4 Stage A (✅ 완료) |
-| `src/utils/external_novelty.py`, `src/utils/reach_ledger.py`, `src/utils/cost_guard.py` | P4 Stage E (신규) |
-| `src/nodes/universe_probe.py`, `src/nodes/exploration_pivot.py` | P4 Stage E (신규) |
-| `src/obs/__init__.py`, `src/obs/telemetry.py`, `src/obs/dashboard/app.py`, `src/obs/dashboard/views/*.py` | P5 ← 현재 |
+### Silver 신규 구현 파일
+| 파일 | Phase | 상태 |
+|------|-------|------|
+| `src/utils/entity_resolver.py` | P1 | ✅ 완료 |
+| `src/nodes/remodel.py` | P2 | ✅ 완료 |
+| `src/adapters/providers/*_provider.py` | P3 | ❌ REVOKED (D-120) |
+| `src/adapters/fetch_pipeline.py` | P3 | ❌ REVOKED (D-120) |
+| `src/utils/novelty.py`, `src/utils/coverage_map.py` | P4 Stage A | ✅ 완료 |
+| `src/utils/external_novelty.py`, `src/utils/reach_ledger.py`, `src/utils/cost_guard.py` | P4 Stage E | ✅ 완료 |
+| `src/nodes/universe_probe.py`, `src/nodes/exploration_pivot.py` | P4 Stage E | ✅ 완료 |
+| `src/obs/__init__.py`, `src/obs/telemetry.py`, `src/obs/dashboard/app.py`, `src/obs/dashboard/views/*.py` | P5 | ✅ 완료 |
 
 ### 벤치 데이터
 | 경로 | 내용 |
@@ -143,11 +143,11 @@ class EvolverState(TypedDict):
     current_mode: dict | None       # {mode, cap, explore/exploit budget, trigger_set}
     axis_coverage: dict | None      # Axis Coverage Matrix
     jump_history: list[int]
-    # Silver 확장 예정:
-    # dispute_queue: list[dict]      # P0-C HITL-D batch
-    # conflict_ledger: list[dict]    # P1
-    # phase_state_version: int       # P2 remodel
-    # telemetry_snapshot: dict       # P5
+    # Silver 구현 완료 필드:
+    dispute_queue: list[dict]       # P0-C HITL-D batch ✅
+    conflict_ledger: list[dict]     # P1 append-only ✅
+    # phase_state_version: int      # P2 remodel (EvolverState 아닌 remodel_report 사용)
+    # telemetry → bench/.../telemetry/cycles.jsonl (P5 jsonl emit, state 내 미보관)
 ```
 
 ---
