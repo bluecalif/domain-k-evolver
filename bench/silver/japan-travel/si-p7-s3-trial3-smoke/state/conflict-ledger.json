@@ -1,0 +1,1516 @@
+[
+  {
+    "ledger_id": "CL-0001",
+    "ku_id": "KU-0018",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-0001-01",
+      "EU-0001-02"
+    ],
+    "resolution": {
+      "method": "evidence majority (5 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0018"
+    }
+  },
+  {
+    "ledger_id": "CL-0002",
+    "ku_id": "KU-0027",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-0010-01",
+      "EU-0010-02"
+    ],
+    "resolution": {
+      "method": "evidence majority (2 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0027"
+    }
+  },
+  {
+    "ledger_id": "CL-0003",
+    "ku_id": "KU-0030",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-0012-01",
+      "EU-0012-02",
+      "EU-0012-03",
+      "EU-0012-04"
+    ],
+    "resolution": {
+      "method": "evidence majority (4 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0030"
+    }
+  },
+  {
+    "ledger_id": "CL-0004",
+    "ku_id": "KU-0032",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-0001-01",
+      "EU-0003-01"
+    ],
+    "resolution": {
+      "method": "evidence majority (2 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0032"
+    }
+  },
+  {
+    "ledger_id": "CL-0005",
+    "ku_id": "KU-0036",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-0018-01",
+      "EU-0018-02",
+      "EU-0018-03",
+      "EU-0018-04",
+      "EU-0018-05"
+    ],
+    "resolution": {
+      "method": "evidence majority (7 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0036"
+    }
+  },
+  {
+    "ledger_id": "CL-0006",
+    "ku_id": "KU-0038",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-0021-01",
+      "EU-0021-02",
+      "EU-0021-03",
+      "EU-0021-04",
+      "EU-0021-05",
+      "EU-0021-06"
+    ],
+    "resolution": {
+      "method": "evidence majority (6 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0038"
+    }
+  },
+  {
+    "ledger_id": "CL-0007",
+    "ku_id": "KU-0040",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-0022-01",
+      "EU-0022-02"
+    ],
+    "resolution": {
+      "method": "evidence majority (7 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0040"
+    }
+  },
+  {
+    "ledger_id": "CL-0008",
+    "ku_id": "KU-0040",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-0022-01",
+      "EU-0022-02",
+      "EU-0022-03"
+    ],
+    "resolution": {
+      "method": "evidence majority (7 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0040"
+    }
+  },
+  {
+    "ledger_id": "CL-0009",
+    "ku_id": "KU-0040",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-0022-01",
+      "EU-0022-02",
+      "EU-0022-03",
+      "EU-0022-04",
+      "EU-0022-05"
+    ],
+    "resolution": {
+      "method": "evidence majority (7 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0040"
+    }
+  },
+  {
+    "ledger_id": "CL-0010",
+    "ku_id": "KU-0040",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-0022-01",
+      "EU-0022-02",
+      "EU-0022-03",
+      "EU-0022-04",
+      "EU-0022-05",
+      "EU-0022-06"
+    ],
+    "resolution": {
+      "method": "evidence majority (7 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0040"
+    }
+  },
+  {
+    "ledger_id": "CL-0011",
+    "ku_id": "KU-0040",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-0022-01",
+      "EU-0022-02",
+      "EU-0022-03",
+      "EU-0022-04",
+      "EU-0022-05",
+      "EU-0022-06",
+      "EU-0022-07"
+    ],
+    "resolution": {
+      "method": "evidence majority (7 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0040"
+    }
+  },
+  {
+    "ledger_id": "CL-0012",
+    "ku_id": "KU-0041",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-2024-01",
+      "EU-2024-02"
+    ],
+    "resolution": {
+      "method": "evidence majority (13 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0041"
+    }
+  },
+  {
+    "ledger_id": "CL-0013",
+    "ku_id": "KU-0041",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-2024-01",
+      "EU-2024-02",
+      "EU-2024-03"
+    ],
+    "resolution": {
+      "method": "evidence majority (13 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0041"
+    }
+  },
+  {
+    "ledger_id": "CL-0014",
+    "ku_id": "KU-0041",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-2024-01",
+      "EU-2024-02",
+      "EU-2024-03",
+      "EU-2024-04"
+    ],
+    "resolution": {
+      "method": "evidence majority (13 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0041"
+    }
+  },
+  {
+    "ledger_id": "CL-0015",
+    "ku_id": "KU-0041",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-2024-01",
+      "EU-2024-02",
+      "EU-2024-03",
+      "EU-2024-04",
+      "EU-2024-05"
+    ],
+    "resolution": {
+      "method": "evidence majority (13 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0041"
+    }
+  },
+  {
+    "ledger_id": "CL-0016",
+    "ku_id": "KU-0041",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-2024-01",
+      "EU-2024-02",
+      "EU-2024-03",
+      "EU-2024-04",
+      "EU-2024-05",
+      "EU-2024-06"
+    ],
+    "resolution": {
+      "method": "evidence majority (13 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0041"
+    }
+  },
+  {
+    "ledger_id": "CL-0017",
+    "ku_id": "KU-0041",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-2024-01",
+      "EU-2024-02",
+      "EU-2024-03",
+      "EU-2024-04",
+      "EU-2024-05",
+      "EU-2024-06",
+      "EU-2024-07"
+    ],
+    "resolution": {
+      "method": "evidence majority (13 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0041"
+    }
+  },
+  {
+    "ledger_id": "CL-0018",
+    "ku_id": "KU-0041",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-2024-01",
+      "EU-2024-02",
+      "EU-2024-03",
+      "EU-2024-04",
+      "EU-2024-05",
+      "EU-2024-06",
+      "EU-2024-07",
+      "EU-2024-08"
+    ],
+    "resolution": {
+      "method": "evidence majority (13 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0041"
+    }
+  },
+  {
+    "ledger_id": "CL-0019",
+    "ku_id": "KU-0041",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-2024-01",
+      "EU-2024-02",
+      "EU-2024-03",
+      "EU-2024-04",
+      "EU-2024-05",
+      "EU-2024-06",
+      "EU-2024-07",
+      "EU-2024-08",
+      "EU-2024-09"
+    ],
+    "resolution": {
+      "method": "evidence majority (13 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0041"
+    }
+  },
+  {
+    "ledger_id": "CL-0020",
+    "ku_id": "KU-0041",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-2024-01",
+      "EU-2024-02",
+      "EU-2024-03",
+      "EU-2024-04",
+      "EU-2024-05",
+      "EU-2024-06",
+      "EU-2024-07",
+      "EU-2024-08",
+      "EU-2024-09",
+      "EU-2024-10"
+    ],
+    "resolution": {
+      "method": "evidence majority (13 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0041"
+    }
+  },
+  {
+    "ledger_id": "CL-0021",
+    "ku_id": "KU-0041",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-2024-01",
+      "EU-2024-02",
+      "EU-2024-03",
+      "EU-2024-04",
+      "EU-2024-05",
+      "EU-2024-06",
+      "EU-2024-07",
+      "EU-2024-08",
+      "EU-2024-09",
+      "EU-2024-10",
+      "EU-2024-11"
+    ],
+    "resolution": {
+      "method": "evidence majority (13 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0041"
+    }
+  },
+  {
+    "ledger_id": "CL-0022",
+    "ku_id": "KU-0041",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-2024-01",
+      "EU-2024-02",
+      "EU-2024-03",
+      "EU-2024-04",
+      "EU-2024-05",
+      "EU-2024-06",
+      "EU-2024-07",
+      "EU-2024-08",
+      "EU-2024-09",
+      "EU-2024-10",
+      "EU-2024-11",
+      "EU-2024-12",
+      "EU-2024-13"
+    ],
+    "resolution": {
+      "method": "evidence majority (13 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0041"
+    }
+  },
+  {
+    "ledger_id": "CL-0023",
+    "ku_id": "KU-0043",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-0031-01",
+      "EU-0031-02",
+      "EU-0031-03",
+      "EU-0031-04"
+    ],
+    "resolution": {
+      "method": "evidence majority (5 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0043"
+    }
+  },
+  {
+    "ledger_id": "CL-0024",
+    "ku_id": "KU-0046",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-0032-01",
+      "EU-0032-02"
+    ],
+    "resolution": {
+      "method": "evidence majority (12 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0046"
+    }
+  },
+  {
+    "ledger_id": "CL-0025",
+    "ku_id": "KU-0046",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-0032-01",
+      "EU-0032-02",
+      "EU-0032-03"
+    ],
+    "resolution": {
+      "method": "evidence majority (12 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0046"
+    }
+  },
+  {
+    "ledger_id": "CL-0026",
+    "ku_id": "KU-0046",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-0032-01",
+      "EU-0032-02",
+      "EU-0032-03",
+      "EU-0032-04"
+    ],
+    "resolution": {
+      "method": "evidence majority (12 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0046"
+    }
+  },
+  {
+    "ledger_id": "CL-0027",
+    "ku_id": "KU-0046",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-0032-01",
+      "EU-0032-02",
+      "EU-0032-03",
+      "EU-0032-04",
+      "EU-0032-05"
+    ],
+    "resolution": {
+      "method": "evidence majority (12 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0046"
+    }
+  },
+  {
+    "ledger_id": "CL-0028",
+    "ku_id": "KU-0046",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-0032-01",
+      "EU-0032-02",
+      "EU-0032-03",
+      "EU-0032-04",
+      "EU-0032-05",
+      "EU-0032-06"
+    ],
+    "resolution": {
+      "method": "evidence majority (12 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0046"
+    }
+  },
+  {
+    "ledger_id": "CL-0029",
+    "ku_id": "KU-0046",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-0032-01",
+      "EU-0032-02",
+      "EU-0032-03",
+      "EU-0032-04",
+      "EU-0032-05",
+      "EU-0032-06",
+      "EU-0032-07"
+    ],
+    "resolution": {
+      "method": "evidence majority (12 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0046"
+    }
+  },
+  {
+    "ledger_id": "CL-0030",
+    "ku_id": "KU-0046",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-0032-01",
+      "EU-0032-02",
+      "EU-0032-03",
+      "EU-0032-04",
+      "EU-0032-05",
+      "EU-0032-06",
+      "EU-0032-07",
+      "EU-0032-08"
+    ],
+    "resolution": {
+      "method": "evidence majority (12 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0046"
+    }
+  },
+  {
+    "ledger_id": "CL-0031",
+    "ku_id": "KU-0046",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-0032-01",
+      "EU-0032-02",
+      "EU-0032-03",
+      "EU-0032-04",
+      "EU-0032-05",
+      "EU-0032-06",
+      "EU-0032-07",
+      "EU-0032-08",
+      "EU-0032-09"
+    ],
+    "resolution": {
+      "method": "evidence majority (12 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0046"
+    }
+  },
+  {
+    "ledger_id": "CL-0032",
+    "ku_id": "KU-0046",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-0032-01",
+      "EU-0032-02",
+      "EU-0032-03",
+      "EU-0032-04",
+      "EU-0032-05",
+      "EU-0032-06",
+      "EU-0032-07",
+      "EU-0032-08",
+      "EU-0032-09",
+      "EU-0032-10"
+    ],
+    "resolution": {
+      "method": "evidence majority (12 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0046"
+    }
+  },
+  {
+    "ledger_id": "CL-0033",
+    "ku_id": "KU-0046",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-0032-01",
+      "EU-0032-02",
+      "EU-0032-03",
+      "EU-0032-04",
+      "EU-0032-05",
+      "EU-0032-06",
+      "EU-0032-07",
+      "EU-0032-08",
+      "EU-0032-09",
+      "EU-0032-10",
+      "EU-0032-11"
+    ],
+    "resolution": {
+      "method": "evidence majority (12 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0046"
+    }
+  },
+  {
+    "ledger_id": "CL-0034",
+    "ku_id": "KU-0046",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-0032-01",
+      "EU-0032-02",
+      "EU-0032-03",
+      "EU-0032-04",
+      "EU-0032-05",
+      "EU-0032-06",
+      "EU-0032-07",
+      "EU-0032-08",
+      "EU-0032-09",
+      "EU-0032-10",
+      "EU-0032-11",
+      "EU-0032-12"
+    ],
+    "resolution": {
+      "method": "evidence majority (12 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0046"
+    }
+  },
+  {
+    "ledger_id": "CL-0035",
+    "ku_id": "KU-0047",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-0033-01",
+      "EU-0033-02",
+      "EU-0033-03",
+      "EU-0033-04",
+      "EU-0033-05"
+    ],
+    "resolution": {
+      "method": "evidence majority (6 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0047"
+    }
+  },
+  {
+    "ledger_id": "CL-0036",
+    "ku_id": "KU-0052",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-0042-01",
+      "EU-0042-02",
+      "EU-0042-03",
+      "EU-0042-04",
+      "EU-0042-05"
+    ],
+    "resolution": {
+      "method": "evidence majority (10 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0052"
+    }
+  },
+  {
+    "ledger_id": "CL-0037",
+    "ku_id": "KU-0052",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-0042-01",
+      "EU-0042-02",
+      "EU-0042-03",
+      "EU-0042-04",
+      "EU-0042-05",
+      "EU-0042-06"
+    ],
+    "resolution": {
+      "method": "evidence majority (10 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0052"
+    }
+  },
+  {
+    "ledger_id": "CL-0038",
+    "ku_id": "KU-0052",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-0042-01",
+      "EU-0042-02",
+      "EU-0042-03",
+      "EU-0042-04",
+      "EU-0042-05",
+      "EU-0042-06",
+      "EU-0042-07",
+      "EU-0042-08"
+    ],
+    "resolution": {
+      "method": "evidence majority (10 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0052"
+    }
+  },
+  {
+    "ledger_id": "CL-0039",
+    "ku_id": "KU-0053",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-0043-01",
+      "EU-0043-02"
+    ],
+    "resolution": {
+      "method": "evidence majority (5 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0053"
+    }
+  },
+  {
+    "ledger_id": "CL-0040",
+    "ku_id": "KU-0053",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-0043-01",
+      "EU-0043-02",
+      "EU-0043-03"
+    ],
+    "resolution": {
+      "method": "evidence majority (5 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0053"
+    }
+  },
+  {
+    "ledger_id": "CL-0041",
+    "ku_id": "KU-0053",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-0043-01",
+      "EU-0043-02",
+      "EU-0043-03",
+      "EU-0043-04"
+    ],
+    "resolution": {
+      "method": "evidence majority (5 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0053"
+    }
+  },
+  {
+    "ledger_id": "CL-0042",
+    "ku_id": "KU-0055",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-0045-01",
+      "EU-0045-02"
+    ],
+    "resolution": {
+      "method": "evidence majority (7 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0055"
+    }
+  },
+  {
+    "ledger_id": "CL-0043",
+    "ku_id": "KU-0055",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-0045-01",
+      "EU-0045-02",
+      "EU-0045-03",
+      "EU-0045-04"
+    ],
+    "resolution": {
+      "method": "evidence majority (7 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0055"
+    }
+  },
+  {
+    "ledger_id": "CL-0044",
+    "ku_id": "KU-0055",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-0045-01",
+      "EU-0045-02",
+      "EU-0045-03",
+      "EU-0045-04",
+      "EU-0045-05"
+    ],
+    "resolution": {
+      "method": "evidence majority (7 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0055"
+    }
+  },
+  {
+    "ledger_id": "CL-0045",
+    "ku_id": "KU-0055",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-0045-01",
+      "EU-0045-02",
+      "EU-0045-03",
+      "EU-0045-04",
+      "EU-0045-05",
+      "EU-0045-06"
+    ],
+    "resolution": {
+      "method": "evidence majority (7 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0055"
+    }
+  },
+  {
+    "ledger_id": "CL-0046",
+    "ku_id": "KU-0055",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-0045-01",
+      "EU-0045-02",
+      "EU-0045-03",
+      "EU-0045-04",
+      "EU-0045-05",
+      "EU-0045-06",
+      "EU-0045-07"
+    ],
+    "resolution": {
+      "method": "evidence majority (7 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0055"
+    }
+  },
+  {
+    "ledger_id": "CL-0047",
+    "ku_id": "KU-0057",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-0071-01",
+      "EU-0071-02"
+    ],
+    "resolution": {
+      "method": "evidence majority (6 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0057"
+    }
+  },
+  {
+    "ledger_id": "CL-0048",
+    "ku_id": "KU-0057",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-0071-01",
+      "EU-0071-02",
+      "EU-0071-03"
+    ],
+    "resolution": {
+      "method": "evidence majority (6 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0057"
+    }
+  },
+  {
+    "ledger_id": "CL-0049",
+    "ku_id": "KU-0061",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-GU0038-01",
+      "EU-GU0038-02",
+      "EU-GU0038-03",
+      "EU-GU0038-04",
+      "EU-GU0038-05"
+    ],
+    "resolution": {
+      "method": "evidence majority (7 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0061"
+    }
+  },
+  {
+    "ledger_id": "CL-0050",
+    "ku_id": "KU-0061",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-GU0038-01",
+      "EU-GU0038-02",
+      "EU-GU0038-03",
+      "EU-GU0038-04",
+      "EU-GU0038-05",
+      "EU-GU0038-06"
+    ],
+    "resolution": {
+      "method": "evidence majority (7 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0061"
+    }
+  },
+  {
+    "ledger_id": "CL-0051",
+    "ku_id": "KU-0062",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-0072-01",
+      "EU-0072-02",
+      "EU-0072-03",
+      "EU-0072-04"
+    ],
+    "resolution": {
+      "method": "evidence majority (9 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0062"
+    }
+  },
+  {
+    "ledger_id": "CL-0052",
+    "ku_id": "KU-0062",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-0072-01",
+      "EU-0072-02",
+      "EU-0072-03",
+      "EU-0072-04",
+      "EU-0072-05",
+      "EU-0072-06",
+      "EU-0072-07",
+      "EU-0072-08"
+    ],
+    "resolution": {
+      "method": "evidence majority (9 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0062"
+    }
+  },
+  {
+    "ledger_id": "CL-0053",
+    "ku_id": "KU-0063",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-0076-01",
+      "EU-0076-02",
+      "EU-0076-03"
+    ],
+    "resolution": {
+      "method": "evidence majority (3 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0063"
+    }
+  },
+  {
+    "ledger_id": "CL-0054",
+    "ku_id": "KU-0068",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-0046-01",
+      "EU-0046-02",
+      "EU-0046-03"
+    ],
+    "resolution": {
+      "method": "evidence majority (5 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0068"
+    }
+  },
+  {
+    "ledger_id": "CL-0055",
+    "ku_id": "KU-0068",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-0046-01",
+      "EU-0046-02",
+      "EU-0046-03",
+      "EU-0046-04",
+      "EU-0046-05"
+    ],
+    "resolution": {
+      "method": "evidence majority (5 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0068"
+    }
+  },
+  {
+    "ledger_id": "CL-0056",
+    "ku_id": "KU-0069",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-0023-01",
+      "EU-0023-02"
+    ],
+    "resolution": {
+      "method": "evidence majority (2 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0069"
+    }
+  },
+  {
+    "ledger_id": "CL-0057",
+    "ku_id": "KU-0090",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-0048-01",
+      "EU-0048-02",
+      "EU-0048-03",
+      "EU-0048-04",
+      "EU-0048-05",
+      "EU-0048-06"
+    ],
+    "resolution": {
+      "method": "evidence majority (8 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0090"
+    }
+  },
+  {
+    "ledger_id": "CL-0058",
+    "ku_id": "KU-0092",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-0050-01",
+      "EU-0050-02",
+      "EU-0050-03",
+      "EU-0050-04"
+    ],
+    "resolution": {
+      "method": "evidence majority (9 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0092"
+    }
+  },
+  {
+    "ledger_id": "CL-0059",
+    "ku_id": "KU-0092",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-0050-01",
+      "EU-0050-02",
+      "EU-0050-03",
+      "EU-0050-04",
+      "EU-0050-05",
+      "EU-0050-06",
+      "EU-0050-07"
+    ],
+    "resolution": {
+      "method": "evidence majority (9 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0092"
+    }
+  },
+  {
+    "ledger_id": "CL-0060",
+    "ku_id": "KU-0092",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-0050-01",
+      "EU-0050-02",
+      "EU-0050-03",
+      "EU-0050-04",
+      "EU-0050-05",
+      "EU-0050-06",
+      "EU-0050-07",
+      "EU-0050-08",
+      "EU-0050-09"
+    ],
+    "resolution": {
+      "method": "evidence majority (9 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0092"
+    }
+  },
+  {
+    "ledger_id": "CL-0061",
+    "ku_id": "KU-0096",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-0054-01",
+      "EU-0054-02",
+      "EU-0054-03"
+    ],
+    "resolution": {
+      "method": "evidence majority (3 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0096"
+    }
+  },
+  {
+    "ledger_id": "CL-0062",
+    "ku_id": "KU-0101",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-GU0058-01",
+      "EU-GU0058-02",
+      "EU-GU0058-03"
+    ],
+    "resolution": {
+      "method": "evidence majority (3 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0101"
+    }
+  },
+  {
+    "ledger_id": "CL-0063",
+    "ku_id": "KU-0108",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-0067-01",
+      "EU-0067-02"
+    ],
+    "resolution": {
+      "method": "evidence majority (2 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0108"
+    }
+  },
+  {
+    "ledger_id": "CL-0064",
+    "ku_id": "KU-0109",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-0066-01",
+      "EU-0066-02",
+      "EU-0066-03",
+      "EU-0066-04",
+      "EU-0066-05",
+      "EU-0066-06",
+      "EU-0066-07"
+    ],
+    "resolution": {
+      "method": "evidence majority (9 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0109"
+    }
+  },
+  {
+    "ledger_id": "CL-0065",
+    "ku_id": "KU-0109",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-0066-01",
+      "EU-0066-02",
+      "EU-0066-03",
+      "EU-0066-04",
+      "EU-0066-05",
+      "EU-0066-06",
+      "EU-0066-07",
+      "EU-0066-08"
+    ],
+    "resolution": {
+      "method": "evidence majority (9 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0109"
+    }
+  },
+  {
+    "ledger_id": "CL-0066",
+    "ku_id": "KU-0110",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-0068-01",
+      "EU-0068-02"
+    ],
+    "resolution": {
+      "method": "evidence majority (4 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0110"
+    }
+  },
+  {
+    "ledger_id": "CL-0067",
+    "ku_id": "KU-0110",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-0068-01",
+      "EU-0068-02",
+      "EU-0068-03"
+    ],
+    "resolution": {
+      "method": "evidence majority (4 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0110"
+    }
+  },
+  {
+    "ledger_id": "CL-0068",
+    "ku_id": "KU-0110",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-0068-01",
+      "EU-0068-02",
+      "EU-0068-03",
+      "EU-0068-04"
+    ],
+    "resolution": {
+      "method": "evidence majority (4 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0110"
+    }
+  },
+  {
+    "ledger_id": "CL-0069",
+    "ku_id": "KU-0111",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-0069-01",
+      "EU-0069-02"
+    ],
+    "resolution": {
+      "method": "evidence majority (6 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0111"
+    }
+  },
+  {
+    "ledger_id": "CL-0070",
+    "ku_id": "KU-0111",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-0069-01",
+      "EU-0069-02",
+      "EU-0069-03"
+    ],
+    "resolution": {
+      "method": "evidence majority (6 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0111"
+    }
+  },
+  {
+    "ledger_id": "CL-0071",
+    "ku_id": "KU-0111",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-0069-01",
+      "EU-0069-02",
+      "EU-0069-03",
+      "EU-0069-04"
+    ],
+    "resolution": {
+      "method": "evidence majority (6 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0111"
+    }
+  },
+  {
+    "ledger_id": "CL-0072",
+    "ku_id": "KU-0111",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-0069-01",
+      "EU-0069-02",
+      "EU-0069-03",
+      "EU-0069-04",
+      "EU-0069-05",
+      "EU-0069-06"
+    ],
+    "resolution": {
+      "method": "evidence majority (6 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0111"
+    }
+  },
+  {
+    "ledger_id": "CL-0073",
+    "ku_id": "KU-0112",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-0074-01",
+      "EU-0074-02"
+    ],
+    "resolution": {
+      "method": "evidence majority (4 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0112"
+    }
+  },
+  {
+    "ledger_id": "CL-0074",
+    "ku_id": "KU-0112",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-0074-01",
+      "EU-0074-02",
+      "EU-0074-03",
+      "EU-0074-04"
+    ],
+    "resolution": {
+      "method": "evidence majority (4 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0112"
+    }
+  },
+  {
+    "ledger_id": "CL-0075",
+    "ku_id": "KU-0113",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-0079-01",
+      "EU-0079-02",
+      "EU-0079-03",
+      "EU-0079-04"
+    ],
+    "resolution": {
+      "method": "evidence majority (5 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0113"
+    }
+  },
+  {
+    "ledger_id": "CL-0076",
+    "ku_id": "KU-0114",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-0081-01",
+      "EU-0081-02",
+      "EU-0081-03",
+      "EU-0081-04",
+      "EU-0081-05"
+    ],
+    "resolution": {
+      "method": "evidence majority (5 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0114"
+    }
+  },
+  {
+    "ledger_id": "CL-0077",
+    "ku_id": "KU-0116",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-0082-01",
+      "EU-0082-02"
+    ],
+    "resolution": {
+      "method": "evidence majority (6 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0116"
+    }
+  },
+  {
+    "ledger_id": "CL-0078",
+    "ku_id": "KU-0116",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-0082-01",
+      "EU-0082-02",
+      "EU-0082-03",
+      "EU-0082-04"
+    ],
+    "resolution": {
+      "method": "evidence majority (6 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0116"
+    }
+  },
+  {
+    "ledger_id": "CL-0079",
+    "ku_id": "KU-0116",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-0082-01",
+      "EU-0082-02",
+      "EU-0082-03",
+      "EU-0082-04",
+      "EU-0082-05"
+    ],
+    "resolution": {
+      "method": "evidence majority (6 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0116"
+    }
+  },
+  {
+    "ledger_id": "CL-0080",
+    "ku_id": "KU-0116",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-0082-01",
+      "EU-0082-02",
+      "EU-0082-03",
+      "EU-0082-04",
+      "EU-0082-05",
+      "EU-0082-06"
+    ],
+    "resolution": {
+      "method": "evidence majority (6 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0116"
+    }
+  },
+  {
+    "ledger_id": "CL-0081",
+    "ku_id": "KU-0119",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-0083-01",
+      "EU-0083-02"
+    ],
+    "resolution": {
+      "method": "evidence majority (9 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0119"
+    }
+  },
+  {
+    "ledger_id": "CL-0082",
+    "ku_id": "KU-0119",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-0083-01",
+      "EU-0083-02",
+      "EU-0083-03"
+    ],
+    "resolution": {
+      "method": "evidence majority (9 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0119"
+    }
+  },
+  {
+    "ledger_id": "CL-0083",
+    "ku_id": "KU-0119",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-0083-01",
+      "EU-0083-02",
+      "EU-0083-03",
+      "EU-0083-04"
+    ],
+    "resolution": {
+      "method": "evidence majority (9 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0119"
+    }
+  },
+  {
+    "ledger_id": "CL-0084",
+    "ku_id": "KU-0119",
+    "created_at": "2026-04-27",
+    "status": "resolved",
+    "conflicting_evidence": [
+      "EU-0083-01",
+      "EU-0083-02",
+      "EU-0083-03",
+      "EU-0083-04",
+      "EU-0083-05",
+      "EU-0083-06",
+      "EU-0083-07"
+    ],
+    "resolution": {
+      "method": "evidence majority (9 evidence vs 1 disputes)",
+      "resolved_at": "2026-04-27",
+      "chosen_ku": "KU-0119"
+    }
+  }
+]

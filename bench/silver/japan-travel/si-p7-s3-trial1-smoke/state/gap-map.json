@@ -1,0 +1,1987 @@
+[
+  {
+    "gu_id": "GU-0001",
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:regulation:tourist-visa",
+      "field": "eligibility"
+    },
+    "expected_utility": "critical",
+    "risk_level": "safety",
+    "resolution_criteria": "tourist-visa eligibility 정보 수집/검증",
+    "status": "resolved",
+    "created_at": "2026-04-26",
+    "origin": "seed_bootstrap",
+    "created_cycle": 1,
+    "resolved_by": "CL-0001-01"
+  },
+  {
+    "gu_id": "GU-0002",
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:regulation:customs-allowance",
+      "field": "eligibility"
+    },
+    "expected_utility": "critical",
+    "risk_level": "safety",
+    "resolution_criteria": "customs-allowance eligibility 정보 수집/검증",
+    "status": "resolved",
+    "created_at": "2026-04-26",
+    "origin": "seed_bootstrap",
+    "created_cycle": 1,
+    "resolved_by": "CL-0002-01"
+  },
+  {
+    "gu_id": "GU-0003",
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:regulation:emergency",
+      "field": "eligibility"
+    },
+    "expected_utility": "critical",
+    "risk_level": "safety",
+    "resolution_criteria": "emergency eligibility 정보 수집/검증",
+    "status": "resolved",
+    "created_at": "2026-04-26",
+    "origin": "seed_bootstrap",
+    "created_cycle": 1,
+    "resolved_by": "CL-0003-01"
+  },
+  {
+    "gu_id": "GU-0004",
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:regulation:visit-japan-web",
+      "field": "eligibility"
+    },
+    "expected_utility": "critical",
+    "risk_level": "safety",
+    "resolution_criteria": "visit-japan-web eligibility 정보 수집/검증",
+    "status": "resolved",
+    "created_at": "2026-04-26",
+    "origin": "seed_bootstrap",
+    "created_cycle": 1,
+    "resolved_by": "CL-0004-01"
+  },
+  {
+    "gu_id": "GU-0005",
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:regulation:tax-free",
+      "field": "eligibility"
+    },
+    "expected_utility": "critical",
+    "risk_level": "safety",
+    "resolution_criteria": "tax-free eligibility 정보 수집/검증",
+    "status": "resolved",
+    "created_at": "2026-04-26",
+    "origin": "seed_bootstrap",
+    "created_cycle": 1,
+    "resolved_by": "CL-0005-01"
+  },
+  {
+    "gu_id": "GU-0006",
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:accommodation:*",
+      "field": "price"
+    },
+    "expected_utility": "high",
+    "risk_level": "financial",
+    "resolution_criteria": "accommodation price 정보 수집",
+    "status": "resolved",
+    "created_at": "2026-04-26",
+    "origin": "seed_bootstrap",
+    "created_cycle": 1,
+    "resolved_by": "CL-0006-01"
+  },
+  {
+    "gu_id": "GU-0007",
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:attraction:*",
+      "field": "price"
+    },
+    "expected_utility": "high",
+    "risk_level": "financial",
+    "resolution_criteria": "attraction price 정보 수집",
+    "status": "resolved",
+    "created_at": "2026-04-26",
+    "origin": "seed_bootstrap",
+    "created_cycle": 1,
+    "resolved_by": "CL-0007-01"
+  },
+  {
+    "gu_id": "GU-0008",
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:dining:*",
+      "field": "price"
+    },
+    "expected_utility": "high",
+    "risk_level": "financial",
+    "resolution_criteria": "dining price 정보 수집",
+    "status": "resolved",
+    "created_at": "2026-04-26",
+    "origin": "seed_bootstrap",
+    "created_cycle": 1,
+    "resolved_by": "CL-0008-01"
+  },
+  {
+    "gu_id": "GU-0009",
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:payment:ic-card",
+      "field": "price"
+    },
+    "expected_utility": "high",
+    "risk_level": "financial",
+    "resolution_criteria": "ic-card price 정보 수집/검증",
+    "status": "resolved",
+    "created_at": "2026-04-26",
+    "origin": "seed_bootstrap",
+    "created_cycle": 1,
+    "resolved_by": "CL-0009-01"
+  },
+  {
+    "gu_id": "GU-0010",
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:payment:*",
+      "field": "price"
+    },
+    "expected_utility": "high",
+    "risk_level": "financial",
+    "resolution_criteria": "payment price 정보 수집",
+    "status": "resolved",
+    "created_at": "2026-04-26",
+    "origin": "seed_bootstrap",
+    "created_cycle": 1,
+    "resolved_by": "CL-0010-01"
+  },
+  {
+    "gu_id": "GU-0011",
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:regulation:tourist-visa",
+      "field": "price"
+    },
+    "expected_utility": "high",
+    "risk_level": "financial",
+    "resolution_criteria": "tourist-visa price 정보 수집/검증",
+    "status": "resolved",
+    "created_at": "2026-04-26",
+    "origin": "seed_bootstrap",
+    "created_cycle": 1,
+    "resolved_by": "CL-0011-01"
+  },
+  {
+    "gu_id": "GU-0012",
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:regulation:customs-allowance",
+      "field": "price"
+    },
+    "expected_utility": "high",
+    "risk_level": "financial",
+    "resolution_criteria": "customs-allowance price 정보 수집/검증",
+    "status": "resolved",
+    "created_at": "2026-04-26",
+    "origin": "seed_bootstrap",
+    "created_cycle": 1,
+    "resolved_by": "CL-0012-01"
+  },
+  {
+    "gu_id": "GU-0013",
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:regulation:emergency",
+      "field": "price"
+    },
+    "expected_utility": "high",
+    "risk_level": "financial",
+    "resolution_criteria": "emergency price 정보 수집/검증",
+    "status": "resolved",
+    "created_at": "2026-04-26",
+    "origin": "seed_bootstrap",
+    "created_cycle": 1,
+    "resolved_by": "CL-0001-01"
+  },
+  {
+    "gu_id": "GU-0014",
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:regulation:visit-japan-web",
+      "field": "price"
+    },
+    "expected_utility": "high",
+    "risk_level": "financial",
+    "resolution_criteria": "visit-japan-web price 정보 수집/검증",
+    "status": "resolved",
+    "created_at": "2026-04-26",
+    "origin": "seed_bootstrap",
+    "created_cycle": 1,
+    "resolved_by": "CL-0014-01"
+  },
+  {
+    "gu_id": "GU-0015",
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:regulation:tax-free",
+      "field": "price"
+    },
+    "expected_utility": "high",
+    "risk_level": "financial",
+    "resolution_criteria": "tax-free price 정보 수집/검증",
+    "status": "resolved",
+    "created_at": "2026-04-26",
+    "origin": "seed_bootstrap",
+    "created_cycle": 1,
+    "resolved_by": "CL-0015-01"
+  },
+  {
+    "gu_id": "GU-0016",
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:regulation:*",
+      "field": "price"
+    },
+    "expected_utility": "high",
+    "risk_level": "financial",
+    "resolution_criteria": "regulation price 정보 수집",
+    "status": "resolved",
+    "created_at": "2026-04-26",
+    "origin": "seed_bootstrap",
+    "created_cycle": 1,
+    "resolved_by": "CL-0016-01"
+  },
+  {
+    "gu_id": "GU-0017",
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:pass-ticket:jr-pass",
+      "field": "policy"
+    },
+    "expected_utility": "high",
+    "risk_level": "policy",
+    "resolution_criteria": "jr-pass policy 정보 수집/검증",
+    "status": "resolved",
+    "created_at": "2026-04-26",
+    "origin": "seed_bootstrap",
+    "created_cycle": 1,
+    "resolved_by": "CL-0017-01"
+  },
+  {
+    "gu_id": "GU-0018",
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:pass-ticket:suica",
+      "field": "policy"
+    },
+    "expected_utility": "high",
+    "risk_level": "policy",
+    "resolution_criteria": "suica policy 정보 수집/검증",
+    "status": "resolved",
+    "created_at": "2026-04-26",
+    "origin": "seed_bootstrap",
+    "created_cycle": 1,
+    "resolved_by": "CL-0018-01"
+  },
+  {
+    "gu_id": "GU-0019",
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:regulation:*",
+      "field": "tips"
+    },
+    "expected_utility": "high",
+    "risk_level": "policy",
+    "resolution_criteria": "regulation tips 정보 수집",
+    "status": "resolved",
+    "created_at": "2026-04-26",
+    "origin": "seed_bootstrap",
+    "created_cycle": 1,
+    "resolved_by": "CL-0019-01"
+  },
+  {
+    "gu_id": "GU-0020",
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:accommodation:*",
+      "field": "location"
+    },
+    "expected_utility": "medium",
+    "risk_level": "convenience",
+    "resolution_criteria": "accommodation location 정보 수집",
+    "status": "resolved",
+    "created_at": "2026-04-26",
+    "origin": "seed_bootstrap",
+    "created_cycle": 1,
+    "resolved_by": "CL-0020-01"
+  },
+  {
+    "gu_id": "GU-0021",
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:accommodation:*",
+      "field": "etiquette"
+    },
+    "expected_utility": "medium",
+    "risk_level": "convenience",
+    "resolution_criteria": "accommodation etiquette 정보 수집",
+    "status": "resolved",
+    "created_at": "2026-04-26",
+    "origin": "seed_bootstrap",
+    "created_cycle": 1,
+    "resolved_by": "CL-0021-01"
+  },
+  {
+    "gu_id": "GU-0022",
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:accommodation:*",
+      "field": "tips"
+    },
+    "expected_utility": "medium",
+    "risk_level": "convenience",
+    "resolution_criteria": "accommodation tips 정보 수집",
+    "status": "resolved",
+    "created_at": "2026-04-26",
+    "origin": "seed_bootstrap",
+    "created_cycle": 1,
+    "resolved_by": "CL-0022-01"
+  },
+  {
+    "gu_id": "GU-0023",
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:attraction:*",
+      "field": "hours"
+    },
+    "expected_utility": "medium",
+    "risk_level": "convenience",
+    "resolution_criteria": "attraction hours 정보 수집",
+    "status": "resolved",
+    "created_at": "2026-04-26",
+    "origin": "seed_bootstrap",
+    "created_cycle": 1,
+    "resolved_by": "CL-GU0023-01"
+  },
+  {
+    "gu_id": "GU-0024",
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:attraction:*",
+      "field": "location"
+    },
+    "expected_utility": "medium",
+    "risk_level": "convenience",
+    "resolution_criteria": "attraction location 정보 수집",
+    "status": "resolved",
+    "created_at": "2026-04-26",
+    "origin": "seed_bootstrap",
+    "created_cycle": 1,
+    "resolved_by": "CL-0024-01"
+  },
+  {
+    "gu_id": "GU-0025",
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:attraction:*",
+      "field": "tips"
+    },
+    "expected_utility": "medium",
+    "risk_level": "convenience",
+    "resolution_criteria": "attraction tips 정보 수집",
+    "status": "resolved",
+    "created_at": "2026-04-26",
+    "origin": "seed_bootstrap",
+    "created_cycle": 1,
+    "resolved_by": "CL-GU-0025-01"
+  },
+  {
+    "gu_id": "GU-0026",
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:connectivity:sim-card",
+      "field": "how_to_use"
+    },
+    "expected_utility": "medium",
+    "risk_level": "convenience",
+    "resolution_criteria": "sim-card how_to_use 정보 수집/검증",
+    "status": "resolved",
+    "created_at": "2026-04-26",
+    "origin": "seed_bootstrap",
+    "created_cycle": 1,
+    "resolved_by": "CL-0026-01"
+  },
+  {
+    "gu_id": "GU-0027",
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:connectivity:*",
+      "field": "how_to_use"
+    },
+    "expected_utility": "medium",
+    "risk_level": "convenience",
+    "resolution_criteria": "connectivity how_to_use 정보 수집",
+    "status": "resolved",
+    "created_at": "2026-04-26",
+    "origin": "seed_bootstrap",
+    "created_cycle": 1,
+    "resolved_by": "CL-0027-01"
+  },
+  {
+    "gu_id": "GU-0028",
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:connectivity:*",
+      "field": "tips"
+    },
+    "expected_utility": "medium",
+    "risk_level": "convenience",
+    "resolution_criteria": "connectivity tips 정보 수집",
+    "status": "resolved",
+    "created_at": "2026-04-26",
+    "origin": "seed_bootstrap",
+    "created_cycle": 1,
+    "resolved_by": "CL-0028-01"
+  },
+  {
+    "gu_id": "GU-0029",
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:connectivity:sim-card",
+      "field": "where_to_buy"
+    },
+    "expected_utility": "medium",
+    "risk_level": "convenience",
+    "resolution_criteria": "sim-card where_to_buy 정보 수집/검증",
+    "status": "resolved",
+    "created_at": "2026-04-26",
+    "origin": "seed_bootstrap",
+    "created_cycle": 1,
+    "resolved_by": "CL-0029-01"
+  },
+  {
+    "gu_id": "GU-0030",
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:connectivity:*",
+      "field": "where_to_buy"
+    },
+    "expected_utility": "medium",
+    "risk_level": "convenience",
+    "resolution_criteria": "connectivity where_to_buy 정보 수집",
+    "status": "resolved",
+    "created_at": "2026-04-26",
+    "origin": "seed_bootstrap",
+    "created_cycle": 1,
+    "resolved_by": "CL-0030-01"
+  },
+  {
+    "gu_id": "GU-0031",
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:dining:*",
+      "field": "hours"
+    },
+    "expected_utility": "medium",
+    "risk_level": "convenience",
+    "resolution_criteria": "dining hours 정보 수집",
+    "status": "resolved",
+    "created_at": "2026-04-26",
+    "origin": "seed_bootstrap",
+    "created_cycle": 1,
+    "resolved_by": "CL-0031-01"
+  },
+  {
+    "gu_id": "GU-0032",
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:dining:*",
+      "field": "location"
+    },
+    "expected_utility": "medium",
+    "risk_level": "convenience",
+    "resolution_criteria": "dining location 정보 수집",
+    "status": "resolved",
+    "created_at": "2026-04-26",
+    "origin": "seed_bootstrap",
+    "created_cycle": 1,
+    "resolved_by": "CL-0032-01"
+  },
+  {
+    "gu_id": "GU-0033",
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:dining:*",
+      "field": "etiquette"
+    },
+    "expected_utility": "medium",
+    "risk_level": "convenience",
+    "resolution_criteria": "dining etiquette 정보 수집",
+    "status": "resolved",
+    "created_at": "2026-04-26",
+    "origin": "seed_bootstrap",
+    "created_cycle": 1,
+    "resolved_by": "CL-0033-01"
+  },
+  {
+    "gu_id": "GU-0034",
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:dining:*",
+      "field": "tips"
+    },
+    "expected_utility": "medium",
+    "risk_level": "convenience",
+    "resolution_criteria": "dining tips 정보 수집",
+    "status": "resolved",
+    "created_at": "2026-04-26",
+    "origin": "seed_bootstrap",
+    "created_cycle": 1,
+    "resolved_by": "CL-0034-01"
+  },
+  {
+    "gu_id": "GU-0035",
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:pass-ticket:jr-pass",
+      "field": "duration"
+    },
+    "expected_utility": "medium",
+    "risk_level": "convenience",
+    "resolution_criteria": "jr-pass duration 정보 수집/검증",
+    "status": "resolved",
+    "created_at": "2026-04-26",
+    "origin": "seed_bootstrap",
+    "created_cycle": 1,
+    "resolved_by": "CL-GU-0035-01"
+  },
+  {
+    "gu_id": "GU-0036",
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:pass-ticket:suica",
+      "field": "duration"
+    },
+    "expected_utility": "medium",
+    "risk_level": "convenience",
+    "resolution_criteria": "suica duration 정보 수집/검증",
+    "status": "resolved",
+    "created_at": "2026-04-26",
+    "origin": "seed_bootstrap",
+    "created_cycle": 1,
+    "resolved_by": "CL-0036-01"
+  },
+  {
+    "gu_id": "GU-0037",
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:pass-ticket:*",
+      "field": "duration"
+    },
+    "expected_utility": "medium",
+    "risk_level": "convenience",
+    "resolution_criteria": "pass-ticket duration 정보 수집",
+    "status": "resolved",
+    "created_at": "2026-04-26",
+    "origin": "seed_bootstrap",
+    "created_cycle": 1,
+    "resolved_by": "CL-0037-01"
+  },
+  {
+    "gu_id": "GU-0038",
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:pass-ticket:*",
+      "field": "tips"
+    },
+    "expected_utility": "medium",
+    "risk_level": "convenience",
+    "resolution_criteria": "pass-ticket tips 정보 수집",
+    "status": "resolved",
+    "created_at": "2026-04-26",
+    "origin": "seed_bootstrap",
+    "created_cycle": 1,
+    "resolved_by": "CL-0038-01"
+  },
+  {
+    "gu_id": "GU-0039",
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:payment:*",
+      "field": "tips"
+    },
+    "expected_utility": "medium",
+    "risk_level": "convenience",
+    "resolution_criteria": "payment tips 정보 수집",
+    "status": "resolved",
+    "created_at": "2026-04-26",
+    "origin": "seed_bootstrap",
+    "created_cycle": 1,
+    "resolved_by": "CL-0039-01"
+  },
+  {
+    "gu_id": "GU-0040",
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:payment:ic-card",
+      "field": "acceptance"
+    },
+    "expected_utility": "medium",
+    "risk_level": "convenience",
+    "resolution_criteria": "ic-card acceptance 정보 수집/검증",
+    "status": "resolved",
+    "created_at": "2026-04-26",
+    "origin": "seed_bootstrap",
+    "created_cycle": 1,
+    "resolved_by": "CL-0040-01"
+  },
+  {
+    "gu_id": "GU-0041",
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:payment:*",
+      "field": "acceptance"
+    },
+    "expected_utility": "medium",
+    "risk_level": "convenience",
+    "resolution_criteria": "payment acceptance 정보 수집",
+    "status": "resolved",
+    "created_at": "2026-04-26",
+    "origin": "seed_bootstrap",
+    "created_cycle": 1,
+    "resolved_by": "CL-0041-01"
+  },
+  {
+    "gu_id": "GU-0042",
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:transport:shinkansen",
+      "field": "duration"
+    },
+    "expected_utility": "medium",
+    "risk_level": "convenience",
+    "resolution_criteria": "shinkansen duration 정보 수집/검증",
+    "status": "resolved",
+    "created_at": "2026-04-26",
+    "origin": "seed_bootstrap",
+    "created_cycle": 1,
+    "resolved_by": "CL-0042-01"
+  },
+  {
+    "gu_id": "GU-0043",
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:transport:airport-transfer",
+      "field": "duration"
+    },
+    "expected_utility": "medium",
+    "risk_level": "convenience",
+    "resolution_criteria": "airport-transfer duration 정보 수집/검증",
+    "status": "resolved",
+    "created_at": "2026-04-26",
+    "origin": "seed_bootstrap",
+    "created_cycle": 1,
+    "resolved_by": "CL-0043-01"
+  },
+  {
+    "gu_id": "GU-0044",
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:transport:*",
+      "field": "duration"
+    },
+    "expected_utility": "medium",
+    "risk_level": "convenience",
+    "resolution_criteria": "transport duration 정보 수집",
+    "status": "resolved",
+    "created_at": "2026-04-26",
+    "origin": "seed_bootstrap",
+    "created_cycle": 1,
+    "resolved_by": "CL-0044-01"
+  },
+  {
+    "gu_id": "GU-0045",
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:transport:*",
+      "field": "tips"
+    },
+    "expected_utility": "medium",
+    "risk_level": "convenience",
+    "resolution_criteria": "transport tips 정보 수집",
+    "status": "resolved",
+    "created_at": "2026-04-26",
+    "origin": "seed_bootstrap",
+    "created_cycle": 1,
+    "resolved_by": "CL-0045-01"
+  },
+  {
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:regulation:tourist-visa",
+      "field": "tips"
+    },
+    "expected_utility": "medium",
+    "risk_level": "informational",
+    "resolution_criteria": "tourist-visa tips 정보 수집",
+    "status": "resolved",
+    "trigger": "A:adjacent_gap",
+    "trigger_source": "CL-0001-01",
+    "created_at": "2026-04-26",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "gu_id": "GU-0046",
+    "origin": "claim_loop",
+    "created_cycle": 1,
+    "resolved_by": "CL-0046-01"
+  },
+  {
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:regulation:customs-allowance",
+      "field": "tips"
+    },
+    "expected_utility": "medium",
+    "risk_level": "informational",
+    "resolution_criteria": "customs-allowance tips 정보 수집",
+    "status": "resolved",
+    "trigger": "A:adjacent_gap",
+    "trigger_source": "CL-0002-01",
+    "created_at": "2026-04-26",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "gu_id": "GU-0047",
+    "origin": "claim_loop",
+    "created_cycle": 1,
+    "resolved_by": "CL-0047-01"
+  },
+  {
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:regulation:tax-free",
+      "field": "tips"
+    },
+    "expected_utility": "medium",
+    "risk_level": "informational",
+    "resolution_criteria": "tax-free tips 정보 수집",
+    "status": "resolved",
+    "trigger": "A:adjacent_gap",
+    "trigger_source": "CL-0005-01",
+    "created_at": "2026-04-26",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "gu_id": "GU-0048",
+    "origin": "claim_loop",
+    "created_cycle": 1,
+    "resolved_by": "CL-0048-01"
+  },
+  {
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:regulation:visit-japan-web",
+      "field": "policy"
+    },
+    "expected_utility": "high",
+    "risk_level": "policy",
+    "resolution_criteria": "visit-japan-web policy 정보 수집",
+    "status": "resolved",
+    "trigger": "A:adjacent_gap",
+    "trigger_source": "CL-0004-01",
+    "created_at": "2026-04-26",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "gu_id": "GU-0049",
+    "origin": "claim_loop",
+    "created_cycle": 1,
+    "resolved_by": "CL-0049-01"
+  },
+  {
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:regulation:visit-japan-web",
+      "field": "tips"
+    },
+    "expected_utility": "medium",
+    "risk_level": "informational",
+    "resolution_criteria": "visit-japan-web tips 정보 수집",
+    "status": "resolved",
+    "trigger": "A:adjacent_gap",
+    "trigger_source": "CL-0004-01",
+    "created_at": "2026-04-26",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "gu_id": "GU-0050",
+    "origin": "claim_loop",
+    "created_cycle": 1,
+    "resolved_by": "CL-0050-01"
+  },
+  {
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:regulation:emergency",
+      "field": "tips"
+    },
+    "expected_utility": "medium",
+    "risk_level": "informational",
+    "resolution_criteria": "emergency tips 정보 수집",
+    "status": "resolved",
+    "trigger": "A:adjacent_gap",
+    "trigger_source": "CL-0003-01",
+    "created_at": "2026-04-26",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "gu_id": "GU-0051",
+    "origin": "claim_loop",
+    "created_cycle": 1,
+    "resolved_by": "CL-0051-01"
+  },
+  {
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:attraction:himeji-castle",
+      "field": "hours"
+    },
+    "expected_utility": "medium",
+    "risk_level": "convenience",
+    "resolution_criteria": "himeji-castle hours 정보 수집",
+    "status": "resolved",
+    "trigger": "A:adjacent_gap",
+    "trigger_source": "CL-0007-01",
+    "created_at": "2026-04-26",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "gu_id": "GU-0052",
+    "origin": "claim_loop",
+    "created_cycle": 1,
+    "resolved_by": "CL-GU-0052-01"
+  },
+  {
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:attraction:himeji-castle",
+      "field": "location"
+    },
+    "expected_utility": "medium",
+    "risk_level": "convenience",
+    "resolution_criteria": "himeji-castle location 정보 수집",
+    "status": "resolved",
+    "trigger": "A:adjacent_gap",
+    "trigger_source": "CL-0007-01",
+    "created_at": "2026-04-26",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "gu_id": "GU-0053",
+    "origin": "claim_loop",
+    "created_cycle": 1,
+    "resolved_by": "CL-0053-01"
+  },
+  {
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:attraction:himeji-castle",
+      "field": "tips"
+    },
+    "expected_utility": "medium",
+    "risk_level": "informational",
+    "resolution_criteria": "himeji-castle tips 정보 수집",
+    "status": "resolved",
+    "trigger": "A:adjacent_gap",
+    "trigger_source": "KU-0020",
+    "created_at": "2026-04-26",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "gu_id": "GU-0054",
+    "origin": "post_cycle_sweep",
+    "created_cycle": 1,
+    "resolved_by": "CL-0054-01"
+  },
+  {
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:attraction:mount-kurama",
+      "field": "hours"
+    },
+    "expected_utility": "medium",
+    "risk_level": "convenience",
+    "resolution_criteria": "mount-kurama hours 정보 수집",
+    "status": "resolved",
+    "trigger": "A:adjacent_gap",
+    "trigger_source": "KU-0021",
+    "created_at": "2026-04-26",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "gu_id": "GU-0055",
+    "origin": "post_cycle_sweep",
+    "created_cycle": 1,
+    "resolved_by": "CL-GU-0055-01"
+  },
+  {
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:attraction:mount-kurama",
+      "field": "location"
+    },
+    "expected_utility": "medium",
+    "risk_level": "convenience",
+    "resolution_criteria": "mount-kurama location 정보 수집",
+    "status": "resolved",
+    "trigger": "A:adjacent_gap",
+    "trigger_source": "KU-0021",
+    "created_at": "2026-04-26",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "gu_id": "GU-0056",
+    "origin": "post_cycle_sweep",
+    "created_cycle": 1,
+    "resolved_by": "CL-0056-01"
+  },
+  {
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:attraction:mount-kurama",
+      "field": "tips"
+    },
+    "expected_utility": "medium",
+    "risk_level": "informational",
+    "resolution_criteria": "mount-kurama tips 정보 수집",
+    "status": "resolved",
+    "trigger": "A:adjacent_gap",
+    "trigger_source": "KU-0021",
+    "created_at": "2026-04-26",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "gu_id": "GU-0057",
+    "origin": "post_cycle_sweep",
+    "created_cycle": 1,
+    "resolved_by": "CL-0057-01"
+  },
+  {
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:attraction:national-museum-of-tokyo",
+      "field": "hours"
+    },
+    "expected_utility": "medium",
+    "risk_level": "convenience",
+    "resolution_criteria": "national-museum-of-tokyo hours 정보 수집",
+    "status": "resolved",
+    "trigger": "A:adjacent_gap",
+    "trigger_source": "KU-0022",
+    "created_at": "2026-04-26",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "gu_id": "GU-0058",
+    "origin": "post_cycle_sweep",
+    "created_cycle": 1,
+    "resolved_by": "CL-0058-01"
+  },
+  {
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:attraction:national-museum-of-tokyo",
+      "field": "location"
+    },
+    "expected_utility": "medium",
+    "risk_level": "convenience",
+    "resolution_criteria": "national-museum-of-tokyo location 정보 수집",
+    "status": "resolved",
+    "trigger": "A:adjacent_gap",
+    "trigger_source": "KU-0022",
+    "created_at": "2026-04-26",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "gu_id": "GU-0059",
+    "origin": "post_cycle_sweep",
+    "created_cycle": 1,
+    "resolved_by": "CL-0059-01"
+  },
+  {
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:attraction:national-museum-of-tokyo",
+      "field": "tips"
+    },
+    "expected_utility": "medium",
+    "risk_level": "informational",
+    "resolution_criteria": "national-museum-of-tokyo tips 정보 수집",
+    "status": "resolved",
+    "trigger": "A:adjacent_gap",
+    "trigger_source": "KU-0022",
+    "created_at": "2026-04-26",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "gu_id": "GU-0060",
+    "origin": "post_cycle_sweep",
+    "created_cycle": 1,
+    "resolved_by": "CL-0060-01"
+  },
+  {
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:attraction:tokyo-shibuya-sky",
+      "field": "hours"
+    },
+    "expected_utility": "medium",
+    "risk_level": "convenience",
+    "resolution_criteria": "tokyo-shibuya-sky hours 정보 수집",
+    "status": "resolved",
+    "trigger": "A:adjacent_gap",
+    "trigger_source": "KU-0023",
+    "created_at": "2026-04-26",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "gu_id": "GU-0061",
+    "origin": "post_cycle_sweep",
+    "created_cycle": 1,
+    "resolved_by": "CL-0061-01"
+  },
+  {
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:connectivity:sim-card",
+      "field": "tips"
+    },
+    "expected_utility": "medium",
+    "risk_level": "informational",
+    "resolution_criteria": "sim-card tips 정보 수집",
+    "status": "resolved",
+    "trigger": "A:adjacent_gap",
+    "trigger_source": "CL-0026-01",
+    "created_at": "2026-04-26",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "gu_id": "GU-0062",
+    "expansion_mode": "jump",
+    "origin": "claim_loop",
+    "created_cycle": 2,
+    "resolved_by": "CL-0062-01"
+  },
+  {
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:payment:ic-card",
+      "field": "tips"
+    },
+    "expected_utility": "medium",
+    "risk_level": "informational",
+    "resolution_criteria": "ic-card tips 정보 수집",
+    "status": "resolved",
+    "trigger": "A:adjacent_gap",
+    "trigger_source": "CL-0040-01",
+    "created_at": "2026-04-26",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "gu_id": "GU-0063",
+    "expansion_mode": "jump",
+    "origin": "claim_loop",
+    "created_cycle": 2,
+    "resolved_by": "CL-0063-01"
+  },
+  {
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:payment:*",
+      "field": "how_to_use"
+    },
+    "expected_utility": "high",
+    "risk_level": "convenience",
+    "resolution_criteria": "* how_to_use 정보 수집",
+    "status": "resolved",
+    "trigger": "A:adjacent_gap",
+    "trigger_source": "CL-0039-01",
+    "created_at": "2026-04-26",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "gu_id": "GU-0064",
+    "expansion_mode": "jump",
+    "origin": "claim_loop",
+    "created_cycle": 2,
+    "resolved_by": "CL-0064-01"
+  },
+  {
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:payment:acceptance",
+      "field": "how_to_use"
+    },
+    "expected_utility": "high",
+    "risk_level": "convenience",
+    "resolution_criteria": "acceptance how_to_use 정보 수집",
+    "status": "resolved",
+    "trigger": "A:adjacent_gap",
+    "trigger_source": "CL-0041-01",
+    "created_at": "2026-04-26",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "gu_id": "GU-0065",
+    "expansion_mode": "jump",
+    "origin": "claim_loop",
+    "created_cycle": 2,
+    "resolved_by": "CL-0065-01"
+  },
+  {
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:payment:acceptance",
+      "field": "tips"
+    },
+    "expected_utility": "medium",
+    "risk_level": "informational",
+    "resolution_criteria": "acceptance tips 정보 수집",
+    "status": "resolved",
+    "trigger": "A:adjacent_gap",
+    "trigger_source": "CL-0041-01",
+    "created_at": "2026-04-26",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "gu_id": "GU-0066",
+    "expansion_mode": "jump",
+    "origin": "claim_loop",
+    "created_cycle": 2,
+    "resolved_by": "CL-0066-01"
+  },
+  {
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:transport:shinkansen",
+      "field": "tips"
+    },
+    "expected_utility": "medium",
+    "risk_level": "informational",
+    "resolution_criteria": "shinkansen tips 정보 수집",
+    "status": "resolved",
+    "trigger": "A:adjacent_gap",
+    "trigger_source": "CL-0042-01",
+    "created_at": "2026-04-26",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "gu_id": "GU-0067",
+    "expansion_mode": "jump",
+    "origin": "claim_loop",
+    "created_cycle": 2,
+    "resolved_by": "CL-0067-01"
+  },
+  {
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:transport:airport-transfer",
+      "field": "tips"
+    },
+    "expected_utility": "medium",
+    "risk_level": "informational",
+    "resolution_criteria": "airport-transfer tips 정보 수집",
+    "status": "resolved",
+    "trigger": "A:adjacent_gap",
+    "trigger_source": "CL-0043-01",
+    "created_at": "2026-04-26",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "gu_id": "GU-0068",
+    "expansion_mode": "jump",
+    "origin": "claim_loop",
+    "created_cycle": 2,
+    "resolved_by": "CL-0068-01"
+  },
+  {
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:transport:*",
+      "field": "how_to_use"
+    },
+    "expected_utility": "high",
+    "risk_level": "convenience",
+    "resolution_criteria": "* how_to_use 정보 수집",
+    "status": "resolved",
+    "trigger": "A:adjacent_gap",
+    "trigger_source": "CL-0045-01",
+    "created_at": "2026-04-26",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "gu_id": "GU-0069",
+    "expansion_mode": "jump",
+    "origin": "claim_loop",
+    "created_cycle": 2,
+    "resolved_by": "CL-0069-01"
+  },
+  {
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:attraction:kitakami-tenshochi-park",
+      "field": "hours"
+    },
+    "expected_utility": "medium",
+    "risk_level": "convenience",
+    "resolution_criteria": "kitakami-tenshochi-park hours 정보 수집",
+    "status": "open",
+    "trigger": "A:adjacent_gap",
+    "trigger_source": "CL-0024-01",
+    "created_at": "2026-04-26",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "gu_id": "GU-0070",
+    "expansion_mode": "jump",
+    "origin": "claim_loop",
+    "created_cycle": 2
+  },
+  {
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:attraction:kitakami-tenshochi-park",
+      "field": "tips"
+    },
+    "expected_utility": "medium",
+    "risk_level": "informational",
+    "resolution_criteria": "kitakami-tenshochi-park tips 정보 수집",
+    "status": "resolved",
+    "trigger": "A:adjacent_gap",
+    "trigger_source": "CL-0024-01",
+    "created_at": "2026-04-26",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "gu_id": "GU-0071",
+    "expansion_mode": "jump",
+    "origin": "claim_loop",
+    "created_cycle": 2,
+    "resolved_by": "CL-0071-01"
+  },
+  {
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:attraction:shirakawa",
+      "field": "hours"
+    },
+    "expected_utility": "medium",
+    "risk_level": "convenience",
+    "resolution_criteria": "shirakawa hours 정보 수집",
+    "status": "resolved",
+    "trigger": "A:adjacent_gap",
+    "trigger_source": "CL-0024-02",
+    "created_at": "2026-04-26",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "gu_id": "GU-0072",
+    "expansion_mode": "jump",
+    "origin": "claim_loop",
+    "created_cycle": 2,
+    "resolved_by": "CL-GU-0072-01"
+  },
+  {
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:attraction:shirakawa",
+      "field": "tips"
+    },
+    "expected_utility": "medium",
+    "risk_level": "informational",
+    "resolution_criteria": "shirakawa tips 정보 수집",
+    "status": "resolved",
+    "trigger": "A:adjacent_gap",
+    "trigger_source": "CL-0024-02",
+    "created_at": "2026-04-26",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "gu_id": "GU-0073",
+    "expansion_mode": "jump",
+    "origin": "claim_loop",
+    "created_cycle": 2,
+    "resolved_by": "CL-0073-01"
+  },
+  {
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:attraction:nasu",
+      "field": "hours"
+    },
+    "expected_utility": "medium",
+    "risk_level": "convenience",
+    "resolution_criteria": "nasu hours 정보 수집",
+    "status": "open",
+    "trigger": "A:adjacent_gap",
+    "trigger_source": "CL-0024-03",
+    "created_at": "2026-04-26",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "gu_id": "GU-0074",
+    "expansion_mode": "jump",
+    "origin": "claim_loop",
+    "created_cycle": 2
+  },
+  {
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:attraction:nasu",
+      "field": "tips"
+    },
+    "expected_utility": "medium",
+    "risk_level": "informational",
+    "resolution_criteria": "nasu tips 정보 수집",
+    "status": "resolved",
+    "trigger": "A:adjacent_gap",
+    "trigger_source": "CL-0024-03",
+    "created_at": "2026-04-26",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "gu_id": "GU-0075",
+    "expansion_mode": "jump",
+    "origin": "claim_loop",
+    "created_cycle": 2,
+    "resolved_by": "CL-0075-01"
+  },
+  {
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:attraction:choshi-city",
+      "field": "hours"
+    },
+    "expected_utility": "medium",
+    "risk_level": "convenience",
+    "resolution_criteria": "choshi-city hours 정보 수집",
+    "status": "open",
+    "trigger": "A:adjacent_gap",
+    "trigger_source": "CL-0024-04",
+    "created_at": "2026-04-26",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "gu_id": "GU-0076",
+    "expansion_mode": "jump",
+    "origin": "claim_loop",
+    "created_cycle": 2
+  },
+  {
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:attraction:choshi-city",
+      "field": "tips"
+    },
+    "expected_utility": "medium",
+    "risk_level": "informational",
+    "resolution_criteria": "choshi-city tips 정보 수집",
+    "status": "resolved",
+    "trigger": "A:adjacent_gap",
+    "trigger_source": "CL-0024-04",
+    "created_at": "2026-04-26",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "gu_id": "GU-0077",
+    "expansion_mode": "jump",
+    "origin": "claim_loop",
+    "created_cycle": 2,
+    "resolved_by": "CL-0077-01"
+  },
+  {
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:attraction:miyazaki-city",
+      "field": "hours"
+    },
+    "expected_utility": "medium",
+    "risk_level": "convenience",
+    "resolution_criteria": "miyazaki-city hours 정보 수집",
+    "status": "open",
+    "trigger": "A:adjacent_gap",
+    "trigger_source": "CL-0024-05",
+    "created_at": "2026-04-26",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "gu_id": "GU-0078",
+    "expansion_mode": "jump",
+    "origin": "claim_loop",
+    "created_cycle": 2
+  },
+  {
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:attraction:miyazaki-city",
+      "field": "tips"
+    },
+    "expected_utility": "medium",
+    "risk_level": "informational",
+    "resolution_criteria": "miyazaki-city tips 정보 수집",
+    "status": "resolved",
+    "trigger": "A:adjacent_gap",
+    "trigger_source": "CL-0024-05",
+    "created_at": "2026-04-26",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "gu_id": "GU-0079",
+    "expansion_mode": "jump",
+    "origin": "claim_loop",
+    "created_cycle": 2,
+    "resolved_by": "CL-0079-01"
+  },
+  {
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:attraction:sapporo",
+      "field": "hours"
+    },
+    "expected_utility": "medium",
+    "risk_level": "convenience",
+    "resolution_criteria": "sapporo hours 정보 수집",
+    "status": "resolved",
+    "trigger": "A:adjacent_gap",
+    "trigger_source": "CL-0024-06",
+    "created_at": "2026-04-26",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "gu_id": "GU-0080",
+    "expansion_mode": "jump",
+    "origin": "claim_loop",
+    "created_cycle": 2,
+    "resolved_by": "CL-0080-01"
+  },
+  {
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:attraction:sapporo",
+      "field": "tips"
+    },
+    "expected_utility": "medium",
+    "risk_level": "informational",
+    "resolution_criteria": "sapporo tips 정보 수집",
+    "status": "resolved",
+    "trigger": "A:adjacent_gap",
+    "trigger_source": "CL-0024-06",
+    "created_at": "2026-04-26",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "gu_id": "GU-0081",
+    "expansion_mode": "jump",
+    "origin": "claim_loop",
+    "created_cycle": 2,
+    "resolved_by": "CL-GU0081-01"
+  },
+  {
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:attraction:noboribetsu",
+      "field": "hours"
+    },
+    "expected_utility": "medium",
+    "risk_level": "convenience",
+    "resolution_criteria": "noboribetsu hours 정보 수집",
+    "status": "resolved",
+    "trigger": "A:adjacent_gap",
+    "trigger_source": "KU-0062",
+    "created_at": "2026-04-26",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "gu_id": "GU-0082",
+    "expansion_mode": "jump",
+    "origin": "post_cycle_sweep",
+    "created_cycle": 2,
+    "resolved_by": "CL-0082-01"
+  },
+  {
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:attraction:noboribetsu",
+      "field": "tips"
+    },
+    "expected_utility": "medium",
+    "risk_level": "informational",
+    "resolution_criteria": "noboribetsu tips 정보 수집",
+    "status": "resolved",
+    "trigger": "A:adjacent_gap",
+    "trigger_source": "KU-0062",
+    "created_at": "2026-04-26",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "gu_id": "GU-0083",
+    "expansion_mode": "jump",
+    "origin": "post_cycle_sweep",
+    "created_cycle": 2,
+    "resolved_by": "CL-0083-01"
+  },
+  {
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:attraction:ginzan-onsen",
+      "field": "hours"
+    },
+    "expected_utility": "medium",
+    "risk_level": "convenience",
+    "resolution_criteria": "ginzan-onsen hours 정보 수집",
+    "status": "resolved",
+    "trigger": "A:adjacent_gap",
+    "trigger_source": "KU-0063",
+    "created_at": "2026-04-26",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "gu_id": "GU-0084",
+    "expansion_mode": "jump",
+    "origin": "post_cycle_sweep",
+    "created_cycle": 2,
+    "resolved_by": "CL-0084-01"
+  },
+  {
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:attraction:ginzan-onsen",
+      "field": "tips"
+    },
+    "expected_utility": "medium",
+    "risk_level": "informational",
+    "resolution_criteria": "ginzan-onsen tips 정보 수집",
+    "status": "resolved",
+    "trigger": "A:adjacent_gap",
+    "trigger_source": "KU-0063",
+    "created_at": "2026-04-26",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "gu_id": "GU-0085",
+    "expansion_mode": "jump",
+    "origin": "post_cycle_sweep",
+    "created_cycle": 2,
+    "resolved_by": "CL-0085-01"
+  },
+  {
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:attraction:aizu",
+      "field": "hours"
+    },
+    "expected_utility": "medium",
+    "risk_level": "convenience",
+    "resolution_criteria": "aizu hours 정보 수집",
+    "status": "resolved",
+    "trigger": "A:adjacent_gap",
+    "trigger_source": "KU-0064",
+    "created_at": "2026-04-26",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "gu_id": "GU-0086",
+    "expansion_mode": "jump",
+    "origin": "post_cycle_sweep",
+    "created_cycle": 2,
+    "resolved_by": "CL-0086-01"
+  },
+  {
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:attraction:aizu",
+      "field": "tips"
+    },
+    "expected_utility": "medium",
+    "risk_level": "informational",
+    "resolution_criteria": "aizu tips 정보 수집",
+    "status": "resolved",
+    "trigger": "A:adjacent_gap",
+    "trigger_source": "KU-0064",
+    "created_at": "2026-04-26",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "gu_id": "GU-0087",
+    "expansion_mode": "jump",
+    "origin": "post_cycle_sweep",
+    "created_cycle": 2,
+    "resolved_by": "CL-0087-01"
+  },
+  {
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:attraction:kusatsu-onsen",
+      "field": "hours"
+    },
+    "expected_utility": "medium",
+    "risk_level": "convenience",
+    "resolution_criteria": "kusatsu-onsen hours 정보 수집",
+    "status": "resolved",
+    "trigger": "A:adjacent_gap",
+    "trigger_source": "KU-0065",
+    "created_at": "2026-04-26",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "gu_id": "GU-0088",
+    "expansion_mode": "jump",
+    "origin": "post_cycle_sweep",
+    "created_cycle": 2,
+    "resolved_by": "CL-0088-01"
+  },
+  {
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:attraction:kusatsu-onsen",
+      "field": "tips"
+    },
+    "expected_utility": "medium",
+    "risk_level": "informational",
+    "resolution_criteria": "kusatsu-onsen tips 정보 수집",
+    "status": "resolved",
+    "trigger": "A:adjacent_gap",
+    "trigger_source": "KU-0065",
+    "created_at": "2026-04-26",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "gu_id": "GU-0089",
+    "expansion_mode": "jump",
+    "origin": "post_cycle_sweep",
+    "created_cycle": 2,
+    "resolved_by": "CL-0089-01"
+  },
+  {
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:attraction:yokohama",
+      "field": "hours"
+    },
+    "expected_utility": "medium",
+    "risk_level": "convenience",
+    "resolution_criteria": "yokohama hours 정보 수집",
+    "status": "resolved",
+    "trigger": "A:adjacent_gap",
+    "trigger_source": "KU-0066",
+    "created_at": "2026-04-26",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "gu_id": "GU-0090",
+    "expansion_mode": "jump",
+    "origin": "post_cycle_sweep",
+    "created_cycle": 2,
+    "resolved_by": "CL-GU-0090-01"
+  },
+  {
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:attraction:yokohama",
+      "field": "tips"
+    },
+    "expected_utility": "medium",
+    "risk_level": "informational",
+    "resolution_criteria": "yokohama tips 정보 수집",
+    "status": "resolved",
+    "trigger": "A:adjacent_gap",
+    "trigger_source": "KU-0066",
+    "created_at": "2026-04-26",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "gu_id": "GU-0091",
+    "expansion_mode": "jump",
+    "origin": "post_cycle_sweep",
+    "created_cycle": 2,
+    "resolved_by": "CL-0091-01"
+  },
+  {
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:attraction:manza-onsen",
+      "field": "hours"
+    },
+    "expected_utility": "medium",
+    "risk_level": "convenience",
+    "resolution_criteria": "manza-onsen hours 정보 수집",
+    "status": "open",
+    "trigger": "A:adjacent_gap",
+    "trigger_source": "KU-0067",
+    "created_at": "2026-04-26",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "gu_id": "GU-0092",
+    "expansion_mode": "jump",
+    "origin": "post_cycle_sweep",
+    "created_cycle": 2
+  },
+  {
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:attraction:manza-onsen",
+      "field": "tips"
+    },
+    "expected_utility": "medium",
+    "risk_level": "informational",
+    "resolution_criteria": "manza-onsen tips 정보 수집",
+    "status": "open",
+    "trigger": "A:adjacent_gap",
+    "trigger_source": "KU-0067",
+    "created_at": "2026-04-26",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "gu_id": "GU-0093",
+    "expansion_mode": "jump",
+    "origin": "post_cycle_sweep",
+    "created_cycle": 2
+  },
+  {
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:attraction:matsumoto",
+      "field": "hours"
+    },
+    "expected_utility": "medium",
+    "risk_level": "convenience",
+    "resolution_criteria": "matsumoto hours 정보 수집",
+    "status": "open",
+    "trigger": "A:adjacent_gap",
+    "trigger_source": "KU-0068",
+    "created_at": "2026-04-26",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "gu_id": "GU-0094",
+    "expansion_mode": "jump",
+    "origin": "post_cycle_sweep",
+    "created_cycle": 2
+  },
+  {
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:attraction:matsumoto",
+      "field": "tips"
+    },
+    "expected_utility": "medium",
+    "risk_level": "informational",
+    "resolution_criteria": "matsumoto tips 정보 수집",
+    "status": "open",
+    "trigger": "A:adjacent_gap",
+    "trigger_source": "KU-0068",
+    "created_at": "2026-04-26",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "gu_id": "GU-0095",
+    "expansion_mode": "jump",
+    "origin": "post_cycle_sweep",
+    "created_cycle": 2
+  },
+  {
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:attraction:gujo-hachiman",
+      "field": "hours"
+    },
+    "expected_utility": "medium",
+    "risk_level": "convenience",
+    "resolution_criteria": "gujo-hachiman hours 정보 수집",
+    "status": "open",
+    "trigger": "A:adjacent_gap",
+    "trigger_source": "KU-0069",
+    "created_at": "2026-04-26",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "gu_id": "GU-0096",
+    "expansion_mode": "jump",
+    "origin": "post_cycle_sweep",
+    "created_cycle": 2
+  },
+  {
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:attraction:gujo-hachiman",
+      "field": "tips"
+    },
+    "expected_utility": "medium",
+    "risk_level": "informational",
+    "resolution_criteria": "gujo-hachiman tips 정보 수집",
+    "status": "open",
+    "trigger": "A:adjacent_gap",
+    "trigger_source": "KU-0069",
+    "created_at": "2026-04-26",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "gu_id": "GU-0097",
+    "expansion_mode": "jump",
+    "origin": "post_cycle_sweep",
+    "created_cycle": 2
+  },
+  {
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:attraction:yuzawa",
+      "field": "hours"
+    },
+    "expected_utility": "medium",
+    "risk_level": "convenience",
+    "resolution_criteria": "yuzawa hours 정보 수집",
+    "status": "open",
+    "trigger": "A:adjacent_gap",
+    "trigger_source": "KU-0070",
+    "created_at": "2026-04-26",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "gu_id": "GU-0098",
+    "expansion_mode": "jump",
+    "origin": "post_cycle_sweep",
+    "created_cycle": 2
+  },
+  {
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:attraction:yuzawa",
+      "field": "tips"
+    },
+    "expected_utility": "medium",
+    "risk_level": "informational",
+    "resolution_criteria": "yuzawa tips 정보 수집",
+    "status": "open",
+    "trigger": "A:adjacent_gap",
+    "trigger_source": "KU-0070",
+    "created_at": "2026-04-26",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "gu_id": "GU-0099",
+    "expansion_mode": "jump",
+    "origin": "post_cycle_sweep",
+    "created_cycle": 2
+  },
+  {
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:attraction:nagano",
+      "field": "hours"
+    },
+    "expected_utility": "medium",
+    "risk_level": "convenience",
+    "resolution_criteria": "nagano hours 정보 수집",
+    "status": "open",
+    "trigger": "A:adjacent_gap",
+    "trigger_source": "KU-0071",
+    "created_at": "2026-04-26",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "gu_id": "GU-0100",
+    "expansion_mode": "jump",
+    "origin": "post_cycle_sweep",
+    "created_cycle": 2
+  },
+  {
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:attraction:nagano",
+      "field": "tips"
+    },
+    "expected_utility": "medium",
+    "risk_level": "informational",
+    "resolution_criteria": "nagano tips 정보 수집",
+    "status": "open",
+    "trigger": "A:adjacent_gap",
+    "trigger_source": "KU-0071",
+    "created_at": "2026-04-26",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "gu_id": "GU-0101",
+    "expansion_mode": "jump",
+    "origin": "post_cycle_sweep",
+    "created_cycle": 2
+  },
+  {
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:attraction:aizu",
+      "field": "price"
+    },
+    "expected_utility": "high",
+    "risk_level": "financial",
+    "resolution_criteria": "aizu price 정보 수집",
+    "status": "open",
+    "trigger": "A:adjacent_gap",
+    "trigger_source": "CL-0086-01",
+    "created_at": "2026-04-26",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "gu_id": "GU-0102",
+    "expansion_mode": "jump",
+    "origin": "claim_loop",
+    "created_cycle": 5
+  },
+  {
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:attraction:kusatsu-onsen",
+      "field": "price"
+    },
+    "expected_utility": "high",
+    "risk_level": "financial",
+    "resolution_criteria": "kusatsu-onsen price 정보 수집",
+    "status": "open",
+    "trigger": "A:adjacent_gap",
+    "trigger_source": "CL-0088-01",
+    "created_at": "2026-04-26",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "gu_id": "GU-0103",
+    "expansion_mode": "jump",
+    "origin": "claim_loop",
+    "created_cycle": 5
+  },
+  {
+    "gap_type": "missing",
+    "target": {
+      "entity_key": "japan-travel:attraction:yokohama",
+      "field": "price"
+    },
+    "expected_utility": "high",
+    "risk_level": "financial",
+    "resolution_criteria": "yokohama price 정보 수집",
+    "status": "open",
+    "trigger": "A:adjacent_gap",
+    "trigger_source": "CL-GU-0090-01",
+    "created_at": "2026-04-26",
+    "axis_tags": {
+      "geography": "nationwide"
+    },
+    "gu_id": "GU-0104",
+    "expansion_mode": "jump",
+    "origin": "claim_loop",
+    "created_cycle": 5
+  }
+]

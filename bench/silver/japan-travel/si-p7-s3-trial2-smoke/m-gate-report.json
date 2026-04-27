@@ -1,0 +1,156 @@
+{
+  "baseline": "bench\\silver\\japan-travel\\p7-rebuild-s3-smoke",
+  "target": "bench\\silver\\japan-travel\\si-p7-s3-trial2-smoke",
+  "self_mode": false,
+  "strict": true,
+  "verdict": {
+    "code": 1,
+    "label": "FAIL  (V/O FAIL: O1, O2, VxO)"
+  },
+  "results": [
+    {
+      "id": "V1",
+      "label": "vacant_total_reduction",
+      "detail": "Δ=58 (need ≥29; P-zone 97×30%)",
+      "passed": true,
+      "is_v_or_o": true,
+      "is_telemetry_deferred": false
+    },
+    {
+      "id": "V2",
+      "label": "per_category_vacant_no_regression",
+      "detail": "no regression on existing entities | new-entity vacant excluded: transport=12(4ent), attraction=9(9ent), pass-ticket=4(1ent)",
+      "passed": true,
+      "is_v_or_o": true,
+      "is_telemetry_deferred": false
+    },
+    {
+      "id": "V3",
+      "label": "untouched_entity_bound",
+      "detail": "target=0, baseline=0",
+      "passed": true,
+      "is_v_or_o": true,
+      "is_telemetry_deferred": false
+    },
+    {
+      "id": "O1",
+      "label": "active_frontier_existence",
+      "detail": "abandoned: transport(v=15,o=0)",
+      "passed": false,
+      "is_v_or_o": true,
+      "is_telemetry_deferred": false
+    },
+    {
+      "id": "O2",
+      "label": "open_gu_category_coverage",
+      "detail": "KL(vacant_share || open_share) = ∞ (max 0.5)",
+      "passed": false,
+      "is_v_or_o": true,
+      "is_telemetry_deferred": false
+    },
+    {
+      "id": "VxO",
+      "label": "frontier_health",
+      "detail": "6/8 cats healthy; failed: transport(v=15,o=0,base=5), pass-ticket(v=4,o=0,base=3)",
+      "passed": false,
+      "is_v_or_o": true,
+      "is_telemetry_deferred": false
+    },
+    {
+      "id": "M1",
+      "label": "named_entity_adj_gu_count",
+      "detail": "target=80, baseline=13, ratio=6.15 (need ≥12 ∧ ≥2.0×)",
+      "passed": true,
+      "is_v_or_o": false,
+      "is_telemetry_deferred": false
+    },
+    {
+      "id": "M2",
+      "label": "wildcard_parallel_pair_ratio",
+      "detail": "0/13=0.00 (need ≥0.7)",
+      "passed": false,
+      "is_v_or_o": false,
+      "is_telemetry_deferred": false
+    },
+    {
+      "id": "M3",
+      "label": "reg_pass_ticket_gu_count",
+      "detail": "target=31, baseline=12, ratio=2.58 (need ≥18 ∧ ≥1.5×)",
+      "passed": true,
+      "is_v_or_o": false,
+      "is_telemetry_deferred": false
+    },
+    {
+      "id": "M4",
+      "label": "adj_gu_field_diversity",
+      "detail": "target=8, baseline=5 (need ≥+2 ∧ ≥6)",
+      "passed": true,
+      "is_v_or_o": false,
+      "is_telemetry_deferred": false
+    },
+    {
+      "id": "M5",
+      "label": "late_cycle_adj_gen",
+      "detail": "Δc4=0, Δc5=0; Δc4>0 ∧ Δc5>0 (strict)",
+      "passed": false,
+      "is_v_or_o": false,
+      "is_telemetry_deferred": false
+    },
+    {
+      "id": "M6",
+      "label": "adj_yield_floor",
+      "detail": "target=0.257, baseline=0.500, ratio=0.51 (need ≥0.9)",
+      "passed": false,
+      "is_v_or_o": false,
+      "is_telemetry_deferred": false
+    },
+    {
+      "id": "M7",
+      "label": "conflict_regen_zero",
+      "detail": "violations=27 (loose check; M10 telemetry needed for strict)",
+      "passed": false,
+      "is_v_or_o": false,
+      "is_telemetry_deferred": false
+    },
+    {
+      "id": "M8",
+      "label": "ku_active_sanity",
+      "detail": "target=151, baseline=79, ratio=1.91 (need ≥0.95)",
+      "passed": true,
+      "is_v_or_o": false,
+      "is_telemetry_deferred": false
+    },
+    {
+      "id": "M5b",
+      "label": "dynamic_cap_hit",
+      "detail": "coverage=5/5 (need 100%)",
+      "passed": true,
+      "is_v_or_o": false,
+      "is_telemetry_deferred": false
+    },
+    {
+      "id": "M9",
+      "label": "sweep_attribution",
+      "detail": "coverage=83/83=1.00 (need ≥0.9)",
+      "passed": true,
+      "is_v_or_o": false,
+      "is_telemetry_deferred": false
+    },
+    {
+      "id": "M10",
+      "label": "created_cycle",
+      "detail": "coverage=83/83=1.00 (need ≥0.9)",
+      "passed": true,
+      "is_v_or_o": false,
+      "is_telemetry_deferred": false
+    },
+    {
+      "id": "M11",
+      "label": "per_cycle_counts",
+      "detail": "adj=5/5 wc=5/5 (need 100%)",
+      "passed": true,
+      "is_v_or_o": false,
+      "is_telemetry_deferred": false
+    }
+  ]
+}

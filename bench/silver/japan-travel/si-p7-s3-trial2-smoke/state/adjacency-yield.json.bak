@@ -1,0 +1,32 @@
+[
+  {
+    "cycle": 1,
+    "yield": 0.0,
+    "adj_open": 0,
+    "adj_resolved": 0
+  },
+  {
+    "cycle": 2,
+    "yield": 0.0714,
+    "adj_open": 14,
+    "adj_resolved": 1
+  },
+  {
+    "cycle": 3,
+    "yield": 0.4225,
+    "adj_open": 71,
+    "adj_resolved": 30
+  },
+  {
+    "cycle": 4,
+    "yield": 0.3846,
+    "adj_open": 52,
+    "adj_resolved": 20
+  },
+  {
+    "cycle": 5,
+    "yield": 0.4062,
+    "adj_open": 32,
+    "adj_resolved": 13
+  }
+]
