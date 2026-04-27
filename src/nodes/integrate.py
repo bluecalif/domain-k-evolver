@@ -73,6 +73,25 @@ Classify as one of:
 Respond in JSON: {{"verdict": "conflict"|"update"|"equivalent", "reason": "brief explanation"}}"""
 
 
+def _value_structure_type(value: Any) -> str:
+    """값 구조 타입 분류: 'range' | 'set' | 'scalar'.
+
+    S2-T6: 구조 차이 감지용.
+    - range: dict with 'min'/'max', or str like "X~Y" / "X-Y"
+    - set: list
+    - scalar: 그 외
+    """
+    if isinstance(value, list):
+        return "set"
+    if isinstance(value, dict) and ("min" in value or "max" in value):
+        return "range"
+    if isinstance(value, str):
+        import re
+        if re.search(r"\d[\d,]*\s*[~～－—–-]\s*[¥$€£₩]?\d", value):
+            return "range"
+    return "scalar"
+
+
 def _detect_conflict(
     existing_ku: dict,
     claim: dict,
